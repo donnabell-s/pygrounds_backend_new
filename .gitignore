@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg
+*.egg-info/
+dist/
+build/
+
+# Virtual Environment
+venv/
+
+# Django
+*.log
+*.sqlite3
+
+# Environment Variables
+.env
+
+# VS Code
+.vscode/
+
+load-db.bat
+dump-db.bat
