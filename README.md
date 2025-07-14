@@ -1,7 +1,3 @@
-Perfect! Here’s your **copy-paste-ready** `README.md` section tailored specifically for using your `load-db.bat` and `dump-db.bat` scripts — no manual `psql` or `pg_dump` commands required.
-
----
-
 ## 🗃️ Database Setup for Local Development (PostgreSQL)
 
 ### 📤 Dump the Local Database (Export)
