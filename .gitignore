@@ -19,5 +19,5 @@ venv/
 # VS Code
 .vscode/
 
-load-db.bat
-dump-db.bat
+# load-db.bat
+# dump-db.bat
