@@ -19,5 +19,8 @@ venv/
 # VS Code
 .vscode/
 
+# Document uploads
+pdfs\
+
 # load-db.bat
 # dump-db.bat
