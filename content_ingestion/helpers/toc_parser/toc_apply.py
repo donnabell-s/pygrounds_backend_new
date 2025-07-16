@@ -2,7 +2,7 @@ from question_generation.models import TOCEntry as DBTOCEntry, UploadedDocument
 from .toc_utils import extract_toc, fallback_toc_text, parse_toc_text, assign_end_pages
 import fitz
 from typing import List
-from question_generation.models import *
+from content_ingestion.models import *
 
 def generate_toc_entries_for_document(document):
     print(f"\n[DEBUG] Starting TOC generation for {document.title}")
