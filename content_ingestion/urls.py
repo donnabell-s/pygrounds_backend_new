@@ -18,4 +18,23 @@ urlpatterns = [
     path('toc/section/<int:entry_id>/', 
          views.get_section_content, 
          name='get_section_content'),
+         
+    # Game Zone endpoints
+    path('zones/', views.GameZoneListCreateView.as_view(), name='zone-list'),
+    path('zones/<int:pk>/', views.GameZoneDetailView.as_view(), name='zone-detail'),
+    
+    # Topic endpoints
+    path('topics/', views.TopicListCreateView.as_view(), name='topic-list'),
+    path('topics/<int:pk>/', views.TopicDetailView.as_view(), name='topic-detail'),
+    path('zones/<int:zone_id>/topics/', views.ZoneTopicsView.as_view(), name='zone-topics'),
+    
+    # Subtopic endpoints
+    path('subtopics/', views.SubtopicListCreateView.as_view(), name='subtopic-list'),
+    path('subtopics/<int:pk>/', views.SubtopicDetailView.as_view(), name='subtopic-detail'),
+    path('topics/<int:topic_id>/subtopics/', views.TopicSubtopicsView.as_view(), name='topic-subtopics'),
+    
+    # Content Mapping endpoints
+    path('mappings/', views.ContentMappingListCreateView.as_view(), name='mapping-list'),
+    path('mappings/<int:pk>/', views.ContentMappingDetailView.as_view(), name='mapping-detail'),
+    path('toc/<int:toc_id>/map/', views.MapTOCEntryView.as_view(), name='map-toc-entry'),
 ]

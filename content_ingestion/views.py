@@ -1,9 +1,13 @@
+from rest_framework import generics, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status
 from rest_framework.decorators import api_view
 from django.shortcuts import get_object_or_404
-from .models import UploadedDocument, TOCEntry
+from content_ingestion.models import GameZone, Topic, Subtopic, ContentMapping, TOCEntry, UploadedDocument
+from .serializers import (
+    GameZoneSerializer, TopicSerializer, SubtopicSerializer,
+    ContentMappingSerializer, TOCEntryMappingSerializer
+)
 from .helpers.toc_parser.toc_apply import generate_toc_entries_for_document
 import os
 import logging
@@ -39,8 +43,16 @@ class TOCGenerationView(APIView):
         Generate TOC for a PDF. Can either:
         1. Send document_id of already uploaded PDF
         2. Send a new PDF file directly
+        
+        Query parameters:
+        - skip_nlp: Set to 'true' to skip NLP matching for faster processing
         """
         try:
+            # Check if we should skip NLP processing
+            skip_nlp = request.query_params.get('skip_nlp', 'false').lower() == 'true'
+            if skip_nlp:
+                print("[DEBUG] Skipping NLP processing for faster execution")
+            
             # Case 1: Process existing document
             if document_id:
                 document = get_object_or_404(UploadedDocument, id=document_id)
@@ -67,7 +79,7 @@ class TOCGenerationView(APIView):
             
             # Extract and save TOC
             print(f"\n[TOC Extraction] Starting for document: {document.title}")
-            entries = generate_toc_entries_for_document(document)
+            entries = generate_toc_entries_for_document(document, skip_nlp=skip_nlp)
             print(f"\n[TOC Extraction] Found {len(entries)} entries:")
             
             response_data = []
@@ -165,3 +177,116 @@ def get_document_toc(request, document_id):
             'status': 'error',
             'message': str(e)
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class GameZoneListCreateView(generics.ListCreateAPIView):
+    """
+    List all game zones or create a new zone
+    """
+    queryset = GameZone.objects.all()
+    serializer_class = GameZoneSerializer
+
+class GameZoneDetailView(generics.RetrieveUpdateDestroyAPIView):
+    """
+    Retrieve, update or delete a game zone
+    """
+    queryset = GameZone.objects.all()
+    serializer_class = GameZoneSerializer
+
+class TopicListCreateView(generics.ListCreateAPIView):
+    """
+    List all topics or create a new topic
+    """
+    queryset = Topic.objects.all()
+    serializer_class = TopicSerializer
+
+class TopicDetailView(generics.RetrieveUpdateDestroyAPIView):
+    """
+    Retrieve, update or delete a topic
+    """
+    queryset = Topic.objects.all()
+    serializer_class = TopicSerializer
+
+class ZoneTopicsView(generics.ListAPIView):
+    """
+    List all topics for a specific zone
+    """
+    serializer_class = TopicSerializer
+
+    def get_queryset(self):
+        zone_id = self.kwargs['zone_id']
+        return Topic.objects.filter(zone_id=zone_id)
+
+class SubtopicListCreateView(generics.ListCreateAPIView):
+    """
+    List all subtopics or create a new subtopic
+    """
+    queryset = Subtopic.objects.all()
+    serializer_class = SubtopicSerializer
+
+class SubtopicDetailView(generics.RetrieveUpdateDestroyAPIView):
+    """
+    Retrieve, update or delete a subtopic
+    """
+    queryset = Subtopic.objects.all()
+    serializer_class = SubtopicSerializer
+
+class TopicSubtopicsView(generics.ListAPIView):
+    """
+    List all subtopics for a specific topic
+    """
+    serializer_class = SubtopicSerializer
+
+    def get_queryset(self):
+        topic_id = self.kwargs['topic_id']
+        return Subtopic.objects.filter(topic_id=topic_id)
+
+class ContentMappingListCreateView(generics.ListCreateAPIView):
+    """
+    List all content mappings or create a new mapping
+    """
+    queryset = ContentMapping.objects.all()
+    serializer_class = ContentMappingSerializer
+
+class ContentMappingDetailView(generics.RetrieveUpdateDestroyAPIView):
+    """
+    Retrieve, update or delete a content mapping
+    """
+    queryset = ContentMapping.objects.all()
+    serializer_class = ContentMappingSerializer
+
+class MapTOCEntryView(APIView):
+    """
+    Map a TOC entry to game content (zone, topic, subtopic)
+    """
+    def post(self, request, toc_id):
+        toc_entry = get_object_or_404(TOCEntry, id=toc_id)
+        
+        # Get mapping data from request
+        zone_id = request.data.get('zone_id')
+        topic_id = request.data.get('topic_id')
+        subtopic_id = request.data.get('subtopic_id')
+        
+        try:
+            # Create or update mapping
+            mapping, created = ContentMapping.objects.update_or_create(
+                toc_entry=toc_entry,
+                defaults={
+                    'zone_id': zone_id,
+                    'topic_id': topic_id,
+                    'subtopic_id': subtopic_id,
+                    'confidence_score': request.data.get('confidence_score', 0.0),
+                    'mapping_metadata': request.data.get('metadata', {})
+                }
+            )
+            
+            return Response({
+                'status': 'success',
+                'message': 'TOC entry mapped successfully',
+                'mapping_id': mapping.id
+            })
+            
+        except Exception as e:
+            return Response({
+                'status': 'error',
+                'message': str(e)
+            }, status=status.HTTP_400_BAD_REQUEST)
