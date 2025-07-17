@@ -1,11 +1,7 @@
 from content_ingestion.models import DocumentChunk, Topic, Subtopic
 
-
-
 def classify_topic_and_difficulty():
-    """
-    Loops through DocumentChunk, matches topic/subtopic, and assigns difficulty.
-    """
+    
     topics = Topic.objects.all()
     subtopics = Subtopic.objects.all()
     chunks = DocumentChunk.objects.all()
