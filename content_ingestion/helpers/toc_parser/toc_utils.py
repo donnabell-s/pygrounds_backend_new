@@ -43,7 +43,7 @@ def extract_toc(pdf_path: str) -> List[List[Any]]:
     except Exception as e:
         raise Exception(f"Error reading PDF: {str(e)}")
 
-def fallback_toc_text(doc: fitz.Document, page_limit: int = 9) -> List[str]:
+def fallback_toc_text(doc: fitz.Document, page_limit: int = 15) -> List[str]:
     """
     Scans the first few pages of the PDF for 'Table of Contents' text 
     if no metadata-based TOC is found.
@@ -56,10 +56,45 @@ def fallback_toc_text(doc: fitz.Document, page_limit: int = 9) -> List[str]:
         List of page texts that may contain TOC-like structure.
     """
     toc_pages = []
+    found_toc_start = False
+    
     for page_num in range(min(page_limit, len(doc))):
         text = doc.load_page(page_num).get_text()
+        
+        # Check if this is a TOC page
+        is_toc_page = False
+        
+        # Primary check: contains "contents"
         if "contents" in text.lower():
+            is_toc_page = True
+            found_toc_start = True
+        
+        # If we found TOC start, continue collecting consecutive pages with TOC-like content
+        elif found_toc_start:
+            num_count = len(re.findall(r'\b\d{1,3}\b', text))
+            dot_leader_count = len(re.findall(r'\.{2,}', text))
+            chapter_pattern = len(re.findall(r'^\s*\d+\.?\d*\s+[A-Za-z]', text, re.MULTILINE))
+            
+            # Continue if page has TOC-like patterns
+            if num_count > 8 or dot_leader_count > 3 or chapter_pattern > 2:
+                is_toc_page = True
+            else:
+                # Stop if we hit a page that doesn't look like TOC anymore
+                break
+        
+        # Fallback for pages without "contents" but with strong TOC indicators
+        else:
+            num_count = len(re.findall(r'\b\d{1,3}\b', text))
+            dot_leader_count = len(re.findall(r'\.{2,}', text))
+            chapter_pattern = len(re.findall(r'^\s*\d+\.?\d*\s+[A-Za-z]', text, re.MULTILINE))
+            
+            if num_count > 15 and dot_leader_count > 8 and chapter_pattern > 5:
+                is_toc_page = True
+                found_toc_start = True
+        
+        if is_toc_page:
             toc_pages.append(text)
+    
     return toc_pages
 
 def detect_level(line: str) -> int:
@@ -93,98 +128,73 @@ def parse_toc_text(toc_text_block: str) -> List[Dict[str, Any]]:
     """
     entries = []
     lines = toc_text_block.split('\n')
-    
-    print(f"[DEBUG] Parsing {len(lines)} lines from TOC text")
-    
+    meta_titles = {'foreword', 'preface', 'introduction', 'why this book', 'about', 'acknowledgments', 'contents', 'table of contents', 'toc', 'index'}
     i = 0
     while i < len(lines):
         line = lines[i].strip()
+        # Skip obvious footer/header patterns and meta content
+        if (not line or len(line) < 2 or 
+            (line.isdigit() and len(line) <= 2 and int(line) < 50)):  # Skip obvious page footers
+            i += 1
+            continue
         
-        # Skip empty lines or common headers
-        if not line or len(line) < 2 or line.lower() in ['contents', 'table of contents', 'toc', 'index']:
+        # Check for meta titles (whole words only)
+        is_meta = False
+        for meta in meta_titles:
+            if re.search(r'\b' + re.escape(meta) + r'\b', line.lower()):
+                is_meta = True
+                break
+        if is_meta:
             i += 1
             continue
+        
+        # If line is not a page number, treat as possible title
+        if not line.isdigit():
+            title = line
+            # Look ahead for page number (up to 10 lines to be safe)
+            j = i + 1
+            page_found = False
+            while j < min(len(lines), i + 11):
+                next_line = lines[j].strip()
+                if next_line.isdigit() and int(next_line) > 0:
+                    page = int(next_line)
+                    page_found = True
+                    break
+                elif next_line and not next_line.isdigit():
+                    # Accumulate multi-line titles
+                    title += ' ' + next_line
+                j += 1
             
-        # Check if current line is just a page number (standalone)
-        if line.isdigit() and int(line) > 0:
-            # Look back for a title in previous lines
-            for j in range(i-1, max(i-4, -1), -1):  # Look back up to 3 lines
-                prev_line = lines[j].strip()
-                if prev_line and len(prev_line) > 1 and not prev_line.isdigit():
-                    # Found potential title
-                    title = prev_line
-                    page = int(line)
-                    
-                    # Clean up title more thoroughly
-                    title = re.sub(r'\.+$', '', title).strip()  # Remove trailing dots
-                    title = re.sub(r'^\.+', '', title).strip()  # Remove leading dots
-                    title = re.sub(r'\s*\.{2,}\s*', ' ', title)  # Remove dot leaders (table of contents dots)
-                    title = re.sub(r'\s+', ' ', title)          # Normalize spaces
-                    title = title.strip()
-                    
-                    # Skip if title is mostly dots or too short
-                    if len(title) < 3 or title.count('.') > len(title) * 0.5:
-                        continue
-                    
-                    # Detect level based on original line indentation and numbering
-                    level = _detect_level_advanced(lines[j], title)
-                    
-                    if len(title) > 2:  # Valid title after cleaning
-                        entry = {
-                            "title": title,
-                            "start_page": page - 1,  # Convert to 0-based
-                            "level": level,
-                            "order": len(entries)
-                        }
-                        entries.append(entry)
-                        print(f"[DEBUG] Multi-line match: '{title}' -> Page {page} (Level {level})")
-                        break
-            i += 1
-            continue
-            
-        # Check for single-line entries (title and page on same line)
-        page_numbers = re.findall(r'\b(\d+)\b', line)
-        if page_numbers:
-            potential_page = int(page_numbers[-1])
-            
-            if potential_page > 0:
-                # Remove page number to get title
-                title = line
-                for pattern in [
-                    rf'\s*\.+\s*{potential_page}$',
-                    rf'\s+{potential_page}$',
-                    rf'\s*{potential_page}$',
-                ]:
-                    title = re.sub(pattern, '', title).strip()
-                
-                # Clean up title more thoroughly
-                title = re.sub(r'\.+$', '', title).strip()    # Remove trailing dots
-                title = re.sub(r'^\.+', '', title).strip()    # Remove leading dots
-                title = re.sub(r'\s*\.{2,}\s*', ' ', title)   # Remove dot leaders
-                title = re.sub(r'\s+', ' ', title)            # Normalize spaces
+            if page_found:
+                # Clean up title
+                title = re.sub(r'\.+$', '', title).strip()
+                title = re.sub(r'^\.+', '', title).strip()
+                title = re.sub(r'\s*\.{2,}\s*', ' ', title)
+                title = re.sub(r'\s+', ' ', title)
                 title = title.strip()
-                
-                # Skip if title is mostly dots or too short
                 if len(title) < 3 or title.count('.') > len(title) * 0.5:
+                    i = j + 1
                     continue
-                    level = _detect_level_advanced(line, title)
-                    
-                    entry = {
-                        "title": title,
-                        "start_page": potential_page - 1,
-                        "level": level,
-                        "order": len(entries)
-                    }
-                    entries.append(entry)
-                    print(f"[DEBUG] Single-line match: '{title}' -> Page {potential_page} (Level {level})")
-        
+                if any(re.search(r'\b' + re.escape(meta) + r'\b', title.lower()) for meta in meta_titles):
+                    i = j + 1
+                    continue
+                level = _detect_level_advanced(line, title)
+                entry = {
+                    "title": title,
+                    "start_page": page - 1,
+                    "level": level,
+                    "order": len(entries)
+                }
+                entries.append(entry)
+                i = j + 1
+                continue
+            else:
+                # No page number found, just move to next line
+                i += 1
+                continue
+        # If line is a page number but previous line is a title, handled above
         i += 1
-    
-    print(f"[DEBUG] Found {len(entries)} entries total")
-    
-    # Post-process to clean up hierarchy
     entries = _clean_hierarchy(entries)
-    
     return entries
 
 def _detect_level_advanced(original_line: str, title: str) -> int:

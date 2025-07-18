@@ -11,6 +11,13 @@ urlpatterns = [
     path('toc/generate/', views.TOCGenerationView.as_view(), name='generate_toc_upload'),  # For direct PDF upload
     path('toc/generate/<int:document_id>/', views.TOCGenerationView.as_view(), name='generate_toc'),  # For existing document
     
+    # Complete Document Processing with Chunking
+    path('process/<int:document_id>/', views.DocumentChunkingView.as_view(), name='process_document'),
+    
+    # Chunks endpoint
+    path('chunks/<int:document_id>/', views.get_document_chunks, name='get_document_chunks'),
+    path('chunks/full/<int:document_id>/', views.get_document_chunks_full, name='get_document_chunks_full'),
+    
     # TOC Content endpoints
     path('toc/document/<int:document_id>/', 
          views.get_document_toc, 

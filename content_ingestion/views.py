@@ -3,12 +3,13 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from django.shortcuts import get_object_or_404
-from content_ingestion.models import GameZone, Topic, Subtopic, ContentMapping, TOCEntry, UploadedDocument
+from content_ingestion.models import GameZone, Topic, Subtopic, ContentMapping, TOCEntry, UploadedDocument, DocumentChunk
 from .serializers import (
     GameZoneSerializer, TopicSerializer, SubtopicSerializer,
     ContentMappingSerializer, TOCEntryMappingSerializer
 )
-from .helpers.toc_parser.toc_apply import generate_toc_entries_for_document
+from .helpers.toc_parser.toc_apply import generate_toc_entries_for_document, generate_and_chunk_document
+from .helpers.page_chunking.chunk_optimizer import ChunkOptimizer
 import os
 import logging
 
@@ -40,82 +41,200 @@ class TOCGenerationView(APIView):
     """
     def post(self, request, document_id=None):
         """
-        Generate TOC for a PDF. Can either:
-        1. Send document_id of already uploaded PDF
-        2. Send a new PDF file directly
-        
+        Generate TOC for a PDF by reading from UploadedDocument database only.
+        Returns array of saved TOC entries for chunking/testing.
         Query parameters:
         - skip_nlp: Set to 'true' to skip NLP matching for faster processing
         """
         try:
-            # Check if we should skip NLP processing
             skip_nlp = request.query_params.get('skip_nlp', 'false').lower() == 'true'
-            if skip_nlp:
-                print("[DEBUG] Skipping NLP processing for faster execution")
+            if not document_id:
+                return Response({'error': 'document_id is required.'}, status=status.HTTP_400_BAD_REQUEST)
+            document = get_object_or_404(UploadedDocument, id=document_id)
+            logger.info(f"Processing document: {document.title}")
             
-            # Case 1: Process existing document
-            if document_id:
-                document = get_object_or_404(UploadedDocument, id=document_id)
-                logger.info(f"Processing existing document: {document.title}")
-            
-            # Case 2: Process new PDF upload
-            else:
-                uploaded_file = request.FILES.get('file')
-                if not uploaded_file or not uploaded_file.name.lower().endswith('.pdf'):
-                    return Response({
-                        'error': 'A PDF file is required.'
-                    }, status=status.HTTP_400_BAD_REQUEST)
-                
-                # Create new document
-                filename = uploaded_file.name
-                default_title = os.path.splitext(filename)[0]
-                title = request.POST.get('title', default_title)
-                document = UploadedDocument.objects.create(
-                    title=title, 
-                    file=uploaded_file,
-                    processing_status='PROCESSING'
-                )
-                logger.info(f"Processing new upload: {title}")
+            print(f"\n{'='*80}")
+            print(f"TOC GENERATION API - Document: {document.title}")
+            print(f"{'='*80}")
             
             # Extract and save TOC
-            print(f"\n[TOC Extraction] Starting for document: {document.title}")
-            entries = generate_toc_entries_for_document(document, skip_nlp=skip_nlp)
-            print(f"\n[TOC Extraction] Found {len(entries)} entries:")
+            matched_entries = generate_toc_entries_for_document(document, skip_nlp=skip_nlp)
             
-            response_data = []
-            for entry in entries:
-                entry_data = {
-                    'id': entry.id,
-                    'title': entry.title,
-                    'level': entry.level,
-                    'start_page': entry.start_page,
-                    'end_page': entry.end_page,
-                    'order': entry.order
-                }
-                response_data.append(entry_data)
-                print(f"\n[TOC Entry] {'-' * entry.level}> {entry.title}")
-                print(f"    Pages: {entry.start_page + 1}-{entry.end_page + 1 if entry.end_page else '?'}")
-                print(f"    Level: {entry.level}")
-                
-            # Update document status
-            document.processing_status = 'COMPLETED'
-            document.save()
+            # Get all TOC entries for this document
+            all_entries = TOCEntry.objects.filter(document=document).order_by('order')
             
-            print(f"\n[TOC Extraction] Complete! Total entries: {len(entries)}\n")
-                
+            # Get content mappings for matched entries
+            content_mappings = ContentMapping.objects.filter(
+                toc_entry__document=document
+            ).select_related('topic', 'subtopic', 'zone')
+            
+            print(f"\n📊 PROCESSING RESULTS:")
+            print(f"{'─'*60}")
+            print(f"Total TOC entries parsed: {all_entries.count()}")
+            print(f"Entries with topic mapping: {content_mappings.count()}")
+            print(f"Entries returned for chunking: {len(matched_entries)}")
+            
+            # Prepare detailed matching information for JSON response
+            matched_entries_details = []
+            skipped_entries_details = []
+            
+            if content_mappings.exists():
+                print(f"\n💾 MATCHED ENTRIES SAVED TO DATABASE:")
+                print(f"{'─'*60}")
+                for i, mapping in enumerate(content_mappings, 1):
+                    entry = mapping.toc_entry
+                    match_type = "Subtopic" if mapping.subtopic else "Topic"
+                    match_obj = mapping.subtopic or mapping.topic
+                    zone = mapping.zone
+                    
+                    print(f"{i:2d}. TOC: '{entry.title[:45]}...'")
+                    print(f"    Pages: {entry.start_page+1}-{entry.end_page+1 if entry.end_page else 'end'}")
+                    print(f"    Maps to: {match_type} '{match_obj.name}' (Zone: {zone.name if zone else 'None'})")
+                    print(f"    Confidence: {mapping.confidence_score:.3f}")
+                    print()
+                    
+                    # Add to JSON response data
+                    matched_entries_details.append({
+                        'id': entry.id,
+                        'title': entry.title,
+                        'level': entry.level,
+                        'start_page': entry.start_page,
+                        'end_page': entry.end_page,
+                        'order': entry.order,
+                        'match_type': match_type.lower(),
+                        'matched_to': {
+                            'id': match_obj.id,
+                            'name': match_obj.name,
+                            'zone': zone.name if zone else None
+                        },
+                        'confidence_score': mapping.confidence_score
+                    })
+            else:
+                print(f"\n❌ No entries were matched to topics/subtopics")
+            
+            # Get entries that were skipped or had low confidence
+            all_entry_ids = set(all_entries.values_list('id', flat=True))
+            matched_entry_ids = set(content_mappings.values_list('toc_entry_id', flat=True))
+            unmatched_entry_ids = all_entry_ids - matched_entry_ids
+            
+            if unmatched_entry_ids:
+                unmatched_entries = TOCEntry.objects.filter(id__in=unmatched_entry_ids)
+                for entry in unmatched_entries:
+                    skipped_entries_details.append({
+                        'id': entry.id,
+                        'title': entry.title,
+                        'level': entry.level,
+                        'start_page': entry.start_page,
+                        'end_page': entry.end_page,
+                        'order': entry.order,
+                        'reason': 'low_confidence_or_meta'
+                    })
+            
+            # Query only relevant TOC entries for chunking
+            response_data = list(
+                TOCEntry.objects.filter(document=document)
+                .order_by('order')
+                .values('id', 'title', 'level', 'start_page', 'end_page', 'order')
+            )
+            
+            print(f"🚀 API Response: {len(response_data)} entries returned")
+            print(f"{'='*80}\n")
+            
             return Response({
                 'status': 'success',
                 'document_title': document.title,
                 'total_pages': document.total_pages,
-                'entries': response_data
+                'processing_summary': {
+                    'total_entries_parsed': all_entries.count(),
+                    'matched_entries': content_mappings.count(),
+                    'skipped_entries': len(skipped_entries_details),
+                    'entries_for_chunking': len(response_data)
+                },
+                'matched_entries': matched_entries_details,
+                'skipped_entries': skipped_entries_details,
+                'entries_to_chunk': response_data
             })
-            
+            document.processing_status = 'COMPLETED'
+            document.save(update_fields=['processing_status'])
         except Exception as e:
             error_msg = str(e)
-            print(f"\n[TOC Extraction Error] {error_msg}\n")
+            logger.error(f"[TOC Extraction Error] {error_msg}")
             return Response({
                 'status': 'error',
                 'message': error_msg
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class DocumentChunkingView(APIView):
+    """
+    Complete document processing: TOC generation + topic matching + chunking for RAG.
+    """
+    def post(self, request, document_id=None):
+        """
+        Process document completely: Generate TOC, match topics, and create chunks.
+        Query parameters:
+        - include_chunking: Set to 'false' to skip chunking (default: 'true')
+        - skip_nlp: Set to 'true' to skip NLP matching for faster processing (default: 'false')
+        """
+        try:
+            if not document_id:
+                return Response({'error': 'document_id is required.'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Parse query parameters
+            include_chunking = request.query_params.get('include_chunking', 'true').lower() == 'true'
+            skip_nlp = request.query_params.get('skip_nlp', 'false').lower() == 'true'
+            
+            document = get_object_or_404(UploadedDocument, id=document_id)
+            logger.info(f"Complete processing for document: {document.title}")
+            
+            print(f"\n{'='*80}")
+            print(f"COMPLETE DOCUMENT PROCESSING API - Document: {document.title}")
+            print(f"Include Chunking: {include_chunking}")
+            print(f"Skip NLP: {skip_nlp}")
+            print(f"{'='*80}")
+            
+            # Process document completely
+            results = generate_and_chunk_document(
+                document=document,
+                include_chunking=include_chunking,
+                skip_nlp=skip_nlp,
+                fast_mode=True
+            )
+            
+            # Prepare response with all processing details
+            response_data = {
+                'status': 'success',
+                'document_id': document.id,
+                'document_title': document.title,
+                'document_status': document.processing_status,
+                'total_pages': document.total_pages,
+                'processing_summary': {
+                    'toc_processing': results['toc_stats'],
+                    'chunking_processing': results['chunking_stats']
+                },
+                'matched_entries': results['matched_entries'],
+                'entries_ready_for_rag': len(results['matched_entries']) if include_chunking else 0
+            }
+            
+            print(f"\n🎉 API RESPONSE READY")
+            print(f"{'─'*60}")
+            print(f"TOC Entries Found: {results['toc_stats'].get('total_entries_found', 0)}")
+            print(f"Matched Entries: {results['toc_stats'].get('matched_entries_count', 0)}")
+            if include_chunking and 'chunks_created' in results['chunking_stats']:
+                print(f"Chunks Created: {results['chunking_stats']['chunks_created']}")
+                print(f"Pages Processed: {results['chunking_stats']['pages_processed']}")
+            print(f"Document Status: {document.processing_status}")
+            print(f"{'='*80}\n")
+            
+            return Response(response_data)
+            
+        except Exception as e:
+            error_msg = str(e)
+            logger.error(f"[Document Chunking Error] {error_msg}")
+            return Response({
+                'status': 'error',
+                'message': error_msg,
+                'document_id': document_id
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(['GET'])
@@ -290,3 +409,129 @@ class MapTOCEntryView(APIView):
                 'status': 'error',
                 'message': str(e)
             }, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET'])
+def get_document_chunks(request, document_id):
+    """
+    Get all chunks created for a document.
+    """
+    try:
+        document = get_object_or_404(UploadedDocument, id=document_id)
+        
+        chunks = DocumentChunk.objects.filter(document=document).order_by('page_number', 'order_in_doc')
+        
+        chunks_data = []
+        for chunk in chunks:
+            chunks_data.append({
+                'id': chunk.id,
+                'text': chunk.text,  # Full text instead of preview
+                'topic_title': chunk.topic_title,
+                'subtopic_title': chunk.subtopic_title,  # Added subtopic_title
+                'difficulty': '',  # Empty as requested - handled at higher level
+                'page_number': chunk.page_number,  # 0-based as stored in DB
+                'order_in_doc': chunk.order_in_doc
+            })
+        
+        return Response({
+            'status': 'success',
+            'document_title': document.title,
+            'total_chunks': len(chunks_data),
+            'chunks': chunks_data
+        })
+        
+    except Exception as e:
+        return Response({
+            'status': 'error',
+            'message': str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
+def get_document_chunks_full(request, document_id):
+    """
+    Get all chunks created for a document with FULL optimized content for LLM consumption.
+    """
+    try:
+        document = get_object_or_404(UploadedDocument, id=document_id)
+        
+        print(f"\n🚀 RETRIEVING OPTIMIZED CHUNKS")
+        print(f"Document: {document.title}")
+        print(f"{'='*50}")
+        
+        # Initialize optimizer and process chunks
+        optimizer = ChunkOptimizer()
+        optimization_result = optimizer.optimize_chunks(document_id)
+        
+        optimized_chunks = optimization_result['optimized_chunks']
+        stats = optimization_result['optimization_stats']
+        llm_format = optimization_result['llm_ready_format']
+        
+        print(f"\n📊 OPTIMIZATION RESULTS")
+        print(f"{'─'*30}")
+        print(f"Total chunks: {stats['total_chunks']}")
+        print(f"Title fixes: {stats['title_fixes']}")
+        print(f"Content improvements: {stats['content_improvements']}")
+        
+        return Response({
+            'status': 'success',
+            'document_title': document.title,
+            'document_total_pages': document.total_pages,
+            'total_chunks': stats['total_chunks'],
+            'optimization_stats': stats,
+            'chunks_by_page': _group_optimized_chunks_by_page(optimized_chunks),
+            'optimized_chunks': optimized_chunks,
+            'llm_ready_format': llm_format,
+            'summary': {
+                'total_concepts_extracted': sum(len(chunk['concepts'].split()) if isinstance(chunk['concepts'], str) else len(chunk['concepts']) for chunk in optimized_chunks),
+                'total_code_examples': sum(chunk['code_examples_count'] for chunk in optimized_chunks),
+                'total_exercises': sum(chunk['exercises_count'] for chunk in optimized_chunks),
+                'content_type_distribution': _get_difficulty_distribution(optimized_chunks)
+            }
+        })
+        
+    except Exception as e:
+        return Response({
+            'status': 'error',
+            'message': str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+def _group_chunks_by_page(chunks_data):
+    """Helper to group chunks by page number for easier debugging."""
+    pages = {}
+    for chunk in chunks_data:
+        page_num = chunk['page_number']
+        if page_num not in pages:
+            pages[page_num] = []
+        pages[page_num].append(chunk)
+    return pages
+
+
+def _group_optimized_chunks_by_page(chunks_data):
+    """Helper to group optimized chunks by page number."""
+    pages = {}
+    for chunk in chunks_data:
+        page_num = chunk['page_number']
+        if page_num not in pages:
+            pages[page_num] = []
+        pages[page_num].append({
+            'id': chunk['id'],
+            'clean_title': chunk['clean_title'],
+            'content_type': chunk['content_type'],
+            'concepts': chunk['concepts'],
+            'code_examples_count': chunk['code_examples_count'],
+            'exercises_count': chunk['exercises_count'],
+            # 'structured_content': chunk['structured_content'],  # REMOVED - too verbose
+            'llm_context': chunk['llm_context']
+        })
+    return pages
+
+
+def _get_difficulty_distribution(chunks_data):
+    """Get content type distribution."""
+    distribution = {}
+    for chunk in chunks_data:
+        content_type = chunk['content_type']
+        distribution[content_type] = distribution.get(content_type, 0) + 1
+    return distribution
