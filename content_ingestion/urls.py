@@ -17,6 +17,8 @@ urlpatterns = [
     # Chunks endpoint
     path('chunks/<int:document_id>/', views.get_document_chunks, name='get_document_chunks'),
     path('chunks/full/<int:document_id>/', views.get_document_chunks_full, name='get_document_chunks_full'),
+    path('chunks/<int:document_id>/embed/', views.embed_document_chunks, name='embed_document_chunks'),
+    path('chunks/<int:document_id>/embeddings/', views.get_chunk_embeddings, name='get_chunk_embeddings'),
     
     # TOC Content endpoints
     path('toc/document/<int:document_id>/', 

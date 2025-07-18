@@ -79,6 +79,26 @@ class DocumentChunk(models.Model):
         blank=True,
         help_text="Additional metadata from the parser"
     )
+    
+    # Embedding fields for RAG
+    embedding = ArrayField(
+        base_field=models.FloatField(),
+        size=384,  # all-MiniLM-L6-v2 dimension
+        null=True,
+        blank=True,
+        help_text="Vector embedding for semantic search and RAG"
+    )
+    embedding_model = models.CharField(
+        max_length=100,
+        null=True,
+        blank=True,
+        help_text="Model used to generate embedding (e.g., all-MiniLM-L6-v2)"
+    )
+    embedded_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="Timestamp when embedding was generated"
+    )
 
     class Meta:
         ordering = ['page_number', 'order_in_doc']

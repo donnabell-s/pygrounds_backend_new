@@ -141,13 +141,14 @@ def generate_toc_entries_for_document(document, skip_nlp=False, fast_mode=True):
         raise
 
 
-def generate_and_chunk_document(document, include_chunking=True, skip_nlp=False, fast_mode=True) -> Dict[str, Any]:
+def generate_and_chunk_document(document, include_chunking=True, include_embeddings=True, skip_nlp=False, fast_mode=True) -> Dict[str, Any]:
     """
     Complete pipeline: Generate TOC entries, match topics, and create chunks for RAG.
     
     Args:
         document: UploadedDocument instance
         include_chunking: Whether to process matched entries for chunking
+        include_embeddings: Whether to generate embeddings for chunks
         skip_nlp: Skip topic matching entirely
         fast_mode: Use fast keyword matching instead of NLP
     
@@ -158,6 +159,7 @@ def generate_and_chunk_document(document, include_chunking=True, skip_nlp=False,
     print(f"{'='*80}")
     print(f"Document: {document.title}")
     print(f"Include Chunking: {include_chunking}")
+    print(f"Include Embeddings: {include_embeddings}")
     print(f"Fast Mode: {fast_mode}")
     
     results = {
@@ -204,7 +206,7 @@ def generate_and_chunk_document(document, include_chunking=True, skip_nlp=False,
             print(f"\n🔧 STEP 2: Chunk Processing")
             print(f"{'─'*50}")
             
-            chunk_processor = TOCBasedChunkProcessor()
+            chunk_processor = TOCBasedChunkProcessor(enable_embeddings=include_embeddings)
             chunking_results = chunk_processor.process_matched_entries(document, matched_entries)
             
             results['chunking_stats'] = {
@@ -213,6 +215,7 @@ def generate_and_chunk_document(document, include_chunking=True, skip_nlp=False,
                 'chunks_created': chunking_results['total_chunks_created'],
                 'pages_processed': chunking_results['total_pages_processed'],
                 'sample_content_filtered': chunking_results['sample_content_filtered'],
+                'embedding_stats': chunking_results.get('embedding_stats', {}),
                 'entries_details': chunking_results['entries_details']
             }
             

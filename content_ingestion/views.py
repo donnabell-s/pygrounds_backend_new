@@ -174,6 +174,7 @@ class DocumentChunkingView(APIView):
         Process document completely: Generate TOC, match topics, and create chunks.
         Query parameters:
         - include_chunking: Set to 'false' to skip chunking (default: 'true')
+        - include_embeddings: Set to 'false' to skip embedding generation (default: 'true')
         - skip_nlp: Set to 'true' to skip NLP matching for faster processing (default: 'false')
         """
         try:
@@ -182,7 +183,12 @@ class DocumentChunkingView(APIView):
             
             # Parse query parameters
             include_chunking = request.query_params.get('include_chunking', 'true').lower() == 'true'
+            include_embeddings = request.query_params.get('include_embeddings', 'true').lower() == 'true'
             skip_nlp = request.query_params.get('skip_nlp', 'false').lower() == 'true'
+            
+            # Auto-enable embeddings when chunking is enabled (unless explicitly disabled)
+            if include_chunking and 'include_embeddings' not in request.query_params:
+                include_embeddings = True
             
             document = get_object_or_404(UploadedDocument, id=document_id)
             logger.info(f"Complete processing for document: {document.title}")
@@ -190,6 +196,7 @@ class DocumentChunkingView(APIView):
             print(f"\n{'='*80}")
             print(f"COMPLETE DOCUMENT PROCESSING API - Document: {document.title}")
             print(f"Include Chunking: {include_chunking}")
+            print(f"Include Embeddings: {include_embeddings}")
             print(f"Skip NLP: {skip_nlp}")
             print(f"{'='*80}")
             
@@ -197,6 +204,7 @@ class DocumentChunkingView(APIView):
             results = generate_and_chunk_document(
                 document=document,
                 include_chunking=include_chunking,
+                include_embeddings=include_embeddings,
                 skip_nlp=skip_nlp,
                 fast_mode=True
             )
@@ -535,3 +543,127 @@ def _get_difficulty_distribution(chunks_data):
         content_type = chunk['content_type']
         distribution[content_type] = distribution.get(content_type, 0) + 1
     return distribution
+
+
+@api_view(['POST'])
+def embed_document_chunks(request, document_id):
+    """
+    Generate embeddings for all chunks in a document for RAG functionality.
+    """
+    try:
+        from content_ingestion.helpers.embedding_utils import EmbeddingGenerator
+        from content_ingestion.models import DocumentChunk
+        
+        document = get_object_or_404(UploadedDocument, id=document_id)
+        
+        print(f"\n🔮 EMBEDDING DOCUMENT CHUNKS")
+        print(f"{'='*50}")
+        print(f"Document: {document.title}")
+        
+        # Get chunks that need embedding
+        all_chunks = DocumentChunk.objects.filter(document=document)
+        chunks_without_embeddings = all_chunks.filter(embedding__isnull=True)
+        chunks_with_embeddings = all_chunks.filter(embedding__isnull=False)
+        
+        print(f"Total chunks: {all_chunks.count()}")
+        print(f"Already embedded: {chunks_with_embeddings.count()}")
+        print(f"Need embedding: {chunks_without_embeddings.count()}")
+        
+        if chunks_without_embeddings.count() == 0:
+            return Response({
+                'status': 'success',
+                'message': 'All chunks already have embeddings',
+                'document_id': document.id,
+                'document_title': document.title,
+                'embedding_stats': {
+                    'total_chunks': all_chunks.count(),
+                    'already_embedded': chunks_with_embeddings.count(),
+                    'newly_embedded': 0,
+                    'failed': 0
+                }
+            })
+        
+        # Generate embeddings
+        embedding_generator = EmbeddingGenerator()
+        embedding_results = embedding_generator.embed_chunks_batch(chunks_without_embeddings)
+        
+        print(f"\n📊 EMBEDDING RESULTS")
+        print(f"{'─'*30}")
+        print(f"Success: {embedding_results['success']}")
+        print(f"Failed: {embedding_results['failed']}")
+        print(f"Model: {embedding_results['model']}")
+        
+        return Response({
+            'status': 'success',
+            'message': f"Generated embeddings for {embedding_results['success']} chunks",
+            'document_id': document.id,
+            'document_title': document.title,
+            'embedding_stats': {
+                'total_chunks': all_chunks.count(),
+                'already_embedded': chunks_with_embeddings.count(),
+                'newly_embedded': embedding_results['success'],
+                'failed': embedding_results['failed'],
+                'model_used': embedding_results['model']
+            }
+        })
+        
+    except Exception as e:
+        print(f"❌ Embedding failed: {str(e)}")
+        return Response({
+            'status': 'error',
+            'message': f"Failed to generate embeddings: {str(e)}"
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
+def get_chunk_embeddings(request, document_id):
+    """
+    Get embedding status and metadata for all chunks in a document.
+    """
+    try:
+        document = get_object_or_404(UploadedDocument, id=document_id)
+        
+        # Get all chunks for the document
+        chunks = DocumentChunk.objects.filter(document=document).order_by('page_number', 'order_in_doc')
+        
+        embedding_data = []
+        embedded_count = 0
+        not_embedded_count = 0
+        
+        for chunk in chunks:
+            has_embedding = chunk.embedding is not None and len(chunk.embedding) > 0
+            
+            if has_embedding:
+                embedded_count += 1
+            else:
+                not_embedded_count += 1
+            
+            embedding_data.append({
+                'id': chunk.id,
+                'topic_title': chunk.topic_title,
+                'page_number': chunk.page_number,
+                'text_preview': chunk.text[:100] + "..." if len(chunk.text) > 100 else chunk.text,
+                'has_embedding': has_embedding,
+                'embedding_dimension': len(chunk.embedding) if has_embedding else 0,
+                'embedding_model': chunk.embedding_model,
+                'embedded_at': chunk.embedded_at.isoformat() if chunk.embedded_at else None
+            })
+        
+        return Response({
+            'status': 'success',
+            'document_id': document.id,
+            'document_title': document.title,
+            'embedding_summary': {
+                'total_chunks': chunks.count(),
+                'embedded_chunks': embedded_count,
+                'not_embedded_chunks': not_embedded_count,
+                'embedding_coverage': f"{(embedded_count / chunks.count() * 100):.1f}%" if chunks.count() > 0 else "0%"
+            },
+            'chunks': embedding_data
+        })
+        
+    except Exception as e:
+        return Response({
+            'status': 'error',
+            'message': f"Failed to retrieve embedding data: {str(e)}"
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

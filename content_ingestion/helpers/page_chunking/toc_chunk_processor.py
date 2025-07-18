@@ -3,6 +3,7 @@ from typing import List, Dict, Any
 from django.db import transaction
 from content_ingestion.models import UploadedDocument, DocumentChunk, TOCEntry
 from .chunk_extractor_utils import extract_unstructured_chunks, infer_chunk_type, clean_chunk_text
+from content_ingestion.helpers.embedding_utils import EmbeddingGenerator
 import tempfile
 import os
 
@@ -11,8 +12,11 @@ class TOCBasedChunkProcessor:
     Processes matched TOC entries and creates consolidated page chunks for optimal RAG performance.
     """
     
-    def __init__(self):
+    def __init__(self, enable_embeddings: bool = True):
         self.batch_size = 50
+        self.enable_embeddings = enable_embeddings
+        self.embedding_generator = EmbeddingGenerator() if enable_embeddings else None
+        
         # Sample content detection patterns
         self.sample_content_indicators = [
             "This is a sample from",
@@ -155,6 +159,10 @@ class TOCBasedChunkProcessor:
         results['total_pages_processed'] = len(results['consolidated_pages'])
         self._consolidate_chunks_by_page(document, list(results['consolidated_pages']))
         
+        # Generate embeddings for all chunks
+        embedding_results = self._generate_embeddings_for_document(document)
+        results['embedding_stats'] = embedding_results
+        
         print(f"\n📊 PROCESSING COMPLETE")
         print(f"{'─'*60}")
         print(f"Entries processed: {results['total_entries_processed']}")
@@ -163,8 +171,45 @@ class TOCBasedChunkProcessor:
         print(f"Pages with consolidated chunks: {results['total_pages_processed']}")
         if results['sample_content_filtered'] > 0:
             print(f"Sample content chunks filtered: {results['sample_content_filtered']}")
+        if embedding_results['total'] > 0:
+            print(f"Embeddings generated: {embedding_results['success']}/{embedding_results['total']}")
         
         return results
+    
+    def _generate_embeddings_for_document(self, document: UploadedDocument) -> Dict[str, Any]:
+        """
+        Generate embeddings for all chunks in the document.
+        
+        Args:
+            document: The UploadedDocument instance
+            
+        Returns:
+            Dictionary with embedding statistics
+        """
+        if not self.enable_embeddings or not self.embedding_generator:
+            return {'success': 0, 'failed': 0, 'total': 0, 'status': 'disabled'}
+        
+        print(f"\n🔮 GENERATING EMBEDDINGS")
+        print(f"{'─'*40}")
+        
+        # Get all chunks for this document that don't have embeddings
+        chunks_to_embed = DocumentChunk.objects.filter(
+            document=document,
+            embedding__isnull=True
+        )
+        
+        if not chunks_to_embed.exists():
+            print(f"✅ All chunks already have embeddings")
+            return {'success': 0, 'failed': 0, 'total': 0, 'status': 'already_embedded'}
+        
+        print(f"📝 Found {chunks_to_embed.count()} chunks to embed")
+        
+        # Generate embeddings in batch
+        embedding_results = self.embedding_generator.embed_chunks_batch(chunks_to_embed)
+        
+        print(f"✅ Embedding complete: {embedding_results['success']}/{embedding_results['total']} successful")
+        
+        return embedding_results
     
     def _is_sample_placeholder_content(self, text: str) -> bool:
         """
