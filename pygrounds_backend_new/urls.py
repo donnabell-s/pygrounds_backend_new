@@ -28,4 +28,5 @@ urlpatterns = [
     path('', include('question_generation.urls')),
     # content ingestion
     path('', include('content_ingestion.urls')),
+    path('api/user/', include('users.urls')),
 ]
