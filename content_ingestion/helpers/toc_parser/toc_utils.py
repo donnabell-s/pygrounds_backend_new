@@ -21,6 +21,91 @@ class TOCEntry:
     level: int = 0
     children: List['TOCEntry'] = field(default_factory=list)
 
+def find_content_boundaries(pdf_path: str) -> Tuple[int, int]:
+    """
+    Find the first and last page containing actual educational content,
+    excluding covers, prefaces, indexes, etc.
+    
+    Args:
+        pdf_path: Path to the PDF file
+        
+    Returns:
+        Tuple of (first_content_page, last_content_page) (0-based)
+    """
+    try:
+        doc = fitz.open(pdf_path)
+        total_pages = len(doc)
+        
+        # Keywords that indicate educational content start
+        content_start_keywords = [
+            'chapter 1', 'module 1', 'lesson 1', 'unit 1',
+            'introduction to python', 'getting started',
+            'python basics', 'fundamentals', 'variables',
+            'data types', 'functions', 'loops'
+        ]
+        
+        # Keywords that indicate non-content pages
+        non_content_keywords = [
+            'table of contents', 'preface', 'foreword', 'acknowledgments',
+            'about the author', 'about this book', 'copyright', 'isbn',
+            'index', 'bibliography', 'references', 'glossary',
+            'appendix', 'answer key', 'solutions'
+        ]
+        
+        first_content_page = 0
+        last_content_page = total_pages - 1
+        
+        # Find first content page
+        for page_num in range(min(20, total_pages)):  # Check first 20 pages
+            page = doc.load_page(page_num)
+            text = page.get_text().lower()
+            
+            # Skip if it's clearly non-content
+            if any(keyword in text for keyword in non_content_keywords):
+                continue
+                
+            # Look for content indicators
+            if any(keyword in text for keyword in content_start_keywords):
+                first_content_page = page_num
+                break
+                
+            # Alternative: look for code patterns or exercise patterns
+            code_patterns = [
+                '>>>', 'print(', 'def ', 'import ', 'from ',
+                'python', 'variable', 'function', 'string'
+            ]
+            if any(pattern in text for pattern in code_patterns):
+                # Count how many patterns we find
+                pattern_count = sum(1 for pattern in code_patterns if pattern in text)
+                if pattern_count >= 3:  # Strong indication of content
+                    first_content_page = page_num
+                    break
+        
+        # Find last content page (work backwards from end)
+        for page_num in range(total_pages - 1, max(total_pages - 20, first_content_page), -1):
+            page = doc.load_page(page_num)
+            text = page.get_text().lower()
+            
+            # Skip if it's clearly non-content (appendix, index, etc.)
+            if any(keyword in text for keyword in non_content_keywords):
+                continue
+                
+            # Look for meaningful content (not just "blank" or very short pages)
+            if len(text.strip()) > 200:  # Reasonable amount of text
+                last_content_page = page_num
+                break
+        
+        print(f"📚 Content boundaries: pages {first_content_page + 1}-{last_content_page + 1} (of {total_pages} total)")
+        
+        return first_content_page, last_content_page
+        
+    except Exception as e:
+        print(f"⚠️ Error finding content boundaries: {e}")
+        # Fallback to reasonable defaults
+        doc = fitz.open(pdf_path)
+        total_pages = len(doc)
+        return 5, max(total_pages - 10, 10)  # Skip first 5 and last 10 pages
+
 def extract_toc(pdf_path: str) -> List[List[Any]]:
     """
     Extracts table of contents from PDF metadata if available.

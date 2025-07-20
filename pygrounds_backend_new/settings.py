@@ -14,6 +14,31 @@ import os
 from pathlib import Path
 from datetime import timedelta
 
+# Suppress TensorFlow warnings and logs
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # Suppress all TF logs except errors
+os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'  # Disable oneDNN optimizations to avoid warnings
+os.environ['PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION'] = 'python'  # Fix protobuf issues
+
+# Additional TensorFlow warning suppression
+import warnings
+warnings.filterwarnings('ignore', category=DeprecationWarning)
+warnings.filterwarnings('ignore', message='.*sparse_softmax_cross_entropy.*')
+warnings.filterwarnings('ignore', message='.*MessageFactory.*')
+warnings.filterwarnings('ignore', message='.*GetPrototype.*')
+
+# Suppress specific library warnings
+import logging
+logging.getLogger('tensorflow').setLevel(logging.ERROR)
+logging.getLogger('google.protobuf').setLevel(logging.ERROR)
+
+try:
+    import tensorflow as tf
+    tf.get_logger().setLevel('ERROR')  # Only show TF errors
+    # Additional TensorFlow configuration
+    tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
+except ImportError:
+    pass  # TensorFlow not installed
+
 SECRET_KEY = config('SECRET_KEY')
 DEBUG = config('DEBUG', default=False, cast=bool)
 

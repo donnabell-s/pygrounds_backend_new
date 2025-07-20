@@ -9,6 +9,9 @@ urlpatterns = [
     path('rag/batch/', views.BatchSubtopicRAGView.as_view(), name='batch_subtopic_rag'),
     path('search/', views.SemanticSearchView.as_view(), name='semantic_search'),
     
+    # New endpoint: Compare subtopic metadata and generate questions via RAG
+    path('compare/subtopic/<int:subtopic_id>/', views.CompareSubtopicAndGenerateView.as_view(), name='compare_subtopic_generate'),
+    
     # Question Generation with DeepSeek - Temporarily disabled
     # path('generate/<int:subtopic_id>/', views.generate_questions_with_deepseek, name='generate_questions'),
     

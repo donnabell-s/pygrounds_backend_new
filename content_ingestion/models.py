@@ -54,6 +54,7 @@ class DocumentChunk(models.Model):
         ("Caption", "Caption"),
         ("Exercise", "Exercise"),
         ("Example", "Example"),
+        ("Concept", "Concept"),  # Added for theory/definition content
     ])
     
     text = models.TextField()
@@ -67,6 +68,20 @@ class DocumentChunk(models.Model):
     # Content classification
     topic_title = models.CharField(max_length=255, null=True, blank=True)
     subtopic_title = models.CharField(max_length=255, null=True, blank=True)
+    
+    # Token counting for LLM optimization
+    token_count = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="Number of tokens in the text content (using tiktoken)"
+    )
+    token_encoding = models.CharField(
+        max_length=50,
+        null=True,
+        blank=True,
+        default="cl100k_base",
+        help_text="Encoding used for token counting (e.g., cl100k_base for GPT-4)"
+    )
     
     # Parsing metadata
     confidence_score = models.FloatField(

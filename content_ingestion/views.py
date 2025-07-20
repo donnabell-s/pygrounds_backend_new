@@ -8,7 +8,7 @@ from .serializers import (
     GameZoneSerializer, TopicSerializer, SubtopicSerializer,
     ContentMappingSerializer, TOCEntryMappingSerializer
 )
-from .helpers.toc_parser.toc_apply import generate_toc_entries_for_document, generate_and_chunk_document
+from .helpers.toc_parser.toc_apply import generate_toc_entries_for_document
 from .helpers.page_chunking.chunk_optimizer import ChunkOptimizer
 import os
 import logging
@@ -164,48 +164,46 @@ class TOCGenerationView(APIView):
                 'message': error_msg
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-
-class DocumentChunkingView(APIView):
+class GranularDocumentProcessingView(APIView):
     """
-    Complete document processing: TOC generation + topic matching + chunking for RAG.
+    Process entire document with granular chunking approach.
+    Creates smaller, type-classified chunks instead of TOC-based chunks.
     """
     def post(self, request, document_id=None):
         """
-        Process document completely: Generate TOC, match topics, and create chunks.
+        Process document with granular chunking - chunks everything but avoids non-info parts.
         Query parameters:
-        - include_chunking: Set to 'false' to skip chunking (default: 'true')
         - include_embeddings: Set to 'false' to skip embedding generation (default: 'true')
-        - skip_nlp: Set to 'true' to skip NLP matching for faster processing (default: 'false')
         """
         try:
             if not document_id:
                 return Response({'error': 'document_id is required.'}, status=status.HTTP_400_BAD_REQUEST)
             
             # Parse query parameters
-            include_chunking = request.query_params.get('include_chunking', 'true').lower() == 'true'
             include_embeddings = request.query_params.get('include_embeddings', 'true').lower() == 'true'
-            skip_nlp = request.query_params.get('skip_nlp', 'false').lower() == 'true'
             
             document = get_object_or_404(UploadedDocument, id=document_id)
-            logger.info(f"Complete processing for document: {document.title}")
+            logger.info(f"Granular processing for document: {document.title}")
             
             print(f"\n{'='*80}")
-            print(f"COMPLETE DOCUMENT PROCESSING API - Document: {document.title}")
-            print(f"Include Chunking: {include_chunking}")
+            print(f"GRANULAR DOCUMENT PROCESSING API - Document: {document.title}")
             print(f"Include Embeddings: {include_embeddings}")
-            print(f"Skip NLP: {skip_nlp}")
             print(f"{'='*80}")
             
-            # Process document completely
-            results = generate_and_chunk_document(
-                document=document,
-                include_chunking=include_chunking,
-                include_embeddings=include_embeddings,
-                skip_nlp=skip_nlp,
-                fast_mode=True
-            )
+            # Import the processor
+            from .helpers.page_chunking.toc_chunk_processor import GranularChunkProcessor
             
-            # Prepare response with all processing details
+            # Process document with granular chunking
+            processor = GranularChunkProcessor(enable_embeddings=include_embeddings)
+            results = processor.process_entire_document(document)
+            
+            # Update document status
+            if results['total_chunks_created'] > 0:
+                document.processing_status = 'COMPLETED'
+                document.parsed = True
+                document.save()
+            
+            # Prepare response with processing details
             response_data = {
                 'status': 'success',
                 'document_id': document.id,
@@ -213,20 +211,25 @@ class DocumentChunkingView(APIView):
                 'document_status': document.processing_status,
                 'total_pages': document.total_pages,
                 'processing_summary': {
-                    'toc_processing': results['toc_stats'],
-                    'chunking_processing': results['chunking_stats']
+                    'total_chunks_created': results['total_chunks_created'],
+                    'pages_processed': results['total_pages_processed'],
+                    'content_boundaries': results['content_boundaries'],
+                    'chunk_types_distribution': results['chunk_types_distribution'],
+                    'sample_content_filtered': results['sample_content_filtered']
                 },
-                'matched_entries': results['matched_entries'],
-                'entries_ready_for_rag': len(results['matched_entries']) if include_chunking else 0
+                'embedding_stats': results.get('embedding_stats', {}),
+                'chunks_ready_for_rag': results['total_chunks_created']
             }
             
-            print(f"\n🎉 API RESPONSE READY")
+            print(f"\n🎉 GRANULAR PROCESSING COMPLETE")
             print(f"{'─'*60}")
-            print(f"TOC Entries Found: {results['toc_stats'].get('total_entries_found', 0)}")
-            print(f"Matched Entries: {results['toc_stats'].get('matched_entries_count', 0)}")
-            if include_chunking and 'chunks_created' in results['chunking_stats']:
-                print(f"Chunks Created: {results['chunking_stats']['chunks_created']}")
-                print(f"Pages Processed: {results['chunking_stats']['pages_processed']}")
+            print(f"Chunks Created: {results['total_chunks_created']}")
+            print(f"Pages Processed: {results['total_pages_processed']}")
+            print(f"Content Boundaries: {results['content_boundaries']}")
+            print(f"Chunk Types: {results['chunk_types_distribution']}")
+            if include_embeddings and 'embedding_stats' in results:
+                embedding_stats = results['embedding_stats']
+                print(f"Embeddings: {embedding_stats.get('success', 0)}/{embedding_stats.get('total', 0)}")
             print(f"Document Status: {document.processing_status}")
             print(f"{'='*80}\n")
             
@@ -234,7 +237,7 @@ class DocumentChunkingView(APIView):
             
         except Exception as e:
             error_msg = str(e)
-            logger.error(f"[Document Chunking Error] {error_msg}")
+            logger.error(f"[Granular Document Processing Error] {error_msg}")
             return Response({
                 'status': 'error',
                 'message': error_msg,
@@ -426,7 +429,11 @@ def get_document_chunks(request, document_id):
         chunks = DocumentChunk.objects.filter(document=document).order_by('page_number', 'order_in_doc')
         
         chunks_data = []
+        total_tokens = 0
         for chunk in chunks:
+            chunk_tokens = chunk.token_count or 0
+            total_tokens += chunk_tokens
+            
             chunks_data.append({
                 'id': chunk.id,
                 'text': chunk.text,  # Full text instead of preview
@@ -434,12 +441,107 @@ def get_document_chunks(request, document_id):
                 'subtopic_title': chunk.subtopic_title,  # Added subtopic_title
                 'difficulty': '',  # Empty as requested - handled at higher level
                 'page_number': chunk.page_number,  # 0-based as stored in DB
-                'order_in_doc': chunk.order_in_doc
+                'order_in_doc': chunk.order_in_doc,
+                'token_count': chunk_tokens,
+                'token_encoding': chunk.token_encoding
             })
         
         return Response({
             'status': 'success',
             'document_title': document.title,
+            'total_chunks': len(chunks_data),
+            'total_tokens': total_tokens,
+            'avg_tokens_per_chunk': round(total_tokens / len(chunks_data), 2) if chunks_data else 0,
+            'chunks': chunks_data
+        })
+        
+    except Exception as e:
+        return Response({
+            'status': 'error',
+            'message': str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
+def get_single_chunk(request, chunk_id):
+    """
+    Get a single chunk by ID with full details.
+    """
+    try:
+        chunk = get_object_or_404(DocumentChunk, id=chunk_id)
+        
+        chunk_data = {
+            'id': chunk.id,
+            'document_id': chunk.document.id,
+            'document_title': chunk.document.title,
+            'chunk_type': chunk.chunk_type,
+            'text': chunk.text,
+            'page_number': chunk.page_number,
+            'order_in_doc': chunk.order_in_doc,
+            'topic_title': chunk.topic_title,
+            'subtopic_title': chunk.subtopic_title,
+            'token_count': chunk.token_count,
+            'token_encoding': chunk.token_encoding,
+            'confidence_score': chunk.confidence_score,
+            'parser_metadata': chunk.parser_metadata,
+            'has_embedding': bool(chunk.embedding),
+            'embedding_model': chunk.embedding_model,
+            'embedded_at': chunk.embedded_at.isoformat() if chunk.embedded_at else None,
+            'position_on_page': chunk.position_on_page
+        }
+        
+        return Response({
+            'status': 'success',
+            'chunk': chunk_data
+        })
+        
+    except Exception as e:
+        return Response({
+            'status': 'error',
+            'message': str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
+def get_chunks_by_type(request, document_id, chunk_type):
+    """
+    Get all chunks of a specific type for a document.
+    Valid chunk types: Header, Module, Lesson, Section, Subsection, Text, Table, Figure, Code, Caption, Exercise, Example, Concept
+    """
+    try:
+        document = get_object_or_404(UploadedDocument, id=document_id)
+        
+        # Validate chunk type
+        valid_types = ['Header', 'Module', 'Lesson', 'Section', 'Subsection', 'Text', 'Table', 'Figure', 'Code', 'Caption', 'Exercise', 'Example', 'Concept']
+        if chunk_type not in valid_types:
+            return Response({
+                'status': 'error',
+                'message': f'Invalid chunk type. Valid types: {", ".join(valid_types)}'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        chunks = DocumentChunk.objects.filter(
+            document=document, 
+            chunk_type=chunk_type
+        ).order_by('page_number', 'order_in_doc')
+        
+        chunks_data = []
+        for chunk in chunks:
+            chunks_data.append({
+                'id': chunk.id,
+                'text': chunk.text,
+                'chunk_type': chunk.chunk_type,
+                'page_number': chunk.page_number,
+                'order_in_doc': chunk.order_in_doc,
+                'topic_title': chunk.topic_title,
+                'subtopic_title': chunk.subtopic_title,
+                'has_embedding': bool(chunk.embedding),
+                'text_length': len(chunk.text)
+            })
+        
+        return Response({
+            'status': 'success',
+            'document_title': document.title,
+            'chunk_type': chunk_type,
             'total_chunks': len(chunks_data),
             'chunks': chunks_data
         })

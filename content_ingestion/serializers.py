@@ -1,5 +1,35 @@
 from rest_framework import serializers
-from .models import GameZone, Topic, Subtopic, ContentMapping, TOCEntry
+from .models import GameZone, Topic, Subtopic, ContentMapping, TOCEntry, DocumentChunk
+
+class DocumentChunkSerializer(serializers.ModelSerializer):
+    """
+    Serializer for document chunks with token information
+    """
+    class Meta:
+        model = DocumentChunk
+        fields = [
+            'id', 'chunk_type', 'text', 'page_number', 'order_in_doc',
+            'topic_title', 'subtopic_title', 'token_count', 'token_encoding',
+            'confidence_score', 'parser_metadata', 'embedded_at'
+        ]
+
+class DocumentChunkSummarySerializer(serializers.ModelSerializer):
+    """
+    Lightweight serializer for chunk summaries (without full text)
+    """
+    text_preview = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = DocumentChunk
+        fields = [
+            'id', 'chunk_type', 'page_number', 'order_in_doc',
+            'topic_title', 'subtopic_title', 'token_count', 'token_encoding',
+            'text_preview'
+        ]
+    
+    def get_text_preview(self, obj):
+        """Return first 100 characters of text"""
+        return obj.text[:100] + "..." if len(obj.text) > 100 else obj.text
 
 class GameZoneSerializer(serializers.ModelSerializer):
     class Meta:

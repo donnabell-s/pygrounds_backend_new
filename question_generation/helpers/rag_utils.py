@@ -238,7 +238,7 @@ class SmartRAGRetriever:
         # Combine filters
         filters = coding_filter | text_filter
         
-        # Add subtopic/topic relevance
+        # Add subtopic/topic relevance - more lenient for granular chunks
         relevance_filter = Q()
         relevance_filter |= Q(subtopic_title__icontains=subtopic.name)
         relevance_filter |= Q(topic_title__icontains=subtopic.topic.name)
@@ -247,6 +247,9 @@ class SmartRAGRetriever:
         related_topics = Topic.objects.filter(zone=subtopic.topic.zone)
         for topic in related_topics:
             relevance_filter |= Q(topic_title__icontains=topic.name)
+        
+        # For granular chunks that may not have topic mapping, include chunks with empty topic/subtopic titles
+        relevance_filter |= Q(topic_title="") | Q(subtopic_title="")
         
         # Apply all filters
         coding_chunks = base_query.filter(filters & relevance_filter).distinct()
@@ -279,7 +282,7 @@ class SmartRAGRetriever:
         for keyword in coding_keywords:
             exclude_coding |= Q(text__icontains=keyword)
         
-        # Add subtopic/topic relevance
+        # Add subtopic/topic relevance - more lenient for granular chunks
         relevance_filter = Q()
         relevance_filter |= Q(subtopic_title__icontains=subtopic.name)
         relevance_filter |= Q(topic_title__icontains=subtopic.topic.name)
@@ -288,6 +291,9 @@ class SmartRAGRetriever:
         related_topics = Topic.objects.filter(zone=subtopic.topic.zone)
         for topic in related_topics:
             relevance_filter |= Q(topic_title__icontains=topic.name)
+        
+        # For granular chunks that may not have topic mapping, include chunks with empty topic/subtopic titles
+        relevance_filter |= Q(topic_title="") | Q(subtopic_title="")
         
         # Apply filters: explanation types, not too coding-heavy, and relevant
         explanation_chunks = base_query.filter(

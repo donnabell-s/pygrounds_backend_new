@@ -1,21 +1,26 @@
 import fitz
+import re
 from typing import List, Dict, Any
 from django.db import transaction
 from content_ingestion.models import UploadedDocument, DocumentChunk, TOCEntry
 from .chunk_extractor_utils import extract_unstructured_chunks, infer_chunk_type, clean_chunk_text
 from content_ingestion.helpers.embedding_utils import EmbeddingGenerator
+from content_ingestion.helpers.toc_parser.toc_utils import find_content_boundaries
+from content_ingestion.helpers.token_utils import TokenCounter
 import tempfile
 import os
 
-class TOCBasedChunkProcessor:
+class GranularChunkProcessor:
     """
-    Processes matched TOC entries and creates consolidated page chunks for optimal RAG performance.
+    Processes documents and creates granular chunks with type classification for optimal RAG performance.
+    Processes entire content area instead of specific TOC entries.
     """
     
     def __init__(self, enable_embeddings: bool = True):
         self.batch_size = 50
         self.enable_embeddings = enable_embeddings
         self.embedding_generator = EmbeddingGenerator() if enable_embeddings else None
+        self.token_counter = TokenCounter()  # Initialize token counter
         
         # Sample content detection patterns
         self.sample_content_indicators = [
@@ -26,32 +31,212 @@ class TOCBasedChunkProcessor:
             "Python Basics: A Practical Introduction to Python 3"
         ]
     
-    def process_matched_entries(self, document: UploadedDocument, matched_entries: List[TOCEntry]) -> Dict[str, Any]:
+    def _get_toc_titles_for_page(self, document: UploadedDocument, page_number: int) -> tuple[str, str]:
         """
-        Process only the matched TOC entries and create consolidated page chunks.
+        Get the topic and subtopic titles for a given page based on TOC entries.
         
         Args:
             document: The UploadedDocument instance
-            matched_entries: List of TOCEntry objects that matched topics/subtopics
+            page_number: Page number (1-based)
+            
+        Returns:
+            Tuple of (topic_title, subtopic_title)
+        """
+        try:
+            # Get all TOC entries for this document, ordered by start_page
+            toc_entries = TOCEntry.objects.filter(document=document).order_by('start_page')
+            
+            # Find the TOC entry that contains this page
+            current_entry = None
+            for entry in toc_entries:
+                if entry.start_page <= page_number <= (entry.end_page or entry.start_page):
+                    current_entry = entry
+                    break
+            
+            if not current_entry:
+                # If no exact match, find the entry that starts before or at this page
+                for entry in toc_entries.reverse():
+                    if entry.start_page <= page_number:
+                        current_entry = entry
+                        break
+            
+            if not current_entry:
+                return "", ""
+            
+            # Determine if this is a chapter (level 0) or section (level 1+)
+            if current_entry.level == 0:
+                # This is a chapter title
+                topic_title = self._clean_toc_title(current_entry.title)
+                subtopic_title = ""
+            else:
+                # This is a section, find the parent chapter
+                topic_title = ""
+                subtopic_title = self._clean_toc_title(current_entry.title)
+                
+                # Find the parent chapter (level 0 entry that comes before this one)
+                parent_entries = toc_entries.filter(
+                    level=0, 
+                    start_page__lte=current_entry.start_page
+                ).order_by('-start_page')
+                
+                if parent_entries.exists():
+                    topic_title = self._clean_toc_title(parent_entries.first().title)
+            
+            return topic_title, subtopic_title
+            
+        except Exception as e:
+            print(f"   ⚠️ Error getting TOC titles for page {page_number}: {e}")
+            return "", ""
+    
+    def _clean_toc_title(self, title: str) -> str:
+        """
+        Clean TOC title by removing dots, page numbers, and formatting artifacts.
+        
+        Args:
+            title: Raw TOC title
+            
+        Returns:
+            Cleaned title string
+        """
+        if not title:
+            return ""
+        
+        # Remove leading numbers (e.g., "1.1", "2.3")
+        title = re.sub(r'^\d+\.?\d*\s*', '', title)
+        
+        # Remove trailing dots and page references
+        title = re.sub(r'\s*\.+\s*\d*\s*$', '', title)
+        title = re.sub(r'\s*\.+\s*$', '', title)
+        
+        # Clean up extra whitespace
+        title = re.sub(r'\s+', ' ', title).strip()
+        
+        return title
+
+    def _analyze_token_distribution(self, document: UploadedDocument) -> Dict[str, Any]:
+        """
+        Analyze token distribution across all chunks for the document.
+        
+        Args:
+            document: The UploadedDocument instance
+            
+        Returns:
+            Dict with token analysis statistics
+        """
+        chunks = DocumentChunk.objects.filter(document=document)
+        
+        if not chunks.exists():
+            return {"error": "No chunks found for analysis"}
+        
+        token_counts = []
+        total_characters = 0
+        chunk_types = {}
+        
+        for chunk in chunks:
+            token_count = chunk.token_count or 0
+            token_counts.append(token_count)
+            total_characters += len(chunk.text)
+            
+            # Track tokens by chunk type
+            chunk_type = chunk.chunk_type
+            if chunk_type not in chunk_types:
+                chunk_types[chunk_type] = {'count': 0, 'tokens': 0}
+            chunk_types[chunk_type]['count'] += 1
+            chunk_types[chunk_type]['tokens'] += token_count
+        
+        if not token_counts:
+            return {"error": "No token data available"}
+        
+        # Calculate statistics
+        total_tokens = sum(token_counts)
+        avg_tokens = total_tokens / len(token_counts) if token_counts else 0
+        
+        # Cost estimation for common models
+        gpt4_cost = self.token_counter.estimate_cost(total_tokens, "gpt-4")
+        gpt35_cost = self.token_counter.estimate_cost(total_tokens, "gpt-3.5-turbo")
+        
+        return {
+            "total_chunks": len(token_counts),
+            "total_tokens": total_tokens,
+            "total_characters": total_characters,
+            "avg_tokens_per_chunk": round(avg_tokens, 2),
+            "min_tokens": min(token_counts) if token_counts else 0,
+            "max_tokens": max(token_counts) if token_counts else 0,
+            "encoding_used": self.token_counter.encoding_name,
+            "chunks_over_1k_tokens": len([c for c in token_counts if c > 1000]),
+            "chunks_over_2k_tokens": len([c for c in token_counts if c > 2000]),
+            "chunks_over_4k_tokens": len([c for c in token_counts if c > 4000]),
+            "chunk_types_token_distribution": chunk_types,
+            "estimated_costs": {
+                "gpt_4": gpt4_cost,
+                "gpt_3_5_turbo": gpt35_cost
+            }
+        }
+
+    def _get_toc_content_boundaries(self, document: UploadedDocument) -> tuple[int, int]:
+        """
+        Determine content boundaries based on existing TOC entries to avoid processing
+        copyright pages, title pages, and other non-educational content.
+        
+        Args:
+            document: The UploadedDocument instance
+            
+        Returns:
+            Tuple of (first_content_page, last_content_page) (0-based)
+        """
+        toc_entries = TOCEntry.objects.filter(document=document).order_by('start_page')
+        
+        if not toc_entries.exists():
+            raise ValueError("No TOC entries found for document")
+        
+        # Get the first and last page from TOC entries
+        first_toc_page = toc_entries.first().start_page - 1  # Convert to 0-based
+        last_toc_page = toc_entries.last().end_page - 1 if toc_entries.last().end_page else toc_entries.last().start_page - 1
+        
+        # Filter out any preliminary pages (usually contain non-educational content)
+        # Educational content typically starts with chapter/section numbers
+        educational_entries = toc_entries.filter(
+            title__iregex=r'^\d+\.?\d*\s+'  # Starts with numbers like "1.1", "2.", etc.
+        )
+        
+        if educational_entries.exists():
+            first_educational_page = educational_entries.first().start_page - 1  # Convert to 0-based
+            print(f"📚 Found educational content starting at page {first_educational_page + 1}: '{educational_entries.first().title}'")
+            first_content_page = first_educational_page
+        else:
+            # Fallback to first TOC entry if no numbered sections found
+            first_content_page = first_toc_page
+            print(f"📚 No numbered sections found, using first TOC entry at page {first_content_page + 1}")
+        
+        # For the end, use the last TOC entry's end_page
+        last_content_page = last_toc_page
+        
+        print(f"📖 TOC-based content boundaries: pages {first_content_page + 1}-{last_content_page + 1}")
+        return first_content_page, last_content_page
+
+    def process_entire_document(self, document: UploadedDocument) -> Dict[str, Any]:
+        """
+        Process the entire document content area with granular chunking,
+        avoiding non-informational pages like covers, prefaces, etc.
+        
+        Args:
+            document: The UploadedDocument instance
         
         Returns:
             Dictionary with processing results and statistics
         """
         results = {
-            'total_entries_processed': 0,
             'total_chunks_created': 0,
             'total_pages_processed': 0,
-            'entries_details': [],
-            'consolidated_pages': set(),
+            'content_boundaries': None,
             'sample_content_filtered': 0,
-            'entries_skipped_sample_only': 0
+            'chunk_types_distribution': {},
         }
         
-        print(f"\n🔄 STARTING CHUNK PROCESSING")
+        print(f"\n🔄 STARTING GRANULAR DOCUMENT PROCESSING")
         print(f"{'─'*60}")
         print(f"Document: {document.title}")
         print(f"Document total pages: {document.total_pages}")
-        print(f"Matched entries to process: {len(matched_entries)}")
         
         # Clear all existing chunks for this document to avoid duplicates
         existing_chunks_count = DocumentChunk.objects.filter(document=document).count()
@@ -60,122 +245,64 @@ class TOCBasedChunkProcessor:
             DocumentChunk.objects.filter(document=document).delete()
             print(f"✅ Cleared all existing chunks")
         
-        # Pre-filter valid entries
-        valid_entries = []
-        for entry in matched_entries:
-            if entry.start_page < 0:
-                print(f"⚠️  Skipping '{entry.title[:30]}...': negative start_page ({entry.start_page})")
-                continue
-            if entry.start_page >= document.total_pages:
-                print(f"⚠️  Skipping '{entry.title[:30]}...': start_page ({entry.start_page+1}) > total_pages ({document.total_pages})")
-                continue
-            if entry.end_page and entry.end_page < entry.start_page:
-                print(f"⚠️  Skipping '{entry.title[:30]}...': invalid page range ({entry.start_page+1}-{entry.end_page+1})")
-                continue
-            valid_entries.append(entry)
+        # Find content boundaries using TOC data to avoid non-informational pages
+        try:
+            first_page, last_page = self._get_toc_content_boundaries(document)
+            results['content_boundaries'] = (first_page + 1, last_page + 1)  # Convert to 1-based for display
+            print(f"📖 Processing TOC-defined content pages: {first_page + 1}-{last_page + 1}")
+        except Exception as e:
+            print(f"⚠️ Could not determine TOC boundaries, falling back to heuristic: {e}")
+            first_page, last_page = find_content_boundaries(document.file.path)
+            results['content_boundaries'] = (first_page + 1, last_page + 1)  # Convert to 1-based for display
+            print(f"📖 Processing heuristic content pages: {first_page + 1}-{last_page + 1}")
         
-        print(f"Valid entries after filtering: {len(valid_entries)}/{len(matched_entries)}")
-        
-        if not valid_entries:
-            print(f"❌ No valid entries to process")
+        # Process the content area with granular chunking
+        try:
+            chunks = self._extract_granular_chunks_from_range(document, first_page, last_page)
+            
+            if not chunks:
+                print(f"⚠️ No chunks extracted from content area")
+                return results
+            
+            # Save chunks to database and track statistics
+            chunk_count = self._save_granular_chunks(document, chunks)
+            results['total_chunks_created'] = chunk_count
+            results['total_pages_processed'] = last_page - first_page + 1
+            
+            # Track chunk type distribution
+            for chunk in chunks:
+                chunk_type = chunk['chunk_type']
+                results['chunk_types_distribution'][chunk_type] = results['chunk_types_distribution'].get(chunk_type, 0) + 1
+            
+            print(f"✅ Created {chunk_count} granular chunks")
+            print(f"📊 Chunk types: {results['chunk_types_distribution']}")
+            
+        except Exception as e:
+            print(f"❌ Error processing document content: {str(e)}")
             return results
-        
-        # Process each valid TOC entry
-        for i, toc_entry in enumerate(valid_entries, 1):
-            print(f"\n📄 Processing Entry {i}/{len(valid_entries)}: {toc_entry.title[:50]}...")
-            print(f"   Pages: {toc_entry.start_page+1}-{toc_entry.end_page+1 if toc_entry.end_page else 'end'}")
-            
-            # Validate entry before processing
-            if toc_entry.start_page < 0:
-                print(f"   ⚠️  Invalid start_page ({toc_entry.start_page}), skipping entry")
-                results['entries_details'].append({
-                    'id': toc_entry.id,
-                    'title': toc_entry.title,
-                    'pages': f"{toc_entry.start_page+1}-{toc_entry.end_page+1 if toc_entry.end_page else 'end'}",
-                    'chunks_created': 0,
-                    'status': 'error',
-                    'error': 'Invalid page range: negative start_page'
-                })
-                continue
-            
-            if toc_entry.end_page and toc_entry.end_page < toc_entry.start_page:
-                print(f"   ⚠️  Invalid page range (end < start), will fix automatically")
-            
-            try:
-                # Extract chunks for this specific TOC section
-                entry_chunks = self._extract_chunks_for_toc_entry(document, toc_entry)
-                
-                if not entry_chunks:
-                    print(f"   ⚠️  No chunks extracted - likely sample-only content, skipping")
-                    results['entries_skipped_sample_only'] += 1
-                    results['entries_details'].append({
-                        'id': toc_entry.id,
-                        'title': toc_entry.title,
-                        'pages': f"{toc_entry.start_page+1}-{toc_entry.end_page+1 if toc_entry.end_page else 'end'}",
-                        'chunks_created': 0,
-                        'status': 'skipped_sample_content',
-                        'reason': 'Entry contains only sample placeholder content'
-                    })
-                    continue
-                
-                # Save chunks to database
-                chunk_count = self._save_chunks_for_entry(toc_entry, entry_chunks)
-                
-                # Update TOC entry status
-                toc_entry.chunked = True
-                toc_entry.chunk_count = chunk_count
-                toc_entry.save(update_fields=['chunked', 'chunk_count'])
-                
-                # Track results
-                start_page = max(0, toc_entry.start_page)
-                end_page = toc_entry.end_page if toc_entry.end_page and toc_entry.end_page >= start_page else start_page
-                pages_in_entry = range(start_page, end_page + 1)
-                results['consolidated_pages'].update(pages_in_entry)
-                results['total_entries_processed'] += 1
-                results['total_chunks_created'] += chunk_count
-                
-                results['entries_details'].append({
-                    'id': toc_entry.id,
-                    'title': toc_entry.title,
-                    'pages': f"{toc_entry.start_page+1}-{toc_entry.end_page+1 if toc_entry.end_page else 'end'}",
-                    'chunks_created': chunk_count,
-                    'status': 'success'
-                })
-                
-                print(f"   ✅ Created {chunk_count} chunks")
-                
-            except Exception as e:
-                print(f"   ❌ Error processing entry: {str(e)}")
-                results['entries_details'].append({
-                    'id': toc_entry.id,
-                    'title': toc_entry.title,
-                    'pages': f"{toc_entry.start_page+1}-{toc_entry.end_page+1 if toc_entry.end_page else 'end'}",
-                    'chunks_created': 0,
-                    'status': 'error',
-                    'error': str(e)
-                })
-        
-        # Consolidate chunks by page for better RAG performance
-        results['total_pages_processed'] = len(results['consolidated_pages'])
-        self._consolidate_chunks_by_page(document, list(results['consolidated_pages']))
         
         # Generate embeddings for all chunks
         embedding_results = self._generate_embeddings_for_document(document)
         results['embedding_stats'] = embedding_results
         
+        # Analyze token distribution
+        token_analysis = self._analyze_token_distribution(document)
+        results['token_analysis'] = token_analysis
+        
         print(f"\n📊 PROCESSING COMPLETE")
         print(f"{'─'*60}")
-        print(f"Entries processed: {results['total_entries_processed']}")
-        print(f"Entries skipped (sample-only): {results['entries_skipped_sample_only']}")
         print(f"Total chunks created: {results['total_chunks_created']}")
-        print(f"Pages with consolidated chunks: {results['total_pages_processed']}")
+        print(f"Pages processed: {results['total_pages_processed']}")
         if results['sample_content_filtered'] > 0:
             print(f"Sample content chunks filtered: {results['sample_content_filtered']}")
         if embedding_results['total'] > 0:
             print(f"Embeddings generated: {embedding_results['success']}/{embedding_results['total']}")
+        if 'total_tokens' in token_analysis:
+            print(f"Total tokens: {token_analysis['total_tokens']} (avg: {token_analysis['avg_tokens_per_chunk']} per chunk)")
+            print(f"Estimated GPT-4 cost: ${token_analysis['estimated_costs']['gpt_4']['estimated_input_cost_usd']:.4f}")
         
         return results
-    
+
     def _generate_embeddings_for_document(self, document: UploadedDocument) -> Dict[str, Any]:
         """
         Generate embeddings for all chunks in the document.
@@ -241,10 +368,19 @@ class TOCBasedChunkProcessor:
             return True
             
         return False
-    
-    def _extract_chunks_for_toc_entry(self, document: UploadedDocument, toc_entry: TOCEntry) -> List[Dict[str, Any]]:
+
+    def _extract_granular_chunks_from_range(self, document: UploadedDocument, start_page: int, end_page: int) -> List[Dict[str, Any]]:
         """
-        Extract chunks for a specific TOC entry's page range.
+        Extract granular chunks from a page range of the document.
+        Creates smaller, type-classified chunks instead of full-page chunks.
+        
+        Args:
+            document: The UploadedDocument instance
+            start_page: Starting page (0-based)
+            end_page: Ending page (0-based)
+            
+        Returns:
+            List of enhanced chunk dictionaries with granular content
         """
         doc = None
         temp_pdf = None
@@ -255,33 +391,20 @@ class TOCBasedChunkProcessor:
             doc = fitz.open(document.file.path)
             total_pages = len(doc)
             
-            start_page = max(0, toc_entry.start_page)
-            end_page = toc_entry.end_page
-            
-            # Fix invalid page ranges
-            if end_page is None or end_page < start_page:
-                end_page = start_page
-            
             # Ensure pages are within document bounds
-            start_page = min(start_page, total_pages - 1)
-            end_page = min(end_page, total_pages - 1)
+            start_page = max(0, min(start_page, total_pages - 1))
+            end_page = max(start_page, min(end_page, total_pages - 1))
             
-            print(f"   📄 Extracting pages {start_page+1}-{end_page+1} from {total_pages} total pages")
+            print(f"   📄 Extracting granular chunks from pages {start_page+1}-{end_page+1}")
             
-            # Validate we have valid pages to process
-            if start_page >= total_pages:
-                print(f"   ⚠️  Start page {start_page+1} exceeds document length ({total_pages}), skipping")
-                return []
-            
-            # Create a temporary PDF with just the pages we need
+            # Create a temporary PDF with the content pages
             temp_pdf = fitz.open()
             for page_num in range(start_page, end_page + 1):
                 if page_num < total_pages:
                     temp_pdf.insert_pdf(doc, from_page=page_num, to_page=page_num)
             
-            # Check if we have any pages to save
             if len(temp_pdf) == 0:
-                print(f"   ⚠️  No valid pages to process for range {start_page+1}-{end_page+1}")
+                print(f"   ⚠️  No valid pages to process")
                 return []
             
             # Create temporary file with proper cleanup
@@ -290,255 +413,146 @@ class TOCBasedChunkProcessor:
                 os.close(temp_fd)  # Close file descriptor immediately
                 temp_pdf.save(temp_path)
                 
-                print(f"   🔧 Created temp PDF with {len(temp_pdf)} pages at {temp_path}")
+                print(f"   🔧 Processing {len(temp_pdf)} pages with granular chunking")
                 
-                # Extract chunks using unstructured with fallback
+                # Extract granular chunks using enhanced chunking
                 try:
                     raw_chunks = extract_unstructured_chunks(temp_path)
-                    print(f"   📝 Extracted {len(raw_chunks)} raw chunks using unstructured")
+                    print(f"   📝 Extracted {len(raw_chunks)} granular chunks")
                 except Exception as extract_error:
-                    print(f"   ⚠️  Unstructured extraction failed: {str(extract_error)}")
-                    print(f"   🔄 Falling back to basic PyMuPDF text extraction")
-                    raw_chunks = self._fallback_text_extraction(temp_pdf, start_page, end_page)
+                    print(f"   ⚠️  Granular extraction failed: {str(extract_error)}")
+                    print(f"   🔄 Falling back to basic text extraction")
+                    raw_chunks = self._fallback_granular_extraction(temp_pdf, start_page, end_page)
                     print(f"   📝 Extracted {len(raw_chunks)} chunks using fallback method")
                 
                 if not raw_chunks:
-                    print(f"   ⚠️  No content extracted from any method")
+                    print(f"   ⚠️  No content extracted")
                     return []
                 
-                # Filter out sample placeholder content
+                # Filter out sample placeholder content and enhance chunks
                 valid_chunks = []
                 sample_chunks_filtered = 0
+                pages_per_chunk = max(1, (end_page - start_page + 1) / max(1, len(raw_chunks)))
                 
-                for chunk in raw_chunks:
+                for chunk_idx, chunk in enumerate(raw_chunks):
                     if self._is_sample_placeholder_content(chunk['content']):
                         sample_chunks_filtered += 1
-                        print(f"   🚫 Filtered sample placeholder content (chunk {len(valid_chunks) + sample_chunks_filtered})")
-                    else:
-                        valid_chunks.append(chunk)
-                
-                if sample_chunks_filtered > 0:
-                    print(f"   📊 Filtered {sample_chunks_filtered} sample placeholder chunks, kept {len(valid_chunks)} valid chunks")
-                
-                if not valid_chunks:
-                    print(f"   ⚠️  All extracted content appears to be sample placeholders - skipping entry")
-                    return []
-                
-                # Enhance chunks with TOC context and page mapping
-                enhanced_chunks = []
-                pages_per_chunk = max(1, (end_page - start_page + 1) / max(1, len(valid_chunks)))
-                
-                for chunk_idx, chunk in enumerate(valid_chunks):
+                        continue
+                    
                     # Better page mapping based on chunk position
                     estimated_page = start_page + int(chunk_idx * pages_per_chunk)
                     chunk_page = min(estimated_page, end_page)
+                    
+                    # Get TOC-based topic and subtopic titles for this page
+                    topic_title, subtopic_title = self._get_toc_titles_for_page(document, chunk_page + 1)  # Convert to 1-based
                     
                     enhanced_chunk = {
                         'text': chunk['content'],
                         'chunk_type': chunk['chunk_type'],
                         'page_number': chunk_page,
-                        'toc_entry': toc_entry,
                         'order_in_doc': chunk_idx,
-                        'topic_title': toc_entry.title,
+                        'topic_title': topic_title,
+                        'subtopic_title': subtopic_title,
                         'parser_metadata': {
                             'source': chunk['source'],
-                            'toc_entry_id': toc_entry.id,
+                            'extraction_type': 'granular_document_processing',
                             'original_chunk_type': chunk['chunk_type'],
                             'page_range': f"{start_page+1}-{end_page+1}",
-                            'estimated_page': chunk_page + 1
+                            'estimated_page': chunk_page + 1,
+                            'chunk_index': chunk_idx
                         }
                     }
-                    enhanced_chunks.append(enhanced_chunk)
+                    valid_chunks.append(enhanced_chunk)
                 
-                print(f"   ✅ Enhanced {len(enhanced_chunks)} chunks with metadata")
-                return enhanced_chunks
+                if sample_chunks_filtered > 0:
+                    print(f"   📊 Filtered {sample_chunks_filtered} sample chunks, kept {len(valid_chunks)} valid chunks")
                 
-            except Exception as e:
-                print(f"   ❌ Error during chunk extraction: {str(e)}")
-                return []
-        
-        except Exception as e:
-            print(f"   ❌ Error opening/processing PDF: {str(e)}")
-            return []
-        
-        finally:
-            # Ensure proper cleanup in all cases
-            try:
-                if doc:
-                    doc.close()
-                if temp_pdf:
-                    temp_pdf.close()
+                return valid_chunks
+                
+            finally:
+                # Clean up temporary file
                 if temp_path and os.path.exists(temp_path):
-                    os.unlink(temp_path)
-                    print(f"   🗑️  Cleaned up temporary file")
-            except Exception as cleanup_error:
-                    print(f"   ⚠️  Cleanup warning: {str(cleanup_error)}")
+                    try:
+                        os.unlink(temp_path)
+                    except OSError:
+                        pass
+                        
+        except Exception as e:
+            print(f"   ❌ Error extracting granular chunks: {str(e)}")
+            return []
+        finally:
+            if temp_pdf:
+                temp_pdf.close()
+            if doc:
+                doc.close()
     
-    def _fallback_text_extraction(self, temp_pdf, start_page, end_page) -> List[Dict[str, Any]]:
+    def _fallback_granular_extraction(self, temp_pdf: fitz.Document, start_page: int, end_page: int) -> List[Dict[str, Any]]:
         """
-        Fallback text extraction using PyMuPDF when unstructured fails.
+        Fallback method for granular text extraction when unstructured fails.
+        Extracts text from each page and creates smaller chunks.
         """
         chunks = []
-        try:
-            for page_idx in range(len(temp_pdf)):
-                page = temp_pdf[page_idx]
-                text = page.get_text()
-                
-                if text.strip():  # Only add non-empty text
-                    # Check if this page is sample content before processing
-                    if self._is_sample_placeholder_content(text):
-                        print(f"   🚫 Skipping sample placeholder content on page {page_idx + 1}")
-                        continue
+        chunk_order = 0
+        
+        for page_idx in range(len(temp_pdf)):
+            page = temp_pdf.load_page(page_idx)
+            text = page.get_text()
+            
+            if not text.strip() or len(text.strip()) < 50:
+                continue
+            
+            # Split page text into paragraphs for granular chunks
+            paragraphs = [p.strip() for p in text.split('\n\n') if p.strip() and len(p.strip()) > 30]
+            
+            for para in paragraphs:
+                if len(para) < 30:  # Skip very short paragraphs
+                    continue
                     
-                    # Split long text into smaller chunks
-                    max_chunk_size = 2000
-                    if len(text) > max_chunk_size:
-                        # Split by paragraphs first, then by sentences
-                        paragraphs = text.split('\n\n')
-                        current_chunk = ""
-                        
-                        for para in paragraphs:
-                            if len(current_chunk + para) > max_chunk_size:
-                                if current_chunk.strip():
-                                    chunks.append({
-                                        'content': current_chunk.strip(),
-                                        'chunk_type': 'Text',
-                                        'source': 'pymupdf_fallback'
-                                    })
-                                current_chunk = para
-                            else:
-                                current_chunk += "\n\n" + para if current_chunk else para
-                        
-                        # Add remaining chunk
-                        if current_chunk.strip():
-                            chunks.append({
-                                'content': current_chunk.strip(),
-                                'chunk_type': 'Text',
-                                'source': 'pymupdf_fallback'
-                            })
-                    else:
-                        chunks.append({
-                            'content': text.strip(),
-                            'chunk_type': 'Text',
-                            'source': 'pymupdf_fallback'
-                        })
-            
-            return chunks
-            
-        except Exception as e:
-            print(f"   ❌ Fallback extraction also failed: {str(e)}")
-            return []    @transaction.atomic
-    def _save_chunks_for_entry(self, toc_entry: TOCEntry, chunks: List[Dict[str, Any]]) -> int:
-        """
-        Save chunks for a TOC entry to the database.
-        """
-        # Note: Document-level chunk clearing is done upfront in process_matched_entries()
-        # No need to delete individual TOC entry chunks here
-        
-        chunk_objects = []
-        for chunk_data in chunks:
-            chunk = DocumentChunk(
-                document=toc_entry.document,
-                chunk_type=chunk_data['chunk_type'],
-                text=chunk_data['text'],
-                page_number=chunk_data['page_number'],
-                order_in_doc=chunk_data['order_in_doc'],
-                topic_title=chunk_data['topic_title'],
-                parser_metadata=chunk_data['parser_metadata']
-            )
-            chunk_objects.append(chunk)
-        
-        # Bulk create chunks
-        if chunk_objects:
-            DocumentChunk.objects.bulk_create(chunk_objects)
-        
-        return len(chunk_objects)
-    
-    def _consolidate_chunks_by_page(self, document: UploadedDocument, processed_pages: List[int]):
-        """
-        Consolidate chunks by title across multiple pages for better RAG performance.
-        This groups related content with the same title into single unified chunks.
-        """
-        print(f"\n🔄 CONSOLIDATING CHUNKS BY TITLE ACROSS PAGES")
-        print(f"{'─'*40}")
-        
-        # Get all chunks for processed pages
-        all_chunks = DocumentChunk.objects.filter(
-            document=document,
-            page_number__in=processed_pages
-        ).order_by('page_number', 'order_in_doc')
-        
-        if not all_chunks.exists():
-            print(f"   ⚠️  No chunks found for consolidation")
-            return
-        
-        # Group chunks by topic title
-        chunks_by_title = {}
-        for chunk in all_chunks:
-            title = chunk.topic_title or "untitled_content"
-            if title not in chunks_by_title:
-                chunks_by_title[title] = []
-            chunks_by_title[title].append(chunk)
-        
-        print(f"   📊 Found {len(chunks_by_title)} unique titles to consolidate")
-        
-        # Process each title group
-        for title, title_chunks in chunks_by_title.items():
-            if len(title_chunks) == 1:
-                # Single chunk - just update its type for consistency
-                chunk = title_chunks[0]
-                chunk.chunk_type = "consolidated_content"
-                chunk.parser_metadata = chunk.parser_metadata or {}
-                chunk.parser_metadata.update({
-                    'consolidated': True,
-                    'original_chunk_count': 1,
-                    'original_types': [chunk.chunk_type],
-                    'consolidation_reason': 'single_chunk_standardization',
-                    'title_unified': True
+                chunk_type = infer_chunk_type(para)
+                
+                chunks.append({
+                    'content': clean_chunk_text(para),
+                    'chunk_type': chunk_type,
+                    'source': 'fallback_granular'
                 })
-                chunk.save()
-                print(f"   📄 Title '{title}': Standardized 1 chunk")
-            else:
-                # Multiple chunks - consolidate into one
-                combined_text_parts = []
-                combined_types = set()
-                page_numbers = set()
-                
-                for chunk in title_chunks:
-                    combined_text_parts.append(chunk.text.strip())
-                    combined_types.add(chunk.chunk_type)
-                    page_numbers.add(chunk.page_number)
-                
-                # Use the first page as primary page
-                primary_page = min(page_numbers)
-                
-                # Create consolidated chunk with combined content
-                consolidated_text = "\n\n".join(combined_text_parts)
-                
-                # Delete all original chunks
-                chunk_ids = [chunk.id for chunk in title_chunks]
-                DocumentChunk.objects.filter(id__in=chunk_ids).delete()
-                
-                # Create single consolidated chunk
-                DocumentChunk.objects.create(
-                    document=document,
-                    chunk_type="consolidated_content",
-                    text=consolidated_text,
-                    page_number=primary_page,
-                    order_in_doc=0,  # Single chunk per title
-                    topic_title=title,
-                    parser_metadata={
-                        'consolidated': True,
-                        'original_chunk_count': len(title_chunks),
-                        'original_types': list(combined_types),
-                        'page_range': f"{min(page_numbers)}-{max(page_numbers)}",
-                        'consolidation_reason': 'title_based_unification',
-                        'title_unified': True,
-                        'pages_spanned': list(sorted(page_numbers))
-                    }
-                )
-                
-                page_range = f"{min(page_numbers)+1}-{max(page_numbers)+1}" if len(page_numbers) > 1 else str(primary_page+1)
-                print(f"   📄 Title '{title}': Consolidated {len(title_chunks)} chunks from pages {page_range} → 1 unified chunk")
+                chunk_order += 1
         
-        print(f"✅ Title-based consolidation complete - One chunk per title achieved")
+        return chunks
+    
+    def _save_granular_chunks(self, document: UploadedDocument, chunks: List[Dict[str, Any]]) -> int:
+        """
+        Save granular chunks to the database.
+        
+        Args:
+            document: The UploadedDocument instance
+            chunks: List of chunk dictionaries to save
+            
+        Returns:
+            Number of chunks saved
+        """
+        saved_count = 0
+        
+        with transaction.atomic():
+            for chunk in chunks:
+                try:
+                    # Count tokens in the chunk text
+                    token_count = self.token_counter.count_tokens(chunk['text'])
+                    
+                    DocumentChunk.objects.create(
+                        document=document,
+                        chunk_type=chunk['chunk_type'],
+                        text=chunk['text'],
+                        page_number=chunk['page_number'],
+                        order_in_doc=chunk['order_in_doc'],
+                        topic_title=chunk.get('topic_title', ''),
+                        subtopic_title=chunk.get('subtopic_title', ''),
+                        token_count=token_count,
+                        token_encoding=self.token_counter.encoding_name,
+                        parser_metadata=chunk.get('parser_metadata', {})
+                    )
+                    saved_count += 1
+                except Exception as e:
+                    print(f"   ⚠️ Error saving chunk {chunk['order_in_doc']}: {str(e)}")
+                    continue
+        
+        return saved_count

@@ -50,9 +50,34 @@ class GeneratedQuestion(models.Model):
             ('hard', 'Hard'),
             ('expert', 'Expert'),
         ],
-        default='',
+        default='beginner',
         blank=True,
-        help_text="Difficulty level - empty for now, to be assigned later"
+        help_text="Difficulty level - starts as 'beginner', can be updated later"
+    )
+    
+    # Game type classification
+    game_type = models.CharField(
+        max_length=20,
+        choices=[
+            ('coding', 'Coding Exercise'),
+            ('non_coding', 'Non-Coding Question'),
+        ],
+        default='non_coding',
+        help_text="Type of game - coding or non-coding"
+    )
+    
+    # Specific minigame type
+    minigame_type = models.CharField(
+        max_length=30,
+        choices=[
+            ('hangman_coding', 'Hangman-Style Coding Game'),
+            ('ship_debugging', 'Ship Debugging Game'),
+            ('word_search', 'Word Search Puzzle'),
+            ('crossword', 'Crossword Puzzle'),
+            ('generic', 'Generic Question'),
+        ],
+        default='generic',
+        help_text="Specific minigame type for targeted content generation"
     )
     
     # RAG source tracking
@@ -81,6 +106,13 @@ class GeneratedQuestion(models.Model):
         default=dict,
         blank=True,
         help_text="Additional metadata about question generation"
+    )
+    
+    # Minigame-specific data
+    game_data = JSONField(
+        default=dict,
+        blank=True,
+        help_text="Minigame-specific data like function parameters, validation settings, etc."
     )
     
     # Quality and validation
