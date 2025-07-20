@@ -186,10 +186,6 @@ class DocumentChunkingView(APIView):
             include_embeddings = request.query_params.get('include_embeddings', 'true').lower() == 'true'
             skip_nlp = request.query_params.get('skip_nlp', 'false').lower() == 'true'
             
-            # Auto-enable embeddings when chunking is enabled (unless explicitly disabled)
-            if include_chunking and 'include_embeddings' not in request.query_params:
-                include_embeddings = True
-            
             document = get_object_or_404(UploadedDocument, id=document_id)
             logger.info(f"Complete processing for document: {document.title}")
             
