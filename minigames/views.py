@@ -4,7 +4,7 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.permissions import IsAuthenticated
 from django.utils import timezone
-from .models import GameSession, Question, GameQuestion, QuestionResponse
+from .models import GameSession, Question, GameQuestion, QuestionResponse, WordSearchData
 from .serializers import GameSessionSerializer, QuestionResponseSerializer
 from .game_logic.crossword import CrosswordGenerator
 from .game_logic.wordsearch import WordSearchGenerator
@@ -218,8 +218,15 @@ class GetCrosswordGrid(APIView):
 
 dummy_questions = [
     {"text": "A popular programming language.", "answer": "python", "difficulty": "easy"},
+    {"text": "Immutable sequence in Python.", "answer": "tuple", "difficulty": "medium"},
     {"text": "A sequence of characters.", "answer": "string", "difficulty": "easy"},
-    {"text": "Immutable list in Python.", "answer": "tuple", "difficulty": "medium"},
+    {"text": "Used to define a block of code.", "answer": "indentation", "difficulty": "medium"},
+    {"text": "Structure that holds key-value pairs.", "answer": "dictionary", "difficulty": "medium"},
+    {"text": "Loop that repeats while a condition is true.", "answer": "while", "difficulty": "easy"},
+    {"text": "Keyword to define a function.", "answer": "def", "difficulty": "easy"},
+    {"text": "Error found during execution.", "answer": "exception", "difficulty": "medium"},
+    {"text": "Code block used to test and handle errors.", "answer": "try", "difficulty": "medium"},
+    {"text": "Built-in function to get length of a list.", "answer": "len", "difficulty": "easy"},
 ]
 
 
@@ -251,21 +258,26 @@ class StartWordSearchGame(APIView):
         generator = WordSearchGenerator()
         matrix, placements = generator.generate(words)
 
+        # Save the matrix and placements
+        WordSearchData.objects.create(
+            session=session,
+            matrix=["".join(row) for row in matrix],
+            placements=[
+                {"word": p.word, "row": p.row, "col": p.col, "direction": p.direction}
+                for p in placements
+            ]
+        )
+
         return Response({
             "session_id": session.session_id,
             "matrix": ["".join(row) for row in matrix],
             "placements": [
-                {
-                    "word": p.word,
-                    "row": p.row,
-                    "col": p.col,
-                    "direction": p.direction
-                } for p in placements
+                {"word": p.word, "row": p.row, "col": p.col, "direction": p.direction}
+                for p in placements
             ],
             "timer_seconds": session.time_limit,
             "started_at": session.start_time
         }, status=201)
-
 
 class GetWordSearchMatrix(APIView):
     permission_classes = [IsAuthenticated]
@@ -275,19 +287,12 @@ class GetWordSearchMatrix(APIView):
         if not session:
             return Response({"error": "Session not found"}, status=404)
 
-        questions = [gq.question for gq in session.session_questions.all()]
-        words = [q.answer.upper() for q in questions]
-        generator = WordSearchGenerator()
-        matrix, placements = generator.generate(words)
+        try:
+            data = session.wordsearch_data  # from OneToOneField
+        except WordSearchData.DoesNotExist:
+            return Response({"error": "Matrix not generated yet."}, status=400)
 
         return Response({
-            "matrix": ["".join(row) for row in matrix],
-            "placements": [
-                {
-                    "word": p.word,
-                    "row": p.row,
-                    "col": p.col,
-                    "direction": p.direction
-                } for p in placements
-            ]
+            "matrix": data.matrix,
+            "placements": data.placements
         })
