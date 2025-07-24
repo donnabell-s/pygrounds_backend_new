@@ -1,7 +1,28 @@
 from django.urls import path
-from .views import StartCrosswordGame, SubmitCrosswordResult
+from .views import (
+    # Shared
+    StartGameSession, SubmitAnswers, exit_session, GetSessionResponses, GetSessionInfo,
+
+    # Crossword
+    StartCrosswordGame, GetCrosswordGrid,
+
+    # WordSearch
+    StartWordSearchGame, GetWordSearchMatrix,
+)
 
 urlpatterns = [
-    path("start-crossword/", StartCrosswordGame.as_view(), name="start-crossword"),
-    path("submit-crossword/", SubmitCrosswordResult.as_view(), name="submit-crossword"),
+    # ──────────────── Generic ────────────────
+    path("session/<str:session_id>/submit/", SubmitAnswers.as_view(), name="submit-answers"),
+    path("start-session/", StartGameSession.as_view(), name="start-session"),
+    path("session/<str:session_id>/", GetSessionInfo.as_view(), name="get-session-info"),
+    path("session/<str:session_id>/exit/", exit_session, name="exit-session"),
+    path("session/<str:session_id>/responses/", GetSessionResponses.as_view(), name="session-responses"),
+
+    # ──────────────── Crossword ────────────────
+    path("crossword/start/", StartCrosswordGame.as_view(), name="start-crossword"),
+    path("crossword/<str:session_id>/grid/", GetCrosswordGrid.as_view(), name="crossword-grid"),
+
+    # ──────────────── WordSearch ────────────────
+    path("wordsearch/start/", StartWordSearchGame.as_view(), name="start-wordsearch"),
+    path("wordsearch/<str:session_id>/matrix/", GetWordSearchMatrix.as_view(), name="wordsearch-matrix"),
 ]
