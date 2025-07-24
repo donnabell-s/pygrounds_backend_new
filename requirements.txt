@@ -13,3 +13,5 @@ PyMuPDF>=1.23
 
 # Optional for development
 ipython>=8.0
+
+pip install -r requirements.txt
