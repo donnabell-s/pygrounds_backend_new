@@ -8,7 +8,7 @@ class GameSession(models.Model):
     GAME_CHOICES = [
         ('crossword', 'Crossword'),
         ('hangman', 'Hangman'),
-        # Extendable
+        ('wordsearch', 'WordSearch'), 
     ]
 
     STATUS_CHOICES = [
@@ -75,3 +75,11 @@ class QuestionResponse(models.Model):
 
     def __str__(self):
         return f"{self.user.username} → Q:{self.question.id} | Correct: {self.is_correct}"
+
+class WordSearchData(models.Model):
+    session = models.OneToOneField(GameSession, on_delete=models.CASCADE, related_name="wordsearch_data")
+    matrix = models.JSONField()
+    placements = models.JSONField()
+
+    def __str__(self):
+        return f"WordSearch for Session {self.session.session_id}"
