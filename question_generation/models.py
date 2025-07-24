@@ -1,5 +1,6 @@
 from django.db import models
 from question_generation.utils.difficulty_predictor import predict_difficulty
+from question_generation.utils.topic_predictor import predict_topic
 
 DIFFICULTY_LEVELS = (
     (1, "Easy"),
@@ -35,8 +36,15 @@ class Question(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.difficulty:
-            label = predict_difficulty(self.text)  # returns string like "Easy"
+            label = predict_difficulty(self.text)  # returns "Easy", "Intermediate", "Hard"
             self.difficulty = DIFFICULTY_MAPPING.get(label, None)
+
+        if not self.topic:
+            topic_name = predict_topic(self.text)  # returns string like "Loops", "Variables", etc.
+            if topic_name and topic_name != "Uncategorized":
+                topic_obj, _ = Topic.objects.get_or_create(name=topic_name)
+                self.topic = topic_obj
+
         super().save(*args, **kwargs)
 
     def __str__(self):
