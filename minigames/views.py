@@ -1,88 +1,293 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.decorators import api_view
 from rest_framework.permissions import IsAuthenticated
+from django.utils import timezone
+from .models import GameSession, Question, GameQuestion, QuestionResponse
+from .serializers import GameSessionSerializer, QuestionResponseSerializer
 from .game_logic.crossword import CrosswordGenerator
-from .data.crossword_questions import CROSSWORD_QUESTIONS
-import time
-from datetime import datetime
+from .game_logic.wordsearch import WordSearchGenerator
+import uuid
 
-# Simulate in-memory sessions for demo
-SESSION_STATE = {}
+
+# =============================
+# Generic Session Views (shared across games)
+# =============================
+
+class StartGameSession(APIView):
+    def post(self, request):
+        user = request.user
+        game_type = request.data.get("game_type")
+        question_count = int(request.data.get("question_count", 5))
+
+        session = GameSession.objects.create(
+            session_id=str(uuid.uuid4()),
+            user=user,
+            game_type=game_type,
+            status='active',
+        )
+
+        questions = Question.objects.order_by('?')[:question_count]
+        for q in questions:
+            GameQuestion.objects.create(session=session, question=q)
+
+        return Response(GameSessionSerializer(session).data, status=201)
+
+class GetSessionInfo(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, session_id):
+        session = GameSession.objects.filter(session_id=session_id).first()
+        if not session:
+            return Response({"error": "Session not found"}, status=404)
+
+        return Response(GameSessionSerializer(session).data)
+
+
+class SubmitAnswers(APIView):
+    permission_classes = [IsAuthenticated]
+
+    # Accept session_id from the URL
+    def post(self, request, session_id):
+        answers = request.data.get("answers", [])
+
+        # Look up the active session by its session_id
+        session = GameSession.objects.filter(
+            session_id=session_id,
+            status="active"
+        ).first()
+        if not session:
+            return Response(
+                {"error": "Invalid or inactive session"},
+                status=400
+            )
+
+        score = 0
+        for ans in answers:
+            try:
+                game_q = GameQuestion.objects.get(
+                    id=ans["question_id"],
+                    session=session
+                )
+                correct = (
+                    game_q.question.answer.strip().lower()
+                    == ans["user_answer"].strip().lower()
+                )
+                if correct:
+                    score += 1
+                QuestionResponse.objects.create(
+                    question=game_q,
+                    user=request.user,
+                    user_answer=ans["user_answer"],
+                    is_correct=correct,
+                    time_taken=ans.get("time_taken", 0)
+                )
+            except GameQuestion.DoesNotExist:
+                continue
+
+        # Mark session completed & save score
+        session.status = "completed"
+        session.total_score = score
+        session.end_time = timezone.now()
+        session.save()
+
+        return Response(
+            {"message": "Answers submitted", "score": score}
+        )
+
+@api_view(['POST'])
+def exit_session(request, session_id):  # ✅ receive it from URL
+    session = GameSession.objects.filter(session_id=session_id, status='active').first()
+
+    if session:
+        session.status = 'expired'
+        session.end_time = timezone.now()
+        session.save()
+        return Response({"message": "Session marked as expired."})
+    
+    return Response({"error": "Session not found or already ended."}, status=400)
+
+
+class GetSessionResponses(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, session_id):
+        session = GameSession.objects.filter(session_id=session_id).first()
+        if not session:
+            return Response({"error": "Session not found"}, status=404)
+
+        responses = QuestionResponse.objects.filter(question__session=session, user=request.user)
+        return Response(QuestionResponseSerializer(responses, many=True).data)
+
+
+# =============================
+# Crossword Game-Specific Views
+# =============================
+
+STATIC_CROSSWORD_QUESTIONS = [
+    {"text": "A popular programming language.", "answer": "python", "difficulty": "easy"},
+    {"text": "Immutable sequence in Python.", "answer": "tuple", "difficulty": "medium"},
+    {"text": "A sequence of characters.", "answer": "string", "difficulty": "easy"},
+    {"text": "Used to define a block of code.", "answer": "indentation", "difficulty": "medium"},
+    {"text": "Structure that holds key-value pairs.", "answer": "dictionary", "difficulty": "medium"},
+    {"text": "Loop that repeats while a condition is true.", "answer": "while", "difficulty": "easy"},
+    {"text": "Keyword to define a function.", "answer": "def", "difficulty": "easy"},
+    {"text": "Error found during execution.", "answer": "exception", "difficulty": "medium"},
+    {"text": "Code block used to test and handle errors.", "answer": "try", "difficulty": "medium"},
+    {"text": "Built-in function to get length of a list.", "answer": "len", "difficulty": "easy"},
+]
+
 
 class StartCrosswordGame(APIView):
-    # permission_classes = [IsAuthenticated]
-    def get(self, request):
-        session_id = str(time.time())  # Basic session ID
+    permission_classes = [IsAuthenticated]
 
-        # Load static questions
-        word_clue_pairs = CROSSWORD_QUESTIONS
-        words = [pair["word"] for pair in word_clue_pairs]
+    def post(self, request):
+        user = request.user
+        session = GameSession.objects.create(
+            session_id=str(uuid.uuid4()),
+            user=user,
+            game_type='crossword',
+            status='active',
+            time_limit=300
+        )
+
+        question_objs = []
+        for q in STATIC_CROSSWORD_QUESTIONS:
+            question = Question.objects.create(
+                text=q["text"],
+                answer=q["answer"].upper(),
+                difficulty=q["difficulty"]
+            )
+            GameQuestion.objects.create(session=session, question=question)
+            question_objs.append(question)
 
         generator = CrosswordGenerator()
+        words = [q.answer.upper() for q in question_objs]
         grid, placements = generator.generate(words)
         grid_display = [''.join(row) for row in grid]
 
-        # Get the current time in ISO 8601 format
-        started_at = datetime.now().isoformat()
-
-        # Save session
-        SESSION_STATE[session_id] = {
-            "start_time": time.time(),
-            "started_at": started_at,  # Store the started_at time
-            "questions": word_clue_pairs,
-            "answered": [],
-            "unanswered": [q["word"].upper() for q in word_clue_pairs],
-            "timer": 5 * 60  # 5 minutes
-        }
-
-        response = {
-            "session_id": session_id,
+        return Response({
+            "session_id": session.session_id,
             "grid": grid_display,
             "placements": [
                 {
                     "word": p.word,
-                    "clue": next((q["clue"] for q in word_clue_pairs if q["word"].upper() == p.word), ""),
+                    "clue": next((q.text for q in question_objs if q.answer.upper() == p.word), ""),
                     "row": p.row,
                     "col": p.col,
                     "direction": p.direction
                 } for p in placements
             ],
-            "timer_seconds": 300,
-            "started_at": started_at  # Include started_at in the response
-        }
-
-        return Response(response, status=status.HTTP_200_OK)
+            "timer_seconds": session.time_limit,
+            "started_at": session.start_time
+        }, status=201)
 
 
-class SubmitCrosswordResult(APIView):
-    # permission_classes = [IsAuthenticated]
-    def post(self, request):
-        session_id = request.data.get("session_id")
-        answers = request.data.get("answers", [])  # List of answered words
+class GetCrosswordGrid(APIView):
+    permission_classes = [IsAuthenticated]
 
-        session = SESSION_STATE.get(session_id)
+    def get(self, request, session_id):
+        session = GameSession.objects.filter(session_id=session_id, game_type="crossword").first()
         if not session:
-            return Response({"error": "Invalid session."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "Session not found"}, status=404)
 
-        end_time = time.time()
-        time_taken = end_time - session["start_time"]
-        time_limit = session["timer"]
+        questions = [gq.question for gq in session.session_questions.all()]
+        generator = CrosswordGenerator()
+        words = [q.answer.upper() for q in questions]
+        grid, placements = generator.generate(words)
+        grid_display = [''.join(row) for row in grid]
 
-        # No more time-expired check — frontend decides when to submit
-        answered_set = set(word.upper() for word in answers)
-        correct_answers = [q["word"].upper() for q in session["questions"] if q["word"].upper() in answered_set]
-        incorrect_or_unanswered = [q["word"].upper() for q in session["questions"] if q["word"].upper() not in answered_set]
+        return Response({
+            "grid": grid_display,
+            "placements": [
+                {
+                    "word": p.word,
+                    "clue": next((q.text for q in questions if q.answer.upper() == p.word), ""),
+                    "row": p.row,
+                    "col": p.col,
+                    "direction": p.direction
+                } for p in placements
+            ]
+        })
 
-        result = {
-            "correct": correct_answers,
-            "missed": incorrect_or_unanswered,
-            "time_taken_seconds": int(min(time_taken, time_limit)),
-            "time_remaining_seconds": max(0, int(time_limit - time_taken)),
-            "status": "completed"
-        }
 
-        # Clean up session
-        del SESSION_STATE[session_id]
+# =============================
+# WordSearch Game-Specific Views
+# =============================
 
-        return Response(result, status=status.HTTP_200_OK)
+dummy_questions = [
+    {"text": "A popular programming language.", "answer": "python", "difficulty": "easy"},
+    {"text": "A sequence of characters.", "answer": "string", "difficulty": "easy"},
+    {"text": "Immutable list in Python.", "answer": "tuple", "difficulty": "medium"},
+]
+
+
+class StartWordSearchGame(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        user = request.user
+
+        session = GameSession.objects.create(
+            session_id=str(uuid.uuid4()),
+            user=user,
+            game_type='wordsearch',
+            status='active',
+            time_limit=300
+        )
+
+        question_objs = []
+        for q in dummy_questions:
+            question = Question.objects.create(
+                text=q["text"],
+                answer=q["answer"].upper(),
+                difficulty=q["difficulty"]
+            )
+            GameQuestion.objects.create(session=session, question=question)
+            question_objs.append(question)
+
+        words = [q.answer.upper() for q in question_objs]
+        generator = WordSearchGenerator()
+        matrix, placements = generator.generate(words)
+
+        return Response({
+            "session_id": session.session_id,
+            "matrix": ["".join(row) for row in matrix],
+            "placements": [
+                {
+                    "word": p.word,
+                    "row": p.row,
+                    "col": p.col,
+                    "direction": p.direction
+                } for p in placements
+            ],
+            "timer_seconds": session.time_limit,
+            "started_at": session.start_time
+        }, status=201)
+
+
+class GetWordSearchMatrix(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, session_id):
+        session = GameSession.objects.filter(session_id=session_id, game_type="wordsearch").first()
+        if not session:
+            return Response({"error": "Session not found"}, status=404)
+
+        questions = [gq.question for gq in session.session_questions.all()]
+        words = [q.answer.upper() for q in questions]
+        generator = WordSearchGenerator()
+        matrix, placements = generator.generate(words)
+
+        return Response({
+            "matrix": ["".join(row) for row in matrix],
+            "placements": [
+                {
+                    "word": p.word,
+                    "row": p.row,
+                    "col": p.col,
+                    "direction": p.direction
+                } for p in placements
+            ]
+        })
