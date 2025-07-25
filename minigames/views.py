@@ -4,10 +4,11 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.permissions import IsAuthenticated
 from django.utils import timezone
-from .models import GameSession, Question, GameQuestion, QuestionResponse, WordSearchData
+from .models import GameSession, Question, GameQuestion, QuestionResponse, WordSearchData, HangmanData
 from .serializers import GameSessionSerializer, QuestionResponseSerializer
 from .game_logic.crossword import CrosswordGenerator
 from .game_logic.wordsearch import WordSearchGenerator
+from .game_logic.hangman import run_user_code
 import uuid
 
 
@@ -295,4 +296,146 @@ class GetWordSearchMatrix(APIView):
         return Response({
             "matrix": data.matrix,
             "placements": data.placements
+        })
+
+# =============================
+# Hangman Game-Specific Views
+# =============================
+
+STATIC_HANGMAN_QUESTIONS = [
+    {
+        "text": "Write a function `reverse_string(s)` that returns the reversed string.",
+        "function_name": "reverse_string",
+        "sample_input": "('hello',)",
+        "sample_output": "'olleh'",
+        "hidden_tests": [
+            {"input": "('hello',)", "output": "olleh"},
+            {"input": "('world',)", "output": "dlrow"},
+            {"input": "('Python',)", "output": "nohtyP"},
+        ],
+        "difficulty": "easy",
+    },
+    {
+        "text": "Write a function `is_even(n)` that returns True if a number is even.",
+        "function_name": "is_even",
+        "sample_input": "(4,)",
+        "sample_output": "True",
+        "hidden_tests": [
+            {"input": "(4,)", "output": True},
+            {"input": "(5,)", "output": False},
+            {"input": "(0,)", "output": True},
+        ],
+        "difficulty": "easy",
+    },
+]
+
+
+class StartHangmanGame(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        import random
+        user = request.user
+        data = random.choice(STATIC_HANGMAN_QUESTIONS)
+
+        # Create Question instance dynamically
+        question = Question.objects.create(
+            text=data["text"],
+            function_name=data["function_name"],
+            sample_input=data["sample_input"],
+            sample_output=data["sample_output"],
+            hidden_tests=data["hidden_tests"],
+            difficulty=data["difficulty"],
+            source_type="hangman",
+        )
+
+        # Create session and link question
+        session = GameSession.objects.create(
+            session_id=str(uuid.uuid4()),
+            user=user,
+            game_type='hangman',
+            status='active',
+            time_limit=300
+        )
+        GameQuestion.objects.create(session=session, question=question)
+
+        return Response({
+            "session_id": session.session_id,
+            "prompt": question.text,
+            "function_name": question.function_name,
+            "sample_input": question.sample_input,
+            "sample_output": question.sample_output,
+            "timer_seconds": session.time_limit
+        }, status=201)
+
+
+class SubmitHangmanCode(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, session_id):
+        from .game_logic.hangman import run_user_code
+
+        session = GameSession.objects.filter(session_id=session_id, user=request.user).first()
+        if not session or session.status != "active":
+            return Response({"error": "Invalid or ended session."}, status=400)
+
+        game_question = session.session_questions.first()
+        if not game_question:
+            return Response({"error": "No question linked to session."}, status=400)
+        question = game_question.question
+
+        user_code = request.data.get("code")
+        if not user_code:
+            return Response({"error": "No code submitted."}, status=400)
+
+        # Count previous incorrect attempts
+        incorrect_attempts = QuestionResponse.objects.filter(
+            question=game_question,
+            user=request.user,
+            is_correct=False
+        ).count()
+        remaining_lives = 3 - incorrect_attempts
+
+        # Run user code
+        passed, message, trace = run_user_code(user_code, question.function_name, question.hidden_tests)
+
+        # Record this attempt
+        QuestionResponse.objects.create(
+            question=game_question,
+            user=request.user,
+            user_answer=user_code,
+            is_correct=passed,
+            time_taken=0
+        )
+
+        if passed:
+            session.status = "completed"
+            session.total_score = 1
+            session.end_time = timezone.now()
+            session.save()
+            return Response({
+                "success": True,
+                "game_over": True,
+                "remaining_lives": remaining_lives,
+                "message": message
+            })
+
+        if remaining_lives <= 1:
+            session.status = "completed"
+            session.end_time = timezone.now()
+            session.save()
+            return Response({
+                "success": False,
+                "game_over": True,
+                "remaining_lives": 0,
+                "message": message,
+                "traceback": trace
+            })
+
+        return Response({
+            "success": False,
+            "game_over": False,
+            "remaining_lives": remaining_lives - 1,
+            "message": message,
+            "traceback": trace
         })
