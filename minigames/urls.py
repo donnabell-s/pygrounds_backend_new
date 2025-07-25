@@ -8,7 +8,11 @@ from .views import (
 
     # WordSearch
     StartWordSearchGame, GetWordSearchMatrix,
+
+    # Hangman
+    StartHangmanGame, SubmitHangmanCode,
 )
+
 
 urlpatterns = [
     # ──────────────── Generic ────────────────
@@ -25,4 +29,9 @@ urlpatterns = [
     # ──────────────── WordSearch ────────────────
     path("wordsearch/start/", StartWordSearchGame.as_view(), name="start-wordsearch"),
     path("wordsearch/<str:session_id>/matrix/", GetWordSearchMatrix.as_view(), name="wordsearch-matrix"),
+    
+    # ──────────────── Hangman ────────────────
+    path("hangman/start/", StartHangmanGame.as_view(), name="start-hangman"),
+    path("hangman/<str:session_id>/submit-code/", SubmitHangmanCode.as_view(), name="submit-hangman-code"),
+
 ]

@@ -11,7 +11,7 @@ class WordPlacement:
     direction: str  # 'across', 'down', 'diagonal'
 
 class WordSearchGenerator:
-    def __init__(self, size=15):
+    def __init__(self, size=13):
         self.size = size
         self.matrix = [['' for _ in range(size)] for _ in range(size)]
         self.placements = []
