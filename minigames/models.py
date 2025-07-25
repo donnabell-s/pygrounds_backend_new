@@ -31,24 +31,23 @@ class GameSession(models.Model):
 
 
 class Question(models.Model):
-    """
-    Master question bank. Questions are fetched from here into sessions.
-    """
-    text = models.TextField()
-    answer = models.CharField(max_length=100)
-
+    text = models.TextField()  # For prompts like "Write a function ..."
+    answer = models.CharField(max_length=100, blank=True, null=True)  # Optional for code
     difficulty = models.CharField(
         max_length=10,
-        choices=[
-            ('easy', 'Easy'),
-            ('medium', 'Medium'),
-            ('hard', 'Hard')
-        ]
+        choices=[('easy', 'Easy'), ('medium', 'Medium'), ('hard', 'Hard')]
     )
     source_type = models.CharField(max_length=50, blank=True, null=True)
 
+    # Fields specific to code-based questions
+    function_name = models.CharField(max_length=50, blank=True, null=True)
+    sample_input = models.TextField(blank=True, null=True)
+    sample_output = models.TextField(blank=True, null=True)
+    hidden_tests = models.JSONField(blank=True, null=True)
+
     def __str__(self):
         return f"[{self.difficulty}] {self.text[:40]}"
+
 
 
 class GameQuestion(models.Model):
@@ -83,3 +82,14 @@ class WordSearchData(models.Model):
 
     def __str__(self):
         return f"WordSearch for Session {self.session.session_id}"
+    
+class HangmanData(models.Model):
+    session = models.OneToOneField(GameSession, on_delete=models.CASCADE, related_name="hangman_data")
+    prompt = models.TextField()
+    function_name = models.CharField(max_length=50)
+    sample_input = models.TextField()
+    sample_output = models.TextField()
+    hidden_tests = models.JSONField()  # e.g., [{"input": "abc", "output": "cba"}, ...]
+
+    def __str__(self):
+        return f"Hangman for {self.session.session_id}"
