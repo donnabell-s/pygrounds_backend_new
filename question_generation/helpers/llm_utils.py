@@ -1,45 +1,52 @@
-from openai import OpenAI
+# llm_utils.py
 
-def send_messages(messages):
-    response = client.chat.completions.create(
-        model="deepseek-chat",
-        messages=messages,
-        tools=tools
-    )
-    return response.choices[0].message
+from openai import OpenAI
+import os
+import logging
+
+logger = logging.getLogger(__name__)
+
+DEEPSEEK_API_KEY = os.environ.get("DEEPSEEK_API_KEY")
+DEEPSEEK_BASE_URL = os.environ.get("DEEPSEEK_API_URL")
+
 
 client = OpenAI(
-    api_key="<your api key>",
-    base_url="https://api.deepseek.com",
+    api_key=DEEPSEEK_API_KEY,
+    base_url=DEEPSEEK_BASE_URL,
 )
 
-tools = [
-    {
-        "type": "function",
-        "function": {
-            "name": "get_weather",
-            "description": "Get weather of an location, the user shoud supply a location first",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "location": {
-                        "type": "string",
-                        "description": "The city and state, e.g. San Francisco, CA",
-                    }
-                },
-                "required": ["location"]
-            },
-        }
-    },
-]
+def send_llm_messages(messages, tools=None, model="deepseek-chat", **kwargs):
+    """
+    Send messages to DeepSeek or compatible LLM. Supports optional tool use.
+    Args:
+        messages: List of dicts (OpenAI/DeepSeek chat message format)
+        tools: List of tool/function definitions (optional)
+        model: Model name string (default: deepseek-chat)
+        **kwargs: Other OpenAI API kwargs (e.g., temperature, max_tokens)
+    Returns:
+        OpenAI Message object (.content and maybe .tool_calls)
+    """
+    params = {
+        "model": model,
+        "messages": messages,
+    }
+    if tools:
+        params["tools"] = tools
+    params.update(kwargs)
+    try:
+        response = client.chat.completions.create(**params)
+        return response.choices[0].message
+    except Exception as e:
+        logger.error(f"DeepSeek LLM call failed: {e}")
+        raise
 
-messages = [{"role": "user", "content": "How's the weather in Hangzhou?"}]
-message = send_messages(messages)
-print(f"User>\t {messages[0]['content']}")
-
-tool = message.tool_calls[0]
-messages.append(message)
-
-messages.append({"role": "tool", "tool_call_id": tool.id, "content": "24℃"})
-message = send_messages(messages)
-print(f"Model>\t {message.content}")
+def invoke_deepseek(prompt, system_prompt="You are a helpful assistant.", model="deepseek-chat", **kwargs):
+    """
+    One-shot method for DeepSeek. Returns just the model's text response.
+    """
+    messages = [
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": prompt},
+    ]
+    msg = send_llm_messages(messages, model=model, **kwargs)
+    return msg.content

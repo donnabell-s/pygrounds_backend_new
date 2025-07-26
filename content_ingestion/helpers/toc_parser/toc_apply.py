@@ -1,141 +1,86 @@
 from .toc_utils import extract_toc, fallback_toc_text, parse_toc_text, assign_end_pages
 import fitz
 from typing import List, Dict, Any
-from content_ingestion.models import *
-from ..page_chunking.toc_chunk_processor import GranularChunkProcessor
+from content_ingestion.models import TOCEntry
 
-def generate_toc_entries_for_document(document, skip_nlp=False, fast_mode=True):
+def generate_toc_entries_for_document(document):
     """
-    Generate TOC entries for a document with optional performance optimizations.
-    
+    Extract TOC entries from a PDF (using metadata or fallback to OCRed TOC pages),
+    convert them to TOCEntry objects, and bulk save to the DB.
+
     Args:
         document: UploadedDocument instance
-        skip_nlp: Skip topic matching entirely for fastest processing
-        fast_mode: Use fast keyword matching instead of NLP
+
+    Returns:
+        List of created TOCEntry objects
     """
-    print(f"\n[DEBUG] Starting TOC generation for {document.title}")
-    if skip_nlp:
-        print("[DEBUG] NLP matching disabled for faster processing")
-    
+    print(f"\n[TOC] Generating TOC entries for: {document.title}")
+
     try:
-        # Open document to get total pages
         doc = fitz.open(document.file.path)
         total_pages = len(doc)
-        print(f"[DEBUG] Document has {total_pages} pages")
-        
-        # Try metadata-based TOC first
+        print(f"[TOC] PDF has {total_pages} pages")
+
+        # 1. Try metadata-based TOC extraction
         toc_data = extract_toc(document.file.path)
-        print(f"[DEBUG] Metadata TOC extraction result: {toc_data}")
-        
-        if not toc_data:
-            print("[DEBUG] No metadata TOC found, trying fallback method")
+        if toc_data and isinstance(toc_data[0], list):
+            # Convert [level, title, page] to dicts
+            toc_data = [
+                {
+                    'title': item[1],
+                    'start_page': item[2] - 1,
+                    'level': item[0],
+                    'order': idx
+                }
+                for idx, item in enumerate(toc_data) if len(item) >= 3
+            ]
+            print(f"[TOC] Extracted {len(toc_data)} TOC entries from metadata")
+        else:
+            # 2. Fallback: Manual TOC parsing from first pages
+            print("[TOC] No metadata TOC, using manual extraction")
             toc_pages = fallback_toc_text(doc)
-            print(f"[DEBUG] Fallback TOC pages found: {len(toc_pages)}")
-            toc_data = []
-            
-            # Combine all TOC pages into one text block for cross-page parsing
             combined_toc_text = "\n".join(toc_pages)
-            page_entries = parse_toc_text(combined_toc_text)
-            print(f"[DEBUG] Parsed TOC entries from combined pages: {len(page_entries)}")
-            toc_data.extend(page_entries)
-        
-        # Close document early to free memory
+            toc_data = parse_toc_text(combined_toc_text)
+            print(f"[TOC] Parsed {len(toc_data)} TOC entries from fallback text")
+
         doc.close()
 
         if not toc_data:
-            print("[DEBUG] No TOC data found")
-            # Update document with total pages even if no TOC
+            print("[TOC] No TOC entries found. Marking document complete.")
             document.total_pages = total_pages
-            document.processing_status = 'COMPLETED'
+            document.status = 'COMPLETED'
             document.save()
             return []
 
-        # Assign end pages
+        # 3. Assign end pages for chunking
         toc_data = assign_end_pages(toc_data, total_pages)
-        print(f"[DEBUG] Assigned end pages to {len(toc_data)} entries")
 
-        # Initialize fast topic matcher (only if we have game content)
-        matcher = None
-        if not skip_nlp:
-            try:
-                from .topic_matching import FastTopicMatcher
-                from content_ingestion.models import Subtopic, Topic
-                
-                # Check if we have any game content to match against
-                has_game_content = Subtopic.objects.exists() or Topic.objects.exists()
-                if has_game_content:
-                    matcher = FastTopicMatcher()
-                    print("[DEBUG] Fast keyword matcher initialized")
-                else:
-                    print("[DEBUG] No game content found, skipping topic matching")
-            except Exception as e:
-                print(f"[DEBUG] Failed to initialize fast matcher: {str(e)}")
-        else:
-            print("[DEBUG] Topic matching disabled by request")
-        
-        # Create TOC entries with optional topic mapping
-        entries = []
-        content_mappings = []
-        
-        print(f"[DEBUG] Creating {len(toc_data)} TOC entries...")
-        
-        # Overwrite any existing TOC entries for this document
+        # 4. Remove old TOC entries for this document
         TOCEntry.objects.filter(document=document).delete()
-        toc_entries_to_create = []
-        for idx, entry_data in enumerate(toc_data):
-            toc_entries_to_create.append(TOCEntry(
+
+        # 5. Bulk-create new TOC entries
+        toc_entries = [
+            TOCEntry(
                 document=document,
-                title=entry_data['title'],
-                start_page=entry_data['start_page'],
-                end_page=entry_data.get('end_page'),
-                level=entry_data.get('level', 0),
-                order=idx
-            ))
-        entries = TOCEntry.objects.bulk_create(toc_entries_to_create)
-        print(f"[DEBUG] Created {len(entries)} TOC entries in bulk")
-        
-        # Now do topic matching in batches (if enabled)
-        if matcher and entries:
-            print(f"[DEBUG] Starting fast topic matching for {len(entries)} entries...")
-            
-            matched_entries = []
-            for idx, entry in enumerate(entries):
-                try:
-                    mapping_data = matcher.create_content_mapping(entry)
-                    if mapping_data['confidence_score'] >= 0.2:  # Lower threshold for fast matching
-                        content_mappings.append(ContentMapping(**mapping_data))
-                        matched_entries.append(entry)
-                        print(f"[FAST] {idx+1}/{len(entries)}: Mapped '{entry.title}' -> {mapping_data['confidence_score']:.3f}")
-                    else:
-                        print(f"[FAST] {idx+1}/{len(entries)}: No match for '{entry.title}' (best: {mapping_data['confidence_score']:.3f})")
-                except Exception as e:
-                    print(f"[DEBUG] Fast matching error for '{entry.title}': {str(e)}")
-                    
-                # Progress indicator
-                if (idx + 1) % 10 == 0:
-                    print(f"[DEBUG] Topic matching progress: {idx + 1}/{len(entries)}")
-            
-            # Bulk create content mappings
-            if content_mappings:
-                ContentMapping.objects.bulk_create(content_mappings)
-                print(f"[DEBUG] Created {len(content_mappings)} content mappings in bulk")
-            
-            # Return only matched entries
-            entries = matched_entries
-            print(f"[DEBUG] Filtered to {len(entries)} matched entries only")
-        else:
-            print("[DEBUG] Skipping topic matching")
-            # If no matching, return empty list to only get relevant entries
-            entries = []
-        
-        # Update document with total pages and status
+                title=entry['title'],
+                start_page=entry['start_page'],
+                end_page=entry['end_page'],
+                level=entry.get('level', 0),
+                order=entry.get('order', idx),
+            )
+            for idx, entry in enumerate(toc_data)
+        ]
+        created = TOCEntry.objects.bulk_create(toc_entries)
+        print(f"[TOC] Created {len(created)} TOC entries")
+
+        # 6. Update document meta/status
         document.total_pages = total_pages
-        document.processing_status = 'COMPLETED'
+        document.status = 'COMPLETED'
         document.save()
-            
-        print(f"\n[DEBUG] Final entries count: {len(entries)}")
-        return entries
-        
+
+        print(f"[TOC] All done! Entries ready for chunking: {len(created)}")
+        return created
+
     except Exception as e:
-        print(f"[DEBUG] Error in TOC generation: {str(e)}")
+        print(f"[TOC] Error during TOC generation: {str(e)}")
         raise
