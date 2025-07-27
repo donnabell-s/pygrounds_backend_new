@@ -4,24 +4,39 @@ from django.contrib.auth import get_user_model
 User = get_user_model()
 
 
-class GameSession(models.Model):
+class Question(models.Model):
     GAME_CHOICES = [
-        ('crossword',  'Crossword'),
-        ('hangman',    'Hangman'),
+        ('crossword', 'Crossword'),
+        ('hangman', 'Hangman'),
         ('wordsearch', 'WordSearch'),
-        ('debugging',  'Debugging'),
+        ('debugging', 'Debugging'),
     ]
+    
+    text = models.TextField()
+    answer = models.CharField(max_length=100, blank=True, null=True)
+    difficulty = models.CharField(max_length=10, choices=[('easy', 'Easy'), ('medium', 'Medium'), ('hard', 'Hard')])
+    game_type = models.CharField(max_length=50, choices=GAME_CHOICES, null=True, blank=True, help_text="Game this question is for")
 
-    STATUS_CHOICES = [
-        ('active', 'Active'),
-        ('completed', 'Completed'),
-        ('expired', 'Expired'),
-    ]
+    # Code-related fields
+    function_name = models.CharField(max_length=50, blank=True, null=True)
+    sample_input = models.TextField(blank=True, null=True)
+    sample_output = models.TextField(blank=True, null=True)
+    hidden_tests = models.JSONField(blank=True, null=True)
+    broken_code = models.TextField(blank=True, null=True)
 
+    # Optional: for adaptive engine (later use)
+    subtopics = models.ManyToManyField("Subtopic", blank=True)
+
+    def __str__(self):
+        return f"[{self.game_type}] [{self.difficulty}] {self.text[:40]}"
+
+
+class GameSession(models.Model):
+    # mostly fine as-is
     session_id = models.CharField(max_length=100, unique=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="game_sessions")
-    game_type = models.CharField(max_length=50, choices=GAME_CHOICES)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active')
+    game_type = models.CharField(max_length=50, choices=Question.GAME_CHOICES, null=True, blank=True)
+    status = models.CharField(max_length=20, choices=[('active', 'Active'), ('completed', 'Completed'), ('expired', 'Expired')], default='active')
     start_time = models.DateTimeField(auto_now_add=True)
     end_time = models.DateTimeField(null=True, blank=True)
     total_score = models.IntegerField(default=0)
@@ -31,51 +46,28 @@ class GameSession(models.Model):
         return f"{self.user.username} - {self.game_type} - {self.session_id}"
 
 
-class Question(models.Model):
-    text = models.TextField()  # For prompts like "Write a function ..."
-    answer = models.CharField(max_length=100, blank=True, null=True)  # Optional for code
-    difficulty = models.CharField(
-        max_length=10,
-        choices=[('easy', 'Easy'), ('medium', 'Medium'), ('hard', 'Hard')]
-    )
-    source_type = models.CharField(max_length=50, blank=True, null=True)
-
-    # Fields specific to code-based questions
-    function_name = models.CharField(max_length=50, blank=True, null=True)
-    sample_input = models.TextField(blank=True, null=True)
-    sample_output = models.TextField(blank=True, null=True)
-    hidden_tests = models.JSONField(blank=True, null=True)
-    broken_code   = models.TextField(blank=True, null=True)
-
-    def __str__(self):
-        return f"[{self.difficulty}] {self.text[:40]}"
-
-
-
 class GameQuestion(models.Model):
-    """
-    Links a master question to a specific game session.
-    """
     session = models.ForeignKey(GameSession, on_delete=models.CASCADE, related_name="session_questions")
     question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name="used_in_sessions")
 
+    class Meta:
+        unique_together = ('session', 'question')
+
     def __str__(self):
-        return f"Session {self.session.session_id} → Q{self.question.id}"
+        return f"{self.session.session_id} → Q{self.question.id}"
 
 
 class QuestionResponse(models.Model):
-    """
-    Stores the user's answer to a question during a session.
-    """
     question = models.ForeignKey(GameQuestion, on_delete=models.CASCADE, related_name="responses")
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    user_answer = models.CharField(max_length=100, blank=True, null=True)
+    user_answer = models.TextField(blank=True, null=True)
     is_correct = models.BooleanField(default=False)
-    time_taken = models.IntegerField(default=0, help_text="Time taken in seconds")
+    time_taken = models.IntegerField(default=0)
     answered_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.user.username} → Q:{self.question.id} | Correct: {self.is_correct}"
+        return f"{self.user.username} | Q:{self.question.id} | Correct: {self.is_correct}"
+
 
 class WordSearchData(models.Model):
     session = models.OneToOneField(GameSession, on_delete=models.CASCADE, related_name="wordsearch_data")
@@ -95,3 +87,17 @@ class HangmanData(models.Model):
 
     def __str__(self):
         return f"Hangman for {self.session.session_id}"
+
+
+class Topic(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+
+    def __str__(self):
+        return self.name
+
+class Subtopic(models.Model):
+    name  = models.CharField(max_length=100, unique=True)
+    topic = models.ForeignKey(Topic, on_delete=models.CASCADE, related_name="subtopics")
+
+    def __str__(self):
+        return f"{self.topic.name} → {self.name}"
