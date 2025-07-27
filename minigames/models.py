@@ -6,9 +6,10 @@ User = get_user_model()
 
 class GameSession(models.Model):
     GAME_CHOICES = [
-        ('crossword', 'Crossword'),
-        ('hangman', 'Hangman'),
-        ('wordsearch', 'WordSearch'), 
+        ('crossword',  'Crossword'),
+        ('hangman',    'Hangman'),
+        ('wordsearch', 'WordSearch'),
+        ('debugging',  'Debugging'),
     ]
 
     STATUS_CHOICES = [
@@ -44,6 +45,7 @@ class Question(models.Model):
     sample_input = models.TextField(blank=True, null=True)
     sample_output = models.TextField(blank=True, null=True)
     hidden_tests = models.JSONField(blank=True, null=True)
+    broken_code   = models.TextField(blank=True, null=True)
 
     def __str__(self):
         return f"[{self.difficulty}] {self.text[:40]}"

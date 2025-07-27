@@ -439,3 +439,98 @@ class SubmitHangmanCode(APIView):
             "message": message,
             "traceback": trace
         })
+
+
+
+
+STATIC_DEBUGGING_QUESTIONS = [
+    {
+    "prompt": "Fix this function so it returns the factorial of n.",
+      "function_name": "reverse_string",
+      "sample_input": "('hello',)",
+      "sample_output": "'olleh'",
+      "hidden_tests": [
+        {"input":"('abc',)","output":"cba"},
+        {"input":"('12345',)","output":"54321"},
+        {"input":"('racecar',)","output":"racecar"},
+      ],
+      "broken_code": "def reverse_string(s):\n    return s[::-2]  # oops!",
+      "difficulty": "easy",
+    },
+    # … you can add more …
+]
+
+class StartDebugGame(APIView):
+    permission_classes = [IsAuthenticated]
+    def post(self, request):
+        import random
+        data = random.choice(STATIC_DEBUGGING_QUESTIONS)
+
+        # Create a Question with broken_code
+        q = Question.objects.create(
+            text          = data["prompt"],
+            function_name = data["function_name"],
+            sample_input  = data["sample_input"],
+            sample_output = data["sample_output"],
+            hidden_tests  = data["hidden_tests"],
+            broken_code   = data["broken_code"],
+            difficulty    = data["difficulty"],
+            source_type   = "debugging",
+        )
+        # New session
+        session = GameSession.objects.create(
+            session_id = str(uuid.uuid4()),
+            user       = request.user,
+            game_type  = 'debugging',
+            status     = 'active',
+            time_limit = 300
+        )
+        GameQuestion.objects.create(session=session, question=q)
+
+        return Response({
+            "session_id":    session.session_id,
+            "prompt":        q.text,
+            "function_name": q.function_name,
+            "sample_input":  q.sample_input,
+            "sample_output": q.sample_output,
+            "broken_code":   q.broken_code,
+            "timer_seconds": session.time_limit
+        }, status=201)
+
+# Submission logic identical to Hangman
+class SubmitDebugGame(APIView):
+    permission_classes = [IsAuthenticated]
+    def post(self, request, session_id):
+        from .game_logic.hangman import run_user_code
+
+        session = GameSession.objects.filter(session_id=session_id, user=request.user, status="active").first()
+        if not session:
+            return Response({"error": "Invalid or ended session."}, status=400)
+
+        game_q = session.session_questions.first()
+        question = game_q.question
+        user_code = request.data.get("code")
+        if not user_code:
+            return Response({"error": "No code submitted."}, status=400)
+
+        # count wrong attempts
+        wrong = QuestionResponse.objects.filter(question=game_q, user=request.user, is_correct=False).count()
+        lives_left = 3 - wrong
+
+        passed, msg, tb = run_user_code(user_code, question.function_name, question.hidden_tests)
+        QuestionResponse.objects.create(question=game_q, user=request.user, user_answer=user_code, is_correct=passed, time_taken=0)
+
+        if passed:
+            session.status = "completed"
+            session.total_score = 1
+            session.end_time = timezone.now()
+            session.save()
+            return Response({"success": True, "game_over": True,  "remaining_lives": lives_left, "message": msg})
+
+        if lives_left <= 1:
+            session.status = "completed"
+            session.end_time = timezone.now()
+            session.save()
+            return Response({"success": False, "game_over": True,  "remaining_lives": 0, "message": msg, "traceback": tb})
+
+        return Response({"success": False, "game_over": False, "remaining_lives": lives_left-1, "message": msg, "traceback": tb})
