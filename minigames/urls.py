@@ -11,6 +11,8 @@ from .views import (
 
     # Hangman
     StartHangmanGame, SubmitHangmanCode,
+
+    StartDebugGame, SubmitDebugGame,
 )
 
 
@@ -34,4 +36,7 @@ urlpatterns = [
     path("hangman/start/", StartHangmanGame.as_view(), name="start-hangman"),
     path("hangman/<str:session_id>/submit-code/", SubmitHangmanCode.as_view(), name="submit-hangman-code"),
 
+    path("debugging/start/", StartDebugGame.as_view(), name="start-debug"),
+    path("debugging/<str:session_id>/submit-code/", SubmitDebugGame.as_view(), name="submit-debug"),
+ 
 ]

@@ -15,6 +15,7 @@ class QuestionSerializer(serializers.ModelSerializer):
             'sample_input',
             'sample_output',
             'hidden_tests',
+            'broken_code',
         ]
 
 
