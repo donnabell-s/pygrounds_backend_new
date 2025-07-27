@@ -15,6 +15,9 @@ def clean_text(text):
     return re.sub(r'\W+', ' ', text.lower())
 
 def predict_difficulty(question_text):
+    ## Predicts the difficulty level of a given question using a simple 
+    #rule-based approach (e.g. text length or keyword complexity). 
+    ##Returns: 'Easy', 'Intermediate', or 'Hard'
     cleaned = clean_text(question_text)
     features = vectorizer.transform([cleaned])
     prediction = model.predict(features)

@@ -13,7 +13,7 @@ If you've made changes to the database (schema or data) and want to share it wit
 
 This will export the current state of your local `pygrounds_db` into `db_dump.sql`.
 
-> ✅ Commit `db_dump.sql` after running this if you want others to sync to your version:
+> Commit `db_dump.sql` after running this if you want others to sync to your version:
 
 ```bash
 git add db_dump.sql
@@ -23,7 +23,7 @@ git push
 
 ---
 
-### 📥 Load the Shared Database (Import)
+### Load the Shared Database (Import)
 
 If someone updated `db_dump.sql` and you want to apply those changes:
 
@@ -46,7 +46,7 @@ This will:
 
 ---
 
-### ⚙️ Script Configuration
+### Script Configuration
 
 Both scripts use hardcoded PostgreSQL settings like user, DB name, and installation path.
 Before using them, make sure you:
@@ -59,7 +59,7 @@ Before using them, make sure you:
 
 ---
 
-### 🔒 Git Ignore Reminder
+###  Git Ignore Reminder
 
 These scripts should not be pushed to GitHub. They are ignored in `.gitignore`:
 
@@ -67,4 +67,15 @@ These scripts should not be pushed to GitHub. They are ignored in `.gitignore`:
 load-db.bat
 dump-db.bat
 ```
+
+
+
+### Automatic Topic and Difficulty Tagging
+
+When a Question is saved, the system automatically predicts:
+
+- **Topic** (e.g., Loops, Conditionals, etc.)
+- **Difficulty** (Easy / Intermediate / Hard)
+
+This helps classify questions even without manual input from admins.
 
