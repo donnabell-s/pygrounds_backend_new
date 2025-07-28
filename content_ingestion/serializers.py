@@ -34,21 +34,17 @@ class DocumentChunkSummarySerializer(serializers.ModelSerializer):
 class GameZoneSerializer(serializers.ModelSerializer):
     class Meta:
         model = GameZone
-        fields = ['id', 'name', 'description', 'order', 'is_active', 
-                 'required_exp', 'max_exp', 'is_unlocked']
+        fields = ['id', 'name', 'description', 'order']
 
 class TopicSerializer(serializers.ModelSerializer):
     class Meta:
         model = Topic
-        fields = ['id', 'zone', 'name', 'description', 'order', 
-                 'min_zone_exp', 'is_unlocked']
+        fields = ['id', 'zone', 'name', 'description', 'order']
 
 class SubtopicSerializer(serializers.ModelSerializer):
     class Meta:
         model = Subtopic
-        fields = ['id', 'topic', 'name', 'description', 'order',
-                 'learning_objectives', 'difficulty_levels', 
-                 'min_zone_exp', 'is_unlocked']
+        fields = ['id', 'topic', 'name', 'order']
 
 class TOCEntrySerializer(serializers.ModelSerializer):
     class Meta:

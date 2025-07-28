@@ -4,9 +4,15 @@ import uuid
 from django.utils import timezone
 from rest_framework import status
 from rest_framework.decorators import api_view
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
+from question_generation.models import PreAssessmentQuestion
+from question_generation.serializers import PreAssessmentQuestionSerializer
+
+from question_generation.models import PreAssessmentQuestion
+from user_learning.adaptive_engine import recalibrate_topic_proficiency
 
 from .game_logic.crossword import CrosswordGenerator
 from .game_logic.wordsearch import WordSearchGenerator
@@ -454,4 +460,46 @@ class SubmitDebugGame(APIView):
             "remaining_lives": remaining_lives - 1,
             "message":       message,
             "traceback":     traceback,
+        })
+
+
+# =============================
+# PreAssessment Views
+# =============================
+
+class SubmitPreAssessmentAnswers(APIView):
+    permission_classes = [AllowAny]  # if unauthenticated users can submit
+
+    def post(self, request):
+        data = request.data
+        if isinstance(data, list):
+            answers = data
+        else:
+            answers = data.get("answers", [])
+
+        results = []
+        correct_count = 0
+
+        for ans in answers:
+            try:
+                q = PreAssessmentQuestion.objects.get(id=ans["question_id"])
+                is_correct = q.correct_answer.strip().lower() == ans["user_answer"].strip().lower()
+                results.append({
+                    "question_id": q.id,
+                    "question_text": q.question_text,
+                    "user_answer": ans["user_answer"],
+                    "correct_answer": q.correct_answer,
+                    "is_correct": is_correct
+                })
+                if is_correct:
+                    correct_count += 1
+            except PreAssessmentQuestion.DoesNotExist:
+                continue
+
+        recalibrate_topic_proficiency(request.user, results)
+
+        return Response({
+            "total": len(answers),
+            "correct": correct_count,
+            "results": results
         })

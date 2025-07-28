@@ -68,7 +68,7 @@ class GameZone(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField()
     order = models.IntegerField(unique=True)
-    is_unlocked = models.BooleanField(default=False) 
+    # is_unlocked = models.BooleanField(default=False) 
 
     def __str__(self):
         return f"Zone {self.order}: {self.name}"
