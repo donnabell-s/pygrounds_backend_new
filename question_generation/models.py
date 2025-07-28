@@ -109,10 +109,8 @@ class PreAssessmentQuestion(models.Model):
     )
     order = models.IntegerField(default=0)
 
-    created_at = models.DateTimeField(auto_now_add=True)
-
     class Meta:
-        ordering = ['order', 'created_at']
+        ordering = ['order']
 
     def __str__(self):
         # Get first topic name if available, otherwise show question text

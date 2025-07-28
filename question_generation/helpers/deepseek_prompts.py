@@ -294,7 +294,7 @@ For each question:
 - Provide exactly four answer choices as an array of strings.
 - Specify the correct answer as the exact string from the choices.
 - Cycle evenly through difficulty levels: beginner, intermediate, advanced, master.
-- Ensure at least one question of any topic is of 'master' difficulty level (super hard), to inspire learners.
+- Ensure there MUST be at least ONE question of any topic that is 'master' difficulty level (extremely hard), to inspire learners.
 - Keep answers simple and clean — avoid escape sequences like \n, \t, etc. whenever possible.
 - Only include escape sequences in answers if the topic or question context explicitly requires showing code or escape characters.
 - For output or pattern questions, describe the result or pattern in words instead of using literal escape sequences.

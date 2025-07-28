@@ -94,31 +94,19 @@ def generate_questions_with_deepseek(request, subtopic_id=None):
                     'metadata': {'missing': True}
                 })
 
+            # PRE ASSESSMENT
         elif mode == 'pre_assessment':
             topic_ids = request.data.get('topic_ids', None)
             topics = Topic.objects.filter(id__in=topic_ids) if topic_ids else Topic.objects.all()
 
             # Compose topics and their subtopics string for prompt
             topics_and_subtopics_parts = []
-            all_available_subtopics = []  # For debugging
             for topic in topics:
                 subtopics = list(topic.subtopics.values_list('name', flat=True))
-                all_available_subtopics.extend(subtopics)
-
-                # Debug print for verification
-                print(f"Topic: {topic.name}")
-                print(f"Subtopics: {subtopics}")
-
                 section = f'Topic: "{topic.name}"\nSubtopics:\n' + "\n".join([f"- {s}" for s in subtopics])
                 topics_and_subtopics_parts.append(section)
 
             topics_and_subtopics_str = "\n\n".join(topics_and_subtopics_parts)
-
-            # Debug print full topics string
-            print("Full topics_and_subtopics_str sent to prompt:")
-            print(topics_and_subtopics_str)
-            print(f"All available subtopics: {all_available_subtopics}")
-            print("=" * 60)
 
             context = {
                 'topics_and_subtopics': topics_and_subtopics_str,
@@ -126,12 +114,11 @@ def generate_questions_with_deepseek(request, subtopic_id=None):
             }
 
             system_prompt = (
-    f"You are a Python assessment expert creating a concise pre-assessment for users. "
-    f"Ensure that all listed topics and their subtopics are comprehensively covered within the total of {total_num_questions} questions. "
-    f"To achieve this, generate many questions that cover multiple subtopics together, testing integrated understanding. "
-    f"Cover various difficulty levels and always use the exact subtopic names from the provided list."
-)
-
+                f"You are a Python assessment expert creating a concise pre-assessment for users. "
+                f"Ensure that all listed topics and their subtopics are comprehensively covered within the total of {total_num_questions} questions. "
+                f"To achieve this, generate many questions that cover multiple subtopics together, testing integrated understanding. "
+                f"Cover various difficulty levels and always use the exact subtopic names from the provided list."
+            )
 
             prompt = deepseek_prompt_manager.get_prompt_for_minigame("pre_assessment", context)
             try:
@@ -165,11 +152,8 @@ def generate_questions_with_deepseek(request, subtopic_id=None):
                 # Validate that we got the expected number of questions
                 actual_count = len(questions_json)
                 if actual_count != total_num_questions:
-                    print(f"❌ ERROR: Expected {total_num_questions} questions, but got {actual_count}")
-                    
                     # If we got more questions than requested, truncate to the exact number
                     if actual_count > total_num_questions:
-                        print(f"🔧 Truncating from {actual_count} to {total_num_questions} questions")
                         questions_json = questions_json[:total_num_questions]
                     # If we got fewer questions, return an error
                     else:
@@ -179,17 +163,14 @@ def generate_questions_with_deepseek(request, subtopic_id=None):
                             'raw_response': llm_response
                         }, status=500)
                 
-                print(f"✅ Processing {len(questions_json)} questions (exactly as requested)")
-                
             except Exception as e:
                 return Response({
                     'status': 'error',
                     'message': f"JSON parse error: {str(e)}",
                     'raw_response': llm_response
                 }, status=500)
-            
+
             PreAssessmentQuestion.objects.all().delete()  # Delete all existing pre-assessment questions
-            print("Deleted all existing pre-assessment questions")
 
             # Pre-load all subtopics and topics for efficient matching (single DB query)
             all_subtopics = list(Subtopic.objects.select_related('topic').all())
@@ -210,16 +191,10 @@ def generate_questions_with_deepseek(request, subtopic_id=None):
                 'casting': 'Type Conversion and Casting'
             }
             
-            print("Processing questions and matching subtopics...")
             for idx, q in enumerate(questions_json):
-                print(f"\nProcessing question {idx + 1}:")
-                print(f"Question: {q.get('question', '')[:60]}...")
-                
                 subtopic_names = q.get("subtopics_covered", [])
                 if isinstance(subtopic_names, str):
                     subtopic_names = [subtopic_names]
-                
-                print(f"LLM returned subtopics: {subtopic_names}")
                 
                 # Fast in-memory subtopic matching for multiple subtopics
                 matched_subtopics = []
@@ -235,19 +210,16 @@ def generate_questions_with_deepseek(request, subtopic_id=None):
                         # 1. Exact match (O(1) lookup)
                         if subtopic_name_clean in subtopic_exact_map:
                             matched_subtopic = subtopic_exact_map[subtopic_name_clean]
-                            print(f"Found exact match: '{subtopic_name}' -> '{matched_subtopic.name}'")
                         
                         # 2. Case-insensitive exact match (O(1) lookup)
                         elif subtopic_name_clean.lower() in subtopic_lower_map:
                             matched_subtopic = subtopic_lower_map[subtopic_name_clean.lower()]
-                            print(f"Found case-insensitive match: '{subtopic_name}' -> '{matched_subtopic.name}'")
                         
                         # 3. Special case mappings (O(1) lookup)
                         elif subtopic_name_clean.lower() in special_mappings:
                             mapped_name = special_mappings[subtopic_name_clean.lower()]
                             if mapped_name in subtopic_exact_map:
                                 matched_subtopic = subtopic_exact_map[mapped_name]
-                                print(f"Found special mapping: '{subtopic_name}' -> '{matched_subtopic.name}'")
                         
                         # 4. Fast contains check (only if no exact matches found)
                         else:
@@ -256,7 +228,6 @@ def generate_questions_with_deepseek(request, subtopic_id=None):
                                 subtopic_lower = subtopic_name_clean.lower()
                                 if subtopic_lower in s_name_lower or s_name_lower in subtopic_lower:
                                     matched_subtopic = s
-                                    print(f"Found fuzzy match: '{subtopic_name}' -> '{matched_subtopic.name}'")
                                     break
                         
                         # Add to matched lists if found
@@ -270,8 +241,6 @@ def generate_questions_with_deepseek(request, subtopic_id=None):
                             if not primary_subtopic_obj:
                                 primary_subtopic_obj = matched_subtopic
                                 primary_topic_obj = matched_subtopic.topic
-                        else:
-                            print(f"No match found for subtopic: '{subtopic_name}'")
                 
                 # Topic fallback matching (fast in-memory) if no subtopics matched
                 if not primary_topic_obj:
@@ -283,7 +252,6 @@ def generate_questions_with_deepseek(request, subtopic_id=None):
                                 primary_topic_obj = topic
                                 if topic not in matched_topics:
                                     matched_topics.append(topic)
-                                print(f"Found topic match: '{topic_name}' -> '{primary_topic_obj.name}'")
                                 break
                 
                 # Final fallback
@@ -291,17 +259,10 @@ def generate_questions_with_deepseek(request, subtopic_id=None):
                     primary_topic_obj = all_topics[0]
                     if primary_topic_obj not in matched_topics:
                         matched_topics.append(primary_topic_obj)
-                    print(f"Using fallback topic: {primary_topic_obj.name}")
 
                 # Prepare data for storage - collect IDs instead of names
                 matched_subtopic_ids = [s.id for s in matched_subtopics]
                 matched_topic_ids = [t.id for t in matched_topics]
-                
-                print(f"Final assignment:")
-                print(f"  Primary Topic: '{primary_topic_obj.name if primary_topic_obj else None}'")
-                print(f"  Primary Subtopic: '{primary_subtopic_obj.name if primary_subtopic_obj else None}'")
-                print(f"  All Topic IDs Covered: {matched_topic_ids}")
-                print(f"  All Subtopic IDs Covered: {matched_subtopic_ids}")
 
                 q_text = q.get("question_text") or q.get("question") or ""
 
@@ -317,15 +278,11 @@ def generate_questions_with_deepseek(request, subtopic_id=None):
                 # Handle correct answer - preserve escape sequences properly
                 correct_answer = q.get("correct_answer", "")
                 
-                print(f"📝 Original correct_answer: {repr(correct_answer)}")
-                print(f"📝 Available choices: {[repr(choice) for choice in answer_opts]}")
-                
                 # If the correct answer contains actual newlines or escape sequences, 
                 # we need to find the matching choice that has the same content
                 if correct_answer and answer_opts:
                     # Try to find exact match first
                     if correct_answer not in answer_opts:
-                        print(f"⚠️  Exact match not found, trying escape sequence matching...")
                         # Look for a match considering escape sequence differences
                         for choice in answer_opts:
                             # Compare with escape sequences resolved
@@ -334,24 +291,17 @@ def generate_questions_with_deepseek(request, subtopic_id=None):
                                 answer_decoded = correct_answer.encode().decode('unicode_escape')
                                 if choice_decoded == answer_decoded:
                                     correct_answer = choice
-                                    print(f"🔧 Matched correct answer via escape sequence: {repr(correct_answer)}")
                                     break
                                 # Also try the reverse - sometimes the JSON parsing affects one but not the other
                                 elif choice == answer_decoded:
                                     correct_answer = choice
-                                    print(f"🔧 Matched correct answer via reverse escape: {repr(correct_answer)}")
                                     break
                             except Exception as e:
-                                print(f"⚠️  Error processing escape sequences: {e}")
                                 continue
                         else:
-                            print(f"❌ Warning: correct_answer {repr(correct_answer)} not found in choices {[repr(c) for c in answer_opts]}")
                             # Use the first choice as fallback
                             if answer_opts:
                                 correct_answer = answer_opts[0]
-                                print(f"🔧 Using first choice as fallback: {repr(correct_answer)}")
-                    else:
-                        print(f"✅ Exact match found for correct_answer: {repr(correct_answer)}")
 
                 paq = PreAssessmentQuestion.objects.create(
                     topic_ids=matched_topic_ids,
