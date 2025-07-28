@@ -157,10 +157,7 @@ class GameZone(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField()
     order = models.IntegerField(unique=True)
-    is_active = models.BooleanField(default=True)
-    required_exp = models.IntegerField(default=0)
     max_exp = models.IntegerField(default=1000)
-    is_unlocked = models.BooleanField(default=False)
 
     class Meta:
         ordering = ['order']

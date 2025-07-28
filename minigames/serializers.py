@@ -1,5 +1,7 @@
 from rest_framework import serializers
 from .models import GameSession, GameQuestion, Question, QuestionResponse
+from content_ingestion.models import Topic, Subtopic
+from question_generation.models import PreAssessmentQuestion
 
 
 class QuestionSerializer(serializers.ModelSerializer):
@@ -72,3 +74,8 @@ class QuestionResponseSerializer(serializers.ModelSerializer):
             'time_taken',
             'answered_at',
         ]
+
+class PreAssessmentQuestionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PreAssessmentQuestion
+        fields = '__all__'
