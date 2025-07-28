@@ -122,7 +122,6 @@ class SmartRAGRetriever:
         """
         context = [
             f"SUBTOPIC: {subtopic.name}",
-            f"DESCRIPTION: {subtopic.description}",
             f"TOPIC: {subtopic.topic.name}",
         ]
         if getattr(subtopic, "learning_objectives", None):

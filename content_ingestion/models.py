@@ -94,7 +94,6 @@ class Subtopic(models.Model):
     """A subtopic inside a Topic"""
     topic = models.ForeignKey(Topic, on_delete=models.CASCADE, related_name='subtopics')
     name = models.CharField(max_length=100)
-    description = models.TextField()
     order = models.IntegerField()
     def __str__(self):
         return f"{self.topic.name} - {self.name}"

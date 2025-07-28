@@ -1,11 +1,6 @@
 from typing import Dict, Any, List
 
 class DeepSeekPromptTemplates:
-    """
-    Holds prompt templates for all minigame and assessment types.
-    Add new minigame/assessment templates as static methods here.
-    """
-
     @staticmethod
     def get_hangman_coding_prompt() -> str:
         return """
@@ -46,16 +41,8 @@ FORMAT YOUR RESPONSE AS JSON:
         "validation_tests": [
             {{"input": "", "expected_behavior": "Prints 'Hello, World!'"}}
         ]
-    }},
-    "explanation": "The missing word 'print' is used to display text output in Python.",
-    "learning_objective": "Students learn to identify and use print statements in Python."
+    }}
 }}
-
-IMPORTANT: 
-- missing_word must be a single programming term (variable name, function name, keyword, etc.)
-- letters_to_guess contains ALL letters including duplicates in order
-- unique_letters contains each unique letter only once
-- The word should fit naturally in the code context
 
 Generate exactly 1 hangman coding challenge based on the context provided.
 """
@@ -110,16 +97,8 @@ FORMAT YOUR RESPONSE AS JSON:
             {{"input": "30", "expected_output": "Low fuel"}}
         ],
         "learning_focus": "Understanding type conversion and input handling"
-    }},
-    "explanation": "input() returns a string, so 'fuel > 50' compares a string to an integer. The fix is to use int().",
-    "learning_objective": "Students learn to identify and fix type-related bugs in Python input handling."
+    }}
 }}
-
-IMPORTANT:
-- bug_locations provides exact coordinates for IDE highlighting
-- Include realistic error messages that Python would actually show
-- Focus on one main bug that clearly relates to the subtopic
-- Make the space theme engaging but educational
 
 Generate exactly 1 debugging challenge based on the context provided.
 """
@@ -211,12 +190,6 @@ FORMAT YOUR RESPONSE AS JSON:
     "learning_objective": "Build vocabulary and recognition of key {subtopic_name} terminology."
 }}
 
-IMPORTANT:
-- letter_grid must be a valid 2D array where words can actually be found
-- Each word in words_to_find must exist in the grid at the specified coordinates
-- scrambled_letters should include all letters from the words plus some extras
-- start_position and end_position provide exact coordinates for word highlighting
-
 Generate exactly 1 word search puzzle based on the context provided.
 """
 
@@ -303,69 +276,64 @@ FORMAT YOUR RESPONSE AS JSON:
     "learning_objective": "Build vocabulary and conceptual understanding of {subtopic_name}."
 }}
 
-IMPORTANT:
-- start_position provides exact (row, col) coordinates for word placement
-- grid_layout shows the complete filled crossword grid
-- word_intersections ensure words properly connect
-- All words must fit within the specified grid_size
-
 Generate exactly 1 crossword puzzle based on the context provided.
 """
 
     @staticmethod
     def get_pre_assessment_prompt() -> str:
         return """
-You are a Python assessment expert creating a pre-assessment for a new student.
-
-GOAL: Assess the student's knowledge in key Python topics to recommend a personalized learning path.
-
-TOPICS TO COVER (each with subtopics listed underneath):
+TOPICS (with their subtopics):
 {topics_and_subtopics}
-- For each topic, the listed subtopics are the *scope* of that topic. Questions should reference subtopics as belonging to their parent topic.
 
-REQUIREMENTS:
-- Generate exactly {num_questions} multiple-choice questions.
-- For each question:
-    * Specify the topic (must be one of the topics above).
-    * List the subtopics_covered (choose one or more subtopics relevant to the question, always from the subtopics under the given topic).
-    * Write a clear question (avoid ambiguity, be concise).
-    * Give four answer choices (A-D), with the correct answer randomly assigned among them (do NOT always use A).
-    * Indicate correct_answer as the corresponding letter (A/B/C/D).
-    * Specify the difficulty ("beginner", "intermediate", "advanced", "master").
-    * Give a brief explanation of the answer.
-- Distribute questions across topics and subtopics as evenly as possible.
-- Mix question difficulty and ensure a breadth of coverage.
-- Format output as a **JSON list** of objects, each with: topic, subtopics_covered, question, choices, correct_answer, difficulty, explanation.
+🎯 CRITICAL REQUIREMENT: Generate EXACTLY {num_questions} questions. NOT {num_questions}+1, NOT {num_questions}+2, EXACTLY {num_questions}.
 
-IMPORTANT:
-- Each question must clearly state all subtopics it covers (from the relevant topic).
-- Do not always place the correct answer as choice A.
-- Output ONLY the JSON list, with no extra commentary, markdown, or formatting.
+For each question:
+- Specify the topic (must be from the above list and exact name).
+- List relevant subtopics covered (exact name).
+- Write a clear, concise question.
+- Provide exactly four answer choices as an array of strings.
+- Specify the correct answer as the exact string from the choices.
+- Cycle evenly through difficulty levels: beginner, intermediate, advanced, master.
+- Ensure at least one question of any topic is of 'master' difficulty level (super hard), to inspire learners.
+- Keep answers simple and clean — avoid escape sequences like \n, \t, etc. whenever possible.
+- Only include escape sequences in answers if the topic or question context explicitly requires showing code or escape characters.
+- For output or pattern questions, describe the result or pattern in words instead of using literal escape sequences.
+- Do NOT include markdown formatting, code fences, or other non-JSON decorations in your output.
 
-EXAMPLE OUTPUT FORMAT:
+⚠️ ABSOLUTE REQUIREMENT: Your JSON array MUST contain exactly {num_questions} question objects. Count them before responding.
+
+Distribute questions evenly across topics, subtopics, and difficulty levels, allowing some mix.
+
+Output only a JSON list of exactly {num_questions} question objects with these exact fields:
+topic, subtopics_covered, question, choices (array of 4 strings), correct_answer (string), difficulty, explanation.
+
+IMPORTANT: 
+- The 'choices' field MUST be an array of exactly 4 strings, like ["option1", "option2", "option3", "option4"].
+- The 'correct_answer' MUST be exactly one of the strings from the 'choices' array (exact match).
+- For multi-line answers or special characters, ensure the correct_answer exactly matches one of the choices.
+- Generate EXACTLY {num_questions} questions in the JSON array.
+- Ensure each question covers different subtopics for variety.
+- COUNT YOUR QUESTIONS: The final JSON array length must be {num_questions}.
+
+Example:
+
 [
   {{
     "topic": "Functions",
     "subtopics_covered": ["Defining Functions", "Return Values"],
     "question": "What is the output of: def f(): return 5; print(f())",
-    "choices": {{ "A": "5", "B": "None", "C": "f", "D": "Error" }},
-    "correct_answer": "A",
+    "choices": ["5", "None", "f", "Error"],
+    "correct_answer": "5",
     "difficulty": "beginner",
-    "explanation": "The function returns 5, so print(f()) prints 5."
   }}
-  // ...more questions
 ]
 
-Generate exactly {num_questions} pre-assessment questions based on the topics and subtopics listed above.
+🔢 FINAL CHECK: Generate exactly {num_questions} questions now. Count them to ensure you have {num_questions} questions total.
+
 """
 
 
 class DeepSeekPromptManager:
-    """
-    Manages prompt selection, formatting, and validation.
-    Add to prompt_mapping and required_context_vars when you add a new mode.
-    """
-
     required_context_vars = {
         "hangman_coding": [
             "rag_context", "subtopic_name", "subtopic_description", "difficulty", "learning_objectives"
@@ -395,16 +363,11 @@ class DeepSeekPromptManager:
         }
 
     def get_prompt_for_minigame(self, minigame_type: str, context: Dict[str, Any]) -> str:
-        """
-        Select and format a prompt for the specified minigame or assessment type.
-        """
         if minigame_type not in self.prompt_mapping:
             raise ValueError(f"Unsupported minigame type: {minigame_type}. Supported: {list(self.prompt_mapping.keys())}")
-
         prompt_template = self.prompt_mapping[minigame_type]()
         try:
-            formatted_prompt = prompt_template.format(**context)
-            return formatted_prompt
+            return prompt_template.format(**context)
         except KeyError as e:
             raise ValueError(f"Missing required context variable for prompt formatting: {e}")
 
@@ -418,5 +381,4 @@ class DeepSeekPromptManager:
         )
         return all(var in context for var in required)
 
-# Global instance for easy import everywhere
 deepseek_prompt_manager = DeepSeekPromptManager()

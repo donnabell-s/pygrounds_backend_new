@@ -83,9 +83,11 @@ def generate_subtopic_embeddings(request):
     try:
         from content_ingestion.helpers.embedding_utils import EmbeddingGenerator
 
-        subtopics = Subtopic.objects.filter(description_embedding__isnull=True)
+        # Find subtopics without embeddings
+        subtopics_with_embeddings = Subtopic.objects.filter(embedding_obj__isnull=False)
+        subtopics = Subtopic.objects.exclude(id__in=subtopics_with_embeddings.values_list('id', flat=True))
         total = Subtopic.objects.count()
-        already = total - subtopics.count()
+        already = subtopics_with_embeddings.count()
 
         if not subtopics.exists():
             return Response({
@@ -104,10 +106,16 @@ def generate_subtopic_embeddings(request):
 
         for subtopic in subtopics:
             try:
-                text = f"{subtopic.topic.name} - {subtopic.name}: {subtopic.description}"
+                text = f"{subtopic.topic.name} - {subtopic.name}"
                 emb = generator.generate_embedding(text)
-                subtopic.description_embedding = emb.tolist()
-                subtopic.save(update_fields=['description_embedding'])
+                
+                # Create embedding via the Embedding model
+                from content_ingestion.models import Embedding
+                Embedding.objects.create(
+                    subtopic=subtopic,
+                    vector=emb.tolist()
+                )
+                
                 details.append({
                     'subtopic_id': subtopic.id,
                     'subtopic_name': subtopic.name,

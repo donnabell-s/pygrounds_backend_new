@@ -120,16 +120,16 @@ def get_topic_subtopic_embeddings_detailed(request):
         subtopics_without_embeddings = []
 
         for subtopic in subtopics:
-            has_embedding = subtopic.description_embedding is not None
+            # Check if subtopic has an embedding via the Embedding model
+            has_embedding = hasattr(subtopic, 'embedding_obj') and subtopic.embedding_obj is not None
             subtopic_data = {
                 'subtopic_id': subtopic.id,
                 'subtopic_name': subtopic.name,
-                'description': subtopic.description,
                 'topic_name': subtopic.topic.name,
                 'zone_name': subtopic.topic.zone.name,
                 'has_embedding': has_embedding,
-                'embedding_vector': subtopic.description_embedding if has_embedding else None,
-                'embedding_dimensions': len(subtopic.description_embedding) if has_embedding else 0
+                'embedding_vector': subtopic.embedding_obj.vector if has_embedding else None,
+                'embedding_dimensions': len(subtopic.embedding_obj.vector) if has_embedding else 0
             }
             if has_embedding:
                 subtopics_with_embeddings.append(subtopic_data)

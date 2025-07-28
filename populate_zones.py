@@ -71,6 +71,7 @@ def generate_topic_embeddings():
 def populate_zones():
     """
     Populate the database with predefined zones, topics, and subtopics.
+    This will completely overwrite any existing data.
     """
     zones_data = [
     {
@@ -290,10 +291,48 @@ def populate_zones():
 
     print("🚀 Starting PyGrounds zone population...")
     print("=" * 60)
-    print("🧹 Clearing existing zones, topics, and subtopics...")
-    Subtopic.objects.all().delete()
-    Topic.objects.all().delete()
-    GameZone.objects.all().delete()
+    
+    # Clean up existing data with detailed feedback
+    print("🧹 Cleaning existing data...")
+    
+    # Get counts before deletion for feedback
+    existing_subtopics = Subtopic.objects.count()
+    existing_topics = Topic.objects.count()
+    existing_zones = GameZone.objects.count()
+    
+    if existing_subtopics > 0 or existing_topics > 0 or existing_zones > 0:
+        print(f"  📊 Found existing data:")
+        print(f"    • {existing_zones} zones")
+        print(f"    • {existing_topics} topics") 
+        print(f"    • {existing_subtopics} subtopics")
+        print("  🗑️  Deleting all existing data...")
+        
+        # Delete in proper order (child to parent) to avoid foreign key issues
+        Subtopic.objects.all().delete()
+        print("    ✅ Subtopics deleted")
+        
+        Topic.objects.all().delete()
+        print("    ✅ Topics deleted")
+        
+        GameZone.objects.all().delete()
+        print("    ✅ Zones deleted")
+        
+        # Also clean up any orphaned embeddings
+        try:
+            from content_ingestion.models import Embedding
+            orphaned_embeddings = Embedding.objects.filter(subtopic__isnull=True, document_chunk__isnull=True)
+            if orphaned_embeddings.exists():
+                count = orphaned_embeddings.count()
+                orphaned_embeddings.delete()
+                print(f"    ✅ {count} orphaned embeddings deleted")
+        except Exception as e:
+            print(f"    ⚠️  Could not clean orphaned embeddings: {e}")
+            
+        print("  🎯 Database cleaned successfully!")
+    else:
+        print("  ✨ Database is already clean - no existing data found")
+
+    print()
 
     total_zones = len(zones_data)
     total_topics = sum(len(zone["topics"]) for zone in zones_data)
@@ -322,7 +361,6 @@ def populate_zones():
                 subtopic = Subtopic.objects.create(
                     topic=topic,
                     name=subtopic_name,
-                    description=subtopic_name,
                     order=sub_idx,
                 )
                 print(f"    📝 Subtopic {subtopic.order}: {subtopic.name}")
@@ -330,14 +368,35 @@ def populate_zones():
 
     print("=" * 60)
     print("🎉 PyGrounds zone population complete!\n")
-    print("📈 Summary:")
-    print(f"  • Created {GameZone.objects.count()} zones")
-    print(f"  • Created {Topic.objects.count()} topics")
-    print(f"  • Created {Subtopic.objects.count()} subtopics")
+    
+    # Verify the data was created correctly
+    final_zones = GameZone.objects.count()
+    final_topics = Topic.objects.count()
+    final_subtopics = Subtopic.objects.count()
+    
+    print("📈 Final Summary:")
+    print(f"  • Created {final_zones} zones (expected: {total_zones})")
+    print(f"  • Created {final_topics} topics (expected: {total_topics})")
+    print(f"  • Created {final_subtopics} subtopics (expected: {total_subtopics})")
+    
+    # Verify counts match expectations
+    if final_zones == total_zones and final_topics == total_topics and final_subtopics == total_subtopics:
+        print("  ✅ All data created successfully!")
+    else:
+        print("  ⚠️  Warning: Some data may not have been created correctly")
+        print("     Please check the logs above for any errors")
 
     generate_topic_embeddings()
 
     print("\n🎮 Your PyGrounds learning structure is ready!")
 
 if __name__ == "__main__":
-    populate_zones()
+    try:
+        populate_zones()
+    except KeyboardInterrupt:
+        print("\n\n⚠️  Operation cancelled by user")
+        sys.exit(1)
+    except Exception as e:
+        print(f"\n\n❌ Error during population: {e}")
+        print("   Please check your database connection and model definitions")
+        sys.exit(1)

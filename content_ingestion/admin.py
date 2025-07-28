@@ -24,7 +24,7 @@ class TopicAdmin(admin.ModelAdmin):
 
 @admin.register(Subtopic)
 class SubtopicAdmin(admin.ModelAdmin):
-    list_display = ['topic', 'order', 'name', 'description']  # Remove difficulty_levels, min_zone_exp, is_unlocked
+    list_display = ['topic', 'order', 'name']  # Removed 'description' field that doesn't exist
     list_filter = ['topic__zone']
     ordering = ['topic__zone__order', 'topic__order', 'order']
 

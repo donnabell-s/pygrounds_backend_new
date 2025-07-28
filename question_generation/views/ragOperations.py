@@ -28,7 +28,6 @@ class SubtopicRAGView(APIView):
                 'subtopic': {
                     'id': subtopic.id,
                     'name': subtopic.name,
-                    'description': subtopic.description,
                     'topic': subtopic.topic.name,
                     'zone': subtopic.topic.zone.name,
                     'learning_objectives': getattr(subtopic, 'learning_objectives', None)
