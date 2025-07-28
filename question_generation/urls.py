@@ -26,6 +26,12 @@ from .views import (
     # Question generation 
     deepseek_test_view,
     generate_questions_with_deepseek,
+    
+    # Session management
+    RAGSessionListView, CompareSubtopicAndGenerateView,
+
+    PreAssessmentQuestionListView
+   
     test_question_generation,
     test_minigame_generation_no_save,
 )
@@ -42,6 +48,14 @@ urlpatterns = [
     path('subtopic/<int:subtopic_id>/', get_subtopic_questions, name='get_subtopic_questions'),
     path('topic/<int:topic_id>/summary/', get_topic_questions_summary, name='get_topic_summary'),
     
+    # Question Management
+    path('questions/subtopic/<int:subtopic_id>/', get_subtopic_questions, name='subtopic_questions'),
+    path('questions/topic/<int:topic_id>/summary/', get_topic_questions_summary, name='topic_questions_summary'),
+    
+    # RAG Sessions
+    path('rag/sessions/', RAGSessionListView.as_view(), name='rag_sessions'),
+
+    path('preassessment/', PreAssessmentQuestionListView.as_view(), name='preassessment_questions'),
     # GETTER
     path('question/<int:question_id>/', get_question_by_id, name='get_question_by_id'),        # Single question by ID
     path('all/', get_all_questions, name='get_all_questions'),                                 # Get all questions with pagination

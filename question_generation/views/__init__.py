@@ -34,6 +34,10 @@ from .sessionManagement import (
     CompareSubtopicAndGenerateView
 )
 
+from .getQuestions import (
+    PreAssessmentQuestionListView
+)
+
 __all__ = [
     # Question management
     'get_subtopic_questions',
@@ -57,6 +61,8 @@ __all__ = [
     'test_minigame_generation_no_save',
     
     # Session management
-    'RAGSessionListView', 
+    'RAGSessionListView',
     'CompareSubtopicAndGenerateView',
+
+    'PreAssessmentQuestionListView'
 ]
