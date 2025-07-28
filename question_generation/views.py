@@ -6,6 +6,8 @@ from .utils.topic_matcher import classify_topic_and_difficulty
 from content_ingestion.models import DocumentChunk
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from question_generation.utils.topic_predictor import predict_topic  
+
 
 class DocumentChunkListView(APIView):
     def get(self, request):
@@ -58,5 +60,3 @@ class DocumentChunkListView(APIView):
                 'status': 'error',
                 'message': str(e)
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
