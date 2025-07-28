@@ -27,7 +27,8 @@ class UserZoneProgressSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UserZoneProgress
-        fields = ['zone', 'unlocked_at']
+        fields = ['zone', 'unlocked_at', 'completion_percent']  # ← updated
+
 
 
 class UserTopicProficiencySerializer(serializers.ModelSerializer):
