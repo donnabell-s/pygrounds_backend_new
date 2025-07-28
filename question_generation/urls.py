@@ -10,7 +10,10 @@ from .views import (
     generate_questions_with_deepseek,
     
     # Session management
-    RAGSessionListView, CompareSubtopicAndGenerateView
+    RAGSessionListView, CompareSubtopicAndGenerateView,
+
+    PreAssessmentQuestionListView
+   
 )
 
 urlpatterns = [
@@ -39,4 +42,6 @@ urlpatterns = [
     
     # RAG Sessions
     path('rag/sessions/', RAGSessionListView.as_view(), name='rag_sessions'),
+
+    path('preassessment/', PreAssessmentQuestionListView.as_view(), name='preassessment_questions'),
 ]

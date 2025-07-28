@@ -31,6 +31,10 @@ from .sessionManagement import (
     CompareSubtopicAndGenerateView
 )
 
+from .getQuestions import (
+    PreAssessmentQuestionListView
+)
+
 __all__ = [
     # RAG operations
     'SubtopicRAGView',
@@ -50,5 +54,7 @@ __all__ = [
     
     # Session management
     'RAGSessionListView',
-    'CompareSubtopicAndGenerateView'
+    'CompareSubtopicAndGenerateView',
+
+    'PreAssessmentQuestionListView'
 ]
