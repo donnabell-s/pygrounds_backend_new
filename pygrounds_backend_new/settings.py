@@ -52,8 +52,12 @@ INSTALLED_APPS = [
     'content_ingestion',
     'question_generation',
     'user_learning',
+<<<<<<< HEAD
     'minigames',
     'analytics',
+=======
+    'reading',
+>>>>>>> 3f56b0f (completed seeding of Introduction to Python topic)
 ]
 
 MIDDLEWARE = [
