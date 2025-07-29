@@ -34,4 +34,6 @@ urlpatterns = [
     path('', include('content_ingestion.urls')),
 
     path('api/user/', include('users.urls')),
+
+    path('api/', include('user_learning.urls')),
 ]
