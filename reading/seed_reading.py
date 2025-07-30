@@ -265,3 +265,141 @@ python3 --version
 """,
 order_in_topic=8
 )
+
+ReadingMaterial.objects.create (
+    topic="Variables and Data Types",
+    subtopic="Declaring Variables in Python",
+    title="Declaring Variables in Python",
+    content="""
+## Declaring Variables in Python
+
+In Python, variables are created when you assign a value to them — no need to declare the data type.
+
+---
+
+### Example:
+
+```python
+x = 5
+name = "Alice"
+price = 19.99
+
+You can assign any value to a variable, and Python automatically detects its type.
+
+Reassigning Variables: 
+
+x = 10        #Initially an integer
+x = "ten"     # Now it's a string
+
+Pyhton is dynamically typed, meaning variable types can change at runtime. """,
+
+order_in_topic =1
+)
+
+ReadingMaterial.objects.create(
+topic="Variables and Data Types",
+subtopic="Data Types Overview",
+title="Understanding Python Data Types",
+content="""
+
+Understanding Python Data Types
+Python has several built-in data types. Here are the most common:
+
+
+Basic Types: 
+int -> Whole numbers (example 10)
+float -> Decimal number (example: 3.14)
+str -> Text (example "Hello")
+bool -> Boolean values (True, False)
+
+Collection Tyoes:
+list -> Ordered, changeable, allows duplicates
+Example: fruits = ["apple", "banana"]
+tuple -> Ordered, unchangeable, allows duplicates
+Example: coords = (10, 20)
+
+set -> Unordered, no duplicates
+Example: unique_nums = {1, 2, 3}
+
+dict -> Key-value pairs 
+Example: person = {"name": "John", "age": 30}
+""",
+order_in_topic=2
+)
+
+ReadingMaterial.objects.create(
+topic="Variables and Data Types",
+subtopic="Type Conversion",
+title="Converting Between Data Types",
+content="""
+
+
+Converting Between Data Types
+You can convert from one data type to another using Python's built-in functions.
+
+Common Conversions:
+x = 5
+str_x = str(x)      # Converts int to string → "5"
+float_x = float(x)  # Converts int to float → 5.0
+int_str = int("10")  # Converts string to int → 10
+
+Be Careful:
+Not all conversions are valid:
+int("abc")  # Error!
+
+""",
+order_in_topic=3
+)
+
+ReadingMaterial.objects.create(
+topic="Variables and Data Types",
+subtopic="Constants and Naming Conventions",
+title="Using Constants and Variable Naming Rules",
+content="""
+
+Using Constants and Variable Naming Rules
+Python doesn't have built-in constant support, but by convention, uppercase variable names are treated as constants.
+
+Example:
+PI = 3.14159
+MAX_USERS = 100
+
+Naming Conventions:
+-Use lowercase letters and underscores for variables: user_name
+
+-Constants should be in uppercase: TOTAL_SCORE
+
+-Variable names must:
+ Start with a letter or underscore
+
+Not start with a number
+
+Not contain spaces
+""",
+order_in_topic=4
+)
+
+
+ReadingMaterial.objects.create(
+topic="Variables and Data Types",
+subtopic="Using the type() Function",
+title="Checking Variable Types with type()",
+content="""
+
+Checking Variable Types with type()
+The type() function lets you check what data type a variable holds.
+
+Example:
+
+x = 42
+print(type(x))       # <class 'int'>
+
+name = "Alice"
+print(type(name))    # <class 'str'>
+
+This is useful for debugging and understanding your data.
+""",
+order_in_topic=5
+)
+
+
