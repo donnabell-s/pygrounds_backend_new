@@ -1,7 +1,7 @@
 from reading.models import ReadingMaterial
 
 
-ReadingMaterial.objects.get_or_create(
+ReadingMaterial.objects.get_or_create(    
     topic="Introduction to Python & IDE Setup",
     subtopic="Installing Python",
     title="Installing Python",
@@ -29,7 +29,7 @@ Before you can write Python code, you need to install Python on your machine.
 order_in_topic=1
 )
 
-ReadingMaterial.objects.get_or_create(
+ReadingMaterial.objects.get_or_create(   
 topic="Introduction to Python & IDE Setup",
 subtopic="Choosing and Setting Up an IDE",
 title="Choosing and Setting Up an IDE",
@@ -76,7 +76,7 @@ print("Hello, Python!")
 order_in_topic=2
 )
 
-ReadingMaterial.objects.get_or_create(
+ReadingMaterial.objects.get_or_create(   
 topic="Introduction to Python & IDE Setup",
 subtopic="Writing and Running Your First Python Script",
 title="Your First Python Program",
@@ -109,7 +109,7 @@ order_in_topic=3
 )
 
 
-ReadingMaterial.objects.get_or_create(
+ReadingMaterial.objects.get_or_create(   
     topic="Introduction to Python & IDE Setup",
     subtopic="Python Interpreter and File Structure",
     title="Understanding the Python Interpreter and File Structure",
@@ -157,7 +157,7 @@ order_in_topic=4
 )
 
 
-ReadingMaterial.objects.get_or_create(
+ReadingMaterial.objects.get_or_create(   
 topic="Introduction to Python & IDE Setup",
 subtopic="Running Python in Terminal",
 title="Running Python Programs in the Terminal",
@@ -185,7 +185,7 @@ Permission denied → Check file permissions or add execution rights.
 order_in_topic=5
 )
 
-ReadingMaterial.objects.get_or_create(
+ReadingMaterial.objects.get_or_create(   
 topic="Introduction to Python & IDE Setup",
 subtopic="Using Online Python Interpreters",
 title="Trying Python Using Online Interpreters",
@@ -211,7 +211,7 @@ May have internet dependency
 order_in_topic=6
 )
 
-ReadingMaterial.objects.get_or_create(
+ReadingMaterial.objects.get_or_create(   
 topic="Introduction to Python & IDE Setup",
 subtopic="Setting Up Environment Variables",
 title="Setting Up Environment Variables for Python",
@@ -235,7 +235,7 @@ How to Set (Windows):
 order_in_topic=7
 )
 
-ReadingMaterial.objects.get_or_create(
+ReadingMaterial.objects.get_or_create(   
 topic="Introduction to Python & IDE Setup",
 subtopic="python vs python3 Commands",
 title="Difference Between python and python3 Commands",
@@ -265,7 +265,7 @@ python3 --version
 order_in_topic=8
 )
 
-ReadingMaterial.objects.get_or_create(
+ReadingMaterial.objects.get_or_create(   
     topic="Variables and Data Types",
     subtopic="Declaring Variables in Python",
     title="Declaring Variables in Python",
@@ -295,7 +295,7 @@ Pyhton is dynamically typed, meaning variable types can change at runtime. """,
 order_in_topic =1
 )
 
-ReadingMaterial.objects.get_or_create(
+ReadingMaterial.objects.get_or_create(   
 topic="Variables and Data Types",
 subtopic="Data Types Overview",
 title="Understanding Python Data Types",
@@ -326,7 +326,7 @@ Example: person = {"name": "John", "age": 30}
 order_in_topic=2
 )
 
-ReadingMaterial.objects.get_or_create(
+ReadingMaterial.objects.get_or_create(   
 topic="Variables and Data Types",
 subtopic="Type Conversion",
 title="Converting Between Data Types",
@@ -350,7 +350,7 @@ int("abc")  # Error!
 order_in_topic=3
 )
 
-ReadingMaterial.objects.get_or_create(
+ReadingMaterial.objects.get_or_create(   
 topic="Variables and Data Types",
 subtopic="Constants and Naming Conventions",
 title="Using Constants and Variable Naming Rules",
@@ -378,7 +378,7 @@ Not contain spaces
 order_in_topic=4
 )
 
-ReadingMaterial.objects.get_or_create(
+ReadingMaterial.objects.get_or_create(   
 topic="Variables and Data Types",
 subtopic="Using the type() Function",
 title="Checking Variable Types with type()",
@@ -400,7 +400,7 @@ This is useful for debugging and understanding your data.
 order_in_topic=5
 )
 
-ReadingMaterial.objects.get_or_create(
+ReadingMaterial.objects.get_or_create(   
     topic="Variables and Data Types",
     subtopic="Booleans and Logical Expressions",
     title="Understanding Booleans and Logical Expressions",
@@ -434,8 +434,7 @@ print(not x == 5)         # False
 """,
 order_in_topic=6
 )
-
-ReadingMaterial.objects.get_or_create(
+ReadingMaterial.objects.get_or_create(   
     topic="Variables and Data Types",
     subtopic="Type Checking with isinstance()",
     title="Using isinstance() for Type Checking",
@@ -466,7 +465,7 @@ order_in_topic=7
 )
 
 # Subtopic 1: Using the input() Function
-ReadingMaterial.objects.get_or_create(
+ReadingMaterial.objects.get_or_create(   
     topic="Basic Input and Output",
     subtopic="Using the input() Function",
     title="Getting User Input with input()",
@@ -503,7 +502,7 @@ order_in_topic=1
 )
 ## Subtopic 2: Displaying Output with print()
 
-ReadingMaterial.objects.get_or_create(
+ReadingMaterial.objects.get_or_create(   
 topic="Basic Input and Output",
 subtopic="Displaying Output with print()",
 title="Displaying Output with print()",
@@ -536,7 +535,7 @@ order_in_topic=2
 )
 
 ##Subtopic 3: Using f-Strings for Formatting
-ReadingMaterial.objects.get_or_create(
+ReadingMaterial.objects.get_or_create(   
 topic="Basic Input and Output",
 subtopic="Using f-Strings for Formatting",
 title="Formatting Output with f-Strings",
@@ -558,7 +557,7 @@ order_in_topic=3
 )
 
 ##Subtopic 4: Escape Characters in Strings
-ReadingMaterial.objects.get_or_create(
+ReadingMaterial.objects.get_or_create(   
 topic="Basic Input and Output",
 subtopic="Escape Characters in Strings",
 title="Using Escape Characters in Strings",
@@ -583,7 +582,7 @@ print("C:\\\\Users\\\\John Doe)
 order_in_topic=4
 )
 
-ReadingMaterial.objects.get_or_create(
+ReadingMaterial.objects.get_or_create(   
 topic="Basic Input and Output",
 subtopic="Printing Multiple Lines",
 title="Printing Multiple Lines and Line Breaks",
@@ -609,7 +608,7 @@ order_in_topic=5
 )
 
 # Subtopic 1: Arithmetic Operators
-ReadingMaterial.objects.get_or_create(
+ReadingMaterial.objects.get_or_create(   
     topic="Operators",
     subtopic="Arithmetic Operators",
     title="Using Arithmetic Operators in Python",
@@ -646,7 +645,7 @@ print(a % b)
 order_in_topic=1
 )
  ##Subtopic 2: Comparison Operators
-ReadingMaterial.objects.get_or_create(
+ReadingMaterial.objects.get_or_create(   
 topic="Operators",
 subtopic="Comparison Operators",
 title="Using Comparison Operators in Python",
@@ -680,7 +679,7 @@ order_in_topic=2
 )
 
 ##Subtopic 3: Assignment Operators
-ReadingMaterial.objects.get_or_create(
+ReadingMaterial.objects.get_or_create(   
 topic="Operators",
 subtopic="Assignment Operators",
 title="Understanding Assignment Operators",
@@ -713,7 +712,7 @@ order_in_topic=3
 )
 
 ##Subtopic 4: Logical Operators
-ReadingMaterial.objects.get_or_create(
+ReadingMaterial.objects.get_or_create(   
 topic="Operators",
 subtopic="Logical Operators",
 title="Using Logical Operators in Python",
@@ -740,7 +739,7 @@ order_in_topic=4
 )
 
 ##Subtopic 5: Operator Precedence
-ReadingMaterial.objects.get_or_create(
+ReadingMaterial.objects.get_or_create(   
 topic="Operators",
 subtopic="Operator Precedence",
 title="Understanding Operator Precedence",
@@ -771,7 +770,7 @@ result = (3 + 2) * 5  # Output: 25
 order_in_topic=5
 )
 
-ReadingMaterial.objects.get_or_create(
+ReadingMaterial.objects.get_or_create(   
     topic="Operators",
     subtopic="Membership and Identity Operators",
     title="Using Membership and Identity Operators in Python",
@@ -816,7 +815,7 @@ order_in_topic=6
 )
 
 
-ReadingMaterial.objects.get_or_create(
+ReadingMaterial.objects.get_or_create(   
     topic="Operators",
     subtopic="Bitwise Operators",
     title="Introduction to Bitwise Operators (Advanced)",
@@ -857,7 +856,7 @@ order_in_topic=7
 )
 
 
-ReadingMaterial.objects.get_or_create(
+ReadingMaterial.objects.get_or_create(    
     topic="Control Structures",
     subtopic="if Statements",
     title="Using if Statements",
@@ -880,7 +879,7 @@ If the condition is true, the indented code runs.
 order_in_topic=1
 )
 
-ReadingMaterial.objects.get_or_create(
+ReadingMaterial.objects.get_or_create(   
 topic="Control Structures",
 subtopic="if-else Statements",
 title="Using if-else Statements",
@@ -900,7 +899,7 @@ This gives your code two paths: one if true, and one if false.
 order_in_topic=2
 )
 
-ReadingMaterial.objects.get_or_create(
+ReadingMaterial.objects.get_or_create(   
 topic="Control Structures",
 subtopic="if-elif-else Statements",
 title="Using if-elif-else Statements",
@@ -927,4 +926,182 @@ This lets you handle many possible cases.
 order_in_topic=3
 )
 
+
+ReadingMaterial.objects.get_or_create(   
+    topic="Control Structures",
+    subtopic="Nested Conditional Statements",
+    title="Using Nested Conditional Statements",
+    content="""
+## Using Nested Conditional Statements
+
+Nested conditionals are `if`, `elif`, or `else` blocks placed **inside another conditional**. They allow you to make more complex decisions in your code.
+
+---
+
+### Example:
+
+age = 18
+has_id = True
+
+if age >= 18:
+    if has_id:
+        print("You can enter.")
+    else:
+        print("ID required.")
+else:
+    print("You must be 18 or older.")
+In this example:
+
+The program first checks if age >= 18.
+
+Inside that block, it checks if the person has an ID.
+
+Why Use Nested Conditionals?
+They let your logic become more specific and contextual. However, too many levels of nesting can make code hard to read.
+
+Best Practice
+Try to avoid deeply nested code by using elif, logical operators, or separating logic into functions.
+""",
+order_in_topic=4
+)
+
+ReadingMaterial.objects.get_or_create(   
+    topic="Control Structures",
+    subtopic="Ternary Operators",
+    title="Using Ternary Operators for Short Conditions",
+    content="""
+## Using Ternary Operators for Short Conditions
+
+Ternary operators are a shorthand way to write simple `if-else` statements in **one line**.
+
+---
+
+### Syntax:
+value_if_true if condition else value_if_false
+
+Example:
+age = 20
+status = "Adult" if age >= 18 else "Minor"
+print(status)  # Output: Adult
+
+This is the same as writing:
+
+if age >= 18:
+    status = "Adult"
+else:
+    status = "Minor"
+    
+ When to Use:
+ 
+Use ternary operators when you have a simple condition.
+
+Avoid using them for complex logic — it can make the code hard to read.
+""",
+order_in_topic=5
+)
+
+ReadingMaterial.objects.get_or_create(   
+    topic="Control Structures",
+    subtopic="Boolean Logic in Conditions",
+    title="Combining Conditions with Boolean Logic",
+    content="""
+## Combining Conditions with Boolean Logic
+
+In Python, you can **combine multiple conditions** using logical operators: `and`, `or`, and `not`.
+
+---
+
+### Example:
+
+age = 20
+has_ticket = True
+
+if age >= 18 and has_ticket:
+    print("You may enter.")
+
+This checks if both conditions are True.
+
+More Examples:
+
+# OR (at least one is True)
+if age < 18 or not has_ticket:
+    print("You cannot enter.")
+
+# NOT (reverses a condition)
+if not has_ticket:
+    print("No ticket found.")
+Use Boolean logic to create flexible and powerful conditions.
+""",
+order_in_topic=6
+)
+
+ReadingMaterial.objects.get_or_create(   
+    topic="Control Structures",
+    subtopic="Input with Conditions",
+    title="Using Input Directly Inside Conditions",
+    content="""
+## Using Input Directly Inside Conditions
+
+You can ask for user input and immediately use it in a condition.
+
+---
+
+### Example:
+password = input("Enter password: ")
+
+if password == "admin123":
+    print("Access granted.")
+else:
+    print("Wrong password.")
+You can also convert input before comparing:
+
+age = int(input("Enter your age: "))
+
+if age >= 18:
+    print("You're eligible.")
+Make sure to convert input to the correct type (int, float, etc.) when needed.
+""",
+order_in_topic=7
+)
+
+
+
+ReadingMaterial.objects.get_or_create(   
+    topic="Control Structures",
+    subtopic="Common logic pitfalls",
+    title="Common Mistakes in Conditional Logic",
+    content="""
+## Common Mistakes in Conditional Logic
+
+Even simple logic can go wrong. Let’s look at common mistakes and how to avoid them.
+
+
+###Mistake 1: Using `=` instead of `==`
+
+if x = 5:   # This is assignment, not comparison!
+
+Fix:
+if x == 5:
+
+Mistake 2: Forgetting Indentation
+print("Positive")  # Not indented
+
+Fix:
+
+if x > 0:
+    print("Positive")
+
+Mistake 3: Complex Logic Without Parentheses
+if x > 5 or x < 2 and y == 3:  # May behave unexpectedly
+
+Fix:
+
+Use parentheses to group:
+
+if (x > 5 or x < 2) and y == 3:
+
+Always test your logic and use print() to debug if needed!
+""",
+order_in_topic=8
+)
 
