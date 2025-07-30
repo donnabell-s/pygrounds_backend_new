@@ -379,7 +379,6 @@ Not contain spaces
 order_in_topic=4
 )
 
-
 ReadingMaterial.objects.create(
 topic="Variables and Data Types",
 subtopic="Using the type() Function",
@@ -403,3 +402,145 @@ order_in_topic=5
 )
 
 
+# Subtopic 1: Using the input() Function
+ReadingMaterial.objects.create(
+    topic="Basic Input and Output",
+    subtopic="Using the input() Function",
+    title="Getting User Input with input()",
+    content="""
+## Getting User Input with `input()`
+
+The `input()` function allows you to get input from the user through the keyboard.
+
+---
+
+### Basic Example:
+
+```python
+name = input("What is your name? ")
+print("Hello,", name)
+
+
+The text inside input() is called a prompt — it shows up before the user types.
+
+
+
+Note:
+All input is treated as a string by default:
+
+age = input("Enter your age: ")
+print(type(age))  # <class 'str'>
+
+To convert to number:
+
+age = int(age)
+
+""",
+order_in_topic=1
+)
+## Subtopic 2: Displaying Output with print()
+
+ReadingMaterial.objects.create(
+topic="Basic Input and Output",
+subtopic="Displaying Output with print()",
+title="Displaying Output with print()",
+content="""
+
+Displaying Output with print()
+The print() function shows text or variable values in the output (usually the terminal).
+
+Basic Usage:
+
+print("Hello, world!")
+
+You can also print multiple items:
+
+name = "Alice"
+age = 20
+print("Name:", name, "Age:", age)
+
+Print with separator:
+
+print("A", "B", "C", sep="-") 
+
+Print with end:
+
+print("Hello", end=" ")
+print("World")  ##Output: Hello World
+
+""",
+order_in_topic=2
+)
+
+##Subtopic 3: Using f-Strings for Formatting
+ReadingMaterial.objects.create(
+topic="Basic Input and Output",
+subtopic="Using f-Strings for Formatting",
+title="Formatting Output with f-Strings",
+content="""
+Formatting Output with f-Strings
+f-strings make it easy to include variables inside strings.
+Example:
+name = "John Doe"
+age = 21
+
+print(f"My name is {name} and I am {age} years old.")
+
+You can also do inline expressions:
+print(f"In 5 years, I’ll be {age + 5}")
+
+f-Strings require Python 3.6 or higher.
+""",
+order_in_topic=3
+)
+
+##Subtopic 4: Escape Characters in Strings
+ReadingMaterial.objects.create(
+topic="Basic Input and Output",
+subtopic="Escape Characters in Strings",
+title="Using Escape Characters in Strings",
+content="""
+
+Using Escape Characters in Strings
+Escape characters let you add special characters inside a string.
+Common Escape Characters:
+
+Code                        Meaning
+\\n                         New Line
+\\t                         Tab
+\\\"                        Double qoute
+\\\\                        Backslash
+
+Examples:
+
+print("Line 1\\nLine 2")
+print("She said: \\\"Hello!\\\"")
+print("C:\\\\Users\\\\John Doe)
+""",
+order_in_topic=4
+)
+
+ReadingMaterial.objects.create(
+topic="Basic Input and Output",
+subtopic="Printing Multiple Lines",
+title="Printing Multiple Lines and Line Breaks",
+content="""
+
+Printing Multiple Lines and Line Breaks
+There are a few ways to print multiple lines in Python.
+Using \\n (newline):
+print("This is line one.\\nThis is line two.")
+
+Using triple quotes:
+print(\"\"\"This is line one.
+This is line two.
+This is line three.\"\"\")
+
+Using multiple print() calls:
+print("Line one")
+print("Line two")
+print("Line three")
+
+""",
+order_in_topic=5
+)
