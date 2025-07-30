@@ -364,7 +364,7 @@ Example:
 PI = 3.14159
 MAX_USERS = 100
 
-Naming Conventions:
+Naming Conventions:  
 -Use lowercase letters and underscores for variables: user_name
 
 -Constants should be in uppercase: TOTAL_SCORE
@@ -401,6 +401,70 @@ This is useful for debugging and understanding your data.
 order_in_topic=5
 )
 
+ReadingMaterial.objects.create(
+    topic="Variables and Data Types",
+    subtopic="Booleans and Logical Expressions",
+    title="Understanding Booleans and Logical Expressions",
+    content="""
+## Understanding Booleans and Logical Expressions
+
+Booleans represent **True** or **False** values in Python.
+
+---
+
+### Boolean Values:
+
+```python
+is_student = True
+has_paid = False
+They are commonly used in conditions and logic.
+Logical Expressions:
+Logical expressions combine comparisons and return boolean results.
+
+Examples:
+age = 20
+print(age > 18)       # True
+print(age < 18)       # False
+
+You can also combine them using logical operators:
+
+x = 5
+print(x > 3 and x < 10)   # True
+print(not x == 5)         # False
+
+""",
+order_in_topic=6
+)
+
+ReadingMaterial.objects.create(
+    topic="Variables and Data Types",
+    subtopic="Type Checking with isinstance()",
+    title="Using isinstance() for Type Checking",
+    content="""
+## Using isinstance() for Type Checking
+
+The `isinstance()` function checks if a variable is a specific type.
+
+
+Syntax:
+
+```python
+isinstance(variable, type)
+
+Examples:
+x = 10
+print(isinstance(x, int))      # True
+
+name = "Alice"
+print(isinstance(name, str))   # True
+
+data = [1, 2, 3]
+print(isinstance(data, list))  # True
+
+This is helpful when validating input or writing conditional logic based on types.
+""",
+order_in_topic=7
+)
 
 # Subtopic 1: Using the input() Function
 ReadingMaterial.objects.create(
@@ -707,3 +771,73 @@ result = (3 + 2) * 5  # Output: 25
 """,
 order_in_topic=5
 )
+
+ReadingMaterial.objects.create(
+    topic="Control Structures",
+    subtopic="if Statements",
+    title="Using if Statements",
+    content="""
+## if Statements
+
+The `if` statement lets your program make decisions.
+
+### Syntax:
+
+```python
+if condition:
+    # code to run if condition is True
+Example:
+age = 18
+if age >= 18:
+    print("You are an adult.")
+If the condition is true, the indented code runs.
+""",
+order_in_topic=1
+)
+ReadingMaterial.objects.create(
+topic="Control Structures",
+subtopic="if-else Statements",
+title="Using if-else Statements",
+content="""
+if-else Statements
+Use else to run a block of code when the if condition is false.
+
+Example:
+age = 16
+if age >= 18:
+    print("You are an adult.")
+else:
+    print("You are a minor.")
+
+This gives your code two paths: one if true, and one if false.
+""",
+order_in_topic=2
+)
+
+ReadingMaterial.objects.create(
+topic="Control Structures",
+subtopic="if-elif-else Statements",
+title="Using if-elif-else Statements",
+content="""
+
+
+if-elif-else Statements
+Use elif to check multiple conditions.
+
+Example:
+score = 85
+
+if score >= 90:
+    print("Grade: A")
+elif score >= 80:
+    print("Grade: B")
+elif score >= 70:
+    print("Grade: C")
+else:
+    print("Grade: F")
+
+This lets you handle many possible cases.
+""",
+order_in_topic=3
+)
+
