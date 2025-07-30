@@ -544,3 +544,166 @@ print("Line three")
 """,
 order_in_topic=5
 )
+
+# Subtopic 1: Arithmetic Operators
+ReadingMaterial.objects.create(
+    topic="Operators",
+    subtopic="Arithmetic Operators",
+    title="Using Arithmetic Operators in Python",
+    content="""
+## Using Arithmetic Operators in Python
+
+Arithmetic operators are used to perform basic math operations.
+
+---
+
+### List of Arithmetic Operators:
+
+| Operator | Description     | Example       |
+|----------|-----------------|---------------|
+| `+`      | Addition         | `3 + 2 = 5`   |
+| `-`      | Subtraction      | `5 - 1 = 4`   |
+| `*`      | Multiplication   | `4 * 2 = 8`   |
+| `/`      | Division         | `6 / 2 = 3.0` |
+| `//`     | Floor Division   | `7 // 2 = 3`  |
+| `%`      | Modulus (remainder) | `7 % 3 = 1` |
+| `**`     | Exponentiation   | `2 ** 3 = 8`  |
+
+---
+
+### Example:
+
+```python
+a = 10
+b = 3
+
+print(a + b)
+print(a % b)
+""",
+order_in_topic=1
+)
+ ##Subtopic 2: Comparison Operators
+ReadingMaterial.objects.create(
+topic="Operators",
+subtopic="Comparison Operators",
+title="Using Comparison Operators in Python",
+content="""
+
+Using Comparison Operators in Python
+Comparison operators are used to compare two values and return True or False.
+
+List of Comparison Operators:
+
+| Operator | Description     | Example   |
+|----------|-----------------|-----------|
+|   ==     | Equal           | a == b    |
+|   !=     | Not equal       | a != b    |
+|   >      | Greater than    | a > b     |
+|   <      | Less than       | a < b     |
+|   >=     | Greater or equal| a >= b    |
+|   <=     | Less or equal   | a <= b    |
+
+
+Example:
+
+x = 5
+y = 8
+
+print(x == y)   False
+print(x < y)    True
+
+""",
+order_in_topic=2
+)
+
+##Subtopic 3: Assignment Operators
+ReadingMaterial.objects.create(
+topic="Operators",
+subtopic="Assignment Operators",
+title="Understanding Assignment Operators",
+content="""
+
+Understanding Assignment Operators
+Assignment operators are used to assign values to variables.
+Some also perform operations before assigning.
+
+List of Assignment Operators:
+
+| Operator | Description           | Example     |
+|----------|-----------------------|-------------|
+|   =      | Assign                | x = 5       |
+|   +=     | Add and assign        | x += 2      |
+|   -=     | Subtract and assign   | x -= 3      |
+|   *=     | Multiply and assign   | x *= 4      |
+|   /=     | Divide and assign     | x /= 2      |
+|   %=     | Modulo and assign     | x %= 3      |
+|   **=    | Exponent and assign   | x **= 2     |
+
+Example:
+
+x = 10
+x += 5
+print(x)  # Output: 15
+
+""",
+order_in_topic=3
+)
+
+##Subtopic 4: Logical Operators
+ReadingMaterial.objects.create(
+topic="Operators",
+subtopic="Logical Operators",
+title="Using Logical Operators in Python",
+content="""
+
+Using Logical Operators in Python
+Logical operators combine conditional statements.
+
+Operators:
+
+Operator	Description
+and	        Returns True if both are True
+or	        Returns True if at least one is True
+not     	Reverses the result
+
+Example:
+
+x = 5
+print(x > 2 and x < 10)   # True
+print(x < 2 or x > 3)     # True
+print(not(x > 4))         # False
+""",
+order_in_topic=4
+)
+
+##Subtopic 5: Operator Precedence
+ReadingMaterial.objects.create(
+topic="Operators",
+subtopic="Operator Precedence",
+title="Understanding Operator Precedence",
+content="""
+
+Understanding Operator Precedence
+When multiple operators are used in a single expression, Python follows operator precedence rules to evaluate the result.
+
+Example:
+result = 3 + 2 * 5
+print(result)  # Output: 13 (not 25!)
+Multiplication happens before addition.
+
+Order of Precedence (High to Low):
+1.() — Parentheses
+2.** — Exponent
+3.* / // % — Multiply, Divide, Modulus
+34.+ - — Add, Subtract
+5.== != > < >= <= — Comparisons
+6.not
+7.and
+8.or
+Use parentheses () to control the order explicitly:
+
+result = (3 + 2) * 5  # Output: 25
+
+""",
+order_in_topic=5
+)
