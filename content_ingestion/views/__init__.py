@@ -19,7 +19,9 @@ from .tocParserView import (
 
 # Page chunking and chunk CRUD views
 from .chunkPagesView import (
+    UploadAndProcessPipelineView,
     CompleteDocumentPipelineView,
+    CompleteSemanticPipelineView,
     ChunkAllPagesView,
     get_document_chunks,
     get_single_chunk,
@@ -42,7 +44,9 @@ from .zoneCrudViews import (
 # Upload views
 from .uploadViews import (
     PDFUploadView,
-    DocumentDetailView
+    DocumentDetailView,
+    PDFTestAnalysisView,
+    PDFTestChunkingView
 )
 
 # JSON Export views
@@ -58,7 +62,6 @@ from .json_export_views import (
 
 # Topic Embedding views
 from .topicEmbeddingView import (
-    generate_topic_embeddings,
     generate_subtopic_embeddings
 )
 
@@ -72,6 +75,8 @@ __all__ = [
     # Upload views
     'PDFUploadView',
     'DocumentDetailView',
+    'PDFTestAnalysisView',
+    'PDFTestChunkingView',
     
     # Embedding views
     'embed_document_chunks',
@@ -84,7 +89,9 @@ __all__ = [
     # 'MapTOCEntryView',  # <-- REMOVED
     
     # Chunk processing views
+    'UploadAndProcessPipelineView',
     'CompleteDocumentPipelineView',
+    'CompleteSemanticPipelineView',
     'ChunkAllPagesView',
     'get_document_chunks',
     'get_single_chunk',
@@ -111,7 +118,6 @@ __all__ = [
     'get_log_statistics',
     
     # Topic Embedding views
-    'generate_topic_embeddings',
     'generate_subtopic_embeddings',
     
     # Embedding Detail views

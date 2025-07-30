@@ -6,8 +6,8 @@ from .models import (
 
 @admin.register(UploadedDocument)
 class UploadedDocumentAdmin(admin.ModelAdmin):
-    list_display = ['title', 'status', 'total_pages', 'uploaded_at']  # Use 'status', not 'processing_status'
-    list_filter = ['status', 'uploaded_at']
+    list_display = ['title', 'processing_status', 'difficulty', 'total_pages', 'uploaded_at']
+    list_filter = ['processing_status', 'difficulty', 'uploaded_at']
     search_fields = ['title']
     readonly_fields = ['uploaded_at']
 
@@ -18,15 +18,15 @@ class GameZoneAdmin(admin.ModelAdmin):
 
 @admin.register(Topic)
 class TopicAdmin(admin.ModelAdmin):
-    list_display = ['zone', 'order', 'name', 'description']  # Remove min_zone_exp, is_unlocked
-    list_filter = ['zone']
-    ordering = ['zone__order', 'order']
+    list_display = ['zone', 'name', 'description', 'is_unlocked']
+    list_filter = ['zone', 'is_unlocked']
+    ordering = ['zone__order', 'name']
 
 @admin.register(Subtopic)
 class SubtopicAdmin(admin.ModelAdmin):
-    list_display = ['topic', 'order', 'name']  # Removed 'description' field that doesn't exist
-    list_filter = ['topic__zone']
-    ordering = ['topic__zone__order', 'topic__order', 'order']
+    list_display = ['topic', 'name', 'is_unlocked']
+    list_filter = ['topic__zone', 'is_unlocked']
+    ordering = ['topic__zone__order', 'topic__name', 'name']
 
 @admin.register(TOCEntry)
 class TOCEntryAdmin(admin.ModelAdmin):

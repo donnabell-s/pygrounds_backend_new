@@ -16,39 +16,94 @@ def find_content_boundaries(pdf_path: str) -> Tuple[int, int]:
     """
     Returns (first_content_page, last_content_page) in 0-based indexing.
     Skips preface, TOC, and appendices by keyword.
+    More strict detection prioritizing "Chapter 1" as content start.
     """
     try:
         doc = fitz.open(pdf_path)
         total_pages = len(doc)
-        start_keywords = [
-            'chapter 1', 'module 1', 'lesson 1', 'unit 1',
+        
+        # Primary content start indicators (strongest signals)
+        primary_start_keywords = [
+            'chapter 1', 'chapter one', 'chapter i',
+            'lesson 1', 'unit 1', 'module 1'
+        ]
+        
+        # Secondary content indicators
+        secondary_start_keywords = [
             'introduction to python', 'getting started',
             'python basics', 'fundamentals', 'variables',
-            'data types', 'functions', 'loops'
+            'data types', 'functions', 'loops', 'programming'
         ]
+        
+        # Pages to definitely skip
         skip_keywords = [
-            'table of contents', 'preface', 'foreword', 'acknowledgments',
-            'about the author', 'about this book', 'copyright', 'isbn',
-            'index', 'bibliography', 'references', 'glossary',
-            'appendix', 'answer key', 'solutions'
+            'table of contents', 'contents', 'preface', 'foreword', 'acknowledgments',
+            'about the author', 'about this book', 'copyright', 'isbn', 'dedication',
+            'index', 'bibliography', 'references', 'glossary', 'about packt',
+            'appendix', 'answer key', 'solutions', 'toc', 'title page', 'cover'
         ]
 
         first_content = 0
         last_content = total_pages - 1
 
-        # Detect start
-        for page_num in range(min(20, total_pages)):
-            text = doc.load_page(page_num).get_text().lower()
-            if any(word in text for word in skip_keywords):
+        # Detect start - prioritize "Chapter 1" detection
+        found_chapter_1 = False
+        for page_num in range(min(50, total_pages)):  # Check more pages for chapter 1
+            try:
+                page = doc.load_page(page_num)
+                text = page.get_text().lower()
+                
+                # Skip pages that are clearly TOC or metadata
+                if any(word in text for word in skip_keywords):
+                    print(f"   Skipping page {page_num + 1}: contains skip keyword")
+                    continue
+                
+                # Skip pages with very little content (likely formatting pages)
+                if len(text.strip()) < 100:
+                    continue
+                    
+                # Look for Chapter 1 first (strongest indicator)
+                if any(keyword in text for keyword in primary_start_keywords):
+                    first_content = page_num
+                    found_chapter_1 = True
+                    print(f"📚 Found Chapter 1 indicator on page {page_num + 1}")
+                    break
+                    
+            except Exception as page_error:
+                print(f"   ⚠️ Error reading page {page_num + 1}: {page_error}")
                 continue
-            if any(word in text for word in start_keywords):
-                first_content = page_num
-                break
-            # Fallback: look for at least 3 code-like patterns
-            code_patterns = ['>>>', 'print(', 'def ', 'import ', 'from ', 'python', 'variable', 'function', 'string']
-            if sum(1 for pat in code_patterns if pat in text) >= 3:
-                first_content = page_num
-                break
+        
+        # If no Chapter 1 found, look for secondary indicators but be more strict
+        if not found_chapter_1:
+            print("   No Chapter 1 found, looking for secondary indicators...")
+            for page_num in range(min(50, total_pages)):
+                try:
+                    page = doc.load_page(page_num)
+                    text = page.get_text().lower()
+                    
+                    # Skip pages that are clearly TOC or metadata
+                    if any(word in text for word in skip_keywords):
+                        continue
+                    
+                    # Skip pages with very little content
+                    if len(text.strip()) < 200:
+                        continue
+                        
+                    if any(word in text for word in secondary_start_keywords):
+                        first_content = page_num
+                        print(f"📚 Found secondary content indicator on page {page_num + 1}")
+                        break
+                        
+                    # Fallback: look for substantial programming content
+                    code_patterns = ['>>>', 'print(', 'def ', 'import ', 'from ', 'python', 'variable', 'function', 'string']
+                    if sum(1 for pat in code_patterns if pat in text) >= 4:
+                        first_content = page_num
+                        print(f"📚 Found programming content on page {page_num + 1}")
+                        break
+                        
+                except Exception as page_error:
+                    print(f"   ⚠️ Error reading page {page_num + 1}: {page_error}")
+                    continue
 
         # Detect end (work backwards)
         for page_num in range(total_pages - 1, max(total_pages - 20, first_content), -1):
@@ -188,17 +243,19 @@ def parse_toc_text(toc_text_block: str) -> List[Dict[str, Any]]:
 
 def _detect_level_advanced(original_line: str, title: str) -> int:
     """Advanced detection of TOC entry hierarchy."""
-    # Numbering patterns
-    if re.match(r'^\s*\d+\.\d+\.\d+', title): return 2
-    if re.match(r'^\s*\d+\.\d+', title): return 1
-    if re.match(r'^\s*\d+\.?\s', title): return 0
+    # Numbering patterns (updated for 4 levels)
+    if re.match(r'^\s*\d+\.\d+\.\d+\.\d+', title): return 3  # 1.2.3.4 → Level 3 (4th level)
+    if re.match(r'^\s*\d+\.\d+\.\d+', title): return 2       # 1.2.3 → Level 2 (3rd level)
+    if re.match(r'^\s*\d+\.\d+', title): return 1            # 1.2 → Level 1 (2nd level)
+    if re.match(r'^\s*\d+\.?\s', title): return 0            # 1. → Level 0 (1st level)
     if re.match(r'^\s*[A-Z]\.\s', title): return 0
     if re.match(r'^\s*[a-z]\.\s', title): return 1
     if re.match(r'^\s*[IVX]+\.\s', title): return 0
-    # Indentation
+    # Indentation (updated for 4 levels)
     indent_level = len(original_line) - len(original_line.lstrip())
-    if indent_level > 8: return 2
-    if indent_level > 4: return 1
+    if indent_level > 12: return 3  # Very deep indentation → Level 3
+    if indent_level > 8: return 2   # Deep indentation → Level 2
+    if indent_level > 4: return 1   # Medium indentation → Level 1
     # Keywords
     title_lower = title.lower()
     if any(w in title_lower for w in ['chapter', 'part', 'section', 'unit', 'module']):
@@ -210,12 +267,16 @@ def _detect_level_advanced(original_line: str, title: str) -> int:
 def _clean_hierarchy(entries: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     """
     Sorts by page, prevents level jumps >1, updates order.
+    Supports up to 4 levels (0-3).
     """
     if not entries: return entries
     entries.sort(key=lambda x: x['start_page'])
     for i in range(1, len(entries)):
         if entries[i]['level'] > entries[i-1]['level'] + 1:
             entries[i]['level'] = entries[i-1]['level'] + 1
+        # Cap at level 3 (4th level) for deep hierarchies
+        if entries[i]['level'] > 3:
+            entries[i]['level'] = 3
     for i, entry in enumerate(entries):
         entry['order'] = i
     return entries

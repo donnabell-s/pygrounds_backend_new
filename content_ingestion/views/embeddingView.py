@@ -21,8 +21,8 @@ def embed_document_chunks(request, document_id):
         print(f"Document: {document.title}")
 
         all_chunks = DocumentChunk.objects.filter(document=document)
-        chunks_to_embed = all_chunks.filter(embedding__isnull=True)
-        already_embedded = all_chunks.filter(embedding__isnull=False)
+        chunks_to_embed = all_chunks.filter(embeddings__isnull=True)
+        already_embedded = all_chunks.filter(embeddings__isnull=False)
 
         print(f"Total chunks: {all_chunks.count()}")
         print(f"Already embedded: {already_embedded.count()}")
@@ -54,12 +54,13 @@ def embed_document_chunks(request, document_id):
         # Detailed chunk embedding data (for logging, not full API output)
         chunk_logs = []
         for chunk in all_chunks:
+            embedding_obj = chunk.embeddings.first()
             chunk_logs.append({
                 'chunk_id': chunk.id,
                 'chunk_type': chunk.chunk_type,
                 'content_preview': chunk.content[:200] + "..." if len(chunk.content) > 200 else chunk.content,
-                'has_embedding': chunk.embedding is not None,
-                'embedding_dimensions': len(chunk.embedding) if chunk.embedding else 0,
+                'has_embedding': embedding_obj is not None,
+                'embedding_dimensions': len(embedding_obj.vector) if embedding_obj else 0,
                 'topic_title': chunk.topic_title,
                 'subtopic_title': chunk.subtopic_title,
                 'page_number': chunk.page_number
@@ -114,7 +115,8 @@ def get_chunk_embeddings(request, document_id):
         embedded_count = 0
 
         for chunk in chunks:
-            has_embedding = bool(chunk.embedding)
+            embedding_obj = chunk.embeddings.first()
+            has_embedding = bool(embedding_obj)
             if has_embedding:
                 embedded_count += 1
 
@@ -124,9 +126,9 @@ def get_chunk_embeddings(request, document_id):
                 'page_number': chunk.page_number,
                 'text_preview': chunk.text[:100] + "..." if len(chunk.text) > 100 else chunk.text,
                 'has_embedding': has_embedding,
-                'embedding_dimension': len(chunk.embedding) if has_embedding else 0,
-                'embedding_model': chunk.embedding_model,
-                'embedded_at': chunk.embedded_at.isoformat() if chunk.embedded_at else None
+                'embedding_dimension': len(embedding_obj.vector) if has_embedding else 0,
+                'embedding_model': embedding_obj.model_name if has_embedding else None,
+                'embedded_at': embedding_obj.created_at.isoformat() if has_embedding else None
             })
 
         total_chunks = chunks.count()

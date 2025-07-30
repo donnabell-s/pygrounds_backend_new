@@ -1,42 +1,54 @@
+"""
+Question Generation URL Configuration
+
+RESTful URL patterns following clean design principles:
+- Short, descriptive paths
+- Resource-based naming 
+- Clear action verbs for operations
+"""
+
 from django.urls import path
 from .views import (
-    # RAG operations
-    SubtopicRAGView, BatchSubtopicRAGView, SemanticSearchView, 
-    CodingRAGView, ExplanationRAGView,
     # Question management
-    get_subtopic_questions, get_topic_questions_summary,
+    get_subtopic_questions, 
+    get_topic_questions_summary,
+    get_question_by_id,
+    get_questions_batch,
+    get_questions_by_filters,
+    get_all_questions,
+    get_questions_batch_filtered,
+    get_all_coding_questions,
+    get_all_non_coding_questions,
+    get_all_beginner_questions,
+    get_all_intermediate_questions,
+    get_all_advanced_questions,
+    get_all_master_questions,
+    # Question generation 
     deepseek_test_view,
-    # Question generation with DeepSeek
     generate_questions_with_deepseek,
-    
-    # Session management
-    RAGSessionListView, CompareSubtopicAndGenerateView
+    test_question_generation,
+    test_minigame_generation_no_save,
 )
 
 urlpatterns = [
-    path('deepseek/test/', deepseek_test_view, name='deepseek_test'),
-
-    # Smart RAG and Semantic Search
-    path('rag/subtopic/<int:subtopic_id>/', SubtopicRAGView.as_view(), name='subtopic_rag'),
-    path('rag/coding/', CodingRAGView.as_view(), name='coding_rag'),
-    path('rag/explanation/', ExplanationRAGView.as_view(), name='explanation_rag'),
-    path('rag/batch/', BatchSubtopicRAGView.as_view(), name='batch_subtopic_rag'),
-    path('search/', SemanticSearchView.as_view(), name='semantic_search'),
+    # Main generation endpoint (mode: "minigame" or "pre_assessment")
+    path('generate/', generate_questions_with_deepseek, name='generate_questions'),
     
-    # New endpoint: Compare subtopic metadata and generate questions via RAG
-    path('compare/subtopics/', CompareSubtopicAndGenerateView.as_view(), name='compare_subtopic_generate'),
+    # Testing endpoints
+    path('test/', deepseek_test_view, name='test_generation'),
+    path('test/minigame/', test_minigame_generation_no_save, name='test_minigame_no_save'),
     
-    # Question Generation with DeepSeek (Dynamic Prompts)
-     # Question Generation with DeepSeek (Dynamic Prompts)
-    path('generate/<int:subtopic_id>/', generate_questions_with_deepseek, name='generate_questions'),
-    path('generate/preassessment/', generate_questions_with_deepseek, name='generate_preassessment_questions'),  # new route for pre-assessment mode
-
-  
+    # Question retrieval endpoints  
+    path('subtopic/<int:subtopic_id>/', get_subtopic_questions, name='get_subtopic_questions'),
+    path('topic/<int:topic_id>/summary/', get_topic_questions_summary, name='get_topic_summary'),
     
-    # Question Management
-    path('questions/subtopic/<int:subtopic_id>/', get_subtopic_questions, name='subtopic_questions'),
-    path('questions/topic/<int:topic_id>/summary/', get_topic_questions_summary, name='topic_questions_summary'),
-    
-    # RAG Sessions
-    path('rag/sessions/', RAGSessionListView.as_view(), name='rag_sessions'),
+    # GETTER
+    path('question/<int:question_id>/', get_question_by_id, name='get_question_by_id'),        # Single question by ID
+    path('all/', get_all_questions, name='get_all_questions'),                                 # Get all questions with pagination
+    path('all/coding/', get_all_coding_questions, name='get_all_coding_questions'),            # Get all coding questions
+    path('all/non_coding/', get_all_non_coding_questions, name='get_all_non_coding_questions'), # Get all non-coding questions  
+    path('all/beginner/', get_all_beginner_questions, name='get_all_beginner_questions'),      # Get all beginner questions
+    path('all/intermediate/', get_all_intermediate_questions, name='get_all_intermediate_questions'), # Get all intermediate questions
+    path('all/advanced/', get_all_advanced_questions, name='get_all_advanced_questions'),      # Get all advanced questions
+    path('all/master/', get_all_master_questions, name='get_all_master_questions'),            # Get all master questions
 ]

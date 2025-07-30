@@ -25,7 +25,7 @@ urlpatterns = [
     path('api/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
 
     # question generation
-    path('questions/', include('question_generation.urls')),
+    path('', include('question_generation.urls')),
     # content ingestion
     path('', include('content_ingestion.urls')),
 ]

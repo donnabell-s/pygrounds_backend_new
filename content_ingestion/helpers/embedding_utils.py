@@ -144,11 +144,13 @@ class EmbeddingGenerator:
             if embedding is None:
                 return False
             
-            # Save to chunk
-            chunk.embedding = embedding
-            chunk.embedding_model = self.model_name
-            chunk.embedded_at = timezone.now()
-            chunk.save(update_fields=['embedding', 'embedding_model', 'embedded_at'])
+            # Save to separate Embedding model
+            from content_ingestion.models import Embedding
+            Embedding.objects.create(
+                document_chunk=chunk,
+                vector=embedding,
+                model_name=self.model_name
+            )
             
             logger.info(f"Embedded chunk {chunk.id} with {len(embedding)}-dim vector")
             return True
@@ -181,14 +183,16 @@ class EmbeddingGenerator:
         success_count = 0
         failed_count = 0
         
-        # Save embeddings to chunks
+        # Save embeddings to separate Embedding model
         for chunk, embedding in zip(chunk_list, embeddings):
             try:
                 if embedding is not None:
-                    chunk.embedding = embedding
-                    chunk.embedding_model = self.model_name
-                    chunk.embedded_at = timezone.now()
-                    chunk.save(update_fields=['embedding', 'embedding_model', 'embedded_at'])
+                    from content_ingestion.models import Embedding
+                    Embedding.objects.create(
+                        document_chunk=chunk,
+                        vector=embedding,
+                        model_name=self.model_name
+                    )
                     success_count += 1
                 else:
                     failed_count += 1

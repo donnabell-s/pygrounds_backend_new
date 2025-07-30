@@ -1,0 +1,102 @@
+{
+  "generation_metadata": {
+    "generated_at": "2025-07-31 03:46:26",
+    "game_type": "coding",
+    "num_questions_per_subtopic": 1,
+    "pipeline_type": "specific_zone_difficulty",
+    "zone_targeted": {
+      "id": 1,
+      "name": "Python Basics",
+      "order": 1
+    },
+    "difficulty": "beginner",
+    "max_combinations_limit": 3,
+    "output_file": "test_minigame_zone1_beginner_coding_20250731_034626.json",
+    "test_mode": true,
+    "completed_at": "2025-07-31 03:46:58",
+    "status": "completed"
+  },
+  "processing_stats": {
+    "zone_id": 1,
+    "zone_name": "Python Basics",
+    "difficulty": "beginner",
+    "game_type": "coding",
+    "max_combinations_limit": 3,
+    "successful_generations": 3,
+    "failed_generations": 0,
+    "rag_contexts_found": 2,
+    "fallback_generations": 1,
+    "total_combinations_processed": 3,
+    "last_updated": "2025-07-31T03:46:58.848364",
+    "total_questions_generated": 3
+  },
+  "questions": [
+    {
+      "question_text": "Print a two-line poem",
+      "difficulty": "beginner",
+      "game_type": "coding",
+      "zone_id": 1,
+      "zone_name": "Python Basics",
+      "subtopic_names": [
+        "Basic Text Output with print()"
+      ],
+      "generation_mode": "rag_enhanced",
+      "generated_at": "2025-07-31T03:46:37.180406",
+      "function_name": "print_poem",
+      "sample_input": "None",
+      "sample_output": "Roses are red\nViolets are blue",
+      "hidden_tests": [
+        "None,output:'Two roads diverged\nAnd that made all the difference'",
+        "None,output:'I wandered lonely\nAs a cloud'"
+      ],
+      "buggy_code": "def print_poem():\n    print('Roses are red')\n    _____('Violets are blue')",
+      "choices": [],
+      "correct_answer": ""
+    },
+    {
+      "question_text": "Format user name input",
+      "difficulty": "beginner",
+      "game_type": "coding",
+      "zone_id": 1,
+      "zone_name": "Python Basics",
+      "subtopic_names": [
+        "Best Practices for User-Friendly I/O"
+      ],
+      "generation_mode": "fallback",
+      "generated_at": "2025-07-31T03:46:47.628765",
+      "function_name": "format_name",
+      "sample_input": "('jOhN', 'dOe',)",
+      "sample_output": "John Doe",
+      "hidden_tests": [
+        "('aLiCe', 'sMiTh',),output:'Alice Smith'",
+        "('bOb', 'jOnEs',),output:'Bob Jones'"
+      ],
+      "buggy_code": "def format_name(first, last):\n    return first._____ + ' ' + last._____",
+      "choices": [],
+      "correct_answer": ""
+    },
+    {
+      "question_text": "Convert input to integer and double it",
+      "difficulty": "beginner",
+      "game_type": "coding",
+      "zone_id": 1,
+      "zone_name": "Python Basics",
+      "subtopic_names": [
+        "Handling Input Types (Converting to int, float, etc.)"
+      ],
+      "generation_mode": "rag_enhanced",
+      "generated_at": "2025-07-31T03:46:58.848364",
+      "function_name": "double_input",
+      "sample_input": "('5',)",
+      "sample_output": "10",
+      "hidden_tests": [
+        "('12',),output:24",
+        "('3',),output:6",
+        "('0',),output:0"
+      ],
+      "buggy_code": "def double_input(num_str):\n    return _____ * 2",
+      "choices": [],
+      "correct_answer": ""
+    }
+  ]
+}

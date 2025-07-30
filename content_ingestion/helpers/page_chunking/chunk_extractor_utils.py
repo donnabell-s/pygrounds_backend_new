@@ -10,9 +10,32 @@ def clean_raw_text(text):
     if not text:
         return ""
     
-    # Remove URLs and web links
-    text = re.sub(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', '', text)
-    text = re.sub(r'www\.(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', '', text)
+    # Enhanced URL removal with comprehensive patterns
+    # Remove URLs with various protocols and special characters
+    text = re.sub(r'https?://[^\s]+', '', text)
+    text = re.sub(r'https?:/[^\s]*', '', text)  # Catch partial protocols
+    text = re.sub(r'www\.[^\s]+', '', text)
+    text = re.sub(r'[a-zA-Z0-9.-]+\.(com|org|net|edu|gov|io)[^\s]*', '', text)
+    
+    # Remove URLs with Unicode characters like /​/​
+    text = re.sub(r'https?:/​/​[^\s]*', '', text)
+    text = re.sub(r'[a-zA-Z0-9.-]+\.​[a-zA-Z0-9.-]+[^\s]*', '', text)
+    
+    # Remove partial URLs and paths that look like URLs
+    text = re.sub(r'/​[a-zA-Z0-9._-]+/[^\s]*', '', text)  # Paths with Unicode slash
+    text = re.sub(r'/[a-zA-Z0-9._-]+/[a-zA-Z0-9._/-]*', '', text)  # Regular paths
+    text = re.sub(r'[a-zA-Z0-9.-]+\.​[a-zA-Z]+', '', text)  # Domains with Unicode dot
+    
+    # Remove GitHub and repository-specific patterns
+    text = re.sub(r'github\.com[^\s]*', '', text)
+    text = re.sub(r'PacktPublishing[^\s]*', '', text)
+    text = re.sub(r'Expert-​Python[^\s]*', '', text)
+    text = re.sub(r'/​tree/​[^\s]*', '', text)
+    text = re.sub(r'/​master/​[^\s]*', '', text)
+    
+    # Remove incomplete URLs that start with protocol but are broken
+    text = re.sub(r'https:/​/​\s*for\s+this\s+chapter', 'for this chapter', text)
+    text = re.sub(r'https:/​/​\s*', '', text)
     
     # Remove markdown links [text](url)
     text = re.sub(r'\[([^\]]+)\]\([^)]+\)', r'\1', text)
@@ -34,44 +57,116 @@ def clean_raw_text(text):
     return text
 
 # Enhanced chunk classifier with coding context
-def infer_chunk_type(text, default="Text"):
+def infer_chunk_type(text, default="Concept"):
     """
     Classify chunk type with enhanced detection for coding content.
+    Only returns the 5 valid chunk types: Concept, Exercise, Code, Try_It, Example
     """
     text_lower = text.lower()
     
-    # Code-specific detection
+    # Code-specific detection (highest priority)
     if text.strip().startswith(">>>") or ">>>" in text or "..." in text or "import " in text or "def " in text:
         return "Code"
     elif "try it" in text_lower or "try this" in text_lower or "give it a try" in text_lower:
         return "Try_It"
-    elif "concept" in text_lower or "definition" in text_lower or "what is" in text_lower:
-        return "Concept"
     elif "for example" in text_lower or text_lower.startswith("example:") or "here's an example" in text_lower:
         return "Example"
     elif "exercise" in text_lower or "practice" in text_lower or "challenge" in text_lower:
         return "Exercise"
-    elif text_lower.startswith("note:") or "note that" in text_lower or "remember" in text_lower:
-        return "Note"
-    elif "introduction" in text_lower or text_lower.startswith("intro"):
-        return "Introduction"
     else:
-        return default
+        # Everything else is a Concept (includes notes, introductions, definitions, etc.)
+        return "Concept"
 
 # Remove visual duplicates and normalize chunk text
-def clean_chunk_text(text):
+def clean_chunk_text(text, subtopic_title=None, topic_title=None, sub_subtopic_title=None, sub_sub_subtopic_title=None):
     """
     Clean and normalize chunk text while preserving code structure.
     Removes titles, links, and other unwanted formatting.
+    
+    Args:
+        text: Raw chunk text
+        subtopic_title: Subtopic title to remove from text if present
+        topic_title: Topic title to remove from text if present
+        sub_subtopic_title: Sub-subtopic title to remove from text if present (3rd level)
+        sub_sub_subtopic_title: Sub-sub-subtopic title to remove from text if present (4th level)
     """
     lines = text.strip().split("\n")
     cleaned_lines = []
     
+    # Create patterns to match titles
+    title_patterns = []
+    if subtopic_title:
+        # Remove numbering from title (e.g., "17.2. Use matplotlib" -> "Use matplotlib")
+        clean_subtopic = re.sub(r'^\d+\.?\d*\.?\s*', '', subtopic_title.strip())
+        title_patterns.extend([
+            subtopic_title.lower().strip(),
+            clean_subtopic.lower().strip(),
+            # Also match numbered patterns like "2.2. Windows"
+            f"\\d+\\.\\d*\\.?\\s*{re.escape(clean_subtopic.lower().strip())}"
+        ])
+    if topic_title:
+        clean_topic = re.sub(r'^\d+\.?\d*\.?\s*', '', topic_title.strip())
+        title_patterns.extend([
+            topic_title.lower().strip(),
+            clean_topic.lower().strip(),
+            # Also match chapter patterns like "Chapter 2 Setting Up Python"
+            f"chapter\\s*\\d*\\s*{re.escape(clean_topic.lower().strip())}"
+        ])
+    if sub_subtopic_title:
+        clean_sub_subtopic = re.sub(r'^\d+\.?\d*\.?\d*\.?\s*', '', sub_subtopic_title.strip())
+        title_patterns.extend([
+            sub_subtopic_title.lower().strip(),
+            clean_sub_subtopic.lower().strip(),
+            # Also match deep numbered patterns like "2.2.1. Installation Steps"
+            f"\\d+\\.\\d+\\.\\d*\\.?\\s*{re.escape(clean_sub_subtopic.lower().strip())}"
+        ])
+    if sub_sub_subtopic_title:
+        clean_sub_sub_subtopic = re.sub(r'^\d+\.?\d*\.?\d*\.?\d*\.?\s*', '', sub_sub_subtopic_title.strip())
+        title_patterns.extend([
+            sub_sub_subtopic_title.lower().strip(),
+            clean_sub_sub_subtopic.lower().strip(),
+            # Also match very deep numbered patterns like "2.2.1.3. Advanced Configuration"
+            f"\\d+\\.\\d+\\.\\d+\\.\\d*\\.?\\s*{re.escape(clean_sub_sub_subtopic.lower().strip())}"
+        ])
+    
     for line in lines:
+        original_line = line
         line = line.strip()
         
         # Skip empty lines
         if not line:
+            continue
+        
+        # Check if this line contains title patterns
+        line_lower = line.lower()
+        should_skip = False
+        
+        if title_patterns:
+            for pattern in title_patterns:
+                # Direct substring match
+                if isinstance(pattern, str) and not pattern.startswith('\\') and 'chapter' not in pattern:
+                    if pattern in line_lower and len(line.split()) <= 12:  # Reasonable line length for titles
+                        should_skip = True
+                        break
+                # Regex pattern match
+                elif pattern.startswith('\\') or 'chapter' in pattern:
+                    if re.search(pattern, line_lower):
+                        should_skip = True
+                        break
+        
+        # Also check for direct "Chapter X Title" pattern
+        if topic_title and f"chapter" in line_lower and topic_title.lower() in line_lower:
+            should_skip = True
+        
+        # Also check for sub-subtopic patterns
+        if sub_subtopic_title and sub_subtopic_title.lower() in line_lower and len(line.split()) <= 15:
+            should_skip = True
+        
+        # Also check for sub-sub-subtopic patterns
+        if sub_sub_subtopic_title and sub_sub_subtopic_title.lower() in line_lower and len(line.split()) <= 15:
+            should_skip = True
+        
+        if should_skip:
             continue
             
         # Remove common title patterns
@@ -80,9 +175,32 @@ def clean_chunk_text(text):
            (line.endswith(':') and len(line.split()) <= 4):
             continue
             
-        # Remove URLs and links
-        line = re.sub(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', '', line)
-        line = re.sub(r'www\.(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', '', line)
+        # Enhanced URL and link removal with comprehensive patterns
+        # Remove URLs with various protocols and special characters
+        line = re.sub(r'https?://[^\s]+', '', line)
+        line = re.sub(r'https?:/[^\s]*', '', line)  # Catch partial protocols
+        line = re.sub(r'www\.[^\s]+', '', line)
+        line = re.sub(r'[a-zA-Z0-9.-]+\.(com|org|net|edu|gov|io)[^\s]*', '', line)
+        
+        # Remove URLs with Unicode characters like /​/​
+        line = re.sub(r'https?:/​/​[^\s]*', '', line)
+        line = re.sub(r'[a-zA-Z0-9.-]+\.​[a-zA-Z0-9.-]+[^\s]*', '', line)
+        
+        # Remove partial URLs and paths that look like URLs
+        line = re.sub(r'/​[a-zA-Z0-9._-]+/[^\s]*', '', line)  # Paths with Unicode slash
+        line = re.sub(r'/[a-zA-Z0-9._-]+/[a-zA-Z0-9._/-]*', '', line)  # Regular paths
+        line = re.sub(r'[a-zA-Z0-9.-]+\.​[a-zA-Z]+', '', line)  # Domains with Unicode dot
+        
+        # Remove GitHub and repository-specific patterns
+        line = re.sub(r'github\.com[^\s]*', '', line)
+        line = re.sub(r'PacktPublishing[^\s]*', '', line)
+        line = re.sub(r'Expert-​Python[^\s]*', '', line)
+        line = re.sub(r'/​tree/​[^\s]*', '', line)
+        line = re.sub(r'/​master/​[^\s]*', '', line)
+        
+        # Remove incomplete URLs that start with protocol but are broken
+        line = re.sub(r'https:/​/​\s*for\s+this\s+chapter', 'for this chapter', line)
+        line = re.sub(r'https:/​/​\s*', '', line)
         
         # Remove markdown links [text](url)
         line = re.sub(r'\[([^\]]+)\]\([^)]+\)', r'\1', line)

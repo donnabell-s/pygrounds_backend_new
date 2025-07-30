@@ -177,7 +177,7 @@ def get_coding_chunks_for_minigame(document_id, learning_topics=None):
     chunks = DocumentChunk.objects.filter(
         document_id=document_id,
         chunk_type__in=coding_types,
-        embedding__isnull=False  # Only chunks with embeddings
+        embeddings__isnull=False  # Only chunks with embeddings
     ).order_by('page_number', 'order_in_doc')
     
     # Organize by type with enhanced context
@@ -219,42 +219,9 @@ def get_coding_chunks_for_minigame(document_id, learning_topics=None):
 # Example usage for semantic similarity with topics
 def match_chunks_to_learning_topics(chunks, topics, similarity_threshold=0.7):
     """
-    Use semantic similarity to match coding chunks to learning topics.
+    DEPRECATED: Topic embeddings have been removed.
+    This function is no longer functional.
     
-    Args:
-        chunks: List of DocumentChunk objects with embeddings
-        topics: List of Topic/Subtopic objects with embeddings
-        similarity_threshold: Minimum similarity score for matching
-        
-    Returns:
-        dict: Matched chunks organized by topic
+    Use subtopic-based matching instead via the Embedding model.
     """
-    import numpy as np
-    from sklearn.metrics.pairwise import cosine_similarity
-    
-    matches = {}
-    
-    for topic in topics:
-        if not topic.description_embedding:
-            continue
-            
-        matches[topic.name] = {
-            'topic': topic,
-            'matched_chunks': [],
-            'similarity_scores': []
-        }
-        
-        topic_embedding = np.array(topic.description_embedding).reshape(1, -1)
-        
-        for chunk in chunks:
-            if not chunk.embedding:
-                continue
-                
-            chunk_embedding = np.array(chunk.embedding).reshape(1, -1)
-            similarity = cosine_similarity(topic_embedding, chunk_embedding)[0][0]
-            
-            if similarity >= similarity_threshold:
-                matches[topic.name]['matched_chunks'].append(chunk)
-                matches[topic.name]['similarity_scores'].append(similarity)
-    
-    return matches
+    return {}

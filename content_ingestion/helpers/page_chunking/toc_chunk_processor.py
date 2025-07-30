@@ -322,7 +322,7 @@ class GranularChunkProcessor:
         # Get all chunks for this document that don't have embeddings
         chunks_to_embed = DocumentChunk.objects.filter(
             document=document,
-            embedding__isnull=True
+            embeddings__isnull=True
         )
         
         if not chunks_to_embed.exists():
