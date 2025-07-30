@@ -1,7 +1,7 @@
 from reading.models import ReadingMaterial
 
 
-ReadingMaterial.objects.create(
+ReadingMaterial.objects.get_or_create(
     topic="Introduction to Python & IDE Setup",
     subtopic="Installing Python",
     title="Installing Python",
@@ -29,7 +29,7 @@ Before you can write Python code, you need to install Python on your machine.
 order_in_topic=1
 )
 
-ReadingMaterial.objects.create(
+ReadingMaterial.objects.get_or_create(
 topic="Introduction to Python & IDE Setup",
 subtopic="Choosing and Setting Up an IDE",
 title="Choosing and Setting Up an IDE",
@@ -76,7 +76,7 @@ print("Hello, Python!")
 order_in_topic=2
 )
 
-ReadingMaterial.objects.create(
+ReadingMaterial.objects.get_or_create(
 topic="Introduction to Python & IDE Setup",
 subtopic="Writing and Running Your First Python Script",
 title="Your First Python Program",
@@ -109,8 +109,7 @@ order_in_topic=3
 )
 
 
-
-ReadingMaterial.objects.create(
+ReadingMaterial.objects.get_or_create(
     topic="Introduction to Python & IDE Setup",
     subtopic="Python Interpreter and File Structure",
     title="Understanding the Python Interpreter and File Structure",
@@ -158,7 +157,7 @@ order_in_topic=4
 )
 
 
-ReadingMaterial.objects.create(
+ReadingMaterial.objects.get_or_create(
 topic="Introduction to Python & IDE Setup",
 subtopic="Running Python in Terminal",
 title="Running Python Programs in the Terminal",
@@ -186,7 +185,7 @@ Permission denied → Check file permissions or add execution rights.
 order_in_topic=5
 )
 
-ReadingMaterial.objects.create(
+ReadingMaterial.objects.get_or_create(
 topic="Introduction to Python & IDE Setup",
 subtopic="Using Online Python Interpreters",
 title="Trying Python Using Online Interpreters",
@@ -212,7 +211,7 @@ May have internet dependency
 order_in_topic=6
 )
 
-ReadingMaterial.objects.create(
+ReadingMaterial.objects.get_or_create(
 topic="Introduction to Python & IDE Setup",
 subtopic="Setting Up Environment Variables",
 title="Setting Up Environment Variables for Python",
@@ -236,7 +235,7 @@ How to Set (Windows):
 order_in_topic=7
 )
 
-ReadingMaterial.objects.create(
+ReadingMaterial.objects.get_or_create(
 topic="Introduction to Python & IDE Setup",
 subtopic="python vs python3 Commands",
 title="Difference Between python and python3 Commands",
@@ -266,7 +265,7 @@ python3 --version
 order_in_topic=8
 )
 
-ReadingMaterial.objects.create (
+ReadingMaterial.objects.get_or_create(
     topic="Variables and Data Types",
     subtopic="Declaring Variables in Python",
     title="Declaring Variables in Python",
@@ -296,7 +295,7 @@ Pyhton is dynamically typed, meaning variable types can change at runtime. """,
 order_in_topic =1
 )
 
-ReadingMaterial.objects.create(
+ReadingMaterial.objects.get_or_create(
 topic="Variables and Data Types",
 subtopic="Data Types Overview",
 title="Understanding Python Data Types",
@@ -327,7 +326,7 @@ Example: person = {"name": "John", "age": 30}
 order_in_topic=2
 )
 
-ReadingMaterial.objects.create(
+ReadingMaterial.objects.get_or_create(
 topic="Variables and Data Types",
 subtopic="Type Conversion",
 title="Converting Between Data Types",
@@ -351,7 +350,7 @@ int("abc")  # Error!
 order_in_topic=3
 )
 
-ReadingMaterial.objects.create(
+ReadingMaterial.objects.get_or_create(
 topic="Variables and Data Types",
 subtopic="Constants and Naming Conventions",
 title="Using Constants and Variable Naming Rules",
@@ -379,7 +378,7 @@ Not contain spaces
 order_in_topic=4
 )
 
-ReadingMaterial.objects.create(
+ReadingMaterial.objects.get_or_create(
 topic="Variables and Data Types",
 subtopic="Using the type() Function",
 title="Checking Variable Types with type()",
@@ -401,7 +400,7 @@ This is useful for debugging and understanding your data.
 order_in_topic=5
 )
 
-ReadingMaterial.objects.create(
+ReadingMaterial.objects.get_or_create(
     topic="Variables and Data Types",
     subtopic="Booleans and Logical Expressions",
     title="Understanding Booleans and Logical Expressions",
@@ -436,7 +435,7 @@ print(not x == 5)         # False
 order_in_topic=6
 )
 
-ReadingMaterial.objects.create(
+ReadingMaterial.objects.get_or_create(
     topic="Variables and Data Types",
     subtopic="Type Checking with isinstance()",
     title="Using isinstance() for Type Checking",
@@ -467,7 +466,7 @@ order_in_topic=7
 )
 
 # Subtopic 1: Using the input() Function
-ReadingMaterial.objects.create(
+ReadingMaterial.objects.get_or_create(
     topic="Basic Input and Output",
     subtopic="Using the input() Function",
     title="Getting User Input with input()",
@@ -504,7 +503,7 @@ order_in_topic=1
 )
 ## Subtopic 2: Displaying Output with print()
 
-ReadingMaterial.objects.create(
+ReadingMaterial.objects.get_or_create(
 topic="Basic Input and Output",
 subtopic="Displaying Output with print()",
 title="Displaying Output with print()",
@@ -537,7 +536,7 @@ order_in_topic=2
 )
 
 ##Subtopic 3: Using f-Strings for Formatting
-ReadingMaterial.objects.create(
+ReadingMaterial.objects.get_or_create(
 topic="Basic Input and Output",
 subtopic="Using f-Strings for Formatting",
 title="Formatting Output with f-Strings",
@@ -559,7 +558,7 @@ order_in_topic=3
 )
 
 ##Subtopic 4: Escape Characters in Strings
-ReadingMaterial.objects.create(
+ReadingMaterial.objects.get_or_create(
 topic="Basic Input and Output",
 subtopic="Escape Characters in Strings",
 title="Using Escape Characters in Strings",
@@ -584,7 +583,7 @@ print("C:\\\\Users\\\\John Doe)
 order_in_topic=4
 )
 
-ReadingMaterial.objects.create(
+ReadingMaterial.objects.get_or_create(
 topic="Basic Input and Output",
 subtopic="Printing Multiple Lines",
 title="Printing Multiple Lines and Line Breaks",
@@ -610,7 +609,7 @@ order_in_topic=5
 )
 
 # Subtopic 1: Arithmetic Operators
-ReadingMaterial.objects.create(
+ReadingMaterial.objects.get_or_create(
     topic="Operators",
     subtopic="Arithmetic Operators",
     title="Using Arithmetic Operators in Python",
@@ -647,7 +646,7 @@ print(a % b)
 order_in_topic=1
 )
  ##Subtopic 2: Comparison Operators
-ReadingMaterial.objects.create(
+ReadingMaterial.objects.get_or_create(
 topic="Operators",
 subtopic="Comparison Operators",
 title="Using Comparison Operators in Python",
@@ -681,7 +680,7 @@ order_in_topic=2
 )
 
 ##Subtopic 3: Assignment Operators
-ReadingMaterial.objects.create(
+ReadingMaterial.objects.get_or_create(
 topic="Operators",
 subtopic="Assignment Operators",
 title="Understanding Assignment Operators",
@@ -714,7 +713,7 @@ order_in_topic=3
 )
 
 ##Subtopic 4: Logical Operators
-ReadingMaterial.objects.create(
+ReadingMaterial.objects.get_or_create(
 topic="Operators",
 subtopic="Logical Operators",
 title="Using Logical Operators in Python",
@@ -741,7 +740,7 @@ order_in_topic=4
 )
 
 ##Subtopic 5: Operator Precedence
-ReadingMaterial.objects.create(
+ReadingMaterial.objects.get_or_create(
 topic="Operators",
 subtopic="Operator Precedence",
 title="Understanding Operator Precedence",
@@ -772,7 +771,93 @@ result = (3 + 2) * 5  # Output: 25
 order_in_topic=5
 )
 
-ReadingMaterial.objects.create(
+ReadingMaterial.objects.get_or_create(
+    topic="Operators",
+    subtopic="Membership and Identity Operators",
+    title="Using Membership and Identity Operators in Python",
+    content="""
+## Membership and Identity Operators in Python
+
+These operators help check if a value exists in a sequence, or whether two variables refer to the same object.
+
+---
+
+### Membership Operators:
+
+| Operator | Description                    | Example            |
+|----------|--------------------------------|--------------------|
+| `in`     | Returns True if value is found | `"a" in "apple"`   |
+| `not in` | Returns True if not found      | `"x" not in "box"` |
+
+---
+
+### Examples:
+
+```python
+fruits = ["apple", "banana", "cherry"]
+print("apple" in fruits)      # True
+print("orange" not in fruits)  # True
+
+Identity Operators:
+
+Operator	Description	                                Example
+is	        True if both refer to the same object	    x is y
+is not	    True if they do NOT refer to same object	x is not y
+
+Example:
+a = [1, 2, 3]
+b = a
+c = [1, 2, 3]
+
+print(a is b)     # True (same object)
+print(a is c)     # False (same values, different objects)
+""",
+order_in_topic=6
+)
+
+
+ReadingMaterial.objects.get_or_create(
+    topic="Operators",
+    subtopic="Bitwise Operators",
+    title="Introduction to Bitwise Operators (Advanced)",
+    content="""
+## Introduction to Bitwise Operators (Advanced)
+
+Bitwise operators work on bits (0s and 1s) of integers.
+
+They are mostly used in low-level programming or advanced math operations.
+
+---
+
+### Bitwise Operators:
+
+| Operator | Name         | Example    | Result |
+|----------|--------------|------------|--------|
+| `&`      | AND          | 5 & 3      | 1      |
+| `|`      | OR           | 5 \| 3     | 7      |
+| `^`      | XOR          | 5 ^ 3      | 6      |
+| `~`      | NOT          | ~5         | -6     |
+| `<<`     | Left Shift   | 5 << 1     | 10     |
+| `>>`     | Right Shift  | 5 >> 1     | 2      |
+
+---
+
+### Example:
+
+```python
+a = 5      # 0101
+b = 3      # 0011
+
+print(a & b)   # 1 (0001)
+print(a | b)   # 7 (0111)
+print(a ^ b)   # 6 (0110)
+Bitwise operations are optional for beginners but useful in performance-sensitive code.
+""",
+order_in_topic=7
+)
+
+
+ReadingMaterial.objects.get_or_create(
     topic="Control Structures",
     subtopic="if Statements",
     title="Using if Statements",
@@ -794,7 +879,8 @@ If the condition is true, the indented code runs.
 """,
 order_in_topic=1
 )
-ReadingMaterial.objects.create(
+
+ReadingMaterial.objects.get_or_create(
 topic="Control Structures",
 subtopic="if-else Statements",
 title="Using if-else Statements",
@@ -814,7 +900,7 @@ This gives your code two paths: one if true, and one if false.
 order_in_topic=2
 )
 
-ReadingMaterial.objects.create(
+ReadingMaterial.objects.get_or_create(
 topic="Control Structures",
 subtopic="if-elif-else Statements",
 title="Using if-elif-else Statements",
@@ -840,4 +926,5 @@ This lets you handle many possible cases.
 """,
 order_in_topic=3
 )
+
 
