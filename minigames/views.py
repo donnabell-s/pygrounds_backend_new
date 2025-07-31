@@ -244,17 +244,27 @@ class StartWordSearchGame(APIView):
             time_limit=300,
         )
 
+        # 1) Fetch questions
         questions = fetch_questions_for_game(user, "wordsearch", limit=question_count)
-        GameQuestion.objects.bulk_create([
-            GameQuestion(session=session, question_id=q.id) for q in questions
-        ])
 
-        words = [sanitize_word_for_grid(q.correct_answer) for q in questions]
-        words = [w for w in words if w]
+        # 2) Prepare sanitized words
+        sanitized_map = {q.id: sanitize_word_for_grid(q.correct_answer) for q in questions}
+        words = [w for w in sanitized_map.values() if w]
 
+        # 3) Generate the matrix
         generator = WordSearchGenerator()
         matrix, placements = generator.generate(words)
 
+        # 4) Determine which questions were actually placed
+        placed_words = {p.word for p in placements}
+        placed_questions = [q for q in questions if sanitized_map[q.id] in placed_words]
+
+        # 5) Only create GameQuestions for placed questions
+        GameQuestion.objects.bulk_create([
+            GameQuestion(session=session, question_id=q.id) for q in placed_questions
+        ])
+
+        # 6) Save matrix & placements
         WordSearchData.objects.create(
             session=session,
             matrix=["".join(row) for row in matrix],
@@ -275,10 +285,11 @@ class StartWordSearchGame(APIView):
                 "col":       p.col,
                 "direction": p.direction
             } for p in placements],
-            "questions":     LightweightQuestionSerializer(questions, many=True).data,  # ✅ Added
+            "questions":     LightweightQuestionSerializer(placed_questions, many=True).data,
             "timer_seconds": session.time_limit,
             "started_at":    session.start_time,
         }, status=201)
+
 
 
 
@@ -298,12 +309,18 @@ class GetWordSearchMatrix(APIView):
             return Response({"error": "Matrix not generated yet."}, status=400)
 
         questions = [gq.question for gq in session.session_questions.all()]
+        placed_words = {p["word"] for p in data.placements}
+        placed_questions = [
+            q for q in questions
+            if sanitize_word_for_grid(q.correct_answer) in placed_words
+        ]
 
         return Response({
             "matrix":     data.matrix,
             "placements": data.placements,
-            "questions":  LightweightQuestionSerializer(questions, many=True).data 
+            "questions":  LightweightQuestionSerializer(placed_questions, many=True).data
         })
+
 
 
 # =============================
