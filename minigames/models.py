@@ -1,4 +1,5 @@
 from django.db import models
+from question_generation.models import GeneratedQuestion
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
@@ -44,15 +45,16 @@ class GameSession(models.Model):
         return f"{self.user.username} - {self.game_type} - {self.session_id}"
 
 
+# minigames/models.py
+
+
 class GameQuestion(models.Model):
     session = models.ForeignKey(GameSession, on_delete=models.CASCADE, related_name="session_questions")
-    question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name="used_in_sessions")
+    question = models.ForeignKey(GeneratedQuestion, on_delete=models.CASCADE, related_name="used_in_sessions")
 
     class Meta:
         unique_together = ('session', 'question')
 
-    def __str__(self):
-        return f"{self.session.session_id} → Q{self.question.id}"
 
 
 class QuestionResponse(models.Model):

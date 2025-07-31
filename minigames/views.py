@@ -1,15 +1,11 @@
-# views.py
-
 import uuid
+import re
 from django.utils import timezone
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
-from question_generation.models import PreAssessmentQuestion
-from question_generation.serializers import PreAssessmentQuestionSerializer
 
 from question_generation.models import PreAssessmentQuestion
 from user_learning.adaptive_engine import recalibrate_topic_proficiency
@@ -19,16 +15,30 @@ from .game_logic.wordsearch import WordSearchGenerator
 from .game_logic.hangman import run_user_code
 from .models import (
     GameSession,
-    Question,
     GameQuestion,
     QuestionResponse,
     WordSearchData,
 )
-from .serializers import GameSessionSerializer, QuestionResponseSerializer
+from .serializers import GameSessionSerializer, QuestionResponseSerializer, LightweightQuestionSerializer
+from .question_fetching import fetch_questions_for_game
 
 
 # =============================
-# Generic Session Views (shared across games)
+# Helper
+# =============================
+
+def sanitize_word_for_grid(word: str) -> str:
+    """
+    Converts a word to uppercase and removes non-alphabetic characters
+    for crossword/wordsearch compatibility.
+    """
+    if not word:
+        return ""
+    return re.sub(r'[^A-Za-z]', '', word).upper()
+
+
+# =============================
+# Generic Session Views
 # =============================
 
 class StartGameSession(APIView):
@@ -39,7 +49,6 @@ class StartGameSession(APIView):
         game_type = request.data.get("game_type")
         question_count = int(request.data.get("question_count", 5))
 
-        # 1) create session
         session = GameSession.objects.create(
             session_id=str(uuid.uuid4()),
             user=user,
@@ -47,14 +56,12 @@ class StartGameSession(APIView):
             status="active",
         )
 
-        # 2) pick pre-seeded questions for that game
-        questions = Question.objects.filter(game_type=game_type).order_by("?")[:question_count]
+        questions = fetch_questions_for_game(user, game_type, limit=question_count)
         GameQuestion.objects.bulk_create([
-            GameQuestion(session=session, question=q)
+            GameQuestion(session=session, question_id=q.id)
             for q in questions
         ])
 
-        # 3) return session info
         return Response(GameSessionSerializer(session).data, status=201)
 
 
@@ -85,7 +92,7 @@ class SubmitAnswers(APIView):
                 continue
 
             correct = (
-                game_q.question.answer.strip().lower()
+                str(game_q.question.correct_answer).strip().lower()
                 == ans["user_answer"].strip().lower()
             )
             if correct:
@@ -134,7 +141,7 @@ class GetSessionResponses(APIView):
 
 
 # =============================
-# Crossword Game-Specific Views
+# Crossword Game
 # =============================
 
 class StartCrosswordGame(APIView):
@@ -152,25 +159,23 @@ class StartCrosswordGame(APIView):
             time_limit=300,
         )
 
-        # pull from seeded questions
-        questions = list(
-            Question.objects.filter(game_type="crossword")
-            .order_by("?")[:question_count]
-        )
+        questions = fetch_questions_for_game(user, "crossword", limit=question_count)
         GameQuestion.objects.bulk_create([
-            GameQuestion(session=session, question=q) for q in questions
+            GameQuestion(session=session, question_id=q.id) for q in questions
         ])
 
-        # generate grid
+        # Sanitize answers for grid
+        words = [sanitize_word_for_grid(q.correct_answer) for q in questions]
+        words = [w for w in words if w]
+        print("DEBUG WORDS:", words)
+
         generator = CrosswordGenerator()
-        words = [q.answer.upper() for q in questions]
         grid, placements = generator.generate(words)
         grid_display = ["".join(row) for row in grid]
 
-        # build placements payload
         placements_payload = []
         for p in placements:
-            clue = next((q.text for q in questions if q.answer.upper() == p.word), "")
+            clue = next((q.question_text for q in questions if sanitize_word_for_grid(q.correct_answer) == p.word), "")
             placements_payload.append({
                 "word":      p.word,
                 "clue":      clue,
@@ -199,8 +204,10 @@ class GetCrosswordGrid(APIView):
             return Response({"error": "Session not found"}, status=404)
 
         questions = [gq.question for gq in session.session_questions.all()]
+        words = [sanitize_word_for_grid(q.correct_answer) for q in questions]
+        words = [w for w in words if w]
+
         generator = CrosswordGenerator()
-        words = [q.answer.upper() for q in questions]
         grid, placements = generator.generate(words)
         grid_display = ["".join(row) for row in grid]
 
@@ -209,7 +216,7 @@ class GetCrosswordGrid(APIView):
             "placements": [
                 {
                     "word":      p.word,
-                    "clue":      next((q.text for q in questions if q.answer.upper() == p.word), ""),
+                    "clue":      next((q.question_text for q in questions if sanitize_word_for_grid(q.correct_answer) == p.word), ""),
                     "row":       p.row,
                     "col":       p.col,
                     "direction": p.direction,
@@ -219,7 +226,7 @@ class GetCrosswordGrid(APIView):
 
 
 # =============================
-# WordSearch Game-Specific Views
+# WordSearch Game
 # =============================
 
 class StartWordSearchGame(APIView):
@@ -237,19 +244,17 @@ class StartWordSearchGame(APIView):
             time_limit=300,
         )
 
-        questions = list(
-            Question.objects.filter(game_type="wordsearch")
-            .order_by("?")[:question_count]
-        )
+        questions = fetch_questions_for_game(user, "wordsearch", limit=question_count)
         GameQuestion.objects.bulk_create([
-            GameQuestion(session=session, question=q) for q in questions
+            GameQuestion(session=session, question_id=q.id) for q in questions
         ])
 
-        words = [q.answer.upper() for q in questions]
+        words = [sanitize_word_for_grid(q.correct_answer) for q in questions]
+        words = [w for w in words if w]
+
         generator = WordSearchGenerator()
         matrix, placements = generator.generate(words)
 
-        # persist matrix & placements
         WordSearchData.objects.create(
             session=session,
             matrix=["".join(row) for row in matrix],
@@ -270,9 +275,11 @@ class StartWordSearchGame(APIView):
                 "col":       p.col,
                 "direction": p.direction
             } for p in placements],
+            "questions":     LightweightQuestionSerializer(questions, many=True).data,  # ✅ Added
             "timer_seconds": session.time_limit,
             "started_at":    session.start_time,
         }, status=201)
+
 
 
 class GetWordSearchMatrix(APIView):
@@ -290,14 +297,17 @@ class GetWordSearchMatrix(APIView):
         except WordSearchData.DoesNotExist:
             return Response({"error": "Matrix not generated yet."}, status=400)
 
+        questions = [gq.question for gq in session.session_questions.all()]
+
         return Response({
             "matrix":     data.matrix,
-            "placements": data.placements
+            "placements": data.placements,
+            "questions":  LightweightQuestionSerializer(questions, many=True).data 
         })
 
 
 # =============================
-# Hangman Game-Specific Views
+# Hangman Game
 # =============================
 
 class StartHangmanGame(APIView):
@@ -305,8 +315,6 @@ class StartHangmanGame(APIView):
 
     def post(self, request):
         user = request.user
-        # pick one pre-seeded hangman question
-        question = Question.objects.filter(game_type="hangman").order_by("?").first()
         session = GameSession.objects.create(
             session_id=str(uuid.uuid4()),
             user=user,
@@ -314,14 +322,20 @@ class StartHangmanGame(APIView):
             status="active",
             time_limit=300,
         )
+
+        questions = fetch_questions_for_game(user, "hangman", limit=1)
+        if not questions:
+            return Response({"error": "No questions available"}, status=400)
+
+        question = questions[0]
         GameQuestion.objects.create(session=session, question=question)
 
         return Response({
             "session_id":    session.session_id,
-            "prompt":        question.text,
-            "function_name": question.function_name,
-            "sample_input":  question.sample_input,
-            "sample_output": question.sample_output,
+            "prompt":        question.question_text,
+            "function_name": question.game_data.get("function_name", ""),
+            "sample_input":  question.game_data.get("sample_input", ""),
+            "sample_output": question.game_data.get("sample_output", ""),
             "timer_seconds": session.time_limit,
         }, status=201)
 
@@ -342,14 +356,17 @@ class SubmitHangmanCode(APIView):
         if not user_code:
             return Response({"error": "No code submitted."}, status=400)
 
-        # track lives
         wrong = QuestionResponse.objects.filter(
             question=game_q, user=request.user, is_correct=False
         ).count()
         remaining_lives = 3 - wrong
 
-        # run and record
-        passed, message, trace = run_user_code(user_code, question.function_name, question.hidden_tests)
+        passed, message, trace = run_user_code(
+            user_code,
+            question.game_data.get("function_name", ""),
+            question.game_data.get("hidden_tests", [])
+        )
+
         QuestionResponse.objects.create(
             question=game_q,
             user=request.user,
@@ -381,7 +398,7 @@ class SubmitHangmanCode(APIView):
 
 
 # =============================
-# Debugging Game-Specific Views
+# Debugging Game
 # =============================
 
 class StartDebugGame(APIView):
@@ -389,8 +406,6 @@ class StartDebugGame(APIView):
 
     def post(self, request):
         user = request.user
-        # pick one pre-seeded debugging question
-        question = Question.objects.filter(game_type="debugging").order_by("?").first()
         session = GameSession.objects.create(
             session_id=str(uuid.uuid4()),
             user=user,
@@ -398,15 +413,21 @@ class StartDebugGame(APIView):
             status="active",
             time_limit=300,
         )
+
+        questions = fetch_questions_for_game(user, "debugging", limit=1)
+        if not questions:
+            return Response({"error": "No questions available"}, status=400)
+
+        question = questions[0]
         GameQuestion.objects.create(session=session, question=question)
 
         return Response({
             "session_id":    session.session_id,
-            "prompt":        question.text,
-            "function_name": question.function_name,
-            "sample_input":  question.sample_input,
-            "sample_output": question.sample_output,
-            "broken_code":   question.broken_code,
+            "prompt":        question.question_text,
+            "function_name": question.game_data.get("function_name", ""),
+            "sample_input":  question.game_data.get("sample_input", ""),
+            "sample_output": question.game_data.get("sample_output", ""),
+            "broken_code":   question.game_data.get("buggy_code", ""),
             "timer_seconds": session.time_limit,
         }, status=201)
 
@@ -432,7 +453,12 @@ class SubmitDebugGame(APIView):
         ).count()
         remaining_lives = 3 - wrong
 
-        passed, message, traceback = run_user_code(user_code, question.function_name, question.hidden_tests)
+        passed, message, traceback_str = run_user_code(
+            user_code,
+            question.game_data.get("function_name", ""),
+            question.game_data.get("hidden_tests", [])
+        )
+
         QuestionResponse.objects.create(
             question=game_q,
             user=request.user,
@@ -451,7 +477,7 @@ class SubmitDebugGame(APIView):
                 "game_over":     True,
                 "remaining_lives": max(0, remaining_lives - (0 if passed else 1)),
                 "message":       message,
-                **({"traceback": traceback} if not passed else {})
+                **({"traceback": traceback_str} if not passed else {})
             })
 
         return Response({
@@ -459,23 +485,20 @@ class SubmitDebugGame(APIView):
             "game_over":     False,
             "remaining_lives": remaining_lives - 1,
             "message":       message,
-            "traceback":     traceback,
+            "traceback":     traceback_str,
         })
 
 
 # =============================
-# PreAssessment Views
+# PreAssessment Submission
 # =============================
 
 class SubmitPreAssessmentAnswers(APIView):
-    permission_classes = [AllowAny]  # if unauthenticated users can submit
+    permission_classes = [AllowAny]
 
     def post(self, request):
         data = request.data
-        if isinstance(data, list):
-            answers = data
-        else:
-            answers = data.get("answers", [])
+        answers = data if isinstance(data, list) else data.get("answers", [])
 
         results = []
         correct_count = 0
@@ -496,7 +519,8 @@ class SubmitPreAssessmentAnswers(APIView):
             except PreAssessmentQuestion.DoesNotExist:
                 continue
 
-        recalibrate_topic_proficiency(request.user, results)
+        if request.user.is_authenticated:
+            recalibrate_topic_proficiency(request.user, results)
 
         return Response({
             "total": len(answers),

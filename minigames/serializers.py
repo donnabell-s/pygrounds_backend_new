@@ -1,31 +1,32 @@
 from rest_framework import serializers
 from .models import GameSession, GameQuestion, Question, QuestionResponse
 from question_generation.models import PreAssessmentQuestion
+from question_generation.models import GeneratedQuestion
 
+class LightweightQuestionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = GeneratedQuestion
+        fields = ['id', 'question_text', 'correct_answer']
 
 class QuestionSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Question
-        # Include code-related fields for Hangman questions
+        model = GeneratedQuestion
         fields = [
             'id',
-            'text',
-            'answer',
-            'difficulty',
-            'function_name',
-            'sample_input',
-            'sample_output',
-            'hidden_tests',
-            'broken_code',
+            'question_text',   # replaces 'text'
+            'correct_answer',  # replaces 'answer'
+            'game_type',
+            'minigame_type',
+            'game_data',       # contains function_name, sample_input/output, etc
         ]
-
 
 class GameQuestionSerializer(serializers.ModelSerializer):
     question = QuestionSerializer()
 
     class Meta:
         model = GameQuestion
-        fields = ['id', 'question']
+        fields = ['id', 'question', 'session']
+
 
 
 class GameSessionSerializer(serializers.ModelSerializer):
