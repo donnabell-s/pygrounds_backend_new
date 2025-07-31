@@ -170,6 +170,7 @@ class Topic(models.Model):
     name = models.CharField(max_length=255)
     description = models.TextField(blank=True)
     order = models.PositiveIntegerField(default=0)  # ✅ non-nullable with default
+    embedding = ArrayField(models.FloatField(), size=384, null=True, blank=True)
 
     class Meta:
         unique_together = ('zone', 'order')
