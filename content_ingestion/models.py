@@ -169,22 +169,20 @@ class Topic(models.Model):
     zone = models.ForeignKey(GameZone, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
     description = models.TextField(blank=True)
-    order = models.PositiveIntegerField(default=0)  # ✅ non-nullable with default
-    embedding = ArrayField(models.FloatField(), size=384, null=True, blank=True)
+    # order = models.PositiveIntegerField(default=0)  # ✅ non-nullable with default
+    # embedding = ArrayField(models.FloatField(), size=384, null=True, blank=True)
 
     class Meta:
-        unique_together = ('zone', 'order')
-        ordering = ['zone__order', 'order']
+        ordering = ['zone__order', 'id']
 
 
 class Subtopic(models.Model):
     topic = models.ForeignKey(Topic, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
-    order = models.PositiveIntegerField(default=0)  # ✅ non-nullable with default
+    # order = models.PositiveIntegerField(default=0)  # ✅ non-nullable with default
 
     class Meta:
-        unique_together = ('topic', 'order')
-        ordering = ['topic__zone__order', 'topic__order', 'order']
+        ordering = ['topic__zone__order', 'id']
 
 
 class Embedding(models.Model):

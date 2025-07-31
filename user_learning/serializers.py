@@ -13,7 +13,7 @@ class ZoneSerializer(serializers.ModelSerializer):
 class TopicSerializer(serializers.ModelSerializer):
     class Meta:
         model = Topic
-        fields = ['id', 'name', 'description', 'order', 'zone']
+        fields = ['id', 'name', 'description', 'zone']
 
 
 class SubtopicSerializer(serializers.ModelSerializer):
