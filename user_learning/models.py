@@ -25,7 +25,7 @@ class UserTopicProficiency(models.Model):
 
     class Meta:
         unique_together = ('user', 'topic')
-        ordering = ['topic__order']
+        # ordering = ['topic__order']
 
     def __str__(self):
         return f"{self.user.username} → {self.topic.name}: {self.proficiency_percent}%"

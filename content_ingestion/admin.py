@@ -24,8 +24,8 @@ class TopicAdmin(admin.ModelAdmin):
 
 @admin.register(Subtopic)
 class SubtopicAdmin(admin.ModelAdmin):
-    list_display = ['topic', 'name', 'is_unlocked']
-    list_filter = ['topic__zone', 'is_unlocked']
+    list_display = ['topic', 'name']
+    list_filter = ['topic__zone']
     ordering = ['topic__zone__order', 'topic__name', 'name']
 
 @admin.register(TOCEntry)

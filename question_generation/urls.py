@@ -30,7 +30,7 @@ from .views import (
     # Session management
     RAGSessionListView, CompareSubtopicAndGenerateView,
 
-    PreAssessmentQuestionListView
+    PreAssessmentQuestionListView,
    
     test_question_generation,
     test_minigame_generation_no_save,

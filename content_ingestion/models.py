@@ -188,7 +188,8 @@ class Subtopic(models.Model):
     """
     topic = models.ForeignKey(Topic, on_delete=models.CASCADE, related_name='subtopics')
     name = models.CharField(max_length=100)
-    is_unlocked = models.BooleanField(default=False)
+    # is_unlocked = models.BooleanField(default=False)
+    # order = models.IntegerField(unique=True, null=True)
 
     class Meta:
         ordering = ['topic__zone__order', 'topic__name', 'name']
