@@ -159,23 +159,31 @@ class StartCrosswordGame(APIView):
             time_limit=300,
         )
 
+        # 1️⃣ Fetch questions
         questions = fetch_questions_for_game(user, "crossword", limit=question_count)
-        GameQuestion.objects.bulk_create([
-            GameQuestion(session=session, question_id=q.id) for q in questions
-        ])
 
-        # Sanitize answers for grid
-        words = [sanitize_word_for_grid(q.correct_answer) for q in questions]
-        words = [w for w in words if w]
-        print("DEBUG WORDS:", words)
+        # 2️⃣ Prepare sanitized words
+        sanitized_map = {q.id: sanitize_word_for_grid(q.correct_answer) for q in questions}
+        words = [w for w in sanitized_map.values() if w]
 
+        # 3️⃣ Generate crossword
         generator = CrosswordGenerator()
         grid, placements = generator.generate(words)
         grid_display = ["".join(row) for row in grid]
 
+        # 4️⃣ Determine which questions were actually placed
+        placed_words = {p.word for p in placements}
+        placed_questions = [q for q in questions if sanitized_map[q.id] in placed_words]
+
+        # 5️⃣ Only create GameQuestions for placed questions
+        GameQuestion.objects.bulk_create([
+            GameQuestion(session=session, question_id=q.id) for q in placed_questions
+        ])
+
+        # 6️⃣ Prepare placements with clues
         placements_payload = []
         for p in placements:
-            clue = next((q.question_text for q in questions if sanitize_word_for_grid(q.correct_answer) == p.word), "")
+            clue = next((q.question_text for q in placed_questions if sanitize_word_for_grid(q.correct_answer) == p.word), "")
             placements_payload.append({
                 "word":      p.word,
                 "clue":      clue,
@@ -188,6 +196,7 @@ class StartCrosswordGame(APIView):
             "session_id":    session.session_id,
             "grid":          grid_display,
             "placements":    placements_payload,
+            "questions":     LightweightQuestionSerializer(placed_questions, many=True).data,
             "timer_seconds": session.time_limit,
             "started_at":    session.start_time,
         }, status=201)
