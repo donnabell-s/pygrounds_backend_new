@@ -1,0 +1,21 @@
+question_text,difficulty
+What is a variable in Python?,Easy
+How do you print 'Hello World' in Python?,Easy
+What symbol is used for comments in Python?,Easy
+Explain what a list is in Python.,Easy
+How do you define a function in Python?,Easy
+What is the use of the 'if' statement in Python?,Easy
+What is the difference between a list and a tuple in Python?,Intermediate
+How do you handle exceptions in Python?,Intermediate
+Explain the use of 'for' and 'while' loops in Python.,Intermediate
+What are Python dictionaries and how do you use them?,Intermediate
+How does the 'try-except' block work in Python?,Intermediate
+What is the difference between '==' and 'is' in Python?,Intermediate
+How do you use recursion in Python? Provide an example.,Hard
+Explain how Python's memory management works.,Hard
+What is a lambda function? How is it different from a regular function?,Hard
+How do you create a class and object in Python?,Hard
+Write a Python program to check if a number is a prime.,Hard
+Explain Python's GIL and its impact on threading.,Hard
+What is list comprehension? Provide an example with conditionals.,Hard
+What are decorators in Python and when would you use them?,Hard

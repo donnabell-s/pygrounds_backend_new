@@ -52,3 +52,12 @@ urlpatterns = [
     path('all/advanced/', get_all_advanced_questions, name='get_all_advanced_questions'),      # Get all advanced questions
     path('all/master/', get_all_master_questions, name='get_all_master_questions'),            # Get all master questions
 ]
+from django.urls import path
+#from .views import DocumentChunkClassificationView, DocumentChunkListView
+
+urlpatterns = [
+    #path('classify-document-chunks/', DocumentChunkClassificationView.as_view(), name='classify_document_chunks'),
+    #path('document-chunks/', DocumentChunkListView.as_view(), name='document_chunks_list'),
+    #path('list-classified-chunks/', DocumentChunkListView.as_view(), name='list_classified_chunks'),
+]
+
