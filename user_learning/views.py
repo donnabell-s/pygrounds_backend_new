@@ -39,14 +39,13 @@ class MySubtopicStatsView(APIView):
 
 class MyCurrentZoneView(APIView):
     """
-    Returns the user's current active zone for gameplay.
+    Returns the user's current active zone with full details, using UserZoneProgressSerializer.
     """
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
         user = request.user
 
-        # Get all progress ordered by zone order
         progresses = (
             UserZoneProgress.objects
             .filter(user=user)
@@ -54,27 +53,36 @@ class MyCurrentZoneView(APIView):
             .order_by('zone__order')
         )
 
+        # If no zones unlocked yet, initialize with first zone
         if not progresses.exists():
-            # If no progress yet, start with the first zone
             first_zone = GameZone.objects.order_by('order').first()
-            return Response({
-                "current_zone_id": first_zone.id if first_zone else None,
-                "current_zone_name": first_zone.name if first_zone else None,
-                "completion_percent": 0,
-            })
+            if not first_zone:
+                return Response([])  # No zones exist
 
-        # Determine current zone: highest unlocked
-        current_zone = None
+            # Build a temporary object for serializer
+            dummy_progress = UserZoneProgress(
+                user=user,
+                zone=first_zone,
+                completion_percent=0.0,
+            )
+            from .serializers import UserZoneProgressSerializer
+            data = UserZoneProgressSerializer(dummy_progress).data
+            data["is_current"] = True
+            data["locked"] = False
+            return Response([data])
+
+        # Determine current zone: last unlocked zone with >0% OR first zone
+        current_progress = None
         for progress in progresses:
             if progress.completion_percent > 0:
-                current_zone = progress
+                current_progress = progress
 
-        # If all zones are 0%, stay at the first one
-        if not current_zone:
-            current_zone = progresses.first()
+        if not current_progress:
+            current_progress = progresses.first()
 
-        return Response({
-            "current_zone_id": current_zone.zone.id,
-            "current_zone_name": current_zone.zone.name,
-            "completion_percent": current_zone.completion_percent,
-        })
+        from .serializers import UserZoneProgressSerializer
+        data = UserZoneProgressSerializer(current_progress).data
+        data["is_current"] = True
+        data["locked"] = False
+
+        return Response([data])
