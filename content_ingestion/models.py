@@ -150,52 +150,44 @@ class TOCEntry(models.Model):
         return f"{self.title} (Pages {pages})"
 
 
+
 class GameZone(models.Model):
-    """
-    A progression zone (e.g. Python Basics) that contains Topics.
-    """
+    """A zone in PyGrounds (e.g. Python Basics)"""
     name = models.CharField(max_length=100)
     description = models.TextField()
     order = models.IntegerField(unique=True)
-    max_exp = models.IntegerField(default=1000)
-
-    class Meta:
-        ordering = ['order']
+    # is_unlocked = models.BooleanField(default=False) 
 
     def __str__(self):
         return f"Zone {self.order}: {self.name}"
 
+    class Meta:
+        ordering = ['order']
+
 
 class Topic(models.Model):
-    """
-    A programming topic within a GameZone; container for Subtopics.
-    """
+    """A topic inside a GameZone"""
     zone = models.ForeignKey(GameZone, on_delete=models.CASCADE, related_name='topics')
     name = models.CharField(max_length=100)
     description = models.TextField()
-    is_unlocked = models.BooleanField(default=False)
-
-    class Meta:
-        ordering = ['zone__order', 'name']
-
+    order = models.IntegerField(null=True, blank=True)
+    embedding = ArrayField(models.FloatField(), size=384, null=True, blank=True)
     def __str__(self):
         return f"{self.zone.name} - {self.name}"
-
+    class Meta:
+        ordering = ['zone__order', 'order']
+        unique_together = [['zone', 'order']]
 
 class Subtopic(models.Model):
-    """
-    A specific concept within a Topic for which exercises are generated.
-    """
+    """A subtopic inside a Topic"""
     topic = models.ForeignKey(Topic, on_delete=models.CASCADE, related_name='subtopics')
     name = models.CharField(max_length=100)
-    # is_unlocked = models.BooleanField(default=False)
-    # order = models.IntegerField(unique=True, null=True)
-
-    class Meta:
-        ordering = ['topic__zone__order', 'topic__name', 'name']
-
+    order = models.IntegerField(null=True, blank=True)
     def __str__(self):
         return f"{self.topic.name} - {self.name}"
+    class Meta:
+        ordering = ['topic__zone__order', 'topic__order', 'order']
+        unique_together = [['topic', 'order']]
 
 
 class Embedding(models.Model):

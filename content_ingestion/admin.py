@@ -18,8 +18,8 @@ class GameZoneAdmin(admin.ModelAdmin):
 
 @admin.register(Topic)
 class TopicAdmin(admin.ModelAdmin):
-    list_display = ['zone', 'name', 'description', 'is_unlocked']
-    list_filter = ['zone', 'is_unlocked']
+    list_display = ['zone', 'name', 'description']
+    list_filter = ['zone']
     ordering = ['zone__order', 'name']
 
 @admin.register(Subtopic)
