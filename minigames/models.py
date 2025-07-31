@@ -24,8 +24,6 @@ class Question(models.Model):
     hidden_tests = models.JSONField(blank=True, null=True)
     broken_code = models.TextField(blank=True, null=True)
 
-    # Optional: for adaptive engine (later use)
-    subtopics = models.ManyToManyField("Subtopic", blank=True)
 
     def __str__(self):
         return f"[{self.game_type}] [{self.difficulty}] {self.text[:40]}"
@@ -88,16 +86,3 @@ class HangmanData(models.Model):
     def __str__(self):
         return f"Hangman for {self.session.session_id}"
 
-
-class Topic(models.Model):
-    name = models.CharField(max_length=100, unique=True)
-
-    def __str__(self):
-        return self.name
-
-class Subtopic(models.Model):
-    name  = models.CharField(max_length=100, unique=True)
-    topic = models.ForeignKey(Topic, on_delete=models.CASCADE, related_name="subtopics")
-
-    def __str__(self):
-        return f"{self.topic.name} → {self.name}"

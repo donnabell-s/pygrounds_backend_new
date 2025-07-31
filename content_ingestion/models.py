@@ -166,28 +166,24 @@ class GameZone(models.Model):
 
 
 class Topic(models.Model):
-    """A topic inside a GameZone"""
-    zone = models.ForeignKey(GameZone, on_delete=models.CASCADE, related_name='topics')
-    name = models.CharField(max_length=100)
-    description = models.TextField()
-    order = models.IntegerField(null=True, blank=True)
-    embedding = ArrayField(models.FloatField(), size=384, null=True, blank=True)
-    def __str__(self):
-        return f"{self.zone.name} - {self.name}"
+    zone = models.ForeignKey(GameZone, on_delete=models.CASCADE)
+    name = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
+    order = models.PositiveIntegerField(default=0)  # ✅ non-nullable with default
+
     class Meta:
+        unique_together = ('zone', 'order')
         ordering = ['zone__order', 'order']
-        unique_together = [['zone', 'order']]
+
 
 class Subtopic(models.Model):
-    """A subtopic inside a Topic"""
-    topic = models.ForeignKey(Topic, on_delete=models.CASCADE, related_name='subtopics')
-    name = models.CharField(max_length=100)
-    order = models.IntegerField(null=True, blank=True)
-    def __str__(self):
-        return f"{self.topic.name} - {self.name}"
+    topic = models.ForeignKey(Topic, on_delete=models.CASCADE)
+    name = models.CharField(max_length=255)
+    order = models.PositiveIntegerField(default=0)  # ✅ non-nullable with default
+
     class Meta:
+        unique_together = ('topic', 'order')
         ordering = ['topic__zone__order', 'topic__order', 'order']
-        unique_together = [['topic', 'order']]
 
 
 class Embedding(models.Model):
