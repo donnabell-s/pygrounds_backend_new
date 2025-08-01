@@ -19,7 +19,7 @@ class TopicSerializer(serializers.ModelSerializer):
 class SubtopicSerializer(serializers.ModelSerializer):
     class Meta:
         model = Subtopic
-        fields = ['id', 'name', 'order', 'topic']
+        fields = ['id', 'name', 'topic']
 
 
 # class UserZoneProgressSerializer(serializers.ModelSerializer):
@@ -81,4 +81,4 @@ class UserSubtopicMasterySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UserSubtopicMastery
-        fields = ['subtopic', 'attempts', 'correct']
+        fields = ['subtopic', 'mastery_level']

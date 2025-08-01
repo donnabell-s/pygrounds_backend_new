@@ -443,6 +443,62 @@ class StartHangmanGame(APIView):
         }, status=201)
 
 
+# class SubmitHangmanCode(APIView):
+#     permission_classes = [IsAuthenticated]
+
+#     def post(self, request, session_id):
+#         session = GameSession.objects.filter(
+#             session_id=session_id, user=request.user, status="active"
+#         ).first()
+#         if not session:
+#             return Response({"error": "Invalid or ended session."}, status=400)
+
+#         game_q = session.session_questions.first()
+#         question = game_q.question
+#         user_code = request.data.get("code")
+#         if not user_code:
+#             return Response({"error": "No code submitted."}, status=400)
+
+#         wrong = QuestionResponse.objects.filter(
+#             question=game_q, user=request.user, is_correct=False
+#         ).count()
+#         remaining_lives = 3 - wrong
+
+#         passed, message, trace = run_user_code(
+#             user_code,
+#             question.game_data.get("function_name", ""),
+#             question.game_data.get("hidden_tests", [])
+#         )
+
+#         QuestionResponse.objects.create(
+#             question=game_q,
+#             user=request.user,
+#             user_answer=user_code,
+#             is_correct=passed,
+#             time_taken=0,
+#         )
+
+#         if passed or remaining_lives <= 1:
+#             session.status = "completed"
+#             session.total_score = 1 if passed else 0
+#             session.end_time = timezone.now()
+#             session.save()
+#             return Response({
+#                 "success":       passed,
+#                 "game_over":     True,
+#                 "remaining_lives": max(0, remaining_lives - (0 if passed else 1)),
+#                 "message":       message,
+#                 **({"traceback": trace} if not passed else {})
+#             })
+
+#         return Response({
+#             "success":       False,
+#             "game_over":     False,
+#             "remaining_lives": remaining_lives - 1,
+#             "message":       message,
+#             "traceback":     trace,
+#         })
+
 class SubmitHangmanCode(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -478,25 +534,46 @@ class SubmitHangmanCode(APIView):
             time_taken=0,
         )
 
+        # ✅ Build results for recalibration
+        gd = getattr(question, "game_data", {}) or {}
+        subtopic_ids = [s["id"] for s in gd.get("subtopic_combination", [])]
+        from content_ingestion.models import Subtopic
+        topic_ids = list(
+            Subtopic.objects.filter(id__in=subtopic_ids).values_list("topic_id", flat=True)
+        )
+        results = [{
+            "question_id": question.id,
+            "question_text": question.question_text,
+            "user_answer": "<code-submission>",
+            "correct_answer": question.correct_answer or "",
+            "is_correct": passed,
+            "topic_ids": topic_ids,
+            "subtopic_ids": subtopic_ids,
+        }]
+
         if passed or remaining_lives <= 1:
             session.status = "completed"
             session.total_score = 1 if passed else 0
             session.end_time = timezone.now()
             session.save()
+
+            # ✅ Trigger recalibration on game over
+            recalibrate_topic_proficiency(request.user, results)
+
             return Response({
-                "success":       passed,
-                "game_over":     True,
+                "success": passed,
+                "game_over": True,
                 "remaining_lives": max(0, remaining_lives - (0 if passed else 1)),
-                "message":       message,
+                "message": message,
                 **({"traceback": trace} if not passed else {})
             })
 
         return Response({
-            "success":       False,
-            "game_over":     False,
+            "success": False,
+            "game_over": False,
             "remaining_lives": remaining_lives - 1,
-            "message":       message,
-            "traceback":     trace,
+            "message": message,
+            "traceback": trace,
         })
 
 
@@ -535,6 +612,62 @@ class StartDebugGame(APIView):
         }, status=201)
 
 
+# class SubmitDebugGame(APIView):
+#     permission_classes = [IsAuthenticated]
+
+#     def post(self, request, session_id):
+#         session = GameSession.objects.filter(
+#             session_id=session_id, user=request.user, status="active"
+#         ).first()
+#         if not session:
+#             return Response({"error": "Invalid or ended session."}, status=400)
+
+#         game_q = session.session_questions.first()
+#         question = game_q.question
+#         user_code = request.data.get("code")
+#         if not user_code:
+#             return Response({"error": "No code submitted."}, status=400)
+
+#         wrong = QuestionResponse.objects.filter(
+#             question=game_q, user=request.user, is_correct=False
+#         ).count()
+#         remaining_lives = 3 - wrong
+
+#         passed, message, traceback_str = run_user_code(
+#             user_code,
+#             question.game_data.get("function_name", ""),
+#             question.game_data.get("hidden_tests", [])
+#         )
+
+#         QuestionResponse.objects.create(
+#             question=game_q,
+#             user=request.user,
+#             user_answer=user_code,
+#             is_correct=passed,
+#             time_taken=0,
+#         )
+
+#         if passed or remaining_lives <= 1:
+#             session.status = "completed"
+#             session.total_score = 1 if passed else 0
+#             session.end_time = timezone.now()
+#             session.save()
+#             return Response({
+#                 "success":       passed,
+#                 "game_over":     True,
+#                 "remaining_lives": max(0, remaining_lives - (0 if passed else 1)),
+#                 "message":       message,
+#                 **({"traceback": traceback_str} if not passed else {})
+#             })
+
+#         return Response({
+#             "success":       False,
+#             "game_over":     False,
+#             "remaining_lives": remaining_lives - 1,
+#             "message":       message,
+#             "traceback":     traceback_str,
+#         })
+
 class SubmitDebugGame(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -570,25 +703,53 @@ class SubmitDebugGame(APIView):
             time_taken=0,
         )
 
+        # ✅ Prepare results for recalibration
+        gd = getattr(question, "game_data", {}) or {}
+        subtopic_ids = [s["id"] for s in gd.get("subtopic_combination", [])]
+
+        from content_ingestion.models import Subtopic
+        topic_ids = list(
+            Subtopic.objects.filter(id__in=subtopic_ids).values_list("topic_id", flat=True)
+        )
+
+        results = [{
+            "question_id": question.id,
+            "question_text": question.question_text,
+            "user_answer": "<code-submission>",
+            "correct_answer": question.correct_answer or "",
+            "is_correct": passed,
+            "topic_ids": topic_ids,
+            "subtopic_ids": subtopic_ids,
+        }]
+
+        # ✅ Handle game over
         if passed or remaining_lives <= 1:
             session.status = "completed"
             session.total_score = 1 if passed else 0
             session.end_time = timezone.now()
             session.save()
+
+            # ✅ Trigger recalibration on game over
+            try:
+                recalibrate_topic_proficiency(request.user, results)
+            except Exception as e:
+                print("Recalibration error:", e)
+
             return Response({
-                "success":       passed,
-                "game_over":     True,
+                "success": passed,
+                "game_over": True,
                 "remaining_lives": max(0, remaining_lives - (0 if passed else 1)),
-                "message":       message,
+                "message": message,
                 **({"traceback": traceback_str} if not passed else {})
             })
 
+        # ✅ Not game over yet
         return Response({
-            "success":       False,
-            "game_over":     False,
+            "success": False,
+            "game_over": False,
             "remaining_lives": remaining_lives - 1,
-            "message":       message,
-            "traceback":     traceback_str,
+            "message": message,
+            "traceback": traceback_str,
         })
 
 
