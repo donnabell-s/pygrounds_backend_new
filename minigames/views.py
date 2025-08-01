@@ -75,6 +75,45 @@ class GetSessionInfo(APIView):
         return Response(GameSessionSerializer(session).data)
 
 
+# class SubmitAnswers(APIView):
+#     permission_classes = [IsAuthenticated]
+
+#     def post(self, request, session_id):
+#         answers = request.data.get("answers", [])
+#         session = GameSession.objects.filter(session_id=session_id, status="active").first()
+#         if not session:
+#             return Response({"error": "Invalid or inactive session"}, status=400)
+
+#         score = 0
+#         for ans in answers:
+#             try:
+#                 game_q = GameQuestion.objects.get(id=ans["question_id"], session=session)
+#             except GameQuestion.DoesNotExist:
+#                 continue
+
+#             correct = (
+#                 str(game_q.question.correct_answer).strip().lower()
+#                 == ans["user_answer"].strip().lower()
+#             )
+#             if correct:
+#                 score += 1
+
+#             QuestionResponse.objects.create(
+#                 question=game_q,
+#                 user=request.user,
+#                 user_answer=ans["user_answer"],
+#                 is_correct=correct,
+#                 time_taken=ans.get("time_taken", 0),
+#             )
+
+#         session.status = "completed"
+#         session.total_score = score
+#         session.end_time = timezone.now()
+#         session.save()
+
+#         return Response({"message": "Answers submitted", "score": score})
+
+
 class SubmitAnswers(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -84,34 +123,72 @@ class SubmitAnswers(APIView):
         if not session:
             return Response({"error": "Invalid or inactive session"}, status=400)
 
-        score = 0
+        results = []
+        correct_count = 0
+
         for ans in answers:
             try:
                 game_q = GameQuestion.objects.get(id=ans["question_id"], session=session)
             except GameQuestion.DoesNotExist:
                 continue
 
-            correct = (
-                str(game_q.question.correct_answer).strip().lower()
-                == ans["user_answer"].strip().lower()
-            )
-            if correct:
-                score += 1
+            user_answer_raw = ans.get("user_answer", "")
+            user_answer = user_answer_raw.strip().lower()
+            correct_answer = str(game_q.question.correct_answer).strip().lower()
+            is_correct = user_answer == correct_answer
 
+            if is_correct:
+                correct_count += 1
+
+            # Save response
             QuestionResponse.objects.create(
                 question=game_q,
                 user=request.user,
-                user_answer=ans["user_answer"],
-                is_correct=correct,
+                user_answer=user_answer_raw,
+                is_correct=is_correct,
                 time_taken=ans.get("time_taken", 0),
             )
 
+            gd = getattr(game_q.question, "game_data", {}) or {}
+
+            # Extract subtopic IDs
+            subtopic_ids = [s["id"] for s in gd.get("subtopic_combination", [])]
+
+            # Query Topic IDs based on Subtopic table
+            from content_ingestion.models import Subtopic
+            topic_ids = list(
+                Subtopic.objects.filter(id__in=subtopic_ids).values_list("topic_id", flat=True)
+            )
+
+            results.append({
+                "question_id": game_q.question.id,
+                "question_text": game_q.question.question_text,
+                "user_answer": user_answer_raw,
+                "correct_answer": game_q.question.correct_answer,
+                "is_correct": is_correct,
+                "topic_ids": topic_ids,  # ✅ Now real topic IDs
+                "subtopic_ids": subtopic_ids,
+            })
+
+        # Mark session as completed
         session.status = "completed"
-        session.total_score = score
+        session.total_score = correct_count
         session.end_time = timezone.now()
         session.save()
 
-        return Response({"message": "Answers submitted", "score": score})
+        # Trigger adaptive recalibration
+        if request.user.is_authenticated:
+            try:
+                recalibrate_topic_proficiency(request.user, results)
+            except Exception as e:
+                print("Recalibration error:", e)
+
+        return Response({
+            "total": len(answers),
+            "correct": correct_count,
+            "results": results,
+            "score": correct_count
+        })
 
 
 @api_view(["POST"])

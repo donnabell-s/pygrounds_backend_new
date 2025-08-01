@@ -40,40 +40,32 @@ class UserZoneProgressSerializer(serializers.ModelSerializer):
         fields = ['zone', 'unlocked_at', 'completion_percent', 'is_current', 'locked']
 
     def get_is_current(self, obj):
-        """
-        Mark the highest unlocked zone as current.
-        """
-        # Get all progresses for this user
-        user_progress = (
-            UserZoneProgress.objects.filter(user=obj.user)
-            .order_by('zone__order')
-        )
+        user = obj.user
+        progresses = UserZoneProgress.objects.filter(user=user).order_by('zone__order')
 
-        # Find the last unlocked zone with >0%
-        highest_unlocked = None
-        for up in user_progress:
-            if up.completion_percent > 0:
-                highest_unlocked = up
+        # Current zone = first zone with <100% completion
+        for up in progresses:
+            if up.completion_percent < 100:
+                return up.id == obj.id
 
-        return highest_unlocked and highest_unlocked.zone_id == obj.zone_id
+        # If all zones 100%, last zone is current
+        return progresses.last().id == obj.id if progresses else False
 
     def get_locked(self, obj):
-        """
-        Lock zones that are after the current highest unlocked zone.
-        """
-        # Find the highest unlocked zone
-        highest_unlocked = (
-            UserZoneProgress.objects
-            .filter(user=obj.user, completion_percent__gt=0)
-            .order_by('zone__order')
-            .last()
-        )
+        user = obj.user
+        progresses = UserZoneProgress.objects.filter(user=user).order_by('zone__order')
 
-        if not highest_unlocked:
-            return obj.zone.order > 1  # lock everything except first zone
+        # Find current zone index (first incomplete)
+        current_idx = 0
+        for idx, up in enumerate(progresses):
+            if up.completion_percent < 100:
+                current_idx = idx
+                break
+            else:
+                current_idx = idx
 
-        return obj.zone.order > highest_unlocked.zone.order
-
+        # Lock zones after the current
+        return obj.zone.order > progresses[current_idx].zone.order
 
 
 class UserTopicProficiencySerializer(serializers.ModelSerializer):

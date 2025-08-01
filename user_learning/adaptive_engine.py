@@ -1,7 +1,5 @@
-# user_learning/adaptive_engine.py
-from django.db.models import Avg
 from collections import defaultdict
-
+from django.db.models import Avg
 from question_generation.models import PreAssessmentQuestion
 from user_learning.models import (
     UserZoneProgress,
@@ -10,46 +8,46 @@ from user_learning.models import (
 )
 from content_ingestion.models import Topic, Subtopic, GameZone
 
-
 def recalibrate_topic_proficiency(user, results: list):
     """
-    Called after user pre-assessment or gameplay update.
-    Updates:
-      1. Topic proficiency (percentage)
-      2. Subtopic mastery (percentage)
-      3. Zone progression (unlock, advance, or revert)
+    Recalibrate user topic proficiency and zone progression.
+    Works for both pre-assessment and minigame results.
     """
 
-    # --- 1. Compute temporary score tracking ---
     topic_scores = defaultdict(lambda: {"correct": 0, "total": 0})
     subtopic_scores = defaultdict(lambda: {"correct": 0, "total": 0})
 
+    # --- 1️⃣ Aggregate scores ---
     for entry in results:
-        q_id = entry.get("question_id")
         is_correct = entry.get("is_correct", False)
 
-        try:
-            question = PreAssessmentQuestion.objects.get(id=q_id)
-        except PreAssessmentQuestion.DoesNotExist:
-            continue
+        topic_ids = entry.get("topic_ids") or []
+        subtopic_ids = entry.get("subtopic_ids") or []
 
-        # Aggregate topic scores
-        for topic_id in question.topic_ids:
-            topic_scores[topic_id]["total"] += 1
+        # Fallback: Load from PreAssessmentQuestion if missing
+        if not topic_ids and not subtopic_ids:
+            q_id = entry.get("question_id")
+            try:
+                question = PreAssessmentQuestion.objects.get(id=q_id)
+                topic_ids = getattr(question, "topic_ids", [])
+                subtopic_ids = getattr(question, "subtopic_ids", [])
+            except PreAssessmentQuestion.DoesNotExist:
+                continue
+
+        for t_id in topic_ids:
+            topic_scores[t_id]["total"] += 1
             if is_correct:
-                topic_scores[topic_id]["correct"] += 1
+                topic_scores[t_id]["correct"] += 1
 
-        # Aggregate subtopic scores
-        for sub_id in question.subtopic_ids:
-            subtopic_scores[sub_id]["total"] += 1
+        for s_id in subtopic_ids:
+            subtopic_scores[s_id]["total"] += 1
             if is_correct:
-                subtopic_scores[sub_id]["correct"] += 1
+                subtopic_scores[s_id]["correct"] += 1
 
-    # --- 2. Save topic proficiency ---
+    # --- 2️⃣ Save topic proficiency ---
     for topic_id, data in topic_scores.items():
         if data["total"] == 0:
             continue
-
         pct = (data["correct"] / data["total"]) * 100
         topic = Topic.objects.filter(id=topic_id).first()
         if topic:
@@ -59,11 +57,10 @@ def recalibrate_topic_proficiency(user, results: list):
                 defaults={"proficiency_percent": pct},
             )
 
-    # --- 3. Save subtopic mastery ---
+    # --- 3️⃣ Save subtopic mastery ---
     for sub_id, data in subtopic_scores.items():
         if data["total"] == 0:
             continue
-
         pct = (data["correct"] / data["total"]) * 100
         subtopic = Subtopic.objects.filter(id=sub_id).first()
         if subtopic:
@@ -73,50 +70,48 @@ def recalibrate_topic_proficiency(user, results: list):
                 defaults={"mastery_level": pct},
             )
 
-    # --- 4. Recalculate zone progress ---
+    # --- 4️⃣ Update zone progression ---
     zones = GameZone.objects.all().order_by("order")
     user_progress_map = {
         up.zone_id: up for up in UserZoneProgress.objects.filter(user=user)
     }
 
-    highest_unlocked_index = 0  # Always at least Zone 0
+    # Compute completion percent per zone
+    zone_avgs = []
     for idx, zone in enumerate(zones):
         zone_topics = Topic.objects.filter(zone=zone)
-
         avg_proficiency = (
             UserTopicProficiency.objects
             .filter(user=user, topic__in=zone_topics)
             .aggregate(avg=Avg('proficiency_percent'))['avg'] or 0
         )
-
-        # Update or create zone progress
         progress, _ = UserZoneProgress.objects.update_or_create(
             user=user,
             zone=zone,
             defaults={"completion_percent": avg_proficiency},
         )
+        progress.completion_percent = avg_proficiency
         user_progress_map[zone.id] = progress
+        zone_avgs.append(avg_proficiency)
 
-        # Only mark as "fully complete" if >= 100%
-        if avg_proficiency >= 100:
-            highest_unlocked_index = idx
+    # --- 5️⃣ Determine current zone ---
+    # Rule:
+    # - If this is first recalibration -> force start at zone 1
+    # - Otherwise, current zone = first zone not 100% complete
+    current_zone_index = 0
+    if UserZoneProgress.objects.filter(user=user).count() > 0:
+        for idx, avg in enumerate(zone_avgs):
+            if avg < 100:
+                current_zone_index = idx
+                break
+            else:
+                current_zone_index = idx  # keep advancing if fully mastered
 
-    # --- 5. Determine current zone ---
-    current_zone_index = highest_unlocked_index
-
-    # Revert if current zone drops to 0% or below
-    while current_zone_index > 0:
-        current_zone = zones[current_zone_index]
-        if user_progress_map[current_zone.id].completion_percent <= 0:
-            current_zone_index -= 1
-        else:
-            break
-
-    # --- 6. Lock info for frontend (optional) ---
-    # You can annotate UserZoneProgress with `is_current` or `locked`
+    # --- 6️⃣ Apply is_current & locked and save ---
     for idx, zone in enumerate(zones):
         progress = user_progress_map[zone.id]
-        progress.is_current = (idx == current_zone_index)  # For frontend use
-        progress.locked = idx > current_zone_index          # For frontend use
+        progress.is_current = (idx == current_zone_index)
+        progress.locked = idx > current_zone_index
+        progress.save(update_fields=["completion_percent", "is_current", "locked"])
 
-    return current_zone_index  # Return index of current active zone
+    return current_zone_index

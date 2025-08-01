@@ -39,7 +39,9 @@ class MySubtopicStatsView(APIView):
 
 class MyCurrentZoneView(APIView):
     """
-    Returns the user's current active zone with full details, using UserZoneProgressSerializer.
+    Returns the user's current active zone with full details, using sequential logic:
+    - Current zone = first zone with completion < 100%
+    - If all zones 100%, last zone is current
     """
     permission_classes = [IsAuthenticated]
 
@@ -53,36 +55,31 @@ class MyCurrentZoneView(APIView):
             .order_by('zone__order')
         )
 
-        # If no zones unlocked yet, initialize with first zone
+        # If no zones exist yet, create first zone progress at 0%
         if not progresses.exists():
             first_zone = GameZone.objects.order_by('order').first()
             if not first_zone:
                 return Response([])  # No zones exist
 
-            # Build a temporary object for serializer
-            dummy_progress = UserZoneProgress(
+            progress = UserZoneProgress.objects.create(
                 user=user,
                 zone=first_zone,
                 completion_percent=0.0,
             )
             from .serializers import UserZoneProgressSerializer
-            data = UserZoneProgressSerializer(dummy_progress).data
-            data["is_current"] = True
-            data["locked"] = False
-            return Response([data])
+            return Response([UserZoneProgressSerializer(progress).data])
 
-        # Determine current zone: last unlocked zone with >0% OR first zone
+        # Sequential logic: first incomplete zone is current
         current_progress = None
         for progress in progresses:
-            if progress.completion_percent > 0:
+            if progress.completion_percent < 100:
                 current_progress = progress
+                break
 
-        if not current_progress:
-            current_progress = progresses.first()
+        # If all zones 100%, current = last zone
+        if current_progress is None:
+            current_progress = progresses.last()
 
         from .serializers import UserZoneProgressSerializer
         data = UserZoneProgressSerializer(current_progress).data
-        data["is_current"] = True
-        data["locked"] = False
-
         return Response([data])
