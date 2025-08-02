@@ -41,3 +41,13 @@ class Question(models.Model):
 
     def __str__(self):
         return self.text[:50]
+
+
+##dummy lng sa ni
+
+class GeneratedQuestion(models.Model):
+    text = models.TextField()
+    difficulty = models.IntegerField(choices=[(1, 'Easy'), (2, 'Intermediate'), (3, 'Hard')])
+
+    def __str__(self):
+        return self.text[:50]
