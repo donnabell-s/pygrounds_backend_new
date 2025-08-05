@@ -28,5 +28,4 @@ urlpatterns = [
     path('', include('question_generation.urls')),
     # content ingestion
     path('', include('content_ingestion.urls')),
-    path('question_generation/', include('question_generation.urls')),
 ]
