@@ -130,9 +130,7 @@ class GeneratedQuestion(models.Model):
     subtopic = models.ForeignKey(Subtopic, on_delete=models.CASCADE, related_name='generated_questions')
 
     question_text = models.TextField(blank=True)  # Could be clue, prompt, description, etc.
-    answer_options = JSONField(default=list, blank=True)  # MCQ options if applicable
     correct_answer = models.TextField(blank=True)
-    explanation = models.TextField(blank=True)
 
     estimated_difficulty = models.CharField(
         max_length=20,
@@ -142,22 +140,11 @@ class GeneratedQuestion(models.Model):
     )
     
     game_type = models.CharField(max_length=20, choices=[('coding','Coding'), ('non_coding','Non-Coding')], default='non_coding')
-    minigame_type = models.CharField(
-        max_length=30,
-        choices=[
-            ('hangman_coding', 'Hangman-Style Coding Game'),
-            ('ship_debugging', 'Ship Debugging Game'),
-            ('word_search', 'Word Search Puzzle'),
-            ('crossword', 'Crossword Puzzle'),
-        ],
-        default='generic'
-    )
 
     # Flexible field for storing game-specific data:
     game_data = JSONField(default=dict, blank=True)
 
     # Metadata & tracking
-    quality_score = models.FloatField(null=True, blank=True)
     validation_status = models.CharField(
         max_length=20,
         choices=[('pending', 'Pending Validation'), ('approved', 'Approved'), ('rejected', 'Rejected'), ('needs_review', 'Needs Review')],
@@ -168,7 +155,7 @@ class GeneratedQuestion(models.Model):
         ordering = ['subtopic__name']
         indexes = [
             models.Index(fields=['subtopic', 'estimated_difficulty']),
-            models.Index(fields=['validation_status', 'quality_score']),
+            models.Index(fields=['validation_status']),
             models.Index(fields=['topic']),
         ]
 

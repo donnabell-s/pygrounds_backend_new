@@ -201,16 +201,11 @@ def save_minigame_questions_to_db_enhanced(questions_json, subtopic_combination,
                     correct_answer=correct_answer,
                     estimated_difficulty=difficulty,
                     game_type=game_type,
-                    minigame_type=game_type,  # Use game_type as minigame_type
                     game_data={
-                        'auto_generated': True, 
-                        'pipeline_version': '2.0',
                         'zone_id': zone.id,
                         'zone_name': zone.name,
                         'subtopic_combination': [{'id': s.id, 'name': s.name} for s in subtopic_combination],
                         'combination_size': len(subtopic_combination),
-                        'is_cross_subtopic': len(subtopic_combination) > 1,
-                        'rag_context': {'context': rag_context, 'used': bool(rag_context)},
                         'generation_model': 'deepseek-chat',
                         # Coding-specific fields (empty for non-coding questions)
                         'function_name': function_name,
@@ -219,7 +214,6 @@ def save_minigame_questions_to_db_enhanced(questions_json, subtopic_combination,
                         'hidden_tests': hidden_tests,
                         'buggy_code': buggy_code
                     },
-                    quality_score=0.8,  # Default score
                     validation_status='pending'
                 )
                 
@@ -333,7 +327,7 @@ def test_question_generation(request):
                     f"focused on the subtopic \"{subtopic.name}\". Use the RAG context provided. "
                     f"Make questions appropriate for {difficulty} level. "
                     f"Use the exact subtopic name \"{subtopic.name}\" in subtopics_covered. "
-                    f"Format output as JSON array with fields: question_text, choices, correct_answer, difficulty, explanation."
+                    f"Format output as JSON array with fields: question_text, choices, correct_answer, difficulty."
                 )
 
                 # Get prompt for the game type (coding or non_coding)
@@ -374,7 +368,6 @@ def test_question_generation(request):
                             'question_text': q.get('question_text') or q.get('question', ''),
                             'choices': q.get('choices', []),
                             'correct_answer': q.get('correct_answer', ''),
-                            'explanation': q.get('explanation', ''),
                             'difficulty': difficulty,
                             'game_type': game_type,
                             'rag_context_length': len(rag_context),
@@ -672,8 +665,6 @@ SUBTOPIC COMBINATION: {' + '.join(subtopic_names)}
                                             'subtopic_combination': subtopic_info,
                                             'subtopic_names': subtopic_names,
                                             'game_type': saved_q.game_type,
-                                            'minigame_type': saved_q.minigame_type,
-                                            'quality_score': saved_q.quality_score,
                                             'validation_status': saved_q.validation_status,
                                         })
                                     

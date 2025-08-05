@@ -38,7 +38,6 @@ class UploadedDocument(models.Model):
     """
     title = models.CharField(max_length=255)
     file = models.FileField(upload_to='pdfs/')
-    uploaded_at = models.DateTimeField(auto_now_add=True)
 
     # Parsing state
     processing_status = models.CharField(
@@ -54,7 +53,6 @@ class UploadedDocument(models.Model):
         help_text='Pages already parsed'
     )
     total_pages = models.IntegerField(default=0)
-    parse_metadata = JSONField(default=dict, blank=True)
 
     # Document difficulty
     difficulty = models.CharField(
@@ -157,9 +155,6 @@ class GameZone(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField()
     order = models.IntegerField(unique=True)
-    is_active = models.BooleanField(default=True)
-    required_exp = models.IntegerField(default=0)
-    max_exp = models.IntegerField(default=1000)
     is_unlocked = models.BooleanField(default=False)
 
     class Meta:
@@ -176,7 +171,6 @@ class Topic(models.Model):
     zone = models.ForeignKey(GameZone, on_delete=models.CASCADE, related_name='topics')
     name = models.CharField(max_length=100)
     description = models.TextField()
-    is_unlocked = models.BooleanField(default=False)
 
     class Meta:
         ordering = ['zone__order', 'name']
@@ -191,7 +185,6 @@ class Subtopic(models.Model):
     """
     topic = models.ForeignKey(Topic, on_delete=models.CASCADE, related_name='subtopics')
     name = models.CharField(max_length=100)
-    is_unlocked = models.BooleanField(default=False)
 
     class Meta:
         ordering = ['topic__zone__order', 'topic__name', 'name']
@@ -218,19 +211,14 @@ class Embedding(models.Model):
         size=384,
         help_text='Embedding vector'
     )
-    model_name = models.CharField(
-        max_length=100,
-        default='all-MiniLM-L6-v2',
-        help_text='Model used to produce this embedding'
-    )
     embedded_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         unique_together = [
-            ('document_chunk', 'model_name'),
-            ('subtopic', 'model_name'),
+            ('document_chunk',),
+            ('subtopic',),
         ]
 
     def __str__(self):
         target = self.document_chunk or self.subtopic
-        return f"Embedding ({self.model_name}) for {target}"
+        return f"Embedding for {target}"

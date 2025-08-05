@@ -30,8 +30,8 @@ class SemanticSubtopicAdmin(admin.ModelAdmin):
 
 @admin.register(GeneratedQuestion)
 class GeneratedQuestionAdmin(admin.ModelAdmin):
-    list_display = ['subtopic', 'question_text_preview', 'estimated_difficulty', 'validation_status', 'quality_score']
-    list_filter = ['validation_status', 'estimated_difficulty', 'game_type', 'minigame_type']
+    list_display = ['subtopic', 'question_text_preview', 'estimated_difficulty', 'validation_status']
+    list_filter = ['validation_status', 'estimated_difficulty', 'game_type']
     search_fields = ['question_text', 'subtopic__name', 'topic__name']
     
     def question_text_preview(self, obj):
