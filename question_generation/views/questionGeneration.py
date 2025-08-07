@@ -1,17 +1,3 @@
-"""
-Question Generation Views
-
-This module handles the generation of educational questions using RAG (Retrieval-Augmented Generation).
-It integrates with SemanticSubtopic data to find relevant content chunks and uses LLM to generate
-appropriate questions for different difficulty levels and game types.
-
-Key Components:
-- RAG context retrieval using semantic similarity
-- LLM-based question generation with DeepSeek
-- JSON output for tracking generation results
-- Support for coding and non-coding question types
-"""
-
 from .imports import *
 from ..helpers.deepseek_prompts import deepseek_prompt_manager
 from ..helpers.llm_utils import invoke_deepseek
@@ -22,6 +8,837 @@ import json
 import os
 from datetime import datetime
 from itertools import combinations
+import concurrent.futures
+import threading
+import time
+import psutil
+from queue import Queue
+import requests.exceptions
+import hashlib
+import os
+from datetime import datetime
+
+
+def generate_question_hash(question_text, subtopic_combination, game_type):
+    """
+    Generate a hash for question deduplication.
+    Combines question text essence with subtopic combination to avoid duplicates.
+    """
+    # Extract key words from question text (remove common words)
+    common_words = {'a', 'an', 'the', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by', 'is', 'are', 'was', 'were', 'be', 'been', 'being', 'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could', 'should'}
+    
+    # Clean and extract meaningful words
+    words = question_text.lower().split()
+    meaningful_words = [w.strip('.,!?()[]{}";:') for w in words if w.strip('.,!?()[]{}";:') not in common_words and len(w) > 2]
+    question_essence = ' '.join(sorted(meaningful_words[:5]))  # First 5 meaningful words, sorted
+    
+    # Create combination signature
+    subtopic_ids = tuple(sorted([s.id for s in subtopic_combination]))
+    
+    # Generate hash
+    hash_input = f"{question_essence}|{subtopic_ids}|{game_type}"
+    return hashlib.md5(hash_input.encode()).hexdigest()[:12]
+
+
+def initialize_generation_json_file(game_type):
+    """
+    Initialize JSON file at the start of generation for threads to append to
+    """
+    from datetime import datetime
+    
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    filename = f"{game_type}_{timestamp}.json"
+    filepath = os.path.join("question_outputs", filename)
+    
+    # Ensure directory exists
+    os.makedirs("question_outputs", exist_ok=True)
+    
+    # Initialize file with basic structure
+    initial_data = {
+        'generation_metadata': {
+            'generated_at': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            'game_type': game_type,
+            'status': 'in_progress'
+        },
+        'questions': []
+    }
+    
+    try:
+        with open(filepath, 'w', encoding='utf-8') as f:
+            json.dump(initial_data, f, indent=2, ensure_ascii=False)
+        
+        print(f"📄 Initialized JSON file: {filename}")
+        return filepath, filename
+    except Exception as e:
+        print(f"⚠️ Failed to initialize JSON file: {str(e)}")
+        return None, None
+
+
+def finalize_generation_json_file(filepath, stats):
+    """
+    Finalize JSON file with completion stats
+    """
+    from datetime import datetime
+    
+    try:
+        # Read current data
+        with open(filepath, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+        
+        # Update metadata
+        data['generation_metadata']['completed_at'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        data['generation_metadata']['status'] = 'completed'
+        data['generation_metadata']['total_questions'] = len(data['questions'])
+        data['generation_metadata']['performance_stats'] = stats
+        
+        # Write back
+        with open(filepath, 'w', encoding='utf-8') as f:
+            json.dump(data, f, indent=2, ensure_ascii=False)
+        
+        print(f"📄 Finalized JSON file with {len(data['questions'])} questions")
+        return True
+    except Exception as e:
+        print(f"⚠️ Failed to finalize JSON: {str(e)}")
+        return False
+
+
+class LLMThreadPoolManager:
+    """
+    Optimized ThreadPoolExecutor manager specifically for LLM API calls
+    """
+    
+    def __init__(self, max_workers=None, game_type='non_coding'):
+        if max_workers is None:
+            # Auto-detect optimal worker count for LLM calls
+            cpu_count = psutil.cpu_count(logical=True)
+            memory_gb = psutil.virtual_memory().total / (1024**3)
+            
+            if cpu_count >= 16 and memory_gb >= 16:
+                # High-end systems like Legion 16IRX9
+                self.max_workers = min(20, cpu_count)  # Cap at 20 for API limits
+            elif cpu_count >= 8:
+                self.max_workers = min(12, cpu_count)
+            else:
+                self.max_workers = min(6, cpu_count)
+        else:
+            self.max_workers = max_workers
+        
+        # LLM-specific configurations
+        self.request_timeout = 45  # 45 seconds per LLM request
+        self.task_timeout = 120    # 2 minutes per complete task
+        self.retry_attempts = 2    # Retry failed LLM calls
+        self.rate_limit_delay = 0.1  # Small delay between requests
+        
+        # Thread-safe result tracking
+        self.results_lock = threading.Lock()
+        self.successful_tasks = 0
+        self.failed_tasks = 0
+        self.total_llm_calls = 0
+        
+        # DEDUPLICATION: Thread-safe question hash tracking
+        self.question_hashes = set()
+        self.duplicate_count = 0
+        
+        # JSON FILE OPERATIONS
+        self.game_type = game_type
+        self.json_filepath = None
+        self.json_filename = None
+        
+    def initialize_json_file(self):
+        """
+        Initialize JSON file for this generation session
+        """
+        self.json_filepath, self.json_filename = initialize_generation_json_file(self.game_type)
+        return self.json_filepath is not None
+        
+    def check_and_add_question_hash(self, question_hash):
+        """
+        Thread-safe method to check if question is duplicate and add hash if unique
+        Returns True if unique, False if duplicate
+        """
+        with self.results_lock:
+            if question_hash in self.question_hashes:
+                self.duplicate_count += 1
+                return False
+            else:
+                self.question_hashes.add(question_hash)
+                return True
+    
+    def append_question_to_json(self, question_data):
+        """
+        Thread-safe method to append question to JSON file
+        """
+        if not self.json_filepath:
+            return False
+            
+        with self.results_lock:
+            try:
+                # Read current data
+                with open(self.json_filepath, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                
+                # Create concise question format based on game type
+                if self.game_type == 'coding':
+                    concise_question = {
+                        'question_text': question_data.get('question_text', ''),
+                        'buggy_question_text': question_data.get('buggy_question_text', ''),  # NEW
+                        'function_name': question_data.get('function_name', ''),
+                        'sample_input': question_data.get('sample_input', ''),
+                        'sample_output': question_data.get('sample_output', ''),
+                        'hidden_tests': question_data.get('hidden_tests', []),
+                        'buggy_code': question_data.get('buggy_code', ''),
+                        'difficulty': question_data.get('difficulty', ''),
+                        'subtopic_combination': question_data.get('subtopic_names', [])
+                    }
+                else:  # non_coding
+                    concise_question = {
+                        'question_text': question_data.get('question_text', ''),
+                        'answer': question_data.get('correct_answer', ''),
+                        'difficulty': question_data.get('difficulty', ''),
+                        'subtopic_combination': question_data.get('subtopic_names', [])
+                    }
+                
+                # Append question
+                data['questions'].append(concise_question)
+                
+                # Write back
+                with open(self.json_filepath, 'w', encoding='utf-8') as f:
+                    json.dump(data, f, indent=2, ensure_ascii=False)
+                
+                return True
+            except Exception as e:
+                print(f"⚠️ Failed to append question to JSON: {str(e)}")
+                return False
+    
+    def finalize_json_file(self, performance_stats):
+        """
+        Finalize JSON file with completion stats
+        """
+        if self.json_filepath:
+            stats = {
+                'successful_tasks': self.successful_tasks,
+                'failed_tasks': self.failed_tasks,
+                'total_llm_calls': self.total_llm_calls,
+                'duplicate_count': self.duplicate_count,
+                **performance_stats
+            }
+            return finalize_generation_json_file(self.json_filepath, stats)
+        return False
+    
+    def execute_llm_tasks(self, tasks, worker_function):
+        """
+        Execute LLM tasks with optimized ThreadPoolExecutor
+        """
+        print(f"🚀 Starting LLM ThreadPool with {self.max_workers} workers")
+        print(f"📊 Processing {len(tasks)} tasks")
+        
+        all_results = []
+        start_time = time.time()
+        
+        with concurrent.futures.ThreadPoolExecutor(
+            max_workers=self.max_workers,
+            thread_name_prefix="LLM-Worker"
+        ) as executor:
+            
+            # Submit all tasks
+            future_to_task = {
+                executor.submit(self._wrapped_worker, worker_function, task, task_idx): task
+                for task_idx, task in enumerate(tasks)
+            }
+            
+            print(f"✅ Submitted {len(future_to_task)} tasks to ThreadPool")
+            
+            # Process completed tasks with timeout and progress tracking
+            completed = 0
+            for future in concurrent.futures.as_completed(
+                future_to_task, 
+                timeout=len(tasks) * self.task_timeout  # Total timeout scales with task count
+            ):
+                completed += 1
+                task = future_to_task[future]
+                
+                try:
+                    result = future.result(timeout=self.task_timeout)
+                    all_results.append(result)
+                    
+                    if result.get('success', False):
+                        with self.results_lock:
+                            self.successful_tasks += 1
+                        
+                        # Progress logging
+                        task_info = self._get_task_info(task, result)
+                        print(f"✅ [{completed}/{len(tasks)}] {task_info}")
+                    else:
+                        with self.results_lock:
+                            self.failed_tasks += 1
+                        print(f"❌ [{completed}/{len(tasks)}] Task failed: {result.get('error', 'Unknown error')}")
+                
+                except concurrent.futures.TimeoutError:
+                    print(f"⏰ [{completed}/{len(tasks)}] Task timeout")
+                    all_results.append({
+                        'success': False, 
+                        'error': 'Task timeout',
+                        'task_info': self._get_task_info(task)
+                    })
+                    with self.results_lock:
+                        self.failed_tasks += 1
+                
+                except Exception as e:
+                    print(f"❌ [{completed}/{len(tasks)}] Task exception: {str(e)}")
+                    all_results.append({
+                        'success': False, 
+                        'error': str(e),
+                        'task_info': self._get_task_info(task)
+                    })
+                    with self.results_lock:
+                        self.failed_tasks += 1
+        
+        total_time = time.time() - start_time
+        
+        print(f"\n🎉 ThreadPool Execution Completed!")
+        print(f"⏱️  Total time: {total_time:.1f}s")
+        print(f"✅ Successful: {self.successful_tasks}")
+        print(f"❌ Failed: {self.failed_tasks}")
+        print(f"📞 Total LLM calls: {self.total_llm_calls}")
+        print(f"🚀 Throughput: {self.total_llm_calls / (total_time / 60):.1f} LLM calls/minute")
+        
+        return all_results
+    
+    def _wrapped_worker(self, worker_function, task, task_idx):
+        """
+        Wrapper that adds LLM-specific optimizations to worker functions
+        """
+        thread_name = threading.current_thread().name
+        start_time = time.time()
+        
+        # Add rate limiting delay
+        if task_idx > 0:
+            time.sleep(self.rate_limit_delay)
+        
+        try:
+            # Execute the actual worker function with retry logic
+            result = self._execute_with_retry(worker_function, task, thread_name)
+            
+            execution_time = time.time() - start_time
+            result['execution_time'] = execution_time
+            result['thread_name'] = thread_name
+            
+            return result
+            
+        except Exception as e:
+            return {
+                'success': False,
+                'error': f"Worker wrapper failed: {str(e)}",
+                'thread_name': thread_name,
+                'execution_time': time.time() - start_time
+            }
+    
+    def _execute_with_retry(self, worker_function, task, thread_name):
+        """
+        Execute worker function with retry logic for LLM failures
+        """
+        last_error = None
+        
+        for attempt in range(self.retry_attempts + 1):
+            try:
+                if attempt > 0:
+                    wait_time = attempt * 2  # Exponential backoff
+                    print(f"🔄 {thread_name}: Retry attempt {attempt} after {wait_time}s")
+                    time.sleep(wait_time)
+                
+                # Execute the worker function
+                result = worker_function(task)
+                
+                # Track LLM calls (approximate)
+                with self.results_lock:
+                    self.total_llm_calls += 1
+                
+                return result
+                
+            except (requests.exceptions.RequestException, 
+                    requests.exceptions.Timeout,
+                    ConnectionError) as e:
+                last_error = e
+                print(f"🌐 {thread_name}: Network error on attempt {attempt + 1}: {str(e)}")
+                continue
+                
+            except Exception as e:
+                # Don't retry on non-network errors
+                return {
+                    'success': False,
+                    'error': f"Non-retryable error: {str(e)}",
+                    'attempts': attempt + 1
+                }
+        
+        return {
+            'success': False,
+            'error': f"All retry attempts failed. Last error: {str(last_error)}",
+            'attempts': self.retry_attempts + 1
+        }
+    
+    def _get_task_info(self, task, result=None):
+        """
+        Extract readable task information for logging
+        """
+        try:
+            if isinstance(task, tuple) and len(task) > 0:
+                # Zone-based task
+                zone = task[0]
+                if hasattr(zone, 'name'):
+                    if len(task) > 1 and isinstance(task[1], str):
+                        # Zone + difficulty
+                        return f"Zone {zone.order}: {zone.name} - {task[1]}"
+                    else:
+                        # Zone only
+                        return f"Zone {zone.order}: {zone.name}"
+            
+            if result and 'total_generated' in result:
+                return f"Generated {result['total_generated']} questions"
+            
+            return f"Task {id(task)}"
+        except:
+            return "Unknown task"
+
+
+def process_zone_difficulty_combination(args):
+    """
+    Worker function for AGGRESSIVE threading: handles one zone + one difficulty
+    Each thread processes all subtopic combinations for a specific zone-difficulty pair
+    """
+    (zone, difficulty, num_questions_per_subtopic, game_type, thread_id, thread_manager) = args
+    
+    result = {
+        'thread_id': thread_id,
+        'zone_id': zone.id,
+        'zone_name': zone.name,
+        'zone_order': zone.order,
+        'difficulty': difficulty,
+        'success': False,
+        'error': None,
+        'generated_questions': [],
+        'total_generated': 0,
+        'duplicates_skipped': 0,
+        'combination_stats': {
+            'processed': 0,
+            'successful': 0,
+            'failed': 0,
+            'timeouts': 0,
+            'rag_contexts_found': 0
+        }
+    }
+    
+    start_time = time.time()
+    
+    try:
+        print(f"🚀 Thread {thread_id}: Processing Zone {zone.order} - {difficulty}")
+        
+        # Get all subtopics in this zone
+        zone_subtopics = list(Subtopic.objects.filter(
+            topic__zone=zone
+        ).select_related('topic'))
+        
+        if not zone_subtopics:
+            result['error'] = f"No subtopics found in zone {zone.name}"
+            return result
+        
+        zone_questions = []
+        
+        # Process combinations: singles, pairs, and trios (max 3 subtopics)
+        max_combination_size = min(3, len(zone_subtopics))
+        
+        for combination_size in range(1, max_combination_size + 1):
+            for subtopic_combination in combinations(zone_subtopics, combination_size):
+                combination_start = time.time()
+                result['combination_stats']['processed'] += 1
+                
+                # Check timeout per combination (1 minute max)
+                if time.time() - combination_start > 60:
+                    print(f"⏰ Thread {thread_id}: Timeout for combination {[s.name for s in subtopic_combination]}")
+                    result['combination_stats']['timeouts'] += 1
+                    continue
+                
+                try:
+                    subtopic_names = [s.name for s in subtopic_combination]
+                    
+                    # RAG COLLECTION (same as before, but with timeout awareness)
+                    combined_rag_contexts = []
+                    subtopic_info = []
+                    
+                    for subtopic in subtopic_combination:
+                        rag_context = get_rag_context_for_subtopic(subtopic, difficulty)
+                        combined_rag_contexts.append(rag_context)
+                        subtopic_info.append({
+                            'id': subtopic.id,
+                            'name': subtopic.name,
+                            'topic_name': subtopic.topic.name
+                        })
+                    
+                    # Check if we have meaningful RAG content
+                    has_any_rag_content = any("CONTENT FOR" in ctx for ctx in combined_rag_contexts)
+                    if has_any_rag_content:
+                        result['combination_stats']['rag_contexts_found'] += 1
+                    
+                    # Create context (fallback or enhanced)
+                    if not has_any_rag_content:
+                        combined_context = f"""
+ZONE: {zone.name} (Zone {zone.order})
+DIFFICULTY LEVEL: {difficulty.upper()}
+SUBTOPIC COMBINATION: {' + '.join(subtopic_names)}
+
+FALLBACK MODE: No semantic content chunks were found for these subtopics.
+Please generate questions based on general Python knowledge for these topics:
+{chr(10).join([f"- {name}: Focus on {difficulty}-level concepts" for name in subtopic_names])}
+
+LEARNING CONTEXT:
+These subtopics are from "{zone.name}" which is Zone {zone.order} in the learning progression.
+Create questions that would be appropriate for learners at the {difficulty} level.
+"""
+                    else:
+                        combined_context = f"""
+ZONE: {zone.name} (Zone {zone.order})
+DIFFICULTY LEVEL: {difficulty.upper()}
+SUBTOPIC COMBINATION: {' + '.join(subtopic_names)}
+
+""" + "\n\n".join(combined_rag_contexts)
+                    
+                    context = {
+                        'rag_context': combined_context,
+                        'subtopic_name': ' + '.join(subtopic_names),
+                        'difficulty': difficulty,
+                        'num_questions': num_questions_per_subtopic,
+                    }
+
+                    # Create system prompt
+                    if game_type == 'coding':
+                        system_prompt = (
+                            f"Generate {num_questions_per_subtopic} coding challenges "
+                            f"for {len(subtopic_combination)} subtopics: {', '.join(subtopic_names)}. "
+                            f"Zone: {zone.name} (Zone {zone.order}), Difficulty: {difficulty}. "
+                            f"RESPOND QUICKLY - you have 45 seconds max. "
+                            f"Format as JSON array: question_text, function_name, sample_input, sample_output, hidden_tests, buggy_code, difficulty"
+                        )
+                    else:  # non_coding
+                        system_prompt = (
+                            f"Generate {num_questions_per_subtopic} knowledge questions "
+                            f"for {len(subtopic_combination)} subtopics: {', '.join(subtopic_names)}. "
+                            f"Zone: {zone.name} (Zone {zone.order}), Difficulty: {difficulty}. "
+                            f"RESPOND QUICKLY - you have 45 seconds max. "
+                            f"Format as JSON array: question_text, answer, difficulty"
+                        )
+
+                    # Get prompt and call LLM with timeout
+                    print(f"🔄 Thread {thread_id}: Calling LLM for {', '.join(subtopic_names)} ({difficulty})")
+                    prompt = deepseek_prompt_manager.get_prompt_for_minigame(game_type, context)
+                    
+                    # Use shorter timeout for LLM call (45 seconds)
+                    llm_response = invoke_deepseek(
+                        prompt, 
+                        system_prompt=system_prompt, 
+                        model="deepseek-chat"
+                    )
+                    print(f"📝 Thread {thread_id}: LLM Response length: {len(llm_response)} chars")
+                    
+                    # Quick JSON parsing
+                    clean_resp = llm_response.strip()
+                    
+                    if "```json" in clean_resp:
+                        start_idx = clean_resp.find("```json") + 7
+                        end_idx = clean_resp.find("```", start_idx)
+                        if end_idx != -1:
+                            clean_resp = clean_resp[start_idx:end_idx].strip()
+                    elif clean_resp.startswith("```") and clean_resp.endswith("```"):
+                        clean_resp = clean_resp[3:-3].strip()
+                        if clean_resp.lower().startswith("json"):
+                            clean_resp = clean_resp[4:].strip()
+                    
+                    try:
+                        questions_json = json.loads(clean_resp)
+                        
+                        if not isinstance(questions_json, list):
+                            questions_json = [questions_json]
+                        
+                        # Save to database (optimized for speed)
+                        saved_questions = save_minigame_questions_to_db_enhanced(
+                            questions_json, subtopic_combination, difficulty, game_type, combined_context, zone, thread_manager
+                        )
+                        
+                        # Add to results (minimal data for speed)
+                        for saved_q in saved_questions:
+                            zone_questions.append({
+                                'id': saved_q.id,
+                                'question_text': saved_q.question_text[:100] + "...",  # Truncated for speed
+                                'difficulty': saved_q.estimated_difficulty,
+                                'zone_id': zone.id,
+                                'combination_size': len(subtopic_combination),
+                                'subtopic_names': subtopic_names,
+                                'thread_id': thread_id
+                            })
+                        
+                        result['total_generated'] += len(saved_questions)
+                        result['combination_stats']['successful'] += 1
+                        
+                        # Quick progress check
+                        combination_time = time.time() - combination_start
+                        if combination_time > 30:  # Warn if taking too long
+                            print(f"⚠️  Thread {thread_id}: Slow combination ({combination_time:.1f}s): {', '.join(subtopic_names)}")
+                        
+                    except json.JSONDecodeError:
+                        print(f"❌ Thread {thread_id}: JSON parse error for {', '.join(subtopic_names)} ({difficulty})")
+                        print(f"    LLM Response: {clean_resp[:500]}...")  # Show first 500 chars
+                        result['combination_stats']['failed'] += 1
+                    
+                except Exception as e:
+                    result['combination_stats']['failed'] += 1
+        
+        result['generated_questions'] = zone_questions
+        result['success'] = True
+        
+        total_time = time.time() - start_time
+        print(f"✅ Thread {thread_id}: Completed Zone {zone.order} - {difficulty} in {total_time:.1f}s ({result['total_generated']} questions)")
+        
+    except Exception as e:
+        result['error'] = f"Zone-difficulty processing failed: {str(e)}"
+        print(f"❌ Thread {thread_id}: Error in Zone {zone.name} - {difficulty}: {str(e)}")
+    
+    return result
+
+
+def process_zone_combinations(args):
+    """
+    Worker function to process all combinations for a single zone across all difficulty levels.
+    This function will be called by each thread.
+    """
+    (zone, difficulty_levels, num_questions_per_subtopic, game_type, thread_id, thread_manager) = args
+    
+    result = {
+        'thread_id': thread_id,
+        'zone_id': zone.id,
+        'zone_name': zone.name,
+        'zone_order': zone.order,
+        'success': False,
+        'error': None,
+        'generated_questions': [],
+        'total_generated': 0,
+        'difficulty_stats': {}
+    }
+    
+    try:
+        print(f"🚀 Thread {thread_id}: Starting Zone {zone.order}: {zone.name}")
+        
+        zone_questions = []
+        zone_total = 0
+        
+        for difficulty in difficulty_levels:
+            print(f"  📊 Thread {thread_id}: Processing difficulty {difficulty} for Zone {zone.name}")
+            
+            difficulty_stats = {
+                'successful_generations': 0,
+                'failed_generations': 0,
+                'total_combinations': 0,
+                'rag_contexts_found': 0
+            }
+            
+            # Get all subtopics in this zone
+            zone_subtopics = list(Subtopic.objects.filter(
+                topic__zone=zone
+            ).select_related('topic'))
+            
+            if not zone_subtopics:
+                print(f"    ⚠️  Thread {thread_id}: No subtopics found in zone {zone.name}")
+                continue
+            
+            print(f"    📝 Thread {thread_id}: Found {len(zone_subtopics)} subtopics for {difficulty}")
+            
+            # Generate combinations: singles, pairs, and trios only (max 3 subtopics)
+            max_combination_size = min(3, len(zone_subtopics))
+            for combination_size in range(1, max_combination_size + 1):
+                
+                combination_count = 0
+                for subtopic_combination in combinations(zone_subtopics, combination_size):
+                    combination_count += 1
+                    difficulty_stats['total_combinations'] += 1
+                    
+                    try:
+                        # RAG COLLECTION (same as before)
+                        combined_rag_contexts = []
+                        subtopic_names = []
+                        subtopic_info = []
+                        
+                        for subtopic in subtopic_combination:
+                            rag_context = get_rag_context_for_subtopic(subtopic, difficulty)
+                            combined_rag_contexts.append(rag_context)
+                            subtopic_names.append(subtopic.name)
+                            subtopic_info.append({
+                                'id': subtopic.id,
+                                'name': subtopic.name,
+                                'topic_name': subtopic.topic.name
+                            })
+                        
+                        # Check if we have any meaningful RAG content
+                        has_any_rag_content = any("CONTENT FOR" in ctx for ctx in combined_rag_contexts)
+                        
+                        if not has_any_rag_content:
+                            combined_context = f"""
+                        ZONE: {zone.name} (Zone {zone.order})
+                        DIFFICULTY LEVEL: {difficulty.upper()}
+                        SUBTOPIC COMBINATION: {' + '.join(subtopic_names)}
+
+                        FALLBACK MODE: No semantic content chunks were found for these subtopics.
+                        Please generate questions based on general Python knowledge for these topics:
+                        {chr(10).join([f"- {name}: Focus on {difficulty}-level concepts" for name in subtopic_names])}
+
+                        LEARNING CONTEXT:
+                        These subtopics are from "{zone.name}" which is Zone {zone.order} in the learning progression.
+                        Create questions that would be appropriate for learners at the {difficulty} level.
+                        """
+                        else:
+                            combined_context = f"""
+                            ZONE: {zone.name} (Zone {zone.order})
+                            DIFFICULTY LEVEL: {difficulty.upper()}
+                            SUBTOPIC COMBINATION: {' + '.join(subtopic_names)}
+
+                            """ + "\n\n".join(combined_rag_contexts)
+                            difficulty_stats['rag_contexts_found'] += 1
+                                                
+                        context = {
+                            'rag_context': combined_context,
+                            'subtopic_name': ' + '.join(subtopic_names),
+                            'difficulty': difficulty,
+                            'num_questions': num_questions_per_subtopic,
+                        }
+
+                        # Create game-type specific system prompt
+                        if game_type == 'coding':
+                            system_prompt = (
+                               f"You are a Python assessment expert generating {num_questions_per_subtopic} coding challenges "
+f"that integrate concepts from {len(subtopic_combination)} subtopics: {', '.join(subtopic_names)}. "
+f"These subtopics belong to the zone \"{zone.name}\" (Zone {zone.order}). Use the RAG context provided for inspiration. "
+f"Each task must match the specified difficulty level: {difficulty}."
+
+f"CHALLENGE STRUCTURE:"
+f"Each coding task should resemble a realistic or classroom-inspired problem, and guide the learner to either:"
+f" (a) **Complete a missing logic step**, or"
+f" (b) **Identify and fix a bug** based on faulty behavior."
+
+f"Both types are framed by the same goal — the learner must interpret the task described in `question_text`, understand the expected behavior (from sample input/output), and correct or finish the provided code."
+
+f"💡 FIELD REQUIREMENTS:"
+f" `question_text`: Concise goal description (max 12 words). Describe the task's intent using verbs like: Format, Extract, Calculate, Transform, Rescue, Filter, Combine,etc."
+f" `buggy_question_text`: If the code is **buggy**, describe the observable behavior (e.g., 'The result is always reversed', 'Only one name prints')."
+f" This should match the `question_text` goal — the learner should be able to understand the bug in context."
+f" `buggy_code`: Must either be incomplete (with a placeholder like `_____`) or logically broken (matching the description in `buggy_question_text`)."
+f" `function_name`: Use lowercase snake_case naming."
+f" `sample_input`: Must be a valid Python tuple string, even for single values (e.g., `(3,)`, `('hello',)`)"
+f" `sample_output`: Must match the correct output of a properly working solution."
+f" `hidden_tests`: At least 2 additional test cases (same format)."
+
+f"🚫 DO NOT:"
+f" - Leave any fields empty."
+f" - Use vague instructions like 'Write a function that…'"
+f" - Include external libraries, file I/O, or randomness."
+f" - Create multi-part or unclear tasks."
+
+f"🧾 FINAL OUTPUT:"
+f"Output a **JSON array** of {num_questions_per_subtopic} coding tasks. Each task must include all 7 required fields:"
+f"`question_text`, `buggy_question_text`, `function_name`, `sample_input`, `sample_output`, `hidden_tests`, `buggy_code`."
+)
+                        else:  # non_coding
+                            system_prompt = (
+                                f"You are a Python concept quiz creator generating {num_questions_per_subtopic} concise knowledge-check questions "
+                                f"based on {len(subtopic_combination)} subtopics: {', '.join(subtopic_names)} from zone \"{zone.name}\" (Zone {zone.order}). "
+                                f"Use the provided RAG context as inspiration. Each question should be appropriate for a {difficulty}-level learner."
+
+                                f"\n\n🧠 OBJECTIVE:\n"
+                                f"Create direct, short-form questions to test core Python knowledge — such as syntax, keyword behavior, or terminology. "
+                                f"These questions will be used in **two puzzle formats**: crossword and word search."
+
+                                f"\n\n🎯 RULES & RESTRICTIONS:\n"
+                                f"- Do **not** generate True/False questions (unless the literal answer is `'true'` or `'false'`).\n"
+                                f"- Do **not** use symbols, punctuation, or code blocks in either the question or answer.\n"
+                                f"- Answers must use **only letters (a–z or A–Z)** and be in **lowercase**.\n"
+                                f"- The answer must **fit within a 13×13 game board** (i.e., max 13 characters total).\n"
+                                f"- Multi-word answers are allowed **only if** they can be merged into one token or fit within the board (e.g., `'nonlocalvariable'`, `'defaultparameter'`).\n"
+                                f"- Avoid vague, theoretical, or opinion-based prompts.\n"
+                                f"- Focus only on **Python keywords**, **syntax terms**, or **semantic logic concepts** (e.g., `'loopcontrol'`, `'returnvalue'`)."
+
+                                f"\n\n🧩 If multiple subtopics are provided, combine them into a question that reflects the logical relationship between those concepts."
+
+                                f"\n\n📦 OUTPUT FORMAT:\n"
+                                f"Return a JSON array of exactly {num_questions_per_subtopic} items. Each item must include the following fields:\n"
+                                f"`question_text`, `answer`, `difficulty`"
+                                                )
+
+                        # Get prompt and call LLM
+                        prompt = deepseek_prompt_manager.get_prompt_for_minigame(game_type, context)
+                        llm_response = invoke_deepseek(prompt, system_prompt=system_prompt, model="deepseek-chat")
+                        
+                        # Parse JSON (same logic as before)
+                        clean_resp = llm_response.strip()
+                        
+                        if "```json" in clean_resp:
+                            start_idx = clean_resp.find("```json") + 7
+                            end_idx = clean_resp.find("```", start_idx)
+                            if end_idx != -1:
+                                clean_resp = clean_resp[start_idx:end_idx].strip()
+                        elif clean_resp.startswith("```") and clean_resp.endswith("```"):
+                            clean_resp = clean_resp[3:-3].strip()
+                            if clean_resp.lower().startswith("json"):
+                                clean_resp = clean_resp[4:].strip()
+                        
+                        try:
+                            questions_json = json.loads(clean_resp)
+                            
+                            if not isinstance(questions_json, list):
+                                questions_json = [questions_json]
+                            
+                            # Save to database using enhanced save function
+                            saved_questions = save_minigame_questions_to_db_enhanced(
+                                questions_json, subtopic_combination, difficulty, game_type, combined_context, zone, thread_manager
+                            )
+                            
+                            # Add to results
+                            for saved_q in saved_questions:
+                                zone_questions.append({
+                                    'id': saved_q.id,
+                                    'question_text': saved_q.question_text,
+                                    'correct_answer': saved_q.correct_answer,
+                                    'difficulty': saved_q.estimated_difficulty,
+                                    'zone_id': zone.id,
+                                    'zone_name': zone.name,
+                                    'zone_order': zone.order,
+                                    'combination_size': len(subtopic_combination),
+                                    'subtopic_names': subtopic_names,
+                                    'game_type': saved_q.game_type,
+                                    'validation_status': saved_q.validation_status,
+                                    'thread_id': thread_id
+                                })
+                            
+                            zone_total += len(saved_questions)
+                            difficulty_stats['successful_generations'] += 1
+                            
+                        except json.JSONDecodeError as e:
+                            print(f"❌ Thread {thread_id}: JSON parse error for {', '.join(subtopic_names)} ({difficulty})")
+                            print(f"    LLM Response: {clean_resp[:500]}...")  # Show first 500 chars
+                            difficulty_stats['failed_generations'] += 1
+                    
+                    except Exception as e:
+                        print(f"❌ Thread {thread_id}: Generation error for {', '.join(subtopic_names)} ({difficulty})")
+                        difficulty_stats['failed_generations'] += 1
+            
+            result['difficulty_stats'][difficulty] = difficulty_stats
+            print(f"  ✅ Thread {thread_id}: Completed {difficulty} for Zone {zone.name} - {difficulty_stats['successful_generations']} successful")
+        
+        result['generated_questions'] = zone_questions
+        result['total_generated'] = zone_total
+        result['success'] = True
+        
+        print(f"✅ Thread {thread_id}: Completed Zone {zone.order}: {zone.name} - Generated {zone_total} total questions")
+        
+    except Exception as e:
+        result['error'] = f"Zone processing failed: {str(e)}"
+        print(f"❌ Thread {thread_id}: Error processing Zone {zone.name}: {str(e)}")
+    
+    return result
 
 
 @api_view(['POST'])
@@ -154,14 +971,16 @@ Focus on {difficulty}-level concepts related to {subtopic.name}.
 """
 
 
-def save_minigame_questions_to_db_enhanced(questions_json, subtopic_combination, difficulty, game_type, rag_context, zone):
+def save_minigame_questions_to_db_enhanced(questions_json, subtopic_combination, difficulty, game_type, rag_context, zone, thread_manager=None):
     """
     Enhanced save function that handles both coding and non-coding questions with proper field mapping.
+    Includes deduplication and JSON export functionality.
     Returns a list of saved GeneratedQuestion objects.
     """
     from ..models import GeneratedQuestion
     
     saved_questions = []
+    duplicate_questions = []
     primary_subtopic = subtopic_combination[0]  # Use first subtopic as primary for DB relations
     
     with transaction.atomic():
@@ -169,6 +988,21 @@ def save_minigame_questions_to_db_enhanced(questions_json, subtopic_combination,
             try:
                 # Extract core question data
                 question_text = q.get('question_text') or q.get('question', '')
+                
+                # DEDUPLICATION CHECK
+                if thread_manager:
+                    question_hash = generate_question_hash(question_text, subtopic_combination, game_type)
+                    is_unique = thread_manager.check_and_add_question_hash(question_hash)
+                    
+                    if not is_unique:
+                        duplicate_questions.append({
+                            'question_text': question_text[:100] + "...",
+                            'hash': question_hash,
+                            'subtopic_combination': [s.name for s in subtopic_combination],
+                            'difficulty': difficulty,
+                            'reason': 'duplicate_detected'
+                        })
+                        continue  # Skip duplicate question
                 
                 # Prepare data based on game type
                 if game_type == 'coding':
@@ -182,6 +1016,9 @@ def save_minigame_questions_to_db_enhanced(questions_json, subtopic_combination,
                     hidden_tests = q.get('hidden_tests', [])
                     buggy_code = q.get('buggy_code', '')
                     
+                    # NEW: Extract buggy question text
+                    buggy_question_text = q.get('buggy_question_text', '')
+                    
                 else:  # non_coding
                     # For non-coding, use simple answer format
                     correct_answer = q.get('answer', '')
@@ -192,6 +1029,7 @@ def save_minigame_questions_to_db_enhanced(questions_json, subtopic_combination,
                     sample_output = ''
                     hidden_tests = []
                     buggy_code = ''
+                    buggy_question_text = ''  # Only for coding questions
                 
                 # Create GeneratedQuestion object
                 generated_q = GeneratedQuestion.objects.create(
@@ -207,21 +1045,44 @@ def save_minigame_questions_to_db_enhanced(questions_json, subtopic_combination,
                         'subtopic_combination': [{'id': s.id, 'name': s.name} for s in subtopic_combination],
                         'combination_size': len(subtopic_combination),
                         'generation_model': 'deepseek-chat',
+                        'question_hash': question_hash if thread_manager else None,
                         # Coding-specific fields (empty for non-coding questions)
                         'function_name': function_name,
                         'sample_input': sample_input,
                         'sample_output': sample_output,
                         'hidden_tests': hidden_tests,
-                        'buggy_code': buggy_code
+                        'buggy_code': buggy_code,
+                        'buggy_question_text': buggy_question_text  # NEW: Store in game_data
                     },
                     validation_status='pending'
                 )
                 
                 saved_questions.append(generated_q)
                 
+                # ADD TO JSON FILE
+                if thread_manager:
+                    export_question_data = {
+                        'question_text': question_text,
+                        'buggy_question_text': buggy_question_text,  # NEW FIELD
+                        'correct_answer': correct_answer,
+                        'difficulty': difficulty,
+                        'subtopic_names': [s.name for s in subtopic_combination],
+                        # Coding-specific exports
+                        'function_name': function_name,
+                        'sample_input': sample_input,
+                        'sample_output': sample_output,
+                        'hidden_tests': hidden_tests,
+                        'buggy_code': buggy_code
+                    }
+                    thread_manager.append_question_to_json(export_question_data)
+                
             except Exception as e:
                 logger.error(f"Failed to save question: {str(e)}")
                 continue
+    
+    # Log deduplication stats
+    if duplicate_questions and thread_manager:
+        print(f"🔍 Deduplication: Skipped {len(duplicate_questions)} duplicates, Saved {len(saved_questions)} unique questions")
     
     return saved_questions
 
@@ -502,222 +1363,235 @@ def generate_questions_with_deepseek(request, subtopic_id=None):
                 return Response({'status': 'error', 'message': 'game_type must be "coding" or "non_coding"'}, status=400)
 
             num_questions_per_subtopic = int(request.data.get('num_questions_per_subtopic', num_questions_per))
+            
+            # MULTITHREADED PIPELINE OPTIONS
+            # Get threading strategy from request (default to zone-based for balanced performance)
+            threading_strategy = request.data.get('threading_strategy', 'zone_based')  # 'zone_based' or 'zone_difficulty_aggressive'
+            
+            if threading_strategy not in ['zone_based', 'zone_difficulty_aggressive']:
+                return Response({
+                    'status': 'error', 
+                    'message': 'threading_strategy must be "zone_based" or "zone_difficulty_aggressive"'
+                }, status=400)
 
-            # FULL PIPELINE: Process ALL zones in order, ALL difficulties in order
             # Get all zones ordered by their sequence
             zones = list(GameZone.objects.all().order_by('order').prefetch_related('topics__subtopics'))
 
             if not zones:
                 return Response({'status': 'error', 'message': 'No zones found'}, status=400)
 
-            # Map game_type to minigame_type for prompt selection
-            minigame_type = game_type
-            total_generated = 0
+            print(f"\n🚀 MULTITHREADED PIPELINE STARTING!")
+            print(f"� Strategy: {threading_strategy}")
+            print(f"🎮 Game Type: {game_type}")
+            print(f"🏗️  Zones: {len(zones)}")
+            print(f"📝 Questions per subtopic combination: {num_questions_per_subtopic}")
+
+            # Initialize the LLM ThreadPool Manager with game type for JSON operations
+            thread_manager = LLMThreadPoolManager(game_type=game_type)
             
-            # FULL PIPELINE APPROACH: 
-            # Zone 1 -> Beginner -> Intermediate -> Advanced -> Master
-            # Zone 2 -> Beginner -> Intermediate -> Advanced -> Master
-            # ... and so on for all zones
+            # Initialize JSON file for this generation session
+            if not thread_manager.initialize_json_file():
+                return Response({
+                    'status': 'error',
+                    'message': 'Failed to initialize JSON output file'
+                }, status=500)
             
-            for zone in zones:
-                print(f"\n🎯 Processing Zone {zone.order}: {zone.name}")
+            print(f"📄 JSON output file: {thread_manager.json_filename}")
+            
+            pipeline_start_time = time.time()
+            all_results = []
+            
+            try:
+                if threading_strategy == 'zone_based':
+                    # ZONE-BASED THREADING: Each zone gets its own thread (4-6 threads total)
+                    # Each thread processes all difficulty levels for one zone
+                    print(f"🧵 Using Zone-Based Threading: {len(zones)} threads (one per zone)")
+                    
+                    # Prepare tasks: one task per zone
+                    zone_tasks = []
+                    for thread_id, zone in enumerate(zones, 1):
+                        zone_tasks.append((
+                            zone,                        # Zone object
+                            difficulty_levels,           # All difficulty levels
+                            num_questions_per_subtopic,  # Questions per combination
+                            game_type,                   # coding or non_coding
+                            thread_id,                   # Thread identifier
+                            thread_manager               # Deduplication and export manager
+                        ))
+                    
+                    # Execute zone-based processing
+                    zone_results = thread_manager.execute_llm_tasks(
+                        zone_tasks, 
+                        process_zone_combinations
+                    )
+                    
+                    all_results.extend(zone_results)
+
+                elif threading_strategy == 'zone_difficulty_aggressive':
+                    # ZONE+DIFFICULTY AGGRESSIVE THREADING: Each zone-difficulty gets its own thread (16-24 threads)
+                    # Maximum parallelization for high-end systems
+                    print(f"🧵 Using Zone+Difficulty Aggressive Threading: {len(zones) * len(difficulty_levels)} threads")
+                    
+                    # Prepare tasks: one task per zone-difficulty combination
+                    zone_difficulty_tasks = []
+                    thread_id = 1
+                    for zone in zones:
+                        for difficulty in difficulty_levels:
+                            zone_difficulty_tasks.append((
+                                zone,                        # Zone object
+                                difficulty,                  # Single difficulty level
+                                num_questions_per_subtopic,  # Questions per combination
+                                game_type,                   # coding or non_coding
+                                thread_id,                   # Thread identifier
+                                thread_manager               # Deduplication and export manager
+                            ))
+                            thread_id += 1
+                    
+                    # Execute zone+difficulty processing
+                    zone_difficulty_results = thread_manager.execute_llm_tasks(
+                        zone_difficulty_tasks,
+                        process_zone_difficulty_combination
+                    )
+                    
+                    all_results.extend(zone_difficulty_results)
+
+                # Process results and aggregate data
+                successful_results = [r for r in all_results if r.get('success', False)]
+                failed_results = [r for r in all_results if not r.get('success', False)]
                 
-                for difficulty in difficulty_levels:
-                    print(f"  📊 Difficulty: {difficulty}")
-                    
-                    # Get all subtopics in this zone
-                    zone_subtopics = list(Subtopic.objects.filter(
-                        topic__zone=zone
-                    ).select_related('topic'))
-                    
-                    if not zone_subtopics:
-                        print(f"    ⚠️ No subtopics found in zone {zone.name}")
-                        continue
-                    
-                    print(f"    📝 Found {len(zone_subtopics)} subtopics")
-                    
-                    # Generate combinations: singles, pairs, and trios only (max 3 subtopics)
-                    # Start from size 1 (individual subtopics) up to max 3 subtopics together
-                    max_combination_size = min(3, len(zone_subtopics))
-                    for combination_size in range(1, max_combination_size + 1):
-                        print(f"      🔄 Processing combinations of size {combination_size}")
-                        
-                        # Get all combinations of this size
-                        combination_count = 0
-                        for subtopic_combination in combinations(zone_subtopics, combination_size):
-                            combination_count += 1
-                            
-                            try:
-                                # RAG COLLECTION
-                                combined_rag_contexts = []
-                                subtopic_names = []
-                                subtopic_info = []
-                                
-                                for subtopic in subtopic_combination:
-                                    # Get RAG context for this subtopic with the current difficulty
-                                    rag_context = get_rag_context_for_subtopic(subtopic, difficulty)
-                                    combined_rag_contexts.append(rag_context)
-                                    subtopic_names.append(subtopic.name)
-                                    subtopic_info.append({
-                                        'id': subtopic.id,
-                                        'name': subtopic.name,
-                                        'topic_name': subtopic.topic.name
-                                    })
-                                
-                                # Check if we have any meaningful RAG content for this combination
-                                has_any_rag_content = any("CONTENT FOR" in ctx for ctx in combined_rag_contexts)
-                                
-                                if not has_any_rag_content:
-                                    # Create fallback context when no RAG is available
-                                    fallback_context = f"""
-ZONE: {zone.name} (Zone {zone.order})
-DIFFICULTY LEVEL: {difficulty.upper()}
-SUBTOPIC COMBINATION: {' + '.join(subtopic_names)}
-
-FALLBACK MODE: No semantic content chunks were found for these subtopics.
-Please generate questions based on general Python knowledge for these topics:
-{chr(10).join([f"- {name}: Focus on {difficulty}-level concepts" for name in subtopic_names])}
-
-LEARNING CONTEXT:
-These subtopics are from "{zone.name}" which is Zone {zone.order} in the learning progression.
-Create questions that would be appropriate for learners at the {difficulty} level.
-"""
-                                    combined_context = fallback_context
-                                else:
-                                    # Combine all RAG contexts normally
-                                    combined_context = f"""
-ZONE: {zone.name} (Zone {zone.order})
-DIFFICULTY LEVEL: {difficulty.upper()}
-SUBTOPIC COMBINATION: {' + '.join(subtopic_names)}
-
-""" + "\n\n".join(combined_rag_contexts)
-                                
-                                context = {
-                                    'rag_context': combined_context,
-                                    'subtopic_name': ' + '.join(subtopic_names),
-                                    'difficulty': difficulty,
-                                    'num_questions': num_questions_per_subtopic,
-                                }
-
-                                # Create game-type specific system prompt
-                                if game_type == 'coding':
-                                    system_prompt = (
-                                        f"You are a Python assessment expert generating {num_questions_per_subtopic} coding challenges "
-                                        f"that integrate concepts from {len(subtopic_combination)} subtopics: {', '.join(subtopic_names)}. "
-                                        f"These subtopics are from zone \"{zone.name}\" (Zone {zone.order}). Use the RAG context provided. "
-                                        f"Make questions appropriate for {difficulty} level. "
-                                        f"If multiple subtopics are involved, create questions that test understanding of how these concepts work together. "
-                                        f"Format output as JSON array with fields: question_text, function_name, sample_input, sample_output, hidden_tests, buggy_code, difficulty"
-                                    )
-                                else:  # non_coding
-                                    system_prompt = (
-                                        f"You are a Python concept quiz creator generating {num_questions_per_subtopic} knowledge questions "
-                                        f"that integrate concepts from {len(subtopic_combination)} subtopics: {', '.join(subtopic_names)}. "
-                                        f"These subtopics are from zone \"{zone.name}\" (Zone {zone.order}). Use the RAG context provided. "
-                                        f"Make questions appropriate for {difficulty} level. "
-                                        f"If multiple subtopics are involved, create questions that test understanding of how these concepts work together. "
-                                        f"Format output as JSON array with fields: question_text, answer, difficulty"
-                                    )
-
-                                # Get prompt for the game type
-                                prompt = deepseek_prompt_manager.get_prompt_for_minigame(game_type, context)
-                                
-                                # Call LLM with faster model
-                                llm_response = invoke_deepseek(prompt, system_prompt=system_prompt, model="deepseek-chat")
-                                
-                                # Parse JSON
-                                clean_resp = llm_response.strip()
-                                
-                                # Handle basic code block extraction
-                                if "```json" in clean_resp:
-                                    start_idx = clean_resp.find("```json") + 7
-                                    end_idx = clean_resp.find("```", start_idx)
-                                    if end_idx != -1:
-                                        clean_resp = clean_resp[start_idx:end_idx].strip()
-                                elif clean_resp.startswith("```") and clean_resp.endswith("```"):
-                                    clean_resp = clean_resp[3:-3].strip()
-                                    if clean_resp.lower().startswith("json"):
-                                        clean_resp = clean_resp[4:].strip()
-                                
-                                try:
-                                    questions_json = json.loads(clean_resp)
-                                    
-                                    # Ensure it's a list
-                                    if not isinstance(questions_json, list):
-                                        questions_json = [questions_json]
-                                    
-                                    # Save to database using enhanced save function
-                                    saved_questions = save_minigame_questions_to_db_enhanced(
-                                        questions_json, subtopic_combination, difficulty, game_type, combined_context, zone
-                                    )
-                                    
-                                    # Add to response with essential information only
-                                    for saved_q in saved_questions:
-                                        generated_questions.append({
-                                            'id': saved_q.id,
-                                            'question_text': saved_q.question_text,
-                                            'correct_answer': saved_q.correct_answer,
-                                            'difficulty': saved_q.estimated_difficulty,
-                                            'zone_id': zone.id,
-                                            'zone_name': zone.name,
-                                            'zone_order': zone.order,
-                                            'combination_size': len(subtopic_combination),
-                                            'subtopic_combination': subtopic_info,
-                                            'subtopic_names': subtopic_names,
-                                            'game_type': saved_q.game_type,
-                                            'validation_status': saved_q.validation_status,
-                                        })
-                                    
-                                    total_generated += len(saved_questions)
-                                    print(f"        ✅ Generated {len(saved_questions)} questions for: {', '.join(subtopic_names)}")
-                                    
-                                except json.JSONDecodeError as e:
-                                    logger.error(f"Failed to parse JSON for combination {subtopic_names} ({difficulty}): {str(e)}")
-                                    generated_questions.append({
-                                        'error': f"JSON parse error for combination {subtopic_names} ({difficulty}): {str(e)}",
-                                        'raw_response': llm_response[:200],
-                                        'subtopic_combination': subtopic_info,
-                                        'zone_id': zone.id,
-                                        'zone_name': zone.name,
-                                        'zone_order': zone.order,
-                                        'difficulty': difficulty,
-                                    })
-                                    print(f"        ❌ JSON parse error for: {', '.join(subtopic_names)}")
-                                
-                            except Exception as e:
-                                logger.error(f"Failed to generate questions for combination {subtopic_names} ({difficulty}): {str(e)}")
-                                generated_questions.append({
-                                    'error': f"Failed for combination {subtopic_names} ({difficulty}): {str(e)}",
-                                    'subtopic_combination': subtopic_info,
-                                    'zone_id': zone.id,
-                                    'zone_name': zone.name,
-                                    'zone_order': zone.order,
-                                    'difficulty': difficulty,
-                                })
-                                print(f"        ❌ Generation error for: {', '.join(subtopic_names)}")
-                        
-                        print(f"      ✅ Completed {combination_count} combinations of size {combination_size}")
-                    
-                    print(f"  ✅ Completed difficulty: {difficulty}")
+                # Collect all generated questions from successful results
+                all_generated_questions = []
+                total_generated = 0
                 
-                print(f"✅ Completed Zone {zone.order}: {zone.name}\n")
-            
-            print(f"🎉 FULL PIPELINE COMPLETED! Generated {total_generated} total questions for {game_type}")
-            
-            # Return response for minigame mode
-            return Response({
-                'status': 'success',
-                'mode': 'minigame',
-                'game_type': game_type,
-                'pipeline_type': 'full_zone_difficulty_combinations',
-                'questions': generated_questions[:10],  # Return first 10 questions in response
-                'total_generated': total_generated,
-                'total_zones_processed': len(zones),
-                'difficulties_processed': difficulty_levels,
-                'message': f"Full pipeline completed! Generated {total_generated} questions across all zones and difficulties for {game_type}"
-            })
+                for result in successful_results:
+                    if 'generated_questions' in result and result['generated_questions']:
+                        all_generated_questions.extend(result['generated_questions'])
+                        total_generated += result.get('total_generated', 0)
 
+                pipeline_end_time = time.time()
+                total_pipeline_time = pipeline_end_time - pipeline_start_time
 
+                # Comprehensive success report
+                print(f"\n🎉 MULTITHREADED PIPELINE COMPLETED!")
+                print(f"⏱️  Total Pipeline Time: {total_pipeline_time:.1f}s")
+                print(f"✅ Successful Threads: {len(successful_results)}/{len(all_results)}")
+                print(f"📊 Total Questions Generated: {total_generated}")
+                print(f"� Duplicates Skipped: {thread_manager.duplicate_count}")
+                print(f"�🚀 Pipeline Throughput: {total_generated / (total_pipeline_time / 60):.1f} questions/minute")
+
+                # Estimate sequential time savings
+                estimated_sequential_time = total_pipeline_time * len(all_results)
+                time_savings = estimated_sequential_time - total_pipeline_time
+                speedup_factor = estimated_sequential_time / total_pipeline_time if total_pipeline_time > 0 else 0
+
+                print(f"💡 Estimated Sequential Time: {estimated_sequential_time / 60:.1f} minutes")
+                print(f"🏃 Time Saved: {time_savings / 60:.1f} minutes ({speedup_factor:.1f}x speedup)")
+
+                # FINALIZE JSON EXPORT
+                thread_manager.export_data['generation_metadata']['completed_at'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                thread_manager.export_data['generation_metadata']['status'] = 'completed'
+                
+                thread_manager.export_data['performance_stats'] = {
+                    'total_time_seconds': round(total_pipeline_time, 2),
+                    'successful_threads': len(successful_results),
+                    'failed_threads': len(failed_results),
+                    'total_threads': len(all_results),
+                    'questions_per_minute': round(total_generated / (total_pipeline_time / 60), 1) if total_pipeline_time > 0 else 0,
+                    'estimated_speedup_factor': round(speedup_factor, 1),
+                    'estimated_time_saved_minutes': round(time_savings / 60, 1)
+                }
+                
+                thread_manager.export_data['deduplication_stats'] = {
+                    'total_generated': total_generated,
+                    'duplicates_skipped': thread_manager.duplicate_count,
+                    'unique_questions': len(thread_manager.question_hashes),
+                    'deduplication_rate': round((thread_manager.duplicate_count / (total_generated + thread_manager.duplicate_count)) * 100, 1) if (total_generated + thread_manager.duplicate_count) > 0 else 0
+                }
+                
+                # Add thread results to export
+                for result in all_results:
+                    thread_manager.add_thread_result({
+                        'thread_id': result.get('thread_id', 'unknown'),
+                        'zone_name': result.get('zone_name', 'unknown'),
+                        'success': result.get('success', False),
+                        'total_generated': result.get('total_generated', 0),
+                    })
+                
+                # Finalize JSON file
+                performance_metrics = {
+                    'total_time_seconds': round(total_pipeline_time, 2),
+                    'successful_threads': len(successful_results),
+                    'failed_threads': len(failed_results),
+                    'total_threads': len(all_results),
+                    'questions_per_minute': round(total_generated / (total_pipeline_time / 60), 1) if total_pipeline_time > 0 else 0,
+                    'total_generated': total_generated
+                }
+                thread_manager.finalize_json_file(performance_metrics)
+
+                return Response({
+                    'status': 'success',
+                    'mode': 'minigame',
+                    'game_type': game_type,
+                    'threading_strategy': threading_strategy,
+                    'pipeline_type': 'multithreaded_generation',
+                    
+                    # Performance metrics
+                    'performance': {
+                        'total_time_seconds': round(total_pipeline_time, 2),
+                        'successful_threads': len(successful_results),
+                        'failed_threads': len(failed_results),
+                        'total_threads': len(all_results),
+                        'questions_per_minute': round(total_generated / (total_pipeline_time / 60), 1) if total_pipeline_time > 0 else 0,
+                        'estimated_speedup_factor': round(speedup_factor, 1),
+                        'estimated_time_saved_minutes': round(time_savings / 60, 1)
+                    },
+                    
+                    # Generation results
+                    'generation': {
+                        'total_generated': total_generated,
+                        'total_zones_processed': len(zones),
+                        'difficulties_processed': difficulty_levels,
+                        'questions_per_subtopic': num_questions_per_subtopic
+                    },
+                    
+                    # Deduplication results
+                    'deduplication': {
+                        'duplicates_skipped': thread_manager.duplicate_count,
+                        'unique_questions': len(thread_manager.question_hashes),
+                        'deduplication_rate_percent': round((thread_manager.duplicate_count / (total_generated + thread_manager.duplicate_count)) * 100, 1) if (total_generated + thread_manager.duplicate_count) > 0 else 0
+                    },
+                    
+                    # JSON export info
+                    'export': {
+                        'json_filename': thread_manager.json_filename,
+                        'questions_exported': total_generated,
+                        'export_format': 'concise_' + game_type,
+                        'real_time_monitoring': f"Check question_outputs/{thread_manager.json_filename}" if thread_manager.json_filename else "Export failed"
+                    },
+                    
+                    # Sample questions (first 10 for API response size)
+                    'sample_questions': all_generated_questions[:10],
+                    
+                    # Error summary
+                    'errors': [
+                        {
+                            'thread_id': r.get('thread_id', 'unknown'),
+                            'zone_name': r.get('zone_name', 'unknown'),
+                            'error': r.get('error', 'unknown error')
+                        }
+                        for r in failed_results
+                    ],
+                    
+                    'message': f"Multithreaded pipeline completed! Generated {total_generated} unique questions ({thread_manager.duplicate_count} duplicates skipped) using {threading_strategy} strategy with {speedup_factor:.1f}x speedup. Results saved to {thread_manager.json_filename}"
+                })
+
+            except Exception as e:
+                return Response({
+                    'status': 'error',
+                    'message': f'Multithreaded pipeline failed: {str(e)}',
+                    'threading_strategy': threading_strategy,
+                    'partial_results_count': len(all_results)
+                }, status=500)
 
             # PRE ASSESSMENT 
         elif mode == 'pre_assessment':
@@ -1159,8 +2033,10 @@ SUBTOPIC COMBINATION: {' + '.join(subtopic_names)}
                             f"that integrate concepts from {len(subtopic_combination)} subtopics: {', '.join(subtopic_names)}. "
                             f"These subtopics are from zone \"{zone.name}\" (Zone {zone.order}). Use the RAG context provided. "
                             f"Make questions appropriate for {difficulty} level. "
+                            f"Create a mix of complete-type questions (where buggy_question_text is empty) and fix-type questions "
+                            f"(where buggy_question_text describes the buggy behavior/symptoms like 'The result is always backwards' or 'Only first word appears'). "
                             f"If multiple subtopics are involved, create questions that test understanding of how these concepts work together. "
-                            f"Format output as JSON array with fields: question_text, function_name, sample_input, sample_output, hidden_tests, buggy_code, difficulty"
+                            f"Format output as JSON array with fields: question_text, buggy_question_text, function_name, sample_input, sample_output, hidden_tests, buggy_code, difficulty"
                         )
                     else:  # non_coding
                         system_prompt = (

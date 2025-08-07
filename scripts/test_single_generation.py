@@ -12,13 +12,13 @@ import json
 def test_single_generation():
     """Test a single question generation configuration."""
     
-    url = "http://localhost:8000/questions/test/generate/"
+    url = "http://localhost:8000/generate/"
     
     # Test configuration - modify as needed
     payload = {
         "difficulty": "beginner",
-        "game_type": "non_coding",
-        "num_questions": 1,
+        "game_type": "coding",  # Changed to coding to test our enhanced system
+        "num_questions": 3,
         "topic_ids": [8]  # Basic Input and Output
     }
     
