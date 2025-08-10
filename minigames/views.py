@@ -18,6 +18,7 @@ from .models import (
     GameQuestion,
     QuestionResponse,
     WordSearchData,
+    CrosswordData
 )
 from .serializers import GameSessionSerializer, QuestionResponseSerializer, LightweightQuestionSerializer
 from .question_fetching import fetch_questions_for_game
@@ -75,77 +76,106 @@ class GetSessionInfo(APIView):
         return Response(GameSessionSerializer(session).data)
 
 
+
 # class SubmitAnswers(APIView):
 #     permission_classes = [IsAuthenticated]
 
 #     def post(self, request, session_id):
-#         answers = request.data.get("answers", [])
+#         # local sanitizer for crossword/wordsearch
+#         def _san(s: str) -> str:
+#             # letters-only; strips spaces/symbols and uppercases
+#             return re.sub(r'[^A-Za-z]', '', (s or '')).upper()
+#             # If you want to allow digits too, use:
+#             # return re.sub(r'[^A-Za-z0-9]', '', (s or '')).upper()
+
+#         answers = request.data.get("answers", []) or []
 #         session = GameSession.objects.filter(session_id=session_id, status="active").first()
 #         if not session:
 #             return Response({"error": "Invalid or inactive session"}, status=400)
 
+#         # Build a map: submitted question_id -> payload
+#         submitted_map = {int(a.get("question_id")): a for a in answers if "question_id" in a}
+
+#         # Grab ALL questions in this session (placed-only for crossword/wordsearch)
+#         session_gqs = list(GameQuestion.objects.filter(session=session).select_related("question"))
+
 #         results = []
 #         correct_count = 0
 
-#         for ans in answers:
-#             try:
-#                 game_q = GameQuestion.objects.get(id=ans["question_id"], session=session)
-#             except GameQuestion.DoesNotExist:
-#                 continue
+#         for game_q in session_gqs:
+#             qid = game_q.id  # GameQuestion PK used by client
+#             qobj = game_q.question
 
-#             user_answer_raw = ans.get("user_answer", "")
-#             user_answer = user_answer_raw.strip().lower()
-#             correct_answer = str(game_q.question.correct_answer).strip().lower()
-#             is_correct = user_answer == correct_answer
+#             payload = submitted_map.get(qid)
+#             if payload is None:
+#                 # ❌ Not submitted → count as WRONG with empty answer
+#                 user_answer_raw = ""
+#                 is_correct = False
+#                 time_taken = 0
+#             else:
+#                 user_answer_raw = payload.get("user_answer", "")
+#                 time_taken = payload.get("time_taken", 0)
+
+#                 # ✅ Normalize like the grid for crossword/wordsearch
+#                 if session.game_type in ("crossword", "wordsearch"):
+#                     user_norm = _san(user_answer_raw)
+#                     correct_norm = _san(qobj.correct_answer or "")
+#                 else:
+#                     # other games keep simple text compare
+#                     user_norm = (user_answer_raw or "").strip().lower()
+#                     correct_norm = (qobj.correct_answer or "").strip().lower()
+
+#                 is_correct = (user_norm == correct_norm)
 
 #             if is_correct:
 #                 correct_count += 1
 
-#             # Save response
+#             # Persist the response (including unanswered-as-wrong)
 #             QuestionResponse.objects.create(
 #                 question=game_q,
 #                 user=request.user,
 #                 user_answer=user_answer_raw,
 #                 is_correct=is_correct,
-#                 time_taken=ans.get("time_taken", 0),
+#                 time_taken=time_taken,
 #             )
 
-#             gd = getattr(game_q.question, "game_data", {}) or {}
+#             # Subtopic/topic mapping (from game_data)
+#             gd = getattr(qobj, "game_data", {}) or {}
+#             subtopic_ids = [s.get("id") for s in gd.get("subtopic_combination", []) if "id" in s]
 
-#             # Extract subtopic IDs
-#             subtopic_ids = [s["id"] for s in gd.get("subtopic_combination", [])]
-
-#             # Query Topic IDs based on Subtopic table
 #             from content_ingestion.models import Subtopic
 #             topic_ids = list(
 #                 Subtopic.objects.filter(id__in=subtopic_ids).values_list("topic_id", flat=True)
 #             )
 
 #             results.append({
-#                 "question_id": game_q.question.id,
-#                 "question_text": game_q.question.question_text,
+#                 "question_id": qobj.id,
+#                 "question_text": qobj.question_text,
 #                 "user_answer": user_answer_raw,
-#                 "correct_answer": game_q.question.correct_answer,
-#                 "is_correct": is_correct,
-#                 "topic_ids": topic_ids,  # ✅ Now real topic IDs
+#                 "correct_answer": qobj.correct_answer or "",
+#                 "is_correct": bool(is_correct),
+#                 "topic_ids": topic_ids,
 #                 "subtopic_ids": subtopic_ids,
+#                 "estimated_difficulty": (getattr(qobj, "estimated_difficulty", None) or None),
+#                 "game_type": getattr(qobj, "game_type", None),
+#                 "minigame_type": getattr(qobj, "minigame_type", None),
 #             })
 
-#         # Mark session as completed
+#         # Finish session
 #         session.status = "completed"
 #         session.total_score = correct_count
 #         session.end_time = timezone.now()
 #         session.save()
 
-#         # Trigger adaptive recalibration
-#         if request.user.is_authenticated:
-#             try:
-#                 recalibrate_topic_proficiency(request.user, results)
-#             except Exception as e:
-#                 print("Recalibration error:", e)
+#         # Recalibrate with both answered and unanswered (as wrong)
+#         try:
+#             recalibrate_topic_proficiency(request.user, results)
+#         except Exception as e:
+#             print("Recalibration error:", e)
 
 #         return Response({
-#             "total": len(answers),
+#             "total": len(session_gqs),        # all placed questions
+#             "answered": len(submitted_map),   # how many the user attempted
 #             "correct": correct_count,
 #             "results": results,
 #             "score": correct_count
@@ -155,89 +185,129 @@ class SubmitAnswers(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, session_id):
+        def _san(s: str) -> str:
+            return re.sub(r'[^A-Za-z]', '', (s or '')).upper()
+
         answers = request.data.get("answers", []) or []
         session = GameSession.objects.filter(session_id=session_id, status="active").first()
         if not session:
             return Response({"error": "Invalid or inactive session"}, status=400)
 
-        # Build a map: submitted question_id -> payload
+        # Submitted map: GameQuestion.id -> payload
         submitted_map = {int(a.get("question_id")): a for a in answers if "question_id" in a}
 
-        # Grab ALL questions in this session (placed-only for crossword/wordsearch)
+        # All GQs for the session (we'll filter to eligible/placed)
         session_gqs = list(GameQuestion.objects.filter(session=session).select_related("question"))
 
+        # Build eligible GameQuestion IDs from persisted placements
+        eligible_ids = set()
+
+        if session.game_type == "crossword":
+            try:
+                placements = session.crossword_data.placements
+            except CrosswordData.DoesNotExist:
+                placements = []
+            # Prefer authoritative IDs saved at start
+            ids = [p.get("game_question_id") for p in placements if p.get("game_question_id")]
+            eligible_ids = set(int(i) for i in ids)
+
+            # Fallback: if any placement lacks id (shouldn't happen), map by word
+            if not eligible_ids and placements:
+                word_to_gqid = {}
+                for gq in session_gqs:
+                    w = _san(gq.question.correct_answer or "")
+                    if w and w not in word_to_gqid:
+                        word_to_gqid[w] = gq.id
+                for p in placements:
+                    w = _san(p.get("word") or "")
+                    if w in word_to_gqid:
+                        eligible_ids.add(word_to_gqid[w])
+
+        elif session.game_type == "wordsearch":
+            try:
+                data = session.wordsearch_data
+                ws_placements = data.placements
+            except WordSearchData.DoesNotExist:
+                ws_placements = []
+
+            word_to_gqid = {}
+            for gq in session_gqs:
+                w = _san(gq.question.correct_answer or "")
+                if w and w not in word_to_gqid:
+                    word_to_gqid[w] = gq.id
+
+            for p in ws_placements:
+                w = _san(p.get("word") or "")
+                if w in word_to_gqid:
+                    eligible_ids.add(word_to_gqid[w])
+
+        else:
+            # coding games: all questions are inherently placed
+            eligible_ids = {gq.id for gq in session_gqs}
+
+        # Evaluate ONLY eligible/placed questions
         results = []
         correct_count = 0
 
-        for game_q in session_gqs:
-            qid = game_q.id  # GameQuestion PK used by client
-            qobj = game_q.question
+        for gq in session_gqs:
+            if gq.id not in eligible_ids:
+                continue
 
-            payload = submitted_map.get(qid)
+            q = gq.question
+            payload = submitted_map.get(gq.id)
+
             if payload is None:
-                # ❌ Not submitted → count as WRONG with empty answer
-                user_answer_raw = ""
-                is_correct = False
-                time_taken = 0
+                ua, ok, t = "", False, 0
             else:
-                user_answer_raw = payload.get("user_answer", "")
-                time_taken = payload.get("time_taken", 0)
-                user_answer = user_answer_raw.strip().lower()
-                correct_answer = (qobj.correct_answer or "").strip().lower()
-                is_correct = (user_answer == correct_answer)
+                ua, t = payload.get("user_answer", ""), payload.get("time_taken", 0)
+                if session.game_type in ("crossword", "wordsearch"):
+                    ok = _san(ua) == _san(q.correct_answer or "")
+                else:
+                    ok = (ua or "").strip().lower() == (q.correct_answer or "").strip().lower()
 
-            if is_correct:
+            if ok:
                 correct_count += 1
 
-            # Persist the response (including unanswered-as-wrong)
             QuestionResponse.objects.create(
-                question=game_q,
+                question=gq,
                 user=request.user,
-                user_answer=user_answer_raw,
-                is_correct=is_correct,
-                time_taken=time_taken,
+                user_answer=ua,
+                is_correct=ok,
+                time_taken=t,
             )
 
-            # Subtopic/topic mapping (from game_data)
-            gd = getattr(qobj, "game_data", {}) or {}
+            gd = getattr(q, "game_data", {}) or {}
             subtopic_ids = [s.get("id") for s in gd.get("subtopic_combination", []) if "id" in s]
-
             from content_ingestion.models import Subtopic
-            topic_ids = list(
-                Subtopic.objects.filter(id__in=subtopic_ids).values_list("topic_id", flat=True)
-            )
+            topic_ids = list(Subtopic.objects.filter(id__in=subtopic_ids).values_list("topic_id", flat=True))
 
             results.append({
-                "question_id": qobj.id,
-                "question_text": qobj.question_text,
-                "user_answer": user_answer_raw,
-                "correct_answer": qobj.correct_answer or "",
-                "is_correct": bool(is_correct),
+                "question_id": q.id,
+                "question_text": q.question_text,
+                "user_answer": ua,
+                "correct_answer": q.correct_answer or "",
+                "is_correct": bool(ok),
                 "topic_ids": topic_ids,
                 "subtopic_ids": subtopic_ids,
-                # (optional) include difficulty if stored
-                "estimated_difficulty": (qobj.estimated_difficulty or None)
-                                        if hasattr(qobj, "estimated_difficulty") else None,
-                # help hybrid engine weight coding/non-coding if you want:
-                "game_type": getattr(qobj, "game_type", None),
-                "minigame_type": getattr(qobj, "minigame_type", None),
+                "estimated_difficulty": getattr(q, "estimated_difficulty", None),
+                "game_type": getattr(q, "game_type", None),
+                "minigame_type": getattr(q, "minigame_type", None),
             })
 
-        # Finish session
+        # Close session with placed-only totals
         session.status = "completed"
         session.total_score = correct_count
         session.end_time = timezone.now()
         session.save()
 
-        # Recalibrate with both answered and unanswered (as wrong)
         try:
             recalibrate_topic_proficiency(request.user, results)
         except Exception as e:
             print("Recalibration error:", e)
 
         return Response({
-            "total": len(session_gqs),        # all placed questions
-            "answered": len(submitted_map),   # how many the user attempted
+            "total": len(eligible_ids),
+            "answered": len({k for k in submitted_map.keys() if k in eligible_ids}),
             "correct": correct_count,
             "results": results,
             "score": correct_count
@@ -274,6 +344,63 @@ class GetSessionResponses(APIView):
 # Crossword Game
 # =============================
 
+# class StartCrosswordGame(APIView):
+#     permission_classes = [IsAuthenticated]
+
+#     def post(self, request):
+#         user = request.user
+#         question_count = int(request.data.get("question_count", 10))
+
+#         session = GameSession.objects.create(
+#             session_id=str(uuid.uuid4()),
+#             user=user,
+#             game_type="crossword",
+#             status="active",
+#             time_limit=300,
+#         )
+
+#         # 1️⃣ Fetch questions
+#         questions = fetch_questions_for_game(user, "crossword", limit=question_count)
+
+#         # 2️⃣ Prepare sanitized words
+#         sanitized_map = {q.id: sanitize_word_for_grid(q.correct_answer) for q in questions}
+#         words = [w for w in sanitized_map.values() if w]
+
+#         # 3️⃣ Generate crossword
+#         generator = CrosswordGenerator()
+#         grid, placements = generator.generate(words)
+#         grid_display = ["".join(row) for row in grid]
+
+#         # 4️⃣ Determine which questions were actually placed
+#         placed_words = {p.word for p in placements}
+#         placed_questions = [q for q in questions if sanitized_map[q.id] in placed_words]
+
+#         # 5️⃣ Only create GameQuestions for placed questions
+#         GameQuestion.objects.bulk_create([
+#             GameQuestion(session=session, question_id=q.id) for q in placed_questions
+#         ])
+
+#         # 6️⃣ Prepare placements with clues
+#         placements_payload = []
+#         for p in placements:
+#             clue = next((q.question_text for q in placed_questions if sanitize_word_for_grid(q.correct_answer) == p.word), "")
+#             placements_payload.append({
+#                 "word":      p.word,
+#                 "clue":      clue,
+#                 "row":       p.row,
+#                 "col":       p.col,
+#                 "direction": p.direction,
+#             })
+
+#         return Response({
+#             "session_id":    session.session_id,
+#             "grid":          grid_display,
+#             "placements":    placements_payload,
+#             "questions":     LightweightQuestionSerializer(placed_questions, many=True).data,
+#             "timer_seconds": session.time_limit,
+#             "started_at":    session.start_time,
+#         }, status=201)
+
 class StartCrosswordGame(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -289,48 +416,114 @@ class StartCrosswordGame(APIView):
             time_limit=300,
         )
 
-        # 1️⃣ Fetch questions
+        # 1) Fetch questions
         questions = fetch_questions_for_game(user, "crossword", limit=question_count)
 
-        # 2️⃣ Prepare sanitized words
+        # 2) Sanitize words
         sanitized_map = {q.id: sanitize_word_for_grid(q.correct_answer) for q in questions}
         words = [w for w in sanitized_map.values() if w]
 
-        # 3️⃣ Generate crossword
+        # 3) Generate crossword once
         generator = CrosswordGenerator()
         grid, placements = generator.generate(words)
         grid_display = ["".join(row) for row in grid]
 
-        # 4️⃣ Determine which questions were actually placed
+        # 4) Keep only placed questions
         placed_words = {p.word for p in placements}
         placed_questions = [q for q in questions if sanitized_map[q.id] in placed_words]
 
-        # 5️⃣ Only create GameQuestions for placed questions
+        # 5) Create GameQuestions only for placed questions
         GameQuestion.objects.bulk_create([
             GameQuestion(session=session, question_id=q.id) for q in placed_questions
         ])
 
-        # 6️⃣ Prepare placements with clues
-        placements_payload = []
+        # 6) Map placed word -> GameQuestion.id (first match wins)
+        word_to_gqid = {}
+        for gq in session.session_questions.select_related("question").all():
+            w = sanitize_word_for_grid(gq.question.correct_answer)
+            if w and w not in word_to_gqid:
+                word_to_gqid[w] = gq.id
+
+        # 7) Persist placements with clue + game_question_id
+        stored_placements = []
         for p in placements:
-            clue = next((q.question_text for q in placed_questions if sanitize_word_for_grid(q.correct_answer) == p.word), "")
-            placements_payload.append({
-                "word":      p.word,
-                "clue":      clue,
-                "row":       p.row,
-                "col":       p.col,
+            clue = next((q.question_text for q in placed_questions
+                         if sanitize_word_for_grid(q.correct_answer) == p.word), "")
+            stored_placements.append({
+                "word": p.word,
+                "clue": clue,
+                "row": p.row,
+                "col": p.col,
                 "direction": p.direction,
+                "game_question_id": word_to_gqid.get(p.word)
             })
+
+        CrosswordData.objects.create(
+            session=session,
+            grid=grid_display,
+            placements=stored_placements
+        )
 
         return Response({
             "session_id":    session.session_id,
             "grid":          grid_display,
-            "placements":    placements_payload,
+            "placements":    stored_placements,
             "questions":     LightweightQuestionSerializer(placed_questions, many=True).data,
             "timer_seconds": session.time_limit,
             "started_at":    session.start_time,
         }, status=201)
 
+
+# class GetCrosswordGrid(APIView):
+#     permission_classes = [IsAuthenticated]
+
+#     def get(self, request, session_id):
+#         session = GameSession.objects.filter(
+#             session_id=session_id, game_type="crossword"
+#         ).first()
+#         if not session:
+#             return Response({"error": "Session not found"}, status=404)
+
+#         # Only questions that were actually saved for this session (i.e., placed at start)
+#         gqs = list(session.session_questions.select_related("question").all())
+#         questions = [gq.question for gq in gqs]
+
+#         # Prepare sanitized words from these questions
+#         words = [sanitize_word_for_grid(q.correct_answer) for q in questions]
+#         words = [w for w in words if w]  # drop blanks
+
+#         # Re-generate board for these words
+#         generator = CrosswordGenerator()
+#         grid, placements = generator.generate(words)
+#         grid_display = ["".join(row) for row in grid]
+
+#         # Build mapping from sanitized word -> GameQuestion.id (first match wins)
+#         word_to_gqid = {}
+#         for gq in gqs:
+#             w = sanitize_word_for_grid(gq.question.correct_answer)
+#             if w and w not in word_to_gqid:
+#                 word_to_gqid[w] = gq.id
+
+#         # Build response: each placement carries its clue and game_question_id
+#         payload_placements = []
+#         for p in placements:
+#             clue = next(
+#                 (q.question_text for q in questions if sanitize_word_for_grid(q.correct_answer) == p.word),
+#                 ""
+#             )
+#             payload_placements.append({
+#                 "word": p.word,
+#                 "clue": clue,
+#                 "row": p.row,
+#                 "col": p.col,
+#                 "direction": p.direction,
+#                 "game_question_id": word_to_gqid.get(p.word),
+#             })
+
+#         return Response({
+#             "grid": grid_display,
+#             "placements": payload_placements
+#         })
 
 class GetCrosswordGrid(APIView):
     permission_classes = [IsAuthenticated]
@@ -342,25 +535,14 @@ class GetCrosswordGrid(APIView):
         if not session:
             return Response({"error": "Session not found"}, status=404)
 
-        questions = [gq.question for gq in session.session_questions.all()]
-        words = [sanitize_word_for_grid(q.correct_answer) for q in questions]
-        words = [w for w in words if w]
-
-        generator = CrosswordGenerator()
-        grid, placements = generator.generate(words)
-        grid_display = ["".join(row) for row in grid]
+        try:
+            data = session.crossword_data
+        except CrosswordData.DoesNotExist:
+            return Response({"error": "Grid not generated yet."}, status=400)
 
         return Response({
-            "grid":       grid_display,
-            "placements": [
-                {
-                    "word":      p.word,
-                    "clue":      next((q.question_text for q in questions if sanitize_word_for_grid(q.correct_answer) == p.word), ""),
-                    "row":       p.row,
-                    "col":       p.col,
-                    "direction": p.direction,
-                } for p in placements
-            ]
+            "grid": data.grid,
+            "placements": data.placements
         })
 
 

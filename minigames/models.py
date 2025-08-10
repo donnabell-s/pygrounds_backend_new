@@ -88,3 +88,12 @@ class HangmanData(models.Model):
     def __str__(self):
         return f"Hangman for {self.session.session_id}"
 
+
+# ✅ NEW: Persist crossword grid & placements per session
+class CrosswordData(models.Model):
+    session = models.OneToOneField(GameSession, on_delete=models.CASCADE, related_name="crossword_data")
+    grid = models.JSONField()        # e.g., ["AB....", "...C..", ...]
+    placements = models.JSONField()  # [{word,row,col,direction,clue,game_question_id}]
+
+    def __str__(self):
+        return f"Crossword for Session {self.session.session_id}"
