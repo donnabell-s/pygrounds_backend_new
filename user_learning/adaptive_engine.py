@@ -28,21 +28,14 @@ CODING_MINIGAMES = {"debugging", "hangman"}
 NONCODING_MINIGAMES = {"crossword", "wordsearch"}
 
 def _game_weight(entry: dict) -> float:
-    """
-    Determine impact weight for this attempt.
-    Uses entry['game_type'] if present; otherwise maps from ['minigame_type'] or ['game'].
-    Falls back to non_coding.
-    """
     g = (entry.get("game_type") or "").strip().lower()
     m = (entry.get("minigame_type") or entry.get("game") or "").strip().lower()
-
     if g in GAME_TYPE_WEIGHTS:
         return GAME_TYPE_WEIGHTS[g]
     if m in CODING_MINIGAMES:
         return GAME_TYPE_WEIGHTS["coding"]
     if m in NONCODING_MINIGAMES:
         return GAME_TYPE_WEIGHTS["non_coding"]
-    # Heuristic: if unknown but looks coding-ish
     if m in {"code", "coding"}:
         return GAME_TYPE_WEIGHTS["coding"]
     return GAME_TYPE_WEIGHTS["non_coding"]
@@ -76,17 +69,24 @@ DIFF_ONEHOT = {
 
 
 # ──────────────────────────────────────────────────────────────────────────────
-# BKT core
+# BKT core (with forgetting on wrong answers)
 # ──────────────────────────────────────────────────────────────────────────────
 @dataclass
 class BKTParams:
-    p_L0: float = 0.20  # prior knowledge
-    p_T:  float = 0.10  # learn after each opportunity
-    p_S:  float = 0.10  # slip
-    p_G:  float = 0.20  # guess
+    p_L0: float = 0.20   # prior knowledge
+    p_T:  float = 0.10   # learn after each opportunity
+    p_S:  float = 0.10   # slip
+    p_G:  float = 0.20   # guess
+    # NEW: multiplicative decay applied after a wrong observation (per round)
+    # Example: 0.85 → a wrong answer reduces current belief by 15%
+    decay_wrong: float = 0.85
+    # Optional clamps
+    min_floor: float = 0.001
+    max_ceiling: float = 0.999
 
 def bkt_update_once(p_know: float, correct: bool, p: BKTParams) -> float:
-    """Single-step BKT update: posterior after observation, then learn."""
+    """Single BKT update: observe → posterior → learn → (optional) forget on wrong."""
+    # Bayes posterior given the observation
     if correct:
         num = p_know * (1.0 - p.p_S)
         den = num + (1.0 - p_know) * p.p_G
@@ -94,13 +94,26 @@ def bkt_update_once(p_know: float, correct: bool, p: BKTParams) -> float:
         num = p_know * p.p_S
         den = num + (1.0 - p_know) * (1.0 - p.p_G)
     post = 0.0 if den == 0 else num / den
-    return post + (1.0 - post) * p.p_T
+
+    # Learning transition
+    p_next = post + (1.0 - post) * p.p_T
+
+    # NEW: forgetting when the observation was wrong
+    if not correct:
+        p_next *= p.decay_wrong
+
+    # Clamp
+    if p_next < p.min_floor:
+        p_next = p.min_floor
+    elif p_next > p.max_ceiling:
+        p_next = p.max_ceiling
+
+    return p_next
 
 def bkt_update_weighted(p_know: float, correct: bool, p: BKTParams, weight: float) -> float:
     """
-    Apply a BKT update with an 'impact weight'.
-    We approximate by repeating the same observation round(weight) times.
-    This is simple, stable, and gives coding items a stronger nudge.
+    Apply a BKT update with an 'impact weight' by repeating the observation
+    round(weight) times. With forgetting, consecutive wrongs will compound.
     """
     rounds = max(1, int(round(max(0.1, weight))))
     for _ in range(rounds):
@@ -113,9 +126,10 @@ def bkt_update_weighted(p_know: float, correct: bool, p: BKTParams, weight: floa
 # ──────────────────────────────────────────────────────────────────────────────
 @dataclass
 class PFACoeffs:
-    beta0: float = -0.50     # intercept
+    # Steeper penalty & lower intercept so many fails push near 0
+    beta0: float = -1.00     # intercept
     beta_win: float = 0.35   # each prior success
-    beta_fail: float = -0.30 # each prior failure
+    beta_fail: float = -0.60 # each prior failure
     # difficulty biases (beginner..master)
     b_beg: float = +0.30
     b_int: float = 0.00
@@ -184,18 +198,20 @@ def _get_mapping_from_question(entry: dict) -> Tuple[List[int], List[int]]:
 
 
 # ──────────────────────────────────────────────────────────────────────────────
-# Hybrid recalibration with game-type impact weights
+# Hybrid recalibration with game-type impact weights & forgetting
 # ──────────────────────────────────────────────────────────────────────────────
 def recalibrate_topic_proficiency(user, results: list):
     """
-    Hybrid BKT + PFA recalibration with game-type impact weights.
-    - Coding attempts are weighted more (default 1.5x) so their evidence and learning impact is larger.
-    - Final mastery per subtopic = 100 * hybrid_mastery(last_p_bkt, p_pfa_from_final_counts, weighted_attempts)
-    - Topic proficiency = avg(subtopic mastery)
-    - Zone completion   = avg(topic proficiency)
+    Hybrid BKT + PFA recalibration.
+    • Coding attempts are weighted more (GAME_TYPE_WEIGHTS).
+    • WRONG answers now cause BKT forgetting (multiplicative decay per round).
+    • PFA has a steeper failure penalty so many fails push the probability near 0.
+    • Final mastery per subtopic = 100 * hybrid_mastery(last_p_bkt, p_pfa_from_final_counts, weighted_attempts)
+    • Topic proficiency = avg(subtopic mastery)
+    • Zone completion   = avg(topic proficiency)
     """
 
-    # Per-subtopic state for THIS recalibration batch
+    # Per-subtopic state for THIS batch
     # s_id -> {"wins": float, "fails": float, "attempts": float, "p_bkt": float}
     per_subtopic_state: Dict[int, Dict[str, float]] = {}
 
@@ -205,10 +221,10 @@ def recalibrate_topic_proficiency(user, results: list):
         for m in UserSubtopicMastery.objects.filter(user=user).only("subtopic_id", "mastery_level")
     }
 
-    default_bkt = BKTParams()
-    default_pfa = PFACoeffs()
+    bkt = BKTParams()     # you can tune decay_wrong here
+    pfa = PFACoeffs()     # steeper failure penalty
 
-    # ── Stream through results and update states
+    # Stream through results and update states
     for entry in results or []:
         is_correct = bool(entry.get("is_correct", False))
         difficulty = _norm_diff(entry.get("estimated_difficulty"))
@@ -219,13 +235,12 @@ def recalibrate_topic_proficiency(user, results: list):
         if not subtopic_ids:
             continue
 
-        # Convert mistakes into extra fails on the PFA side
-        extra_fails = max(0, mistakes)
+        extra_fails = max(0, mistakes)  # mistakes counted as extra fails on PFA
 
         for s_id in subtopic_ids:
             st = per_subtopic_state.get(s_id)
             if st is None:
-                seed = existing_mastery.get(s_id, default_bkt.p_L0)
+                seed = existing_mastery.get(s_id, bkt.p_L0)
                 st = per_subtopic_state[s_id] = {
                     "wins": 0.0,
                     "fails": 0.0,
@@ -233,25 +248,21 @@ def recalibrate_topic_proficiency(user, results: list):
                     "p_bkt": float(seed),
                 }
 
-            # 1) BKT update with impact weight (repeat update ~ weight times)
-            st["p_bkt"] = bkt_update_weighted(st["p_bkt"], is_correct, default_bkt, weight)
+            # 1) BKT update with impact weight (now includes forgetting on wrong)
+            st["p_bkt"] = bkt_update_weighted(st["p_bkt"], is_correct, bkt, weight)
 
             # 2) PFA counts & attempts weighted
             st["attempts"] += weight
             if is_correct:
                 st["wins"] += weight
-                # If you prefer not to penalize mistakes when the final answer is correct, comment next line:
                 st["fails"] += weight * extra_fails
             else:
                 st["fails"] += weight * (1 + extra_fails)
 
-            # (We compute p_pfa at the end from final counts)
-
-    # ── Compute final per-subtopic mastery and write to DB
+    # Compute final per-subtopic mastery and write to DB
     for s_id, st in per_subtopic_state.items():
-        # Using final counts and a neutral difficulty for PFA probability;
-        # you can also average per-item difficulties if you store them.
-        p_pfa = pfa_prob(st["wins"], st["fails"], "intermediate", default_pfa)
+        # Using final counts and neutral difficulty for PFA probability
+        p_pfa = pfa_prob(st["wins"], st["fails"], "intermediate", pfa)
         p_bkt = float(st["p_bkt"])
         attempts = float(st["attempts"])
 
@@ -260,17 +271,13 @@ def recalibrate_topic_proficiency(user, results: list):
 
         subtopic = Subtopic.objects.filter(id=s_id).first()
         if subtopic:
-            # Optional EMA smoothing:
-            # old0_1 = existing_mastery.get(s_id)  # 0..1
-            # if old0_1 is not None:
-            #     pct = 0.7 * (old0_1 * 100.0) + 0.3 * pct
             UserSubtopicMastery.objects.update_or_create(
                 user=user,
                 subtopic=subtopic,
                 defaults={"mastery_level": pct},
             )
 
-    # ── Recalculate topic proficiency from subtopics (avg mastery)
+    # Recalculate topic proficiency from subtopics (avg mastery)
     for topic in Topic.objects.all():
         topic_subtopics = Subtopic.objects.filter(topic=topic)
         avg_mastery = (
@@ -284,7 +291,7 @@ def recalibrate_topic_proficiency(user, results: list):
             defaults={"proficiency_percent": avg_mastery},
         )
 
-    # ── Recalculate zone completion from topics (avg proficiency)
+    # Recalculate zone completion from topics (avg proficiency)
     for zone in GameZone.objects.all().order_by("order"):
         zone_topics = Topic.objects.filter(zone=zone)
         avg_proficiency = (

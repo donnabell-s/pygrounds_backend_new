@@ -84,107 +84,160 @@ class GetSessionInfo(APIView):
 #         if not session:
 #             return Response({"error": "Invalid or inactive session"}, status=400)
 
-#         score = 0
+#         results = []
+#         correct_count = 0
+
 #         for ans in answers:
 #             try:
 #                 game_q = GameQuestion.objects.get(id=ans["question_id"], session=session)
 #             except GameQuestion.DoesNotExist:
 #                 continue
 
-#             correct = (
-#                 str(game_q.question.correct_answer).strip().lower()
-#                 == ans["user_answer"].strip().lower()
-#             )
-#             if correct:
-#                 score += 1
+#             user_answer_raw = ans.get("user_answer", "")
+#             user_answer = user_answer_raw.strip().lower()
+#             correct_answer = str(game_q.question.correct_answer).strip().lower()
+#             is_correct = user_answer == correct_answer
 
+#             if is_correct:
+#                 correct_count += 1
+
+#             # Save response
 #             QuestionResponse.objects.create(
 #                 question=game_q,
 #                 user=request.user,
-#                 user_answer=ans["user_answer"],
-#                 is_correct=correct,
+#                 user_answer=user_answer_raw,
+#                 is_correct=is_correct,
 #                 time_taken=ans.get("time_taken", 0),
 #             )
 
+#             gd = getattr(game_q.question, "game_data", {}) or {}
+
+#             # Extract subtopic IDs
+#             subtopic_ids = [s["id"] for s in gd.get("subtopic_combination", [])]
+
+#             # Query Topic IDs based on Subtopic table
+#             from content_ingestion.models import Subtopic
+#             topic_ids = list(
+#                 Subtopic.objects.filter(id__in=subtopic_ids).values_list("topic_id", flat=True)
+#             )
+
+#             results.append({
+#                 "question_id": game_q.question.id,
+#                 "question_text": game_q.question.question_text,
+#                 "user_answer": user_answer_raw,
+#                 "correct_answer": game_q.question.correct_answer,
+#                 "is_correct": is_correct,
+#                 "topic_ids": topic_ids,  # ✅ Now real topic IDs
+#                 "subtopic_ids": subtopic_ids,
+#             })
+
+#         # Mark session as completed
 #         session.status = "completed"
-#         session.total_score = score
+#         session.total_score = correct_count
 #         session.end_time = timezone.now()
 #         session.save()
 
-#         return Response({"message": "Answers submitted", "score": score})
+#         # Trigger adaptive recalibration
+#         if request.user.is_authenticated:
+#             try:
+#                 recalibrate_topic_proficiency(request.user, results)
+#             except Exception as e:
+#                 print("Recalibration error:", e)
 
+#         return Response({
+#             "total": len(answers),
+#             "correct": correct_count,
+#             "results": results,
+#             "score": correct_count
+#         })
 
 class SubmitAnswers(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, session_id):
-        answers = request.data.get("answers", [])
+        answers = request.data.get("answers", []) or []
         session = GameSession.objects.filter(session_id=session_id, status="active").first()
         if not session:
             return Response({"error": "Invalid or inactive session"}, status=400)
 
+        # Build a map: submitted question_id -> payload
+        submitted_map = {int(a.get("question_id")): a for a in answers if "question_id" in a}
+
+        # Grab ALL questions in this session (placed-only for crossword/wordsearch)
+        session_gqs = list(GameQuestion.objects.filter(session=session).select_related("question"))
+
         results = []
         correct_count = 0
 
-        for ans in answers:
-            try:
-                game_q = GameQuestion.objects.get(id=ans["question_id"], session=session)
-            except GameQuestion.DoesNotExist:
-                continue
+        for game_q in session_gqs:
+            qid = game_q.id  # GameQuestion PK used by client
+            qobj = game_q.question
 
-            user_answer_raw = ans.get("user_answer", "")
-            user_answer = user_answer_raw.strip().lower()
-            correct_answer = str(game_q.question.correct_answer).strip().lower()
-            is_correct = user_answer == correct_answer
+            payload = submitted_map.get(qid)
+            if payload is None:
+                # ❌ Not submitted → count as WRONG with empty answer
+                user_answer_raw = ""
+                is_correct = False
+                time_taken = 0
+            else:
+                user_answer_raw = payload.get("user_answer", "")
+                time_taken = payload.get("time_taken", 0)
+                user_answer = user_answer_raw.strip().lower()
+                correct_answer = (qobj.correct_answer or "").strip().lower()
+                is_correct = (user_answer == correct_answer)
 
             if is_correct:
                 correct_count += 1
 
-            # Save response
+            # Persist the response (including unanswered-as-wrong)
             QuestionResponse.objects.create(
                 question=game_q,
                 user=request.user,
                 user_answer=user_answer_raw,
                 is_correct=is_correct,
-                time_taken=ans.get("time_taken", 0),
+                time_taken=time_taken,
             )
 
-            gd = getattr(game_q.question, "game_data", {}) or {}
+            # Subtopic/topic mapping (from game_data)
+            gd = getattr(qobj, "game_data", {}) or {}
+            subtopic_ids = [s.get("id") for s in gd.get("subtopic_combination", []) if "id" in s]
 
-            # Extract subtopic IDs
-            subtopic_ids = [s["id"] for s in gd.get("subtopic_combination", [])]
-
-            # Query Topic IDs based on Subtopic table
             from content_ingestion.models import Subtopic
             topic_ids = list(
                 Subtopic.objects.filter(id__in=subtopic_ids).values_list("topic_id", flat=True)
             )
 
             results.append({
-                "question_id": game_q.question.id,
-                "question_text": game_q.question.question_text,
+                "question_id": qobj.id,
+                "question_text": qobj.question_text,
                 "user_answer": user_answer_raw,
-                "correct_answer": game_q.question.correct_answer,
-                "is_correct": is_correct,
-                "topic_ids": topic_ids,  # ✅ Now real topic IDs
+                "correct_answer": qobj.correct_answer or "",
+                "is_correct": bool(is_correct),
+                "topic_ids": topic_ids,
                 "subtopic_ids": subtopic_ids,
+                # (optional) include difficulty if stored
+                "estimated_difficulty": (qobj.estimated_difficulty or None)
+                                        if hasattr(qobj, "estimated_difficulty") else None,
+                # help hybrid engine weight coding/non-coding if you want:
+                "game_type": getattr(qobj, "game_type", None),
+                "minigame_type": getattr(qobj, "minigame_type", None),
             })
 
-        # Mark session as completed
+        # Finish session
         session.status = "completed"
         session.total_score = correct_count
         session.end_time = timezone.now()
         session.save()
 
-        # Trigger adaptive recalibration
-        if request.user.is_authenticated:
-            try:
-                recalibrate_topic_proficiency(request.user, results)
-            except Exception as e:
-                print("Recalibration error:", e)
+        # Recalibrate with both answered and unanswered (as wrong)
+        try:
+            recalibrate_topic_proficiency(request.user, results)
+        except Exception as e:
+            print("Recalibration error:", e)
 
         return Response({
-            "total": len(answers),
+            "total": len(session_gqs),        # all placed questions
+            "answered": len(submitted_map),   # how many the user attempted
             "correct": correct_count,
             "results": results,
             "score": correct_count
@@ -478,25 +531,46 @@ class StartHangmanGame(APIView):
 #             time_taken=0,
 #         )
 
+#         # ✅ Build results for recalibration
+#         gd = getattr(question, "game_data", {}) or {}
+#         subtopic_ids = [s["id"] for s in gd.get("subtopic_combination", [])]
+#         from content_ingestion.models import Subtopic
+#         topic_ids = list(
+#             Subtopic.objects.filter(id__in=subtopic_ids).values_list("topic_id", flat=True)
+#         )
+#         results = [{
+#             "question_id": question.id,
+#             "question_text": question.question_text,
+#             "user_answer": "<code-submission>",
+#             "correct_answer": question.correct_answer or "",
+#             "is_correct": passed,
+#             "topic_ids": topic_ids,
+#             "subtopic_ids": subtopic_ids,
+#         }]
+
 #         if passed or remaining_lives <= 1:
 #             session.status = "completed"
 #             session.total_score = 1 if passed else 0
 #             session.end_time = timezone.now()
 #             session.save()
+
+#             # ✅ Trigger recalibration on game over
+#             recalibrate_topic_proficiency(request.user, results)
+
 #             return Response({
-#                 "success":       passed,
-#                 "game_over":     True,
+#                 "success": passed,
+#                 "game_over": True,
 #                 "remaining_lives": max(0, remaining_lives - (0 if passed else 1)),
-#                 "message":       message,
+#                 "message": message,
 #                 **({"traceback": trace} if not passed else {})
 #             })
 
 #         return Response({
-#             "success":       False,
-#             "game_over":     False,
+#             "success": False,
+#             "game_over": False,
 #             "remaining_lives": remaining_lives - 1,
-#             "message":       message,
-#             "traceback":     trace,
+#             "message": message,
+#             "traceback": trace,
 #         })
 
 class SubmitHangmanCode(APIView):
@@ -515,10 +589,11 @@ class SubmitHangmanCode(APIView):
         if not user_code:
             return Response({"error": "No code submitted."}, status=400)
 
-        wrong = QuestionResponse.objects.filter(
+        # Lives BEFORE this submission
+        wrong_before = QuestionResponse.objects.filter(
             question=game_q, user=request.user, is_correct=False
         ).count()
-        remaining_lives = 3 - wrong
+        remaining_lives_before = 3 - wrong_before
 
         passed, message, trace = run_user_code(
             user_code,
@@ -526,6 +601,7 @@ class SubmitHangmanCode(APIView):
             question.game_data.get("hidden_tests", [])
         )
 
+        # Save this attempt
         QuestionResponse.objects.create(
             question=game_q,
             user=request.user,
@@ -534,46 +610,62 @@ class SubmitHangmanCode(APIView):
             time_taken=0,
         )
 
-        # ✅ Build results for recalibration
-        gd = getattr(question, "game_data", {}) or {}
-        subtopic_ids = [s["id"] for s in gd.get("subtopic_combination", [])]
-        from content_ingestion.models import Subtopic
-        topic_ids = list(
-            Subtopic.objects.filter(id__in=subtopic_ids).values_list("topic_id", flat=True)
-        )
-        results = [{
-            "question_id": question.id,
-            "question_text": question.question_text,
-            "user_answer": "<code-submission>",
-            "correct_answer": question.correct_answer or "",
-            "is_correct": passed,
-            "topic_ids": topic_ids,
-            "subtopic_ids": subtopic_ids,
-        }]
+        # Recompute lives AFTER recording this attempt
+        wrong_after = QuestionResponse.objects.filter(
+            question=game_q, user=request.user, is_correct=False
+        ).count()
+        remaining_lives_after = max(0, 3 - wrong_after)
 
-        if passed or remaining_lives <= 1:
+        game_over = passed or remaining_lives_after == 0
+
+        if game_over:
             session.status = "completed"
             session.total_score = 1 if passed else 0
             session.end_time = timezone.now()
             session.save()
 
-            # ✅ Trigger recalibration on game over
-            recalibrate_topic_proficiency(request.user, results)
+            # Build FULL history of attempts for this session (all tries)
+            attempts = list(
+                QuestionResponse.objects
+                .filter(question=game_q, user=request.user)
+                .order_by('answered_at')
+                .values('is_correct', 'user_answer')
+            )
 
-            return Response({
-                "success": passed,
-                "game_over": True,
-                "remaining_lives": max(0, remaining_lives - (0 if passed else 1)),
-                "message": message,
-                **({"traceback": trace} if not passed else {})
-            })
+            # Map subtopics/topics (from game_data)
+            gd = getattr(question, "game_data", {}) or {}
+            subtopic_ids = [s.get("id") for s in gd.get("subtopic_combination", []) if "id" in s]
+            from content_ingestion.models import Subtopic
+            topic_ids = list(Subtopic.objects.filter(id__in=subtopic_ids).values_list("topic_id", flat=True))
+
+            # Convert every attempt into an engine event (coding game_type for weighting)
+            results = []
+            for att in attempts:
+                results.append({
+                    "question_id": question.id,
+                    "question_text": question.question_text,
+                    "user_answer": "<code-submission>",
+                    "correct_answer": question.correct_answer or "",
+                    "is_correct": bool(att["is_correct"]),
+                    "topic_ids": topic_ids,
+                    "subtopic_ids": subtopic_ids,
+                    "estimated_difficulty": getattr(question, "estimated_difficulty", None),
+                    "game_type": "coding",
+                    "minigame_type": "hangman",
+                })
+
+            # Recalibrate with ALL attempts (so fails are fully counted)
+            try:
+                recalibrate_topic_proficiency(request.user, results)
+            except Exception as e:
+                print("Recalibration error (hangman):", e)
 
         return Response({
-            "success": False,
-            "game_over": False,
-            "remaining_lives": remaining_lives - 1,
+            "success": passed,
+            "game_over": game_over,
+            "remaining_lives": remaining_lives_after,
             "message": message,
-            "traceback": trace,
+            **({"traceback": trace} if not passed else {})
         })
 
 
@@ -647,25 +739,53 @@ class StartDebugGame(APIView):
 #             time_taken=0,
 #         )
 
+#         # ✅ Prepare results for recalibration
+#         gd = getattr(question, "game_data", {}) or {}
+#         subtopic_ids = [s["id"] for s in gd.get("subtopic_combination", [])]
+
+#         from content_ingestion.models import Subtopic
+#         topic_ids = list(
+#             Subtopic.objects.filter(id__in=subtopic_ids).values_list("topic_id", flat=True)
+#         )
+
+#         results = [{
+#             "question_id": question.id,
+#             "question_text": question.question_text,
+#             "user_answer": "<code-submission>",
+#             "correct_answer": question.correct_answer or "",
+#             "is_correct": passed,
+#             "topic_ids": topic_ids,
+#             "subtopic_ids": subtopic_ids,
+#         }]
+
+#         # ✅ Handle game over
 #         if passed or remaining_lives <= 1:
 #             session.status = "completed"
 #             session.total_score = 1 if passed else 0
 #             session.end_time = timezone.now()
 #             session.save()
+
+#             # ✅ Trigger recalibration on game over
+#             try:
+#                 recalibrate_topic_proficiency(request.user, results)
+#             except Exception as e:
+#                 print("Recalibration error:", e)
+
 #             return Response({
-#                 "success":       passed,
-#                 "game_over":     True,
+#                 "success": passed,
+#                 "game_over": True,
 #                 "remaining_lives": max(0, remaining_lives - (0 if passed else 1)),
-#                 "message":       message,
+#                 "message": message,
 #                 **({"traceback": traceback_str} if not passed else {})
 #             })
 
+#         # ✅ Not game over yet
 #         return Response({
-#             "success":       False,
-#             "game_over":     False,
+#             "success": False,
+#             "game_over": False,
 #             "remaining_lives": remaining_lives - 1,
-#             "message":       message,
-#             "traceback":     traceback_str,
+#             "message": message,
+#             "traceback": traceback_str,
 #         })
 
 class SubmitDebugGame(APIView):
@@ -684,10 +804,10 @@ class SubmitDebugGame(APIView):
         if not user_code:
             return Response({"error": "No code submitted."}, status=400)
 
-        wrong = QuestionResponse.objects.filter(
+        wrong_before = QuestionResponse.objects.filter(
             question=game_q, user=request.user, is_correct=False
         ).count()
-        remaining_lives = 3 - wrong
+        remaining_lives_before = 3 - wrong_before
 
         passed, message, traceback_str = run_user_code(
             user_code,
@@ -695,6 +815,7 @@ class SubmitDebugGame(APIView):
             question.game_data.get("hidden_tests", [])
         )
 
+        # Save this attempt
         QuestionResponse.objects.create(
             question=game_q,
             user=request.user,
@@ -703,53 +824,59 @@ class SubmitDebugGame(APIView):
             time_taken=0,
         )
 
-        # ✅ Prepare results for recalibration
-        gd = getattr(question, "game_data", {}) or {}
-        subtopic_ids = [s["id"] for s in gd.get("subtopic_combination", [])]
+        # Lives AFTER this attempt
+        wrong_after = QuestionResponse.objects.filter(
+            question=game_q, user=request.user, is_correct=False
+        ).count()
+        remaining_lives_after = max(0, 3 - wrong_after)
 
-        from content_ingestion.models import Subtopic
-        topic_ids = list(
-            Subtopic.objects.filter(id__in=subtopic_ids).values_list("topic_id", flat=True)
-        )
+        game_over = passed or remaining_lives_after == 0
 
-        results = [{
-            "question_id": question.id,
-            "question_text": question.question_text,
-            "user_answer": "<code-submission>",
-            "correct_answer": question.correct_answer or "",
-            "is_correct": passed,
-            "topic_ids": topic_ids,
-            "subtopic_ids": subtopic_ids,
-        }]
-
-        # ✅ Handle game over
-        if passed or remaining_lives <= 1:
+        if game_over:
             session.status = "completed"
             session.total_score = 1 if passed else 0
             session.end_time = timezone.now()
             session.save()
 
-            # ✅ Trigger recalibration on game over
+            # Build FULL history
+            attempts = list(
+                QuestionResponse.objects
+                .filter(question=game_q, user=request.user)
+                .order_by('answered_at')
+                .values('is_correct', 'user_answer')
+            )
+
+            gd = getattr(question, "game_data", {}) or {}
+            subtopic_ids = [s.get("id") for s in gd.get("subtopic_combination", []) if "id" in s]
+            from content_ingestion.models import Subtopic
+            topic_ids = list(Subtopic.objects.filter(id__in=subtopic_ids).values_list("topic_id", flat=True))
+
+            results = []
+            for att in attempts:
+                results.append({
+                    "question_id": question.id,
+                    "question_text": question.question_text,
+                    "user_answer": "<code-submission>",
+                    "correct_answer": question.correct_answer or "",
+                    "is_correct": bool(att["is_correct"]),
+                    "topic_ids": topic_ids,
+                    "subtopic_ids": subtopic_ids,
+                    "estimated_difficulty": getattr(question, "estimated_difficulty", None),
+                    "game_type": "coding",
+                    "minigame_type": "debugging",
+                })
+
             try:
                 recalibrate_topic_proficiency(request.user, results)
             except Exception as e:
-                print("Recalibration error:", e)
+                print("Recalibration error (debugging):", e)
 
-            return Response({
-                "success": passed,
-                "game_over": True,
-                "remaining_lives": max(0, remaining_lives - (0 if passed else 1)),
-                "message": message,
-                **({"traceback": traceback_str} if not passed else {})
-            })
-
-        # ✅ Not game over yet
         return Response({
-            "success": False,
-            "game_over": False,
-            "remaining_lives": remaining_lives - 1,
+            "success": passed,
+            "game_over": game_over,
+            "remaining_lives": remaining_lives_after,
             "message": message,
-            "traceback": traceback_str,
+            **({"traceback": traceback_str} if not passed else {})
         })
 
 
