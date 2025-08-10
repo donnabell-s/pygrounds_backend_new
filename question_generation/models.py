@@ -130,9 +130,9 @@ class GeneratedQuestion(models.Model):
     subtopic = models.ForeignKey(Subtopic, on_delete=models.CASCADE, related_name='generated_questions')
 
     question_text = models.TextField(blank=True)  # Could be clue, prompt, description, etc.
-    answer_options = JSONField(default=list, blank=True)  # MCQ options if applicable
+    answer_options = JSONField(default=list, blank=True, null=True)  # MCQ options if applicable
     correct_answer = models.TextField(blank=True)
-    explanation = models.TextField(blank=True)
+    explanation = models.TextField(blank=True, null=True)
 
     estimated_difficulty = models.CharField(
         max_length=20,
@@ -150,7 +150,7 @@ class GeneratedQuestion(models.Model):
             ('word_search', 'Word Search Puzzle'),
             ('crossword', 'Crossword Puzzle'),
         ],
-        default='generic'
+        default='generic', null=True
     )
 
     # Flexible field for storing game-specific data:
