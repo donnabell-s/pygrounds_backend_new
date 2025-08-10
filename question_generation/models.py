@@ -2,15 +2,17 @@ from django.db import models
 from question_generation.utils.difficulty_predictor import predict_difficulty
 
 DIFFICULTY_LEVELS = (
-    (1, "Easy"),
-    (2, "Intermediate"),
-    (3, "Hard"),
+    (0, "Beginner"),
+    (1, "Intermediate"),
+    (2, "Advanced"),
+    (3, "Master"),
 )
 
 DIFFICULTY_MAPPING = {
-    "Easy": 1,
-    "Intermediate": 2,
-    "Hard": 3,
+    "Beginner": 0,
+    "Intermediate": 1,
+    "Advanced": 2,
+    "Master": 3,
 }
 
 class Topic(models.Model):
@@ -34,20 +36,18 @@ class Question(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def save(self, *args, **kwargs):
-        if not self.difficulty:
-            label = predict_difficulty(self.text)  # returns string like "Easy"
+        if self.difficulty is None:
+            label = predict_difficulty(self.text)  
             self.difficulty = DIFFICULTY_MAPPING.get(label, None)
         super().save(*args, **kwargs)
 
     def __str__(self):
         return self.text[:50]
 
-
-##dummy lng sa ni
-
+# dummy midel rani
 class GeneratedQuestion(models.Model):
     text = models.TextField()
-    difficulty = models.IntegerField(choices=[(1, 'Easy'), (2, 'Intermediate'), (3, 'Hard')])
+    difficulty = models.IntegerField(choices=DIFFICULTY_LEVELS)
 
     def __str__(self):
         return self.text[:50]

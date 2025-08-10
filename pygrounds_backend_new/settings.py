@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'question_generation',
     'user_learning',
     'minigames',
+    'analytics',
 ]
 
 MIDDLEWARE = [

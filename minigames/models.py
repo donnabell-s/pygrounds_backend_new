@@ -12,10 +12,15 @@ class Question(models.Model):
         ('wordsearch', 'WordSearch'),
         ('debugging', 'Debugging'),
     ]
-    
+    question = models.ForeignKey(GeneratedQuestion, on_delete=models.CASCADE, null=True)  #para dummy checker rani
     text = models.TextField()
     answer = models.CharField(max_length=100, blank=True, null=True)
-    difficulty = models.CharField(max_length=10, choices=[('easy', 'Easy'), ('medium', 'Medium'), ('hard', 'Hard')])
+    difficulty = models.CharField(max_length=12, choices=[
+        ('beginner', 'Beginner'),
+        ('intermediate', 'Intermediate'),
+        ('advanced', 'Advanced'),
+        ('master', 'Master')
+    ])
     game_type = models.CharField(max_length=50, choices=GAME_CHOICES, null=True, blank=True, help_text="Game this question is for")
 
     # Code-related fields
