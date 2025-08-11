@@ -11,14 +11,14 @@ from reading.views import (
     ReadingMaterialViewSet,
     TopicViewSet,
     TopicTOC,
-    TopicListView,              # new
-    SubtopicListByTopicView,    # new
-    MaterialsByTopicSubtopicView,  # new
+    TopicListView,
+    SubtopicListByTopicView,
+    MaterialsByTopicSubtopicView,
 )
 
 router = DefaultRouter()
 router.register(r"reading-materials", ReadingMaterialViewSet, basename="reading-material")
-router.register(r"topics", TopicViewSet, basename="topic")  # existing /api/topics/
+router.register(r"topics", TopicViewSet, basename="topic")
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -29,13 +29,23 @@ urlpatterns = [
 
     path("api/", include(router.urls)),
 
+    # Reading endpoints
     path("api/reading/topics/", TopicListView.as_view(), name="topics-list"),
-    path("api/reading/topics/<slug:topic_key>/subtopics/", SubtopicListByTopicView.as_view(),
-         name="subtopics-by-topic"),
-    path("api/reading/topics/<slug:topic_slug>/subtopics/<slug:subtopic_slug>/materials/",
-         MaterialsByTopicSubtopicView.as_view(), name="materials-by-topic-subtopic"),
-
+    path(
+        "api/reading/topics/<slug:topic_key>/subtopics/",
+        SubtopicListByTopicView.as_view(),
+        name="subtopics-by-topic",
+    ),
+    path(
+        "api/reading/topics/<slug:topic_slug>/subtopics/<slug:subtopic_slug>/materials/",
+        MaterialsByTopicSubtopicView.as_view(),
+        name="materials-by-topic-subtopic",
+    ),
     path("api/topics/<str:topic_name>/toc/", TopicTOC.as_view(), name="topic-toc"),
+
+    #calibration routes (question_generation)
+
+    path("api/", include("question_generation.urls")),
 
     path(
         "api/schema/",
