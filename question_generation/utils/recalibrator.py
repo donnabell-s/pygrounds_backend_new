@@ -1,65 +1,41 @@
-#for testing only and dummy only 
+from django.db.models import Avg
 from minigames.models import Question
 from analytics.models import QuestionResponse
 
-def recalibrate_difficulty_for_question(gq_id):
+LEVELS = ['beginner', 'intermediate', 'advanced', 'master']
+
+def recalibrate_difficulty_for_question(question_id: int) -> str:
+    """
+    Score-based recalibration (uses analytics.QuestionResponse.score ∈ [0,1]):
+      avg_score < 0.30  -> 'master'
+      avg_score < 0.60  -> 'advanced'
+      avg_score < 0.80  -> 'intermediate'
+      else              -> 'beginner'
+    Requires at least 5 responses.
+    """
     try:
-        question = Question.objects.get(question__id=gq_id)
+        q = Question.objects.get(id=question_id)
     except Question.DoesNotExist:
-        return "Related minigame Question not found for this GeneratedQuestion."
+        return "Question not found."
 
-    responses = QuestionResponse.objects.filter(question__question__id=gq_id)
+    qs = QuestionResponse.objects.filter(question=q)
+    total = qs.count()
+    if total < 5:
+        return "Not enough responses to recalibrate."
 
-    if not responses.exists():
-        return "No responses found to evaluate difficulty."
+    avg_score = qs.aggregate(val=Avg('score'))['val'] or 0.0
 
-    average_score = sum([r.score for r in responses]) / len(responses)
-
-    if average_score < 0.3:
+    if avg_score < 0.30:
         new_diff = 'master'
-    elif average_score < 0.6:
+    elif avg_score < 0.60:
         new_diff = 'advanced'
-    elif average_score < 0.8:
+    elif avg_score < 0.80:
         new_diff = 'intermediate'
     else:
         new_diff = 'beginner'
 
-    question.difficulty = new_diff
-    question.save()
-
-    return f"Updated difficulty to {new_diff}"
-
-
-#real logic
-def recalibrate_difficulty_for_question(question_id):
-    from minigames.models import Question
-    from analytics.models import QuestionResponse
-
-    try:
-        question = Question.objects.get(id=question_id)
-    except Question.DoesNotExist:
-        return "Question not found."
-
-    responses = QuestionResponse.objects.filter(question=question)
-    total = responses.count()
-
-    if total < 5:
-        return "Not enough responses to recalibrate."
-
-    wrong = responses.filter(score__lt=0.7).count()
-
-    error_rate = wrong / total
-
-    levels = ['beginner', 'intermediate', 'advanced', 'master']
-    current_index = levels.index(question.difficulty)
-
-    if error_rate > 0.6 and current_index < len(levels) - 1:
-        question.difficulty = levels[current_index + 1]
-        question.save()
-        return f"Recalibrated to {question.difficulty.capitalize()}."
-    else:
-        return "No recalibration needed."
-
-
-
-
+    if q.difficulty != new_diff:
+        q.difficulty = new_diff
+        q.save(update_fields=['difficulty'])
+        return f"Recalibrated to {new_diff.capitalize()}."
+    return "No recalibration needed."
