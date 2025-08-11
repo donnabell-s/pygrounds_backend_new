@@ -82,3 +82,12 @@ class UserSubtopicMasterySerializer(serializers.ModelSerializer):
     class Meta:
         model = UserSubtopicMastery
         fields = ['subtopic', 'mastery_level']
+
+class LeaderboardEntrySerializer(serializers.Serializer):
+    user_id = serializers.IntegerField()
+    username = serializers.CharField()
+    first_name = serializers.CharField(allow_null=True, required=False)
+    last_name = serializers.CharField(allow_null=True, required=False)
+    overall_completion = serializers.FloatField()
+    # Each item: { zone_id, zone_name, zone_order, completion_percent }
+    progresses = serializers.ListField(child=serializers.DictField())

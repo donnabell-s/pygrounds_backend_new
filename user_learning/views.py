@@ -1,13 +1,16 @@
 # user_learning/views.py
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from collections import defaultdict
+from django.contrib.auth import get_user_model
 from rest_framework.permissions import IsAuthenticated
 from django.db.models import Max
 
 from .models import UserZoneProgress
-from .serializers import UserZoneProgressSerializer
+from .serializers import UserZoneProgressSerializer, LeaderboardEntrySerializer
 from content_ingestion.models import GameZone
 
+User = get_user_model()
 
 class MyZoneProgressView(APIView):
     permission_classes = [IsAuthenticated]
@@ -83,3 +86,44 @@ class MyCurrentZoneView(APIView):
         from .serializers import UserZoneProgressSerializer
         data = UserZoneProgressSerializer(current_progress).data
         return Response([data])
+
+class AllLearnersZoneProgressView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        # Pull all progresses for users with role='learner'
+        qs = (
+            UserZoneProgress.objects
+            .select_related("user", "zone")
+            .filter(user__role="learner")
+            .order_by("user_id", "zone__order")
+        )
+
+        by_user = defaultdict(list)
+        for up in qs:
+            by_user[up.user].append(up)
+
+        payload = []
+        for user, progresses in by_user.items():
+            prog_items = [{
+                "zone_id": p.zone.id,
+                "zone_name": getattr(p.zone, "name", str(p.zone)),
+                "zone_order": getattr(p.zone, "order", None),
+                "completion_percent": round(p.completion_percent, 2),
+            } for p in progresses]
+
+            overall = sum(p["completion_percent"] for p in prog_items) / (len(prog_items) or 1)
+
+            payload.append({
+                "user_id": user.id,
+                "username": user.username,
+                "first_name": getattr(user, "first_name", None),
+                "last_name": getattr(user, "last_name", None),
+                "overall_completion": round(overall, 2),
+                "progresses": prog_items,
+            })
+
+        # Sort: highest overall first, then username
+        payload.sort(key=lambda x: (-x["overall_completion"], x["username"] or ""))
+
+        return Response(LeaderboardEntrySerializer(payload, many=True).data)

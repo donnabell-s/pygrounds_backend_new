@@ -4,6 +4,7 @@ from .views import (
     MyTopicProgressView,
     MySubtopicStatsView,
     MyCurrentZoneView,
+    AllLearnersZoneProgressView,
 )
 
 urlpatterns = [
@@ -11,4 +12,6 @@ urlpatterns = [
     path('progress/topics/', MyTopicProgressView.as_view(), name='my-topic-progress'),
     path('progress/subtopics/', MySubtopicStatsView.as_view(), name='my-subtopic-progress'),
     path('progress/current-zone/', MyCurrentZoneView.as_view(), name='my-current-zone'),
+    path('progress/zones/all/', AllLearnersZoneProgressView.as_view(), name='all-learners-zone-progress'),
+
 ]
