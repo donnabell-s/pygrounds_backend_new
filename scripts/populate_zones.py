@@ -24,38 +24,57 @@ from content_ingestion.models import GameZone, Topic, Subtopic
 
 def generate_subtopic_embeddings():
     """
-    Generate embeddings for subtopics for better RAG semantic matching.
+    Generate embeddings for subtopics using advanced embedding system.
+    Subtopics always use Sentence Transformer model for semantic matching.
     """
     try:
-        from content_ingestion.helpers.embedding_utils import EmbeddingGenerator
+        from content_ingestion.helpers.embedding import EmbeddingGenerator
         from django.utils import timezone
 
         embedding_generator = EmbeddingGenerator()
-        print("\n🔮 Generating embeddings for subtopics...")
+        print("\n🔮 Generating embeddings for subtopics using advanced system...")
         print("=" * 60)
 
         # Subtopic embeddings - create Embedding objects
         subtopics = Subtopic.objects.filter(embeddings__isnull=True)
         print(f"\n📝 Generating embeddings for {subtopics.count()} subtopics...")
+        success_count = 0
+        failed_count = 0
+        
         for subtopic in subtopics:
             try:
                 from content_ingestion.models import Embedding
-                embedding_text = f"{subtopic.topic.name} - {subtopic.name}"
-                embedding = embedding_generator.generate_embedding(embedding_text)
-                Embedding.objects.create(
-                    subtopic=subtopic,
-                    vector=embedding,
-                    model_name="all-MiniLM-L6-v2"
+                
+                # Use specialized subtopic embedding method
+                embedding_data = embedding_generator.generate_subtopic_embedding(
+                    subtopic_name=subtopic.name,
+                    topic_name=subtopic.topic.name
                 )
-                print(f"  ✅ {subtopic.name}")
+                
+                if embedding_data['vector']:
+                    Embedding.objects.create(
+                        subtopic=subtopic,
+                        vector=embedding_data['vector'],
+                        model_name=embedding_data['model_name'],
+                        model_type=embedding_data['model_type'].value,
+                        dimension=embedding_data['dimension']
+                    )
+                    print(f"  ✅ {subtopic.name} (using {embedding_data['model_name']})")
+                    success_count += 1
+                else:
+                    print(f"  ❌ Failed to embed subtopic '{subtopic.name}': {embedding_data.get('error', 'Unknown error')}")
+                    failed_count += 1
             except Exception as e:
                 print(f"  ❌ Failed to embed subtopic '{subtopic.name}': {e}")
+                failed_count += 1
 
-        print(f"\n🎉 Embedding generation complete!")
+        print(f"\n🎉 Subtopic embedding generation complete!")
         print(f"  • Total topics: {Topic.objects.count()}")
         print(f"  • Subtopics embedded: {Subtopic.objects.filter(embeddings__isnull=False).count()}")
+        print(f"  • Success: {success_count}, Failed: {failed_count}")
+        print(f"  • Model used: all-MiniLM-L6-v2 (Sentence Transformer)")
     except ImportError:
-        print("\n⚠️  Embedding utilities not available - skipping embedding generation")
+        print("\n⚠️  Advanced embedding utilities not available - skipping embedding generation")
         print("   Topics and subtopics created without embeddings")
     except Exception as e:
         print(f"\n❌ Error generating embeddings: {e}")

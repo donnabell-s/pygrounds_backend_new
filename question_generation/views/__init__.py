@@ -20,12 +20,33 @@ from .questionManagement import (
     get_all_master_questions
 )
 
-# Question generation (main functionality)
-from .questionGeneration import (
+# Question generation (main functionality) - NEW MODULAR STRUCTURE
+from .question_api import (
+    generate_questions_bulk,
+    generate_questions_single_subtopic,
+    generate_pre_assessment,
+    get_rag_context
+)
+
+from .test_views import (
     deepseek_test_view,
-    generate_questions_with_deepseek,
-    test_question_generation,
-    test_minigame_generation_no_save,
+    test_prompt_generation,
+    health_check,
+    get_generation_stats
+)
+
+# Admin views
+from .admin_views import (
+    AdminGeneratedQuestionListView,
+    AdminGeneratedQuestionDetailView,
+    AdminPreAssessmentQuestionListView,
+    AdminPreAssessmentQuestionDetailView,
+    AdminSemanticSubtopicListView,
+    question_statistics,
+    bulk_update_validation_status,
+    bulk_delete_questions,
+    semantic_statistics,
+    admin_dashboard_stats
 )
 
 # Session management
@@ -50,9 +71,20 @@ __all__ = [
     'get_all_advanced_questions',
     'get_all_master_questions',
     
-    # Question generation
-    'generate_questions_with_deepseek',
+    # Question generation - NEW MODULAR API
+    'generate_questions_bulk',
+    'generate_questions_single_subtopic',
+    'generate_pre_assessment',
+    'get_rag_context',
+    
+    # Test views
     'deepseek_test_view',
+    'test_prompt_generation',
+    'health_check',
+    'get_generation_stats',
+    
+    # Backward compatibility (original functions)
+    'generate_questions_with_deepseek',
     'test_question_generation',
     'test_minigame_generation_no_save',
     

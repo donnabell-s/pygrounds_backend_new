@@ -3,8 +3,8 @@ Unified Embedding Views for RAG functionality.
 Includes chunk, topic, and subtopic embedding endpoints.
 """
 
-from .imports import *
-from content_ingestion.helpers.utils.stubs import log_embedding_generation, export_snapshot
+from ..helpers.view_imports import *
+from ..helpers.helper_imports import *
 
 @api_view(['POST'])
 def embed_document_chunks(request, document_id):
@@ -61,7 +61,6 @@ def embed_document_chunks(request, document_id):
             'embedding_details': embedding_results,
             'chunks_embedding_data': chunk_logs
         }
-        log_result = log_embedding_generation('document_chunks', document.id, embedding_log_data)
 
         return Response({
             'status': 'success',
@@ -74,8 +73,7 @@ def embed_document_chunks(request, document_id):
                 'newly_embedded': embedding_results['success'],
                 'failed': embedding_results['failed'],
                 'model_used': embedding_results['model']
-            },
-            'json_log': log_result
+            }
         })
 
     except Exception as e:
@@ -187,16 +185,13 @@ def get_chunk_embeddings_detailed(request, document_id):
             'chunks_with_embeddings': chunks_with_embeddings,
             'chunks_without_embeddings': chunks_without_embeddings
         }
-        export_filename = f"document_{document_id}_chunk_embeddings_detailed"
-        export_result = export_snapshot(export_filename, export_data)
 
         return Response({
             'status': 'success',
             'document': export_data['document_info'],
             'embedding_summary': export_data['embedding_summary'],
             'chunks_with_embeddings': chunks_with_embeddings,
-            'chunks_without_embeddings': chunks_without_embeddings,
-            'json_export': export_result
+            'chunks_without_embeddings': chunks_without_embeddings
         })
 
     except Exception as e:
@@ -208,7 +203,7 @@ def get_chunk_embeddings_detailed(request, document_id):
 def generate_subtopic_embeddings(request):
     """Generate embeddings for all subtopics using advanced embedding system."""
     try:
-        from content_ingestion.helpers.embedding import AdvancedEmbeddingGenerator
+        from content_ingestion.helpers.embedding import EmbeddingGenerator
 
         subtopics_with_embeddings = Subtopic.objects.filter(embeddings__isnull=False)
         subtopics = Subtopic.objects.exclude(id__in=subtopics_with_embeddings.values_list('id', flat=True))
@@ -227,7 +222,7 @@ def generate_subtopic_embeddings(request):
                 }
             })
 
-        generator = AdvancedEmbeddingGenerator()
+        generator = EmbeddingGenerator()
         details, success, failed = [], 0, 0
 
         for subtopic in subtopics:
@@ -285,7 +280,6 @@ def generate_subtopic_embeddings(request):
             'model_type': 'sentence',
             'embedding_details': details
         }
-        log_result = log_embedding_generation('subtopics', 'all', log_data)
         
         return Response({
             'status': 'success',
@@ -297,8 +291,7 @@ def generate_subtopic_embeddings(request):
                 'failed': failed,
                 'model_used': 'all-MiniLM-L6-v2',
                 'model_type': 'sentence'
-            },
-            'json_log': log_result
+            }
         })
 
     except Exception as e:
@@ -369,7 +362,6 @@ def get_topic_subtopic_embeddings_detailed(request):
             'subtopics_with_embeddings': subtopics_with_embeddings,
             'subtopics_without_embeddings': subtopics_without_embeddings
         }
-        export_result = export_snapshot("topic_subtopic_embeddings_detailed", export_data)
 
         return Response({
             'status': 'success',
@@ -377,8 +369,7 @@ def get_topic_subtopic_embeddings_detailed(request):
             'topics_with_embeddings': topics_with_embeddings,
             'topics_without_embeddings': topics_without_embeddings,
             'subtopics_with_embeddings': subtopics_with_embeddings,
-            'subtopics_without_embeddings': subtopics_without_embeddings,
-            'json_export': export_result
+            'subtopics_without_embeddings': subtopics_without_embeddings
         })
 
     except Exception as e:

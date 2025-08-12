@@ -4,9 +4,9 @@ from typing import List, Dict, Any
 from django.db import transaction
 from content_ingestion.models import UploadedDocument, DocumentChunk, TOCEntry
 from .chunk_extractor_utils import extract_unstructured_chunks, infer_chunk_type, clean_chunk_text
-from content_ingestion.helpers.embedding_utils import EmbeddingGenerator
+from content_ingestion.helpers.embedding import EmbeddingGenerator
 from content_ingestion.helpers.toc_parser.toc_utils import find_content_boundaries
-from content_ingestion.helpers.token_utils import TokenCounter
+from content_ingestion.helpers.utils.token_utils import TokenCounter
 import tempfile
 import os
 

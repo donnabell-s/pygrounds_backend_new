@@ -12,7 +12,7 @@ class UploadedDocumentAdmin(admin.ModelAdmin):
 
 @admin.register(GameZone)
 class GameZoneAdmin(admin.ModelAdmin):
-    list_display = ['order', 'name', 'description']  # Remove non-existent fields
+    list_display = ['order', 'name', 'description']  
     ordering = ['order']
 
 @admin.register(Topic)

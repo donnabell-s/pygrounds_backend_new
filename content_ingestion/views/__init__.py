@@ -7,19 +7,10 @@ All views organized by functionality for better maintainability.
 # Administrative operations and enhanced management features
 from .admin_views import (
     # Admin CRUD operations
-    AdminGameZoneListView, AdminGameZoneDetailView,
-    AdminTopicListView, AdminTopicDetailView,
-    AdminSubtopicListView, AdminSubtopicDetailView,
-    AdminDocumentListView, AdminDocumentDetailView,
-    
-    # Admin statistics and analytics
-    zone_statistics, topic_statistics, subtopic_statistics,
-    
-    # Bulk operations
-    bulk_create_subtopics, bulk_unlock_zones,
-    
-    # Advanced document management
-    pdf_management_overview, delete_document_with_chunks, reprocess_document,
+    ZoneList, ZoneDetail,
+    TopicList, TopicDetail,
+    SubtopicList, SubtopicDetail,
+    DocumentList, DocumentDetail,
     
     # Document CRUD operations
     upload_pdf, list_documents, get_document_detail, delete_document,
@@ -27,10 +18,8 @@ from .admin_views import (
     # Document testing and validation
     test_pdf_analysis, test_pdf_chunking,
     
-    # Public CRUD operations for zones, topics, subtopics
-    GameZoneListCreateView, GameZoneDetailView, ZoneTopicsView,
-    TopicListCreateView, TopicDetailView, TopicSubtopicsView,
-    SubtopicListCreateView, SubtopicDetailView
+    # Relationship views
+    ZoneTopicsView, TopicSubtopicsView
 )
 
 # ==================== SPECIALIZED VIEWS ====================
@@ -41,17 +30,16 @@ from .embeddingViews import (
     generate_subtopic_embeddings
 )
 
-# TOC parser views
+# TOC parser views (functional)
 from .tocParserView import (
-    TOCGenerationView, get_section_content, get_document_toc
+    generate_document_toc, get_section_content, get_document_toc
 )
 
-# Chunk processing views
+# Chunk processing views (functional)
 from .chunkPagesView import (
-    UploadAndProcessPipelineView, CompleteDocumentPipelineView,
-    CompleteSemanticPipelineView, ChunkAllPagesView,
-    get_document_chunks, get_single_chunk, get_chunks_by_type,
-    get_coding_chunks_for_minigames
+    process_document_pipeline, chunk_document_pages, generate_document_embeddings,
+    get_document_chunks, get_single_chunk, get_document_chunks_full,
+    get_chunks_by_type, get_coding_chunks_for_minigames
 )
 
 __all__ = [
@@ -63,24 +51,18 @@ __all__ = [
     'embed_document_chunks', 'get_chunk_embeddings', 'get_chunk_embeddings_detailed',
     'get_topic_subtopic_embeddings_detailed', 'generate_subtopic_embeddings',
     
-    # Standard CRUD operations
-    'GameZoneListCreateView', 'GameZoneDetailView', 'TopicListCreateView',
-    'TopicDetailView', 'ZoneTopicsView', 'SubtopicListCreateView',
-    'SubtopicDetailView', 'TopicSubtopicsView',
+    # Relationship views
+    'ZoneTopicsView', 'TopicSubtopicsView',
     
-    # Admin operations
-    'AdminGameZoneListView', 'AdminGameZoneDetailView', 'AdminTopicListView',
-    'AdminTopicDetailView', 'AdminSubtopicListView', 'AdminSubtopicDetailView',
-    'AdminDocumentListView', 'AdminDocumentDetailView',
-    'zone_statistics', 'topic_statistics', 'subtopic_statistics',
-    'bulk_create_subtopics', 'bulk_unlock_zones', 'pdf_management_overview',
-    'delete_document_with_chunks', 'reprocess_document',
+    # Admin CRUD operations (concise names)
+    'ZoneList', 'ZoneDetail', 'TopicList', 'TopicDetail',
+    'SubtopicList', 'SubtopicDetail', 'DocumentList', 'DocumentDetail',
     
-    # TOC parser views
-    'TOCGenerationView', 'get_section_content', 'get_document_toc',
+    # TOC parser views (functional)
+    'generate_document_toc', 'get_section_content', 'get_document_toc',
     
-    # Chunk processing views
-    'UploadAndProcessPipelineView', 'CompleteDocumentPipelineView',
-    'CompleteSemanticPipelineView', 'ChunkAllPagesView', 'get_document_chunks',
-    'get_single_chunk', 'get_chunks_by_type', 'get_coding_chunks_for_minigames'
+    # Chunk processing views (functional)
+    'process_document_pipeline', 'chunk_document_pages', 'generate_document_embeddings',
+    'get_document_chunks', 'get_single_chunk', 'get_document_chunks_full',
+    'get_chunks_by_type', 'get_coding_chunks_for_minigames'
 ]

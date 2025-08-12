@@ -1,57 +1,34 @@
 """
-Consolidated admin views for content ingestion.
-Contains all CRUD operations, admin functions, and document management.
+CRUD OPERATIONS FOR ADMIN FRONTEND
+
+document
+zones
+topic
+subtopic
+
 """
 
-from django.http import JsonResponse, Http404
-from django.shortcuts import get_object_or_404
-from django.db import transaction
-from django.db.models import Count, Q
-from django.core.files.storage import default_storage
-from rest_framework import status, generics
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
-from rest_framework.views import APIView
-
-from ..models import (
-    GameZone, Topic, Subtopic, UploadedDocument, 
-    DocumentChunk, TOCEntry
-)
-from ..serializers import (
-    GameZoneSerializer, TopicSerializer, SubtopicSerializer,
-    DocumentSerializer, DocumentChunkSerializer
-)
-
-import logging
-import os
-import json
-from datetime import datetime
-
-logger = logging.getLogger(__name__)
+from ..helpers.view_imports import *
+from ..helpers.helper_imports import *
 
 # ==================== ADMIN CRUD VIEWS ====================
 
-class AdminGameZoneListView(generics.ListCreateAPIView):
-    """Administrative view for GameZone with enhanced functionality"""
+class ZoneList(generics.ListCreateAPIView):
     queryset = GameZone.objects.all()
     serializer_class = GameZoneSerializer
 
     def get_queryset(self):
         queryset = super().get_queryset()
-        # Add statistics annotations
         return queryset.annotate(
             topic_count=Count('topics'),
             subtopic_count=Count('topics__subtopics')
         )
 
-class AdminGameZoneDetailView(generics.RetrieveUpdateDestroyAPIView):
-    """Administrative GameZone detail view"""
+class ZoneDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = GameZone.objects.all()
     serializer_class = GameZoneSerializer
 
-class AdminTopicListView(generics.ListCreateAPIView):
-    """Administrative Topic view with filtering"""
+class TopicList(generics.ListCreateAPIView):
     queryset = Topic.objects.all()
     serializer_class = TopicSerializer
 
@@ -62,13 +39,11 @@ class AdminTopicListView(generics.ListCreateAPIView):
             queryset = queryset.filter(zone_id=zone_id)
         return queryset.annotate(subtopic_count=Count('subtopics'))
 
-class AdminTopicDetailView(generics.RetrieveUpdateDestroyAPIView):
-    """Administrative Topic detail view"""
+class TopicDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Topic.objects.all()
     serializer_class = TopicSerializer
 
-class AdminSubtopicListView(generics.ListCreateAPIView):
-    """Administrative Subtopic view with filtering"""
+class SubtopicList(generics.ListCreateAPIView):
     queryset = Subtopic.objects.all()
     serializer_class = SubtopicSerializer
 
@@ -78,62 +53,26 @@ class AdminSubtopicListView(generics.ListCreateAPIView):
         if topic_id:
             queryset = queryset.filter(topic_id=topic_id)
         return queryset
-
-class AdminSubtopicDetailView(generics.RetrieveUpdateDestroyAPIView):
-    """Administrative Subtopic detail view"""
+   
+class SubtopicDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Subtopic.objects.all()
     serializer_class = SubtopicSerializer
 
-class AdminDocumentListView(generics.ListCreateAPIView):
-    """Administrative Document view with enhanced features"""
+class DocumentList(generics.ListCreateAPIView):
     queryset = UploadedDocument.objects.all()
     serializer_class = DocumentSerializer
 
     def get_queryset(self):
         queryset = super().get_queryset()
-        # Add chunk statistics
         return queryset.annotate(
             chunk_count=Count('chunks')
         )
 
-class AdminDocumentDetailView(generics.RetrieveUpdateDestroyAPIView):
-    """Administrative Document detail view"""
+class DocumentDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = UploadedDocument.objects.all()
     serializer_class = DocumentSerializer
 
-# ==================== STANDARD CRUD VIEWS ====================
-
-class GameZoneListCreateView(generics.ListCreateAPIView):
-    """Public GameZone CRUD operations"""
-    queryset = GameZone.objects.all()
-    serializer_class = GameZoneSerializer
-
-class GameZoneDetailView(generics.RetrieveUpdateDestroyAPIView):
-    """Public GameZone detail operations"""
-    queryset = GameZone.objects.all()
-    serializer_class = GameZoneSerializer
-
-class TopicListCreateView(generics.ListCreateAPIView):
-    """Public Topic CRUD operations"""
-    queryset = Topic.objects.all()
-    serializer_class = TopicSerializer
-
-class TopicDetailView(generics.RetrieveUpdateDestroyAPIView):
-    """Public Topic detail operations"""
-    queryset = Topic.objects.all()
-    serializer_class = TopicSerializer
-
-class SubtopicListCreateView(generics.ListCreateAPIView):
-    """Public Subtopic CRUD operations"""
-    queryset = Subtopic.objects.all()
-    serializer_class = SubtopicSerializer
-
-class SubtopicDetailView(generics.RetrieveUpdateDestroyAPIView):
-    """Public Subtopic detail operations"""
-    queryset = Subtopic.objects.all()
-    serializer_class = SubtopicSerializer
-
-# ==================== RELATIONSHIP VIEWS ====================
+# ==================== GETTER BY OBJECT ====================
 
 @api_view(['GET'])
 def ZoneTopicsView(request, zone_id):
@@ -167,24 +106,75 @@ def TopicSubtopicsView(request, topic_id):
 
 @api_view(['POST'])
 def upload_pdf(request):
-    """Upload and process a PDF document"""
     try:
+        from content_ingestion.helpers.toc_parser import generate_toc_entries_for_document
+        from content_ingestion.helpers.page_chunking.toc_chunk_processor import GranularChunkProcessor
+        from content_ingestion.helpers.embedding.generator import EmbeddingGenerator
+        
         serializer = DocumentSerializer(data=request.data)
         if serializer.is_valid():
             document = serializer.save()
-            logger.info(f"Document uploaded: {document.title}")
-            return Response(
-                DocumentSerializer(document).data,
-                status=status.HTTP_201_CREATED
-            )
-        return Response(
-            serializer.errors,
-            status=status.HTTP_400_BAD_REQUEST
-        )
+            document.processing_status = 'PROCESSING'
+            document.save()
+            
+            pipeline_results = {
+                'document_id': document.id,
+                'document_title': document.title,
+                'pipeline_steps': {}
+            }
+            
+            try:
+                toc_result = generate_toc_entries_for_document(document)
+                pipeline_results['pipeline_steps']['toc'] = {
+                    'status': 'success',
+                    'entries_count': len(toc_result.get('entries', []))
+                }
+            except Exception as e:
+                pipeline_results['pipeline_steps']['toc'] = {'status': 'error', 'error': str(e)}
+            
+            try:
+                processor = GranularChunkProcessor()
+                chunk_result = processor.process_entire_document(document.id)
+                pipeline_results['pipeline_steps']['chunking'] = {
+                    'status': 'success',
+                    'chunks_created': len(chunk_result.get('chunks_created', []))
+                }
+            except Exception as e:
+                pipeline_results['pipeline_steps']['chunking'] = {'status': 'error', 'error': str(e)}
+            
+            try:
+                embedding_gen = EmbeddingGenerator()
+                chunks = DocumentChunk.objects.filter(document=document)
+                if chunks.exists():
+                    embedding_result = embedding_gen.generate_batch_embeddings(chunks)
+                    pipeline_results['pipeline_steps']['embedding'] = {
+                        'status': 'success',
+                        'embeddings_created': len(embedding_result.get('embeddings', []))
+                    }
+                else:
+                    pipeline_results['pipeline_steps']['embedding'] = {'status': 'skipped', 'reason': 'no_chunks'}
+            except Exception as e:
+                pipeline_results['pipeline_steps']['embedding'] = {'status': 'error', 'error': str(e)}
+            
+            document.processing_status = 'COMPLETED'
+            document.save()
+            
+            response_data = DocumentSerializer(document).data
+            response_data['pipeline_results'] = pipeline_results
+            
+            logger.info(f"Document uploaded and processed: {document.title}")
+            return Response(response_data, status=status.HTTP_201_CREATED)
+            
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
     except Exception as e:
+        if 'document' in locals():
+            document.processing_status = 'FAILED'
+            document.save()
+        
         logger.error(f"Error uploading PDF: {str(e)}")
         return Response(
-            {'error': 'Failed to upload PDF'},
+            {'error': f'Failed to upload and process PDF: {str(e)}'},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
 
@@ -286,7 +276,6 @@ def reprocess_document(request, document_id):
         
         # Reset processing status
         document.processing_status = 'PENDING'
-        document.parsed = False
         document.parsed_pages = []
         document.save()
         
@@ -327,200 +316,5 @@ def test_pdf_chunking(request):
     except Exception as e:
         return Response(
             {'error': str(e)},
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR
-        )
-
-# ==================== STATISTICS ====================
-
-@api_view(['GET'])
-def zone_statistics(request):
-    """Get comprehensive zone statistics"""
-    try:
-        zones = GameZone.objects.annotate(
-            topic_count=Count('topics'),
-            subtopic_count=Count('topics__subtopics')
-        )
-        
-        stats = []
-        for zone in zones:
-            stats.append({
-                'id': zone.id,
-                'name': zone.name,
-                'topic_count': zone.topic_count,
-                'subtopic_count': zone.subtopic_count
-            })
-        
-        return Response({
-            'zones': stats,
-            'total_zones': zones.count()
-        })
-    except Exception as e:
-        logger.error(f"Error getting zone statistics: {str(e)}")
-        return Response(
-            {'error': 'Failed to retrieve zone statistics'},
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR
-        )
-
-@api_view(['GET'])
-def topic_statistics(request):
-    """Get comprehensive topic statistics"""
-    try:
-        topics = Topic.objects.annotate(
-            subtopic_count=Count('subtopics')
-        )
-        
-        stats = []
-        for topic in topics:
-            stats.append({
-                'id': topic.id,
-                'name': topic.name,
-                'zone': topic.zone.name if topic.zone else 'No Zone',
-                'subtopic_count': topic.subtopic_count
-            })
-        
-        return Response({
-            'topics': stats,
-            'total_topics': topics.count()
-        })
-    except Exception as e:
-        logger.error(f"Error getting topic statistics: {str(e)}")
-        return Response(
-            {'error': 'Failed to retrieve topic statistics'},
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR
-        )
-
-@api_view(['GET'])
-def subtopic_statistics(request):
-    """Get comprehensive subtopic statistics"""
-    try:
-        subtopics = Subtopic.objects.select_related('topic', 'topic__zone')
-        
-        stats = []
-        for subtopic in subtopics:
-            stats.append({
-                'id': subtopic.id,
-                'name': subtopic.name,
-                'topic': subtopic.topic.name if subtopic.topic else 'No Topic',
-                'zone': subtopic.topic.zone.name if subtopic.topic and subtopic.topic.zone else 'No Zone'
-            })
-        
-        return Response({
-            'subtopics': stats,
-            'total_subtopics': subtopics.count()
-        })
-    except Exception as e:
-        logger.error(f"Error getting subtopic statistics: {str(e)}")
-        return Response(
-            {'error': 'Failed to retrieve subtopic statistics'},
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR
-        )
-
-# ==================== BULK OPERATIONS ====================
-
-@api_view(['POST'])
-def bulk_create_subtopics(request):
-    """Create multiple subtopics at once"""
-    try:
-        subtopics_data = request.data.get('subtopics', [])
-        if not subtopics_data:
-            return Response(
-                {'error': 'No subtopics data provided'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        
-        created_subtopics = []
-        with transaction.atomic():
-            for subtopic_data in subtopics_data:
-                serializer = SubtopicSerializer(data=subtopic_data)
-                if serializer.is_valid():
-                    subtopic = serializer.save()
-                    created_subtopics.append(subtopic)
-                else:
-                    return Response(
-                        {'error': f'Invalid subtopic data: {serializer.errors}'},
-                        status=status.HTTP_400_BAD_REQUEST
-                    )
-        
-        response_data = SubtopicSerializer(created_subtopics, many=True).data
-        return Response(
-            {
-                'message': f'Successfully created {len(created_subtopics)} subtopics',
-                'subtopics': response_data
-            },
-            status=status.HTTP_201_CREATED
-        )
-    except Exception as e:
-        logger.error(f"Error in bulk_create_subtopics: {str(e)}")
-        return Response(
-            {'error': 'Failed to create subtopics'},
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR
-        )
-
-@api_view(['POST'])
-def bulk_unlock_zones(request):
-    """Unlock multiple zones at once"""
-    try:
-        zone_ids = request.data.get('zone_ids', [])
-        if not zone_ids:
-            return Response(
-                {'error': 'No zone IDs provided'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        
-        updated_zones = GameZone.objects.filter(id__in=zone_ids).update(
-            unlocked=True
-        )
-        
-        return Response(
-            {
-                'message': f'Successfully unlocked {updated_zones} zones',
-                'unlocked_count': updated_zones
-            },
-            status=status.HTTP_200_OK
-        )
-    except Exception as e:
-        logger.error(f"Error in bulk_unlock_zones: {str(e)}")
-        return Response(
-            {'error': 'Failed to unlock zones'},
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR
-        )
-
-# ==================== ADMIN OVERVIEW ====================
-
-@api_view(['GET'])
-def pdf_management_overview(request):
-    """Get comprehensive PDF management overview"""
-    try:
-        documents = UploadedDocument.objects.all()
-        
-        # Calculate statistics
-        total_documents = documents.count()
-        processed_documents = documents.filter(parsed=True).count()
-        pending_documents = documents.filter(processing_status='PENDING').count()
-        
-        # Get processing status breakdown
-        status_breakdown = {}
-        for status_choice in ['PENDING', 'PROCESSING', 'COMPLETED', 'FAILED']:
-            count = documents.filter(processing_status=status_choice).count()
-            status_breakdown[status_choice.lower()] = count
-        
-        # Get recent documents
-        recent_documents = documents.order_by('-id')[:10]
-        recent_docs_data = DocumentSerializer(recent_documents, many=True).data
-        
-        return Response({
-            'overview': {
-                'total_documents': total_documents,
-                'processed_documents': processed_documents,
-                'pending_documents': pending_documents,
-                'processing_rate': (processed_documents / total_documents * 100) if total_documents > 0 else 0
-            },
-            'status_breakdown': status_breakdown,
-            'recent_documents': recent_docs_data
-        })
-    except Exception as e:
-        logger.error(f"Error in pdf_management_overview: {str(e)}")
-        return Response(
-            {'error': 'Failed to retrieve PDF management overview'},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )

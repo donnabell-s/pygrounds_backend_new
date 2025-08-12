@@ -1,25 +1,7 @@
-"""
-DeepSeek Prompt Templates for Question Gen⚠️ RULES:
-- ❌ Do NOT use vague phrases like "Write a function that…"
-- ❌ No external libraries, randomness, or file I/O
-- ❌ No multi-function or multi-step problems
-- ✅ `buggy_question_text` must NEVER be empty - always describe what's wrong
-- ✅ All questions involve debugging buggy code
-- ✅ `buggy_question_text` should describe symptoms/behavior, not solutions
-
-✅ REQUIRED FIELDS (ALL 6):
-
-This module contains all prompt templates used for generating different types of questions
-through the DeepSeek LLM. It provides game-type specific prompts for coding, non-coding,
-and pre-assessment questions with proper JSON formatting and field specifications.
-"""
-
-
 class DeepSeekPromptManager:
-    """Manages prompt templates for different question generation types."""
-    
+
     def get_prompt_for_minigame(self, game_type, context):
-        """Get appropriate prompt based on game type."""
+     
         if game_type == 'coding':
             return self.get_coding_prompt(context)
         elif game_type == 'non_coding':
@@ -30,149 +12,148 @@ class DeepSeekPromptManager:
             raise ValueError(f"Unknown game_type: {game_type}")
 
     def get_coding_prompt(self, context):
-      """Generate creative, real-world, and testable Python coding challenges."""
       return f"""
-You are a senior Python challenge architect. Use the RAG context below to generate compact, real-world-inspired Python tasks that develop **precise programming logic**.
+          OUTPUT ONLY VALID JSON. DO NOT add explanations, markdown, or backticks.
 
-📚 CONTEXT:
-{context['rag_context']}
+          ROLE: Senior Python challenge architect.
 
-TOPIC: {context['subtopic_name']}
-DIFFICULTY: {context['difficulty']}
+          RAG_CONTEXT (use only what is relevant; ignore the rest if noisy):
+          <<<
+          {context['rag_context']}
+          >>>
 
-🎯 OBJECTIVE:
-Generate exactly {context['num_questions']} Python coding problems in strict **JSON format**.
+          TOPIC: {context['subtopic_name']}
+          DIFFICULTY: {context['difficulty']}
+          NUM_QUESTIONS: {context['num_questions']}
 
-Each challenge must:
-- Reflect a single logical task or small bug fix
-- Be realistic, focused, and clearly testable
-- Include **all required fields** — no missing or null values
-- Use a concise `question_text` (≤ 12 words) with action verbs like: Build, Format, Extract, Fix, Sort, Assemble, Transform in real world context
+          GOAL:
+          Generate {context['num_questions']} compact, real-world Python debugging tasks.
 
-⚠️ RULES:
-- Do NOT use vague phrases like “Write a function that…”
-- Avoid external libraries, file I/O, randomness, or multi-part tasks
-- `buggy_code` must ALWAYS be present AND THE SOLUTION MUST BE THE field `sample_output` and `sample_input`
-- `buggy_question_text` must ALWAYS describe **observable behavior** (e.g., “The result is always reversed”, “Only the first name prints”) — never reveal the fix.
+          HARD RULES:
+          - All questions are about **fixing a single bug** in short code.
+          - No external libraries, no randomness, no file I/O, no multi-part tasks.
+          - `question_text` ≤ 12 words; start with an action verb (Build, Fix, Sort, Extract, Format, Transform).
+          - `buggy_question_text` **must describe symptoms** (observable behavior), not the fix, and must NOT be empty.
+          - Always include `buggy_code` (≤ 20 lines).
+          - The **intended correct behavior** must be inferable from `sample_input` + `sample_output`.
+          - Use **snake_case** for `function_name`.
+          - Hidden tests must be structured objects, not free text.
 
+          OUTPUT SCHEMA (array of length = NUM_QUESTIONS):
+          [
+            {{
+              "question_text": "<≤12 words>",
+              "buggy_question_text": "<symptom-only, 8–20 words>",
+              "function_name": "<snake_case>",
+              "sample_input": "<Python-literal tuple, e.g., (3,) or ([1,2], 'x')>",
+              "sample_output": "<Python-literal or newline-joined string>",
+              "hidden_tests": [
+                {{"input": "(2,)", "expected_output": "'2\\n1'"}},
+                {{"input": "(1,)", "expected_output": "'1'"}}
+              ],
+              "buggy_code": "def fn(...):\\n    ...",
+              "difficulty": "{context['difficulty']}"
+            }}
+          ]
 
-📦 REQUIRED FIELDS (all must be filled):
-```json
-[
-  {{
-    "question_text": "Count down from n to 1",
-    "buggy_question_text": "The numbers keep getting bigger instead of smaller",
-    "function_name": "countdown",
-    "sample_input": "(3,)",
-    "sample_output": "3\\n2\\n1",
-    "hidden_tests": ["(2,),output:'2\\n1'", "(1,),output:'1'"],
-    "buggy_code": "def countdown(n):\\n    while n > 0:\\n        print(n)\\n        n = n + 1",
-    "difficulty": "{context['difficulty']}"
-  }},
-  {{
-    "question_text": "Extract initials from a full name",
-    "buggy_question_text": "Only the first letter shows up instead of the full name",
-    "function_name": "get_initials",
-    "sample_input": "('John Doe',)",
-    "sample_output": "'JD'",
-    "hidden_tests": ["('Alice Smith',),output:'AS'", "('Bob Marley',),output:'BM'"],
-    "buggy_code": "def get_initials(name):\\n    parts = name.split()\\n    return parts[0][0]",
-    "difficulty": "{context['difficulty']}"
-  }},
-  {{
-    "question_text": "Calculate sum of positive numbers only",
-    "buggy_question_text": "Negative numbers are being included in the total instead of positive numbers only",
-    "function_name": "sum_positives",
-    "sample_input": "([1, -2, 3, -4, 5],)",
-    "sample_output": "9",
-    "hidden_tests": ["([-1, -2],),output:0", "([10, -5, 15],),output:25"],
-    "buggy_code": "def sum_positives(nums):\\n    total = 0\\n    for num in nums:\\n        total += num\\n    return total",
-    "difficulty": "{context['difficulty']}"
-  }}
-]
+          VALIDATION HINTS:
+          - Keep total JSON under ~1200 tokens.
+          - Prefer small, testable tasks (string ops, loops, indexing, conditionals, formatting).
+          - Avoid trick questions and avoid relying on undefined globals.
 
-```"""
+          RETURN: Only the JSON array.
+"""
+
 
     def get_non_coding_prompt(self, context):
-          """Generate concise,unique, creative, concept-focused Python quiz prompts."""
-          return f"""
-      You are a Python quiz creator. Use the RAG context below to generate creative and compact concept-based questions.
+      return f"""
+OUTPUT ONLY VALID JSON. DO NOT add explanations, markdown, or backticks.
 
-      CONTEXT: {context['rag_context']}
-      SUBTOPIC: {context['subtopic_name']}  # May include multiple subtopics
-      DIFFICULTY: {context['difficulty']}
+ROLE: Python concept quiz creator.
 
-      TASK:
-      Generate {context['num_questions']} concise quiz questions for concept recall.
+RAG_CONTEXT (use only salient facts; ignore noise):
+<<<
+{context['rag_context']}
+>>>
 
-      🚫 RESTRICTIONS:
-      - No True/False questions (unless about `True`, `False`, or `bool`)
-      - No code blocks, full code, or symbols (e.g., `==`, `+`, `:`)
-      - No vague, subjective, or overly theoretical prompts
+SUBTOPIC(S): {context['subtopic_name']}
+DIFFICULTY: {context['difficulty']}
+NUM_QUESTIONS: {context['num_questions']}
 
-      ✅ REQUIREMENTS:
-          Answers must use only letters (a–z, A–Z); no symbols or numbers
-          Spaces are allowed, but total length including spaces must be ≤13 characters
-          Use concept keywords or compound terms (e.g., "list comprehension", "global variable")
-          If multiple subtopics are involved, combine them into an integrated concept
-          Use clear action verbs in questions: Identify, Spot, Predict, Choose, Select, etc.
-      🎯 GOAL:
-      Test conceptual understanding across syntax and behavior — make it game-friendly (crossword/word search).
+TASK:
+Create {context['num_questions']} concise concept-recall items for a crossword/word-search game.
 
-      📦 FORMAT (JSON):
-      ```json
-      [
-        {{
-          "question_text": "Which keyword exits a loop early?",
-          "answer": "break",
-          "difficulty": "{context['difficulty']}"
-        }},
-        {{
-          "question_text": "What keyword sends a value from a function?",
-          "answer": "return",
-          "difficulty": "{context['difficulty']}"
-        }}
-      ]
+QUALITY RULES:
+- Each question must target ONE **specific Python concept term** that appears or is strictly implied in RAG_CONTEXT.
+- Avoid trivial universals (e.g., “write clean code”, “use comments wisely”).
+- No True/False (unless concept is literally True/False/bool).
+- No code blocks or symbols anywhere (letters/spaces only).
+- Answers must be a **single term** (one token when split on spaces), 4–13 characters, letters only.
+- Answers must be **domain-specific** (e.g., “docstring”, “idempotent”, “immutability”, “generator”), not generic (“code”, “variable”, “python”, “function”).
+- Use action verbs in questions: Identify, Choose, Select, Spot, Predict, Name.
+- If multiple subtopics are present, integrate meaningfully (but still one-term answer).
 
-      ```"""
+AVOID THESE STEM PATTERNS:
+- “What should X avoid?”
+- “Best practice for comments?”
+- “Why is X important?”
+
+INSTEAD USE:
+- “Identify the term for …”
+- “Select the keyword that …”
+- “Name the concept describing …”
+- “Spot the feature that …”
+
+OUTPUT SCHEMA (array length = NUM_QUESTIONS):
+[
+  {{
+    "question_text": "<short, unambiguous question (≤18 words, letters/spaces only)>",
+    "answer": "<single domain term, 4–13 letters>",
+    "difficulty": "{context['difficulty']}",
+    }}
+]
+VALIDATION HINTS:
+- If the best possible answer is too generic, choose a more specific, technical term from RAG_CONTEXT.
+- Prefer concrete glossary-like targets (e.g., “docstring”, “sentinel”, “ducktyping”, “mutability”, “shortcircuit”).
+- Keep JSON compact. Return only the JSON array.
+"""
+
 
 
 
     def get_pre_assessment_prompt(self, context):
-              """Generate comprehensive pre-assessment prompts covering all topics."""
-              return f"""
-      You are creating a comprehensive pre-assessment for Python learners.
+      return f"""
+OUTPUT ONLY VALID JSON. DO NOT add explanations, markdown, or backticks.
 
-      TOPICS AND SUBTOPICS TO COVER:
-      {context['topics_and_subtopics']}
+ROLE: Assessment designer.
 
-      Generate exactly {context['num_questions']} questions that cover every listed subtopic.
+COVER THESE EXACT SUBTOPICS:
+<<<
+{context['topics_and_subtopics']}
+>>>
 
-      REQUIREMENTS:
-      - Use exact subtopic names from the list in subtopics_covered
-      - Mix conceptual and practical questions across difficulty levels
-      - Ensure integrated understanding by covering multiple subtopics when possible
+NUM_QUESTIONS: {context['num_questions']}
 
-      OUTPUT FORMAT:
-      Return a JSON array where each question has:
-      - question_text
-      - choices: array of 4 strings
-      - correct_answer: one of the choices
-      - subtopics_covered: list of exact names
-      - difficulty
+REQUIREMENTS:
+- Cover every listed subtopic at least once across the set.
+- Mix conceptual and practical items; keep stems clear and brief.
+- Choices must be concise; one unambiguous correct answer.
+- Use exact subtopic names in `subtopics_covered`.
 
-      Example:
-      ```json
-      [
-        {{
-          "question_text": "What immutable sequence type uses parentheses?",
-          "choices": ["list","tuple","set","dict"],
-          "correct_answer": "tuple",
-          "subtopics_covered": ["Tuples and Their Immutability"],
-          "difficulty": "beginner"
-        }}
-      ]
-      ```"""
+OUTPUT SCHEMA:
+[
+  {{
+    "question_text": "<≤20 words>",
+    "choices": ["<opt1>", "<opt2>", "<opt3>", "<opt4>"],
+    "correct_answer": "<must match one of choices>",
+    "subtopics_covered": ["<exact subtopic name>", "..."],
+    "difficulty": "beginner|intermediate|advanced"
+  }}
+]
+
+RETURN: Only the JSON array.
+"""
+
 
 # Global instance
 deepseek_prompt_manager = DeepSeekPromptManager()

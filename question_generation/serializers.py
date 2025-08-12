@@ -1,0 +1,81 @@
+from rest_framework import serializers
+from .models import GeneratedQuestion, PreAssessmentQuestion, SemanticSubtopic
+from content_ingestion.models import Topic, Subtopic
+
+
+class GeneratedQuestionSerializer(serializers.ModelSerializer):
+    topic_name = serializers.SerializerMethodField()
+    subtopic_name = serializers.SerializerMethodField()
+    zone_name = serializers.SerializerMethodField()
+    created_at = serializers.DateTimeField(read_only=True)
+    
+    class Meta:
+        model = GeneratedQuestion
+        fields = [
+            'id', 'topic', 'subtopic', 'topic_name', 'subtopic_name', 'zone_name',
+            'question_text', 'correct_answer', 'estimated_difficulty', 'game_type',
+            'game_data', 'validation_status', 'created_at'
+        ]
+        read_only_fields = ['id', 'created_at']
+    
+    def get_topic_name(self, obj):
+        return obj.topic.name
+    
+    def get_subtopic_name(self, obj):
+        return obj.subtopic.name
+    
+    def get_zone_name(self, obj):
+        return obj.topic.zone.name
+
+
+class PreAssessmentQuestionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PreAssessmentQuestion
+        fields = [
+            'id', 'topic_ids', 'subtopic_ids', 'question_text', 'answer_options',
+            'correct_answer', 'estimated_difficulty', 'created_at', 'updated_at'
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at']
+
+
+class QuestionSummarySerializer(serializers.ModelSerializer):
+    """Lightweight serializer for question lists"""
+    topic_name = serializers.SerializerMethodField()
+    subtopic_name = serializers.SerializerMethodField()
+    question_preview = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = GeneratedQuestion
+        fields = [
+            'id', 'topic_name', 'subtopic_name', 'question_preview',
+            'estimated_difficulty', 'game_type', 'validation_status'
+        ]
+    
+    def get_topic_name(self, obj):
+        return obj.topic.name
+    
+    def get_subtopic_name(self, obj):
+        return obj.subtopic.name
+    
+    def get_question_preview(self, obj):
+        return obj.question_text[:100] + "..." if len(obj.question_text) > 100 else obj.question_text
+
+
+class SemanticSubtopicSerializer(serializers.ModelSerializer):
+    subtopic_name = serializers.SerializerMethodField()
+    topic_name = serializers.SerializerMethodField()
+    chunks_count = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = SemanticSubtopic
+        fields = ['id', 'subtopic', 'subtopic_name', 'topic_name', 'ranked_chunks', 'chunks_count', 'updated_at']
+        read_only_fields = ['id', 'updated_at']
+    
+    def get_subtopic_name(self, obj):
+        return obj.subtopic.name
+    
+    def get_topic_name(self, obj):
+        return obj.subtopic.topic.name
+    
+    def get_chunks_count(self, obj):
+        return len(obj.ranked_chunks) if obj.ranked_chunks else 0

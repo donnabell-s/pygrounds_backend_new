@@ -9,6 +9,10 @@ logger = logging.getLogger(__name__)
 DEEPSEEK_API_KEY = os.environ.get("DEEPSEEK_API_KEY")
 DEEPSEEK_BASE_URL = os.environ.get("DEEPSEEK_API_URL")
 
+# Temperature settings for different question types
+CODING_TEMPERATURE = 0.0    # Very deterministic for coding questions
+NON_CODING_TEMPERATURE = 0.5  # More creative for non-coding questions
+
 
 client = OpenAI(
     api_key=DEEPSEEK_API_KEY,

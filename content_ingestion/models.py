@@ -2,7 +2,6 @@ from django.db import models
 from django.contrib.postgres.fields import ArrayField
 from django.db.models import JSONField
 
-# Difficulty choices for documents and subtopics
 DIFFICULTY_CHOICES = [
     ('beginner', 'Beginner'),
     ('intermediate', 'Intermediate'),
@@ -18,12 +17,6 @@ CHUNK_TYPE_CHOICES = [
     ('Example', 'Example'),
 ]
 
-MATCH_STATUS_CHOICES = [
-    ('unmatched', 'Unmatched'),
-    ('matched', 'Matched'),
-    ('ignored', 'Ignored'),
-]
-
 PROCESSING_STATUS = [
     ('PENDING', 'Pending'),
     ('PROCESSING', 'Processing'),
@@ -33,19 +26,14 @@ PROCESSING_STATUS = [
 
 
 class UploadedDocument(models.Model):
-    """
-    Represents an uploaded PDF with parsing metadata and difficulty level.
-    """
     title = models.CharField(max_length=255)
     file = models.FileField(upload_to='pdfs/')
 
-    # Parsing state
     processing_status = models.CharField(
         max_length=20,
         choices=PROCESSING_STATUS,
         default='PENDING',
     )
-    parsed = models.BooleanField(default=False)
     parsed_pages = ArrayField(
         base_field=models.IntegerField(),
         default=list,
@@ -54,11 +42,10 @@ class UploadedDocument(models.Model):
     )
     total_pages = models.IntegerField(default=0)
 
-    # Document difficulty
     difficulty = models.CharField(
         max_length=20,
         choices=DIFFICULTY_CHOICES,
-        default='intermediate',
+        default='beginner',
         help_text='Content difficulty level'
     )
 
@@ -82,28 +69,12 @@ class DocumentChunk(models.Model):
     page_number = models.IntegerField()
     order_in_doc = models.IntegerField()
 
-    # Classification
-    topic_title = models.CharField(max_length=255, blank=True, null=True)
+    # Classification - keeping the hierarchy structure but removing redundant topic_title
     subtopic_title = models.CharField(max_length=255, blank=True, null=True)
-    sub_subtopic_title = models.CharField(max_length=255, blank=True, null=True, help_text='Third level nesting (optional, only when detected in TOC)')
-    sub_sub_subtopic_title = models.CharField(max_length=255, blank=True, null=True, help_text='Fourth level nesting (optional, for expert-level PDFs with deep hierarchy)')
 
-    # Token info for LLM optimization
+    # Token info for LLM optimization - simplified to just count
     token_count = models.IntegerField(blank=True, null=True)
-    token_encoding = models.CharField(
-        max_length=50,
-        default='cl100k_base',
-        blank=True,
-    )
-    parser_metadata = JSONField(default=dict, blank=True)
-    
-    # Semantic matching status
-    match_status = models.CharField(
-        max_length=20,
-        choices=MATCH_STATUS_CHOICES,
-        default='unmatched',
-        help_text='Status for semantic similarity matching - can be used to ignore already processed chunks'
-    )
+    parser_metadata = JSONField(default=dict, blank=True, help_text='Stores book title, extraction method, and other processing metadata')
 
     # Note: Embeddings are now stored in separate Embedding model for better organization
 
@@ -116,9 +87,6 @@ class DocumentChunk(models.Model):
 
 
 class TOCEntry(models.Model):
-    """
-    Table of Contents entries that map to ranges of pages and chunk status.
-    """
     document = models.ForeignKey(UploadedDocument, on_delete=models.CASCADE)
     parent = models.ForeignKey(
         'self', null=True, blank=True,
@@ -149,9 +117,7 @@ class TOCEntry(models.Model):
 
 
 class GameZone(models.Model):
-    """
-    A progression zone (e.g. Python Basics) that contains Topics.
-    """
+
     name = models.CharField(max_length=100)
     description = models.TextField()
     order = models.IntegerField(unique=True)
@@ -165,9 +131,7 @@ class GameZone(models.Model):
 
 
 class Topic(models.Model):
-    """
-    A programming topic within a GameZone; container for Subtopics.
-    """
+
     zone = models.ForeignKey(GameZone, on_delete=models.CASCADE, related_name='topics')
     name = models.CharField(max_length=100)
     description = models.TextField()
@@ -180,9 +144,6 @@ class Topic(models.Model):
 
 
 class Subtopic(models.Model):
-    """
-    A specific concept within a Topic for which exercises are generated.
-    """
     topic = models.ForeignKey(Topic, on_delete=models.CASCADE, related_name='subtopics')
     name = models.CharField(max_length=100)
 
@@ -194,10 +155,7 @@ class Subtopic(models.Model):
 
 
 class Embedding(models.Model):
-    """
-    Stores high‑dimensional embeddings for DocumentChunks or Subtopics, 
-    allowing multiple versions/models per entity.
-    """
+
     document_chunk = models.ForeignKey(
         DocumentChunk, null=True, blank=True,
         on_delete=models.CASCADE, related_name='embeddings'
@@ -208,17 +166,31 @@ class Embedding(models.Model):
     )
     vector = ArrayField(
         base_field=models.FloatField(),
-        size=384,
-        help_text='Embedding vector'
+        size=768,  # Increased to support CodeBERT (768) and Sentence Transformers (384)
+        help_text='Embedding vector - dimension depends on model used'
+    )
+    model_name = models.CharField(
+        max_length=100,
+        default='all-MiniLM-L6-v2',
+        help_text='Name of the embedding model used (e.g., codebert-base, all-MiniLM-L6-v2)'
+    )
+    model_type = models.CharField(
+        max_length=50,
+        default='sentence',
+        help_text='Type of model: code_bert, sentence, general'
+    )
+    dimension = models.IntegerField(
+        default=384,
+        help_text='Actual dimension of the embedding vector'
     )
     embedded_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         unique_together = [
-            ('document_chunk',),
-            ('subtopic',),
+            ('document_chunk', 'model_type'),  # Allow multiple models per chunk
+            ('subtopic', 'model_type'),
         ]
 
     def __str__(self):
         target = self.document_chunk or self.subtopic
-        return f"Embedding for {target}"
+        return f"Embedding for {target} ({self.model_type}, {self.dimension}d)"
