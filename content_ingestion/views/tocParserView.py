@@ -3,7 +3,7 @@ PDF Table of Contents (TOC) extraction API views.
 """
 
 from .imports import *
-from content_ingestion.helpers.json_export_utils import log_toc_generation
+from content_ingestion.helpers.utils.stubs import log_toc_generation
 import json
 from pathlib import Path
 from django.utils import timezone

@@ -3,7 +3,7 @@ Page chunking and CRUD operations for document chunks.
 """
 
 from .imports import *
-from content_ingestion.helpers.json_export_utils import log_chunk_processing
+from content_ingestion.helpers.utils.stubs import log_chunk_processing
 import PyPDF2
 import io
 from django.utils import timezone
@@ -137,7 +137,7 @@ class UploadAndProcessPipelineView(APIView):
             # Step 4: Embedding generation (automatic)
             print("\n🔗 STEP 4: EMBEDDING GENERATION")
             try:
-                from content_ingestion.helpers.embedding_utils import EmbeddingGenerator
+                from content_ingestion.helpers.embedding import EmbeddingGenerator
                 from content_ingestion.models import Embedding
                 
                 embedding_generator = EmbeddingGenerator()
@@ -278,7 +278,7 @@ class CompleteDocumentPipelineView(APIView):
             if include_embeddings:
                 print("\n🔮 STEP 3: EMBEDDINGS")
                 try:
-                    from content_ingestion.helpers.embedding_utils import EmbeddingGenerator
+                    from content_ingestion.helpers.embedding import EmbeddingGenerator
                     embedding_generator = EmbeddingGenerator()
                     chunks = DocumentChunk.objects.filter(document=document)
                     to_embed = chunks.filter(embeddings__isnull=True)
@@ -381,8 +381,7 @@ class ChunkAllPagesView(APIView):
                     'page_number': chunk.page_number,
                     'order_in_doc': chunk.order_in_doc,
                     'token_count': chunk.token_count,
-                    'topic_title': chunk.topic_title,
-                    'subtopic_title': chunk.subtopic_title,
+                    'topic_title': chunk.subtopic_title,
                     'has_embedding': has_embedding,
                     'embedding_vector': embedding_vector,
                     'embedding_dimensions': embedding_dimensions
@@ -441,18 +440,18 @@ def get_document_chunks(request, document_id):
             tokens = chunk.token_count or 0
             total_tokens += tokens
             chunk_type_counts[chunk.chunk_type] = chunk_type_counts.get(chunk.chunk_type, 0) + 1
+            book_title = chunk.parser_metadata.get('book_title', '')
             chunks_data.append({
                 'id': chunk.id,
                 'text': chunk.text,
                 'chunk_type': chunk.chunk_type,
-                'topic_title': chunk.topic_title,
-                'subtopic_title': chunk.subtopic_title,
+                'topic_title': chunk.subtopic_title,
+                'book_title': book_title,
                 'difficulty': '',
                 'page_number': chunk.page_number,
                 'order_in_doc': chunk.order_in_doc,
                 'token_count': tokens,
-                'token_encoding': chunk.token_encoding
-            })
+                            })
         return Response({
             'status': 'success',
             'document_title': document.title,
@@ -496,11 +495,9 @@ def get_single_chunk(request, chunk_id):
             'text': chunk.text,
             'page_number': chunk.page_number,
             'order_in_doc': chunk.order_in_doc,
-            'topic_title': chunk.topic_title,
-            'subtopic_title': chunk.subtopic_title,
+            'topic_title': chunk.subtopic_title,
             'token_count': chunk.token_count,
-            'token_encoding': chunk.token_encoding,
-            'confidence_score': chunk.confidence_score,
+                        'confidence_score': chunk.confidence_score,
             'parser_metadata': chunk.parser_metadata,
             'has_embedding': has_embedding,
             'embedding_model': embedding_model,
@@ -602,8 +599,7 @@ def get_chunks_by_type(request, document_id, chunk_type):
                 'chunk_type': chunk.chunk_type,
                 'page_number': chunk.page_number,
                 'order_in_doc': chunk.order_in_doc,
-                'topic_title': chunk.topic_title,
-                'subtopic_title': chunk.subtopic_title,
+                'topic_title': chunk.subtopic_title,
                 'has_embedding': has_embedding,
                 'text_length': len(chunk.text)
             })
@@ -650,17 +646,16 @@ def get_coding_chunks_for_minigames(request, document_id):
                 'chunk_type': chunk.chunk_type,
                 'page_number': chunk.page_number,
                 'order_in_doc': chunk.order_in_doc,
-                'topic_title': chunk.topic_title,
-                'subtopic_title': chunk.subtopic_title,
+                'topic_title': chunk.subtopic_title,
                 'has_embedding': bool(chunk.embeddings.first()),
                 'text_length': len(chunk.text),
                 'token_count': getattr(chunk, 'token_count', 0)
             }
             if semantic_context:
                 try:
-                    from content_ingestion.helpers.coding_rag_utils import create_coding_context_for_embedding, extract_programming_concepts
+                    from content_ingestion.helpers.utils.stubs import create_coding_context_for_embedding, extract_programming_concepts
                     chunk_data['enhanced_context'] = create_coding_context_for_embedding(
-                        chunk.text, chunk.chunk_type, chunk.topic_title or "", chunk.subtopic_title or ""
+                        chunk.text, chunk.chunk_type, chunk.subtopic_title or ""
                     )
                     chunk_data['programming_concepts'] = extract_programming_concepts(chunk.text)
                     chunk_data['semantic_ready'] = True
@@ -668,10 +663,9 @@ def get_coding_chunks_for_minigames(request, document_id):
                 except ImportError:
                     chunk_data['semantic_ready'] = False
                     chunk_data['enhanced_context'] = f"{chunk.chunk_type}: {chunk.text}"
-            if include_context and (chunk.topic_title or chunk.subtopic_title):
+            if include_context and chunk.subtopic_title:
                 ctx = []
-                if chunk.topic_title: ctx.append(f"Topic: {chunk.topic_title}")
-                if chunk.subtopic_title: ctx.append(f"Subtopic: {chunk.subtopic_title}")
+                if chunk.subtopic_title: ctx.append(f"Topic: {chunk.subtopic_title}")
                 chunk_data['learning_context'] = " | ".join(ctx)
             coding_chunks.append(chunk_data)
 
@@ -844,7 +838,7 @@ class CompleteSemanticPipelineView(APIView):
             # Step 4: Ensure subtopic embeddings exist (prerequisite for semantic analysis)
             print("\n🎯 STEP 4: SUBTOPIC EMBEDDINGS")
             try:
-                from content_ingestion.views.topicEmbeddingView import generate_subtopic_embeddings
+                from content_ingestion.views.embeddingViews import generate_subtopic_embeddings
                 from content_ingestion.models import Subtopic
                 
                 # Count subtopics without embeddings
@@ -883,7 +877,7 @@ class CompleteSemanticPipelineView(APIView):
             # Step 5: Semantic Analysis - Compare chunks with subtopics
             print("\n🔍 STEP 5: SEMANTIC ANALYSIS")
             try:
-                from question_generation.helpers.semantic_analysis import SemanticAnalyzer
+                from question_generation.helpers.semantic_analyzer import SemanticAnalyzer
                 
                 analyzer = SemanticAnalyzer()
                 semantic_result = analyzer.populate_semantic_subtopics(reanalyze=True)
