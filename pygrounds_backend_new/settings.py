@@ -52,12 +52,8 @@ INSTALLED_APPS = [
     'content_ingestion',
     'question_generation',
     'user_learning',
-<<<<<<< HEAD
-    'minigames',
-    'analytics',
-=======
     'reading',
->>>>>>> 3f56b0f (completed seeding of Introduction to Python topic)
+    'django_filters',
 ]
 
 MIDDLEWARE = [
@@ -77,9 +73,13 @@ CORS_ALLOWED_ORIGINS = [
 ]
 
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
-    ),
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE": 10,
+    "DEFAULT_FILTER_BACKENDS": [
+        "django_filters.rest_framework.DjangoFilterBackend",
+        "rest_framework.filters.SearchFilter",
+        "rest_framework.filters.OrderingFilter",
+    ],
 }
 
 SIMPLE_JWT = {
