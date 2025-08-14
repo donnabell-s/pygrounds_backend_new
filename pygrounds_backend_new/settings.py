@@ -53,7 +53,10 @@ INSTALLED_APPS = [
     'question_generation',
     'user_learning',
     'reading',
+<<<<<<< HEAD
     'django_filters',
+=======
+>>>>>>> origin/reading-material
 ]
 
 MIDDLEWARE = [

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 from django.db.models.functions import Coalesce
 from django.db.models import IntegerField, Value
 from rest_framework import viewsets, filters
@@ -89,3 +90,8 @@ class TopicViewSet(viewsets.ViewSet):
             .order_by("topic")
         )
         return Response(list(topics))
+=======
+from django.shortcuts import render
+
+# Create your views here.
+>>>>>>> origin/reading-material
