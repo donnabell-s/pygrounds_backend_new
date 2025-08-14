@@ -49,11 +49,12 @@ INSTALLED_APPS = [
     'corsheaders',
     'rest_framework_simplejwt',
     'users',
-    'content_ingestion',
-    'question_generation',
+    #'content_ingestion',
+    #'question_generation',
     'user_learning',
     'reading',
     'django_filters',
+    #'minigames',
 ]
 
 MIDDLEWARE = [
