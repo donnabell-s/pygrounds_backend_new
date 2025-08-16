@@ -10,73 +10,127 @@ from ..helpers.helper_imports import *
 def embed_document_chunks(request, document_id):
     """
     Generate embeddings for all document chunks for RAG retrieval.
+    Uses dual embedding system: Concept chunks -> MiniLM, others -> CodeBERT.
     """
     try:
         from content_ingestion.helpers.embedding import EmbeddingGenerator
-        from content_ingestion.models import DocumentChunk
+        from content_ingestion.models import DocumentChunk, Embedding
 
         document = get_object_or_404(UploadedDocument, id=document_id)
 
         all_chunks = DocumentChunk.objects.filter(document=document)
-        chunks_to_embed = all_chunks.filter(embeddings__isnull=True)
-        already_embedded = all_chunks.filter(embeddings__isnull=False)
+        
+        # Check for existing embeddings in the new vector fields
+        chunks_with_embeddings = []
+        chunks_to_embed = []
+        
+        for chunk in all_chunks:
+            has_minilm = Embedding.objects.filter(
+                document_chunk=chunk, 
+                content_type='chunk',
+                minilm_vector__isnull=False
+            ).exists()
+            has_codebert = Embedding.objects.filter(
+                document_chunk=chunk, 
+                content_type='chunk',
+                codebert_vector__isnull=False
+            ).exists()
+            
+            # Chunk needs embedding if it doesn't have the appropriate vector for its type
+            if chunk.chunk_type == 'Concept':
+                if not has_minilm:
+                    chunks_to_embed.append(chunk)
+                else:
+                    chunks_with_embeddings.append(chunk)
+            else:
+                if not has_codebert:
+                    chunks_to_embed.append(chunk)
+                else:
+                    chunks_with_embeddings.append(chunk)
 
-        if not chunks_to_embed.exists():
+        if not chunks_to_embed:
             return Response({
                 'status': 'success',
-                'message': 'All chunks already have embeddings',
+                'message': 'All chunks already have appropriate embeddings',
                 'document_id': document.id,
                 'document_title': document.title,
                 'embedding_stats': {
                     'total_chunks': all_chunks.count(),
-                    'already_embedded': already_embedded.count(),
+                    'already_embedded': len(chunks_with_embeddings),
                     'newly_embedded': 0,
                     'failed': 0
                 }
             })
 
+        print(f"📝 Found {len(chunks_to_embed)} chunks to embed")
+        
+        # Generate embeddings using the updated generator
         embedding_generator = EmbeddingGenerator()
-        embedding_results = embedding_generator.embed_chunks_batch(chunks_to_embed)
+        embedding_results = embedding_generator.embed_and_save_batch(chunks_to_embed)
 
+        # Log chunk embedding status with new vector fields
         chunk_logs = []
         for chunk in all_chunks:
-            embedding_obj = chunk.embeddings.first()
+            # Check both vector types for this chunk
+            minilm_embedding = Embedding.objects.filter(
+                document_chunk=chunk, 
+                content_type='chunk',
+                minilm_vector__isnull=False
+            ).first()
+            codebert_embedding = Embedding.objects.filter(
+                document_chunk=chunk, 
+                content_type='chunk',
+                codebert_vector__isnull=False
+            ).first()
+            
+            has_appropriate_embedding = False
+            embedding_info = {}
+            
+            if chunk.chunk_type == 'Concept' and minilm_embedding:
+                has_appropriate_embedding = True
+                embedding_info = {
+                    'model_type': 'MiniLM',
+                    'dimensions': len(minilm_embedding.minilm_vector),
+                    'model_name': minilm_embedding.model_name
+                }
+            elif chunk.chunk_type != 'Concept' and codebert_embedding:
+                has_appropriate_embedding = True
+                embedding_info = {
+                    'model_type': 'CodeBERT', 
+                    'dimensions': len(codebert_embedding.codebert_vector),
+                    'model_name': codebert_embedding.model_name
+                }
+            
             chunk_logs.append({
                 'chunk_id': chunk.id,
                 'chunk_type': chunk.chunk_type,
-                'content_preview': chunk.content[:200] + "..." if len(chunk.content) > 200 else chunk.content,
-                'has_embedding': embedding_obj is not None,
-                'embedding_dimensions': len(embedding_obj.vector) if embedding_obj else 0,
-                'topic_title': chunk.subtopic_title,
+                'content_preview': chunk.text[:200] + "..." if len(chunk.text) > 200 else chunk.text,
+                'has_appropriate_embedding': has_appropriate_embedding,
+                'embedding_info': embedding_info,
                 'page_number': chunk.page_number
             })
 
-        embedding_log_data = {
-            'document_title': document.title,
-            'total_chunks': all_chunks.count(),
-            'already_embedded': already_embedded.count(),
-            'newly_embedded': embedding_results['success'],
-            'failed': embedding_results['failed'],
-            'model_used': embedding_results['model'],
-            'embedding_details': embedding_results,
-            'chunks_embedding_data': chunk_logs
-        }
-
         return Response({
             'status': 'success',
-            'message': f"Generated embeddings for {embedding_results['success']} chunks",
+            'message': f"Generated embeddings for {embedding_results['embeddings_generated']} chunks",
             'document_id': document.id,
             'document_title': document.title,
             'embedding_stats': {
                 'total_chunks': all_chunks.count(),
-                'already_embedded': already_embedded.count(),
-                'newly_embedded': embedding_results['success'],
-                'failed': embedding_results['failed'],
-                'model_used': embedding_results['model']
-            }
+                'already_embedded': len(chunks_with_embeddings),
+                'newly_embedded': embedding_results['embeddings_generated'],
+                'failed': embedding_results['embeddings_failed'],
+                'database_saves': embedding_results['database_saves'], 
+                'database_errors': embedding_results['database_errors'],
+                'models_used': embedding_results['models_used']
+            },
+            'chunk_details': chunk_logs
         })
 
     except Exception as e:
+        import traceback
+        print(f"❌ Error in embed_document_chunks: {str(e)}")
+        print(traceback.format_exc())
         return Response({
             'status': 'error',
             'message': f"Failed to generate embeddings: {str(e)}"
@@ -86,10 +140,11 @@ def embed_document_chunks(request, document_id):
 def get_chunk_embeddings(request, document_id):
     """
     Get embedding status and metadata for all chunks in a document.
+    Updated for dual vector fields (minilm_vector/codebert_vector).
     """
     try:
         document = get_object_or_404(UploadedDocument, id=document_id)
-        from content_ingestion.models import DocumentChunk
+        from content_ingestion.models import DocumentChunk, Embedding
 
         chunks = DocumentChunk.objects.filter(document=document).order_by('page_number', 'order_in_doc')
 
@@ -97,20 +152,50 @@ def get_chunk_embeddings(request, document_id):
         embedded_count = 0
 
         for chunk in chunks:
-            embedding_obj = chunk.embeddings.first()
-            has_embedding = bool(embedding_obj)
-            if has_embedding:
+            # Check for appropriate embedding based on chunk type
+            minilm_embedding = Embedding.objects.filter(
+                document_chunk=chunk,
+                content_type='chunk',
+                minilm_vector__isnull=False
+            ).first()
+            
+            codebert_embedding = Embedding.objects.filter(
+                document_chunk=chunk,
+                content_type='chunk', 
+                codebert_vector__isnull=False
+            ).first()
+            
+            # Determine if chunk has appropriate embedding for its type
+            has_embedding = False
+            embedding_info = {}
+            
+            if chunk.chunk_type == 'Concept' and minilm_embedding:
+                has_embedding = True
+                embedding_info = {
+                    'model_type': 'MiniLM',
+                    'model_name': minilm_embedding.model_name,
+                    'dimension': len(minilm_embedding.minilm_vector),
+                    'embedded_at': minilm_embedding.embedded_at.isoformat()
+                }
+                embedded_count += 1
+            elif chunk.chunk_type != 'Concept' and codebert_embedding:
+                has_embedding = True
+                embedding_info = {
+                    'model_type': 'CodeBERT',
+                    'model_name': codebert_embedding.model_name, 
+                    'dimension': len(codebert_embedding.codebert_vector),
+                    'embedded_at': codebert_embedding.embedded_at.isoformat()
+                }
                 embedded_count += 1
 
             embedding_data.append({
                 'id': chunk.id,
-                'topic_title': chunk.subtopic_title,
+                'chunk_type': chunk.chunk_type,
                 'page_number': chunk.page_number,
                 'text_preview': chunk.text[:100] + "..." if len(chunk.text) > 100 else chunk.text,
                 'has_embedding': has_embedding,
-                'embedding_dimension': len(embedding_obj.vector) if has_embedding else 0,
-                'embedding_model': embedding_obj.model_name if has_embedding else None,
-                'embedded_at': embedding_obj.created_at.isoformat() if has_embedding else None
+                'embedding_info': embedding_info,
+                'expected_model': 'MiniLM' if chunk.chunk_type == 'Concept' else 'CodeBERT'
             })
 
         total_chunks = chunks.count()
@@ -154,12 +239,9 @@ def get_chunk_embeddings_detailed(request, document_id):
             chunk_data = {
                 'chunk_id': chunk.id,
                 'chunk_type': chunk.chunk_type,
-                'content_preview': chunk.content[:300] + "..." if len(chunk.content) > 300 else chunk.content,
-                'full_content_length': len(chunk.content),
+                'content_preview': chunk.text[:300] + "..." if len(chunk.text) > 300 else chunk.text,
+                'full_content_length': len(chunk.text),
                 'page_number': chunk.page_number,
-                'start_page': chunk.start_page,
-                'end_page': chunk.end_page,
-                'topic_title': chunk.subtopic_title,
                 'has_embedding': has_embedding,
                 'embedding_vector': chunk.embedding if has_embedding else None,
                 'embedding_dimensions': len(chunk.embedding) if has_embedding else 0
@@ -201,54 +283,98 @@ def get_chunk_embeddings_detailed(request, document_id):
 
 @api_view(['POST'])
 def generate_subtopic_embeddings(request):
-    """Generate embeddings for all subtopics using advanced embedding system."""
+    """Generate dual embeddings (MiniLM + CodeBERT) for all subtopics."""
     try:
         from content_ingestion.helpers.embedding import EmbeddingGenerator
+        from content_ingestion.models import Embedding, Subtopic
 
-        subtopics_with_embeddings = Subtopic.objects.filter(embeddings__isnull=False)
-        subtopics = Subtopic.objects.exclude(id__in=subtopics_with_embeddings.values_list('id', flat=True))
+        # Get subtopics that don't have both embeddings
+        subtopics_needing_embeddings = []
         total = Subtopic.objects.count()
-        already = subtopics_with_embeddings.count()
+        
+        for subtopic in Subtopic.objects.all():
+            has_minilm = Embedding.objects.filter(
+                subtopic=subtopic,
+                content_type='subtopic',
+                minilm_vector__isnull=False
+            ).exists()
+            has_codebert = Embedding.objects.filter(
+                subtopic=subtopic,
+                content_type='subtopic',
+                codebert_vector__isnull=False
+            ).exists()
+            
+            if not (has_minilm and has_codebert):
+                subtopics_needing_embeddings.append(subtopic)
 
-        if not subtopics.exists():
+        already_embedded = total - len(subtopics_needing_embeddings)
+
+        if not subtopics_needing_embeddings:
             return Response({
                 'status': 'success',
-                'message': 'All subtopics already have embeddings',
+                'message': 'All subtopics already have dual embeddings',
                 'embedding_stats': {
                     'total_subtopics': total,
-                    'already_embedded': already,
+                    'already_embedded': already_embedded,
                     'newly_embedded': 0,
                     'failed': 0
                 }
             })
 
         generator = EmbeddingGenerator()
-        details, success, failed = [], 0, 0
+        success = 0
+        failed = 0
+        details = []
 
-        for subtopic in subtopics:
+        for subtopic in subtopics_needing_embeddings:
             try:
-                embedding_data = generator.generate_subtopic_embedding(
-                    subtopic_name=subtopic.name,
-                    topic_name=subtopic.topic.name
-                )
+                subtopic_text = f"{subtopic.topic.name} - {subtopic.name}"
                 
-                if embedding_data['vector']:
-                    from content_ingestion.models import Embedding
-                    Embedding.objects.create(
+                # Generate MiniLM embedding
+                minilm_result = generator.generate_embedding(subtopic_text, chunk_type='Concept')
+                if minilm_result['vector']:
+                    minilm_embedding, created = Embedding.objects.get_or_create(
                         subtopic=subtopic,
-                        vector=embedding_data['vector'],
-                        model_name=embedding_data['model_name'],
-                        model_type=embedding_data['model_type'].value,
-                        dimension=embedding_data['dimension']
+                        model_type='sentence',
+                        content_type='subtopic',
+                        defaults={
+                            'minilm_vector': minilm_result['vector'],
+                            'model_name': minilm_result['model_name'],
+                            'dimension': minilm_result['dimension']
+                        }
                     )
-                    
+                    if not created:
+                        minilm_embedding.minilm_vector = minilm_result['vector']
+                        minilm_embedding.model_name = minilm_result['model_name']
+                        minilm_embedding.dimension = minilm_result['dimension']
+                        minilm_embedding.save()
+
+                # Generate CodeBERT embedding  
+                codebert_result = generator.generate_embedding(subtopic_text, chunk_type='Code')
+                if codebert_result['vector']:
+                    codebert_embedding, created = Embedding.objects.get_or_create(
+                        subtopic=subtopic,
+                        model_type='code_bert',
+                        content_type='subtopic',
+                        defaults={
+                            'codebert_vector': codebert_result['vector'],
+                            'model_name': codebert_result['model_name'],
+                            'dimension': codebert_result['dimension']
+                        }
+                    )
+                    if not created:
+                        codebert_embedding.codebert_vector = codebert_result['vector']
+                        codebert_embedding.model_name = codebert_result['model_name']
+                        codebert_embedding.dimension = codebert_result['dimension']
+                        codebert_embedding.save()
+
+                if minilm_result['vector'] and codebert_result['vector']:
                     details.append({
                         'subtopic_id': subtopic.id,
                         'subtopic_name': subtopic.name,
                         'topic_name': subtopic.topic.name,
-                        'model_used': embedding_data['model_name'],
-                        'model_type': embedding_data['model_type'].value,
-                        'dimension': embedding_data['dimension'],
+                        'minilm_status': 'success',
+                        'codebert_status': 'success',
                         'status': 'success'
                     })
                     success += 1
@@ -257,10 +383,13 @@ def generate_subtopic_embeddings(request):
                         'subtopic_id': subtopic.id,
                         'subtopic_name': subtopic.name,
                         'topic_name': subtopic.topic.name,
-                        'status': 'failed',
-                        'error': embedding_data.get('error', 'Unknown error')
+                        'minilm_status': 'success' if minilm_result['vector'] else 'failed',
+                        'codebert_status': 'success' if codebert_result['vector'] else 'failed',
+                        'status': 'partial_failure',
+                        'error': 'One or both embedding generations failed'
                     })
                     failed += 1
+                    
             except Exception as e:
                 details.append({
                     'subtopic_id': subtopic.id,
@@ -271,33 +400,26 @@ def generate_subtopic_embeddings(request):
                 })
                 failed += 1
 
-        log_data = {
-            'total_subtopics': total,
-            'already_embedded': already,
-            'newly_embedded': success,
-            'failed': failed,
-            'model_used': 'all-MiniLM-L6-v2',
-            'model_type': 'sentence',
-            'embedding_details': details
-        }
-        
         return Response({
             'status': 'success',
-            'message': f"Generated embeddings for {success} subtopics",
+            'message': f"Generated dual embeddings for {success} subtopics",
             'embedding_stats': {
                 'total_subtopics': total,
-                'already_embedded': already,
+                'already_embedded': already_embedded,
                 'newly_embedded': success,
                 'failed': failed,
-                'model_used': 'all-MiniLM-L6-v2',
-                'model_type': 'sentence'
-            }
+                'models_used': ['all-MiniLM-L6-v2', 'microsoft/codebert-base']
+            },
+            'details': details
         })
 
     except Exception as e:
+        import traceback
+        print(f"❌ Error in generate_subtopic_embeddings: {str(e)}")
+        print(traceback.format_exc())
         return Response({
             'status': 'error',
-            'message': f"Failed to retrieve detailed chunk embeddings: {str(e)}"
+            'message': f"Failed to generate subtopic embeddings: {str(e)}"
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(['GET'])

@@ -7,7 +7,7 @@ Converts the management command to a reusable helper function for better organiz
 
 from django.utils import timezone
 from content_ingestion.models import Subtopic, DocumentChunk
-from question_generation.models import SemanticSubtopic
+from content_ingestion.models import SemanticSubtopic  # Moved to content_ingestion
 import re
 from typing import Dict, List, Optional
 
@@ -128,11 +128,12 @@ class SemanticAnalyzer:
         # Get or create SemanticSubtopic
         semantic_subtopic, created = SemanticSubtopic.objects.get_or_create(
             subtopic=subtopic,
-            defaults={'ranked_chunks': []}
+            defaults={'ranked_concept_chunks': [], 'ranked_code_chunks': []}
         )
         
         # Skip if already analyzed and not forcing reanalysis
-        if (not created and not reanalyze and semantic_subtopic.ranked_chunks):
+        if (not created and not reanalyze and 
+            (semantic_subtopic.ranked_concept_chunks or semantic_subtopic.ranked_code_chunks)):
             return {'created': False, 'updated': False}
         
         # Generate subtopic embedding
@@ -140,7 +141,8 @@ class SemanticAnalyzer:
         subtopic_embedding = self.model.encode([subtopic_text])[0]
         
         # Calculate similarities with all chunks
-        ranked_chunks = []
+        ranked_concept_chunks = []
+        ranked_code_chunks = []
         
         for chunk in chunks:
             # Get chunk embedding
@@ -157,17 +159,25 @@ class SemanticAnalyzer:
             
             # Only include chunks above similarity threshold
             if similarity >= min_similarity:
-                ranked_chunks.append({
+                chunk_data = {
                     'chunk_id': chunk.id,
                     'similarity': float(similarity),
                     'chunk_type': chunk.chunk_type
-                })
+                }
+                
+                # Categorize by chunk type
+                if chunk.chunk_type == 'Concept':
+                    ranked_concept_chunks.append(chunk_data)
+                elif chunk.chunk_type in ['Code', 'Example', 'Exercise', 'Try_It']:
+                    ranked_code_chunks.append(chunk_data)
         
-        # Sort by similarity (highest first)
-        ranked_chunks.sort(key=lambda x: x['similarity'], reverse=True)
+        # Sort both lists by similarity (highest first)
+        ranked_concept_chunks.sort(key=lambda x: x['similarity'], reverse=True)
+        ranked_code_chunks.sort(key=lambda x: x['similarity'], reverse=True)
         
-        # Update semantic subtopic (removed metadata calculations)
-        semantic_subtopic.ranked_chunks = ranked_chunks
+        # Update semantic subtopic with separate rankings
+        semantic_subtopic.ranked_concept_chunks = ranked_concept_chunks[:10]  # Keep top 10
+        semantic_subtopic.ranked_code_chunks = ranked_code_chunks[:10]  # Keep top 10
         semantic_subtopic.save()
         
         return {'created': created, 'updated': not created}

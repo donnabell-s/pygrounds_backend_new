@@ -17,7 +17,9 @@ from django.db.models import Count, Q
 
 # Local model imports
 from content_ingestion.models import Topic, Subtopic, DocumentChunk
-from question_generation.models import GeneratedQuestion, PreAssessmentQuestion, SemanticSubtopic
+from question_generation.models import GeneratedQuestion, PreAssessmentQuestion
+# SemanticSubtopic is now in content_ingestion.models
+from content_ingestion.models import SemanticSubtopic
 
 # Standard library imports
 import logging

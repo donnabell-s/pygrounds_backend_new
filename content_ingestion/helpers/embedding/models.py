@@ -1,7 +1,3 @@
-"""
-Embedding model configurations and types.
-"""
-
 from dataclasses import dataclass
 from enum import Enum
 from typing import Dict
@@ -9,8 +5,8 @@ from typing import Dict
 
 class EmbeddingModelType(Enum):
     """Types of embedding models for different content types"""
-    CODE_BERT = "code_bert"          # For Code, Exercise, Try_It chunks
-    SENTENCE_TRANSFORMER = "sentence"  # For Concept chunks
+    CODE_BERT = "code_bert"       
+    SENTENCE_TRANSFORMER = "sentence"  
 
 
 @dataclass
@@ -46,6 +42,6 @@ CHUNK_TYPE_TO_MODEL = {
     'Code': EmbeddingModelType.CODE_BERT,
     'Exercise': EmbeddingModelType.CODE_BERT,
     'Try_It': EmbeddingModelType.CODE_BERT,
+    'Example': EmbeddingModelType.CODE_BERT,  # Examples often contain code
     'Concept': EmbeddingModelType.SENTENCE_TRANSFORMER,
-    'Example': EmbeddingModelType.SENTENCE_TRANSFORMER,
 }

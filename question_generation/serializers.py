@@ -1,5 +1,7 @@
 from rest_framework import serializers
-from .models import GeneratedQuestion, PreAssessmentQuestion, SemanticSubtopic
+from django.contrib.auth.models import User
+from .models import GeneratedQuestion, PreAssessmentQuestion
+from content_ingestion.models import SemanticSubtopic  # Moved to content_ingestion
 from content_ingestion.models import Topic, Subtopic
 
 
@@ -68,7 +70,7 @@ class SemanticSubtopicSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = SemanticSubtopic
-        fields = ['id', 'subtopic', 'subtopic_name', 'topic_name', 'ranked_chunks', 'chunks_count', 'updated_at']
+        fields = ['id', 'subtopic', 'subtopic_name', 'topic_name', 'ranked_concept_chunks', 'ranked_code_chunks', 'chunks_count', 'updated_at']
         read_only_fields = ['id', 'updated_at']
     
     def get_subtopic_name(self, obj):
@@ -78,4 +80,6 @@ class SemanticSubtopicSerializer(serializers.ModelSerializer):
         return obj.subtopic.topic.name
     
     def get_chunks_count(self, obj):
-        return len(obj.ranked_chunks) if obj.ranked_chunks else 0
+        concept_count = len(obj.ranked_concept_chunks) if obj.ranked_concept_chunks else 0
+        code_count = len(obj.ranked_code_chunks) if obj.ranked_code_chunks else 0
+        return concept_count + code_count

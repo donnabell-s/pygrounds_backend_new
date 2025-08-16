@@ -25,7 +25,7 @@ def get_rag_context_for_subtopic(subtopic, difficulty: str) -> str:
         str: Formatted context string for LLM, including chunks and metadata
     """
     try:
-        from question_generation.models import SemanticSubtopic
+        from content_ingestion.models import SemanticSubtopic  # Moved to content_ingestion
         from content_ingestion.models import DocumentChunk
         
         # Try to get pre-computed semantic analysis for this subtopic

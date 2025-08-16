@@ -6,7 +6,7 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('content_ingestion', '0020_remove_additional_hierarchy_fields'),
+        ('content_ingestion', '0020_remove_documentchunk_sub_sub_subtopic_title_and_more'),
         ('content_ingestion', '0022_alter_embedding_unique_together_embedding_dimension_and_more'),
     ]
 

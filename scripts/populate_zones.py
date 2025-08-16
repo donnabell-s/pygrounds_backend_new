@@ -22,57 +22,127 @@ django.setup()
 
 from content_ingestion.models import GameZone, Topic, Subtopic
 
-def generate_subtopic_embeddings():
+
+def generate_subtopic_embeddings(concept_intents_map=None, code_intents_map=None):
     """
     Generate embeddings for subtopics using advanced embedding system.
-    Subtopics always use Sentence Transformer model for semantic matching.
+    Creates BOTH MiniLM (concept) and CodeBERT (code) embeddings for dual compatibility.
+
+    Args:
+        concept_intents_map: Optional dict {subtopic_id: concept_intent_text} (legacy support)
+        code_intents_map:    Optional dict {subtopic_id: code_intent_text} (legacy support)
     """
+    concept_intents_map = concept_intents_map or {}
+    code_intents_map = code_intents_map or {}
     try:
         from content_ingestion.helpers.embedding import EmbeddingGenerator
-        from django.utils import timezone
 
         embedding_generator = EmbeddingGenerator()
-        print("\n🔮 Generating embeddings for subtopics using advanced system...")
+        print("\n🔮 Generating dual embeddings for subtopics using intent-based system...")
         print("=" * 60)
 
-        # Subtopic embeddings - create Embedding objects
+        # Only subtopics without any embeddings yet (assumes reverse name 'embeddings')
         subtopics = Subtopic.objects.filter(embeddings__isnull=True)
-        print(f"\n📝 Generating embeddings for {subtopics.count()} subtopics...")
-        success_count = 0
+        print(f"\n📝 Generating dual embeddings for {subtopics.count()} subtopics...")
+
+        minilm_success = 0
+        codebert_success = 0
         failed_count = 0
-        
+
         for subtopic in subtopics:
             try:
                 from content_ingestion.models import Embedding
-                
-                # Use specialized subtopic embedding method
-                embedding_data = embedding_generator.generate_subtopic_embedding(
-                    subtopic_name=subtopic.name,
-                    topic_name=subtopic.topic.name
+
+                base_text = f"{subtopic.topic.name} - {subtopic.name}"
+
+                # Build concept text (MiniLM) - prioritize database intent, fallback to map
+                concept_intent = subtopic.concept_intent or concept_intents_map.get(subtopic.id)
+                if concept_intent:
+                    minilm_text = f"{base_text}: {concept_intent}"
+                    minilm_data = embedding_generator.generate_embedding(
+                        text=minilm_text, chunk_type='Concept'
+                    )
+                else:
+                    # fallback to default helper
+                    minilm_data = embedding_generator.generate_subtopic_embedding(
+                        subtopic_name=subtopic.name,
+                        topic_name=subtopic.topic.name
+                    )
+
+                # Build code text (CodeBERT) - prioritize database intent, fallback to map
+                code_intent = subtopic.code_intent or code_intents_map.get(subtopic.id)
+                if code_intent:
+                    codebert_text = f"Python task: {base_text}. Use: {code_intent}"
+                else:
+                    codebert_text = base_text
+
+                codebert_data = embedding_generator.generate_embedding(
+                    text=codebert_text, chunk_type='Code'
                 )
-                
-                if embedding_data['vector']:
+
+                # Create ONE embedding record with BOTH vectors (dual-embedding approach)
+                if minilm_data.get('vector') and codebert_data.get('vector'):
+                    # Both embeddings successful - create single record with both vectors
                     Embedding.objects.create(
                         subtopic=subtopic,
-                        vector=embedding_data['vector'],
-                        model_name=embedding_data['model_name'],
-                        model_type=embedding_data['model_type'].value,
-                        dimension=embedding_data['dimension']
+                        content_type='subtopic',
+                        minilm_vector=minilm_data['vector'],
+                        codebert_vector=codebert_data['vector'],
+                        model_name=f"dual:{minilm_data['model_name']}+{codebert_data['model_name']}",
+                        model_type='dual',  # Custom type for dual embeddings
+                        dimension=max(minilm_data['dimension'], codebert_data['dimension'])
                     )
-                    print(f"  ✅ {subtopic.name} (using {embedding_data['model_name']})")
-                    success_count += 1
+                    minilm_success += 1
+                    codebert_success += 1
+                elif minilm_data.get('vector'):
+                    # Only MiniLM embedding successful
+                    Embedding.objects.create(
+                        subtopic=subtopic,
+                        content_type='subtopic',
+                        minilm_vector=minilm_data['vector'],
+                        model_name=minilm_data['model_name'],
+                        model_type=getattr(minilm_data.get('model_type'), 'value', str(minilm_data.get('model_type'))),
+                        dimension=minilm_data['dimension']
+                    )
+                    minilm_success += 1
+                elif codebert_data.get('vector'):
+                    # Only CodeBERT embedding successful
+                    Embedding.objects.create(
+                        subtopic=subtopic,
+                        content_type='subtopic',
+                        codebert_vector=codebert_data['vector'],
+                        model_name=codebert_data['model_name'],
+                        model_type=getattr(codebert_data.get('model_type'), 'value', str(codebert_data.get('model_type'))),
+                        dimension=codebert_data['dimension']
+                    )
+                    codebert_success += 1
+
+                print(f"  ✅ {subtopic.name}")
+                intent_used = []
+                if concept_intent:
+                    intent_used.append(f"Concept: {'✓' if minilm_data.get('vector') else '✗'}")
+                if code_intent:
+                    intent_used.append(f"Code: {'✓' if codebert_data.get('vector') else '✗'}")
+                
+                if intent_used:
+                    print(f"     {' | '.join(intent_used)}")
                 else:
-                    print(f"  ❌ Failed to embed subtopic '{subtopic.name}': {embedding_data.get('error', 'Unknown error')}")
-                    failed_count += 1
+                    print(f"     MiniLM: {'✓' if minilm_data.get('vector') else '✗'} | CodeBERT: {'✓' if codebert_data.get('vector') else '✗'}")
+
             except Exception as e:
                 print(f"  ❌ Failed to embed subtopic '{subtopic.name}': {e}")
                 failed_count += 1
 
-        print(f"\n🎉 Subtopic embedding generation complete!")
-        print(f"  • Total topics: {Topic.objects.count()}")
-        print(f"  • Subtopics embedded: {Subtopic.objects.filter(embeddings__isnull=False).count()}")
-        print(f"  • Success: {success_count}, Failed: {failed_count}")
-        print(f"  • Model used: all-MiniLM-L6-v2 (Sentence Transformer)")
+        print(f"\n🎉 Intent-based subtopic embedding generation complete!")
+        print(f"  • Total subtopics: {Subtopic.objects.count()}")
+        print(f"  • MiniLM embeddings created: {minilm_success}")
+        print(f"  • CodeBERT embeddings created: {codebert_success}")
+        print(f"  • Failed: {failed_count}")
+        try:
+            print(f"  • Total embedding records: {Subtopic.objects.filter(embeddings__isnull=False).count()}")
+        except Exception:
+            pass
+
     except ImportError:
         print("\n⚠️  Advanced embedding utilities not available - skipping embedding generation")
         print("   Topics and subtopics created without embeddings")
@@ -80,255 +150,636 @@ def generate_subtopic_embeddings():
         print(f"\n❌ Error generating embeddings: {e}")
         print("   Topics and subtopics created without embeddings")
 
+
 def populate_zones():
     """
     Populate the database with predefined zones, topics, and subtopics.
     This will completely overwrite any existing data.
     """
+    # Each subtopic includes both concept_intent (for MiniLM) and code_intent (for CodeBERT)
     zones_data = [
-    {
-        "name": "Python Basics",
-        "description": "Intro Gameplay Zone - Master the fundamentals of Python programming",
-        "order": 1,
-        "required_exp": 0,
-        "max_exp": 1000,
-        "is_unlocked": True,
-        "topics": [
-            {
-                "name": "Introduction to Python & IDE Setup",
-                "subtopics": [
-                    "Installing Python (Windows, macOS, Linux)",
-                    "Choosing and Setting Up an IDE (VS Code, PyCharm, etc.)",
-                    "Writing and Running Your First Python Script",
-                    "Understanding the Python Interpreter and Shell",
-                    "File Structure, Extensions, and Comments",
-                    "Managing Environment Variables and PATH",
-                    "Using the print() Function Effectively",
-                    "Troubleshooting Common Setup Errors"
-                ]
-            },
-            {
-                "name": "Variables & Data Types",
-                "subtopics": [
-                    "Declaring and Naming Variables",
-                    "Integer and Floating-Point Numbers",
-                    "Strings and String Formatting",
-                    "Booleans and Logical Expressions",
-                    "Type Conversion and Casting",
-                    "Type Checking with type() and isinstance()",
-                    "Constants and Immutability Concepts"
-                ]
-            },
-            {
-                "name": "Basic Input and Output",
-                "subtopics": [
-                    "Using input() to Read User Data",
-                    "Basic Text Output with print()",
-                    "String Concatenation and Formatting (f-strings, .format())",
-                    "Handling Input Types (Converting to int, float, etc.)",
-                    "Printing Special Characters and Escape Sequences",
-                    "Multi-line Input and Output",
-                    "Best Practices for User-Friendly I/O"
-                ]
-            },
-            {
-                "name": "Operators",
-                "subtopics": [
-                    "Arithmetic Operators (+, -, *, /, %, //, **)",
-                    "Comparison Operators (==, !=, >, <, >=, <=)",
-                    "Logical Operators (and, or, not)",
-                    "Assignment Operators (=, +=, -=, etc. )",
-                    "Operator Precedence and Associativity",
-                    "Membership (in, not in) and Identity Operators (is, is not)",
-                    "Bitwise Operators and Binary Representation (Advanced)"
-                ]
-            },
-            {
-                "name": "Comments & Code Readability",
-                "subtopics": [
-                    "Single-line vs Multi-line Comments",
-                    "Docstrings and Inline Documentation",
-                    "Code Indentation and Block Structure",
-                    "Naming Conventions (PEP8 Guidelines)",
-                    "Structuring Code for Readability",
-                    "Avoiding Magic Numbers and Hardcoding",
-                    "Writing Self-Documenting Code"
-                ]
-            }
-        ]
-    },
-    {
-        "name": "Control Structures",
-        "description": "Logic Decision Zone - Master decision-making and flow control",
-        "order": 2,
-        "required_exp": 1000,
-        "max_exp": 2000,
-        "is_unlocked": False,
-        "is_active": True,
-        "topics": [
-            {
-                "name": "Conditional Statements",
-                "subtopics": [
-                    "if Statement Syntax and Structure",
-                    "if-else and elif Ladder",
-                    "Nested Conditional Statements",
-                    "Boolean Logic in Conditions",
-                    "Ternary Operators (One-liner conditionals)",
-                    "Using Conditions with Input",
-                    "Common Logic Pitfalls and Debugging"
-                ]
-            },
-            {
-                "name": "Error Handling",
-                "subtopics": [
-                    "Understanding Common Runtime Errors",
-                    "Try-Except Block Structure",
-                    "Catching Multiple Exceptions",
-                    "else and finally Clauses in Error Handling",
-                    "Raising Custom Exceptions",
-                    "Using assert Statements",
-                    "Error Messages and Debugging Tools"
-                ]
-            }
-        ]
-    },
-    {
-        "name": "Loops & Iteration",
-        "description": "Cognitive Repetition Zone - Master repetitive tasks and iteration",
-        "order": 3,
-        "required_exp": 2000,
-        "max_exp": 3000,
-        "is_unlocked": False,
-        "is_active": True,
-        "topics": [
-            {
-                "name": "Loops",
-                "subtopics": [
-                    "for Loop with range()",
-                    "Iterating Over Lists, Tuples, and Strings",
-                    "while Loop and Loop Conditions",
-                    "break, continue, and pass Statements",
-                    "Looping with enumerate() and zip()",
-                    "Infinite Loops and Loop Safety",
-                    "Comparing for and while Loops"
-                ]
-            },
-            {
-                "name": "Nested Loops",
-                "subtopics": [
-                    "Syntax of Nested for Loops",
-                    "Nested while and Mixed Loops",
-                    "Printing Patterns (e.g., triangle, pyramid)",
-                    "Matrix Traversal and Processing",
-                    "Loop Depth and Performance Considerations",
-                    "Managing Inner vs Outer Loop Variables",
-                    "Avoiding Logical Errors in Nested Structures"
-                ]
-            },
-            {
-                "name": "Strings & String Methods",
-                "subtopics": [
-                    "String Indexing and Slicing",
-                    "String Immutability",
-                    "Case Conversion Methods (lower(), upper(), etc.)",
-                    "Searching and Replacing Text",
-                    "String Splitting and Joining",
-                    "Validating and Cleaning Input Strings",
-                    "Escape Sequences and Raw Strings"
-                ]
-            }
-        ]
-    },
-    {
-        "name": "Data Structures & Modularity",
-        "description": "System Design Zone - Master data organization and code modularity",
-        "order": 4,
-        "required_exp": 3000,
-        "max_exp": 4000,
-        "is_unlocked": False,
-        "is_active": True,
-        "topics": [
-            {
-                "name": "Lists & Tuples",
-                "subtopics": [
-                    "Creating and Modifying Lists",
-                    "List Methods (append(), remove(), sort(), etc.)",
-                    "List Indexing, Slicing, and Comprehension",
-                    "Tuples and Their Immutability",
-                    "Tuple Unpacking and Multiple Assignment",
-                    "Iterating Through Lists and Tuples",
-                    "When to Use Lists vs Tuples"
-                ]
-            },
-            {
-                "name": "Sets",
-                "subtopics": [
-                    "Creating and Using Sets",
-                    "Set Operations (union, intersection, difference, etc.)",
-                    "Set Methods (add(), remove(), etc.)",
-                    "Working with Duplicates and Membership",
-                    "Frozen Sets and Hashing",
-                    "Performance Benefits of Sets",
-                    "Converting Between Sets and Other Types"
-                ]
-            },
-            {
-                "name": "Functions",
-                "subtopics": [
-                    "Defining Functions with def",
-                    "Parameters, Arguments, and Return Values",
-                    "Variable Scope and global/nonlocal",
-                    "Default and Keyword Arguments",
-                    "Docstrings and Function Annotations",
-                    "Lambda Functions and Anonymous Functions",
-                    "Higher-Order Functions and Functional Programming Basics"
-                ]
-            },
-            {
-                "name": "Dictionaries",
-                "subtopics": [
-                    "Creating and Accessing Dictionary Items",
-                    "Adding, Updating, and Deleting Keys",
-                    "Looping Through Keys, Values, and Items",
-                    "Dictionary Methods (get(), pop(), update(), etc.)",
-                    "Nesting Dictionaries",
-                    "Using Dictionaries for Counting (e.g., frequency maps)",
-                    "Dictionary Comprehensions"
-                ]
-            }
-        ]
-    }
-]
-
+        {
+            "name": "Python Basics",
+            "description": "Intro Gameplay Zone - Master the fundamentals of Python programming",
+            "order": 1,
+            "topics": [
+                {
+                    "name": "Introduction to Python & IDE Setup",
+                    "subtopics": [
+                        {
+                            "name": "Installing Python (Windows, macOS, Linux)",
+                            "concept_intent": "Download and install CPython 3.x, verify installation, understand multiple versions and package managers.",
+                            "code_intent": "python --version; py -3 --version; brew install python; sudo apt install python3"
+                        },
+                        {
+                            "name": "Choosing and Setting Up an IDE (VS Code, PyCharm, etc.)",
+                            "concept_intent": "Select an editor, configure interpreter, enable linting/formatting and debugging.",
+                            "code_intent": "VS Code: Python extension, Select Interpreter, Run/Debug; PyCharm new project with venv"
+                        },
+                        {
+                            "name": "Writing and Running Your First Python Script",
+                            "concept_intent": "Create a .py file, write a basic statement, execute via terminal.",
+                            "code_intent": 'hello.py with print("Hello, world!"); python hello.py; python3 hello.py'
+                        },
+                        {
+                            "name": "Understanding the Python Interpreter and Shell",
+                            "concept_intent": "Use the interactive REPL for quick experiments and expression testing.",
+                            "code_intent": "Start REPL: python; >>> 2+2; exit() or quit()"
+                        },
+                        {
+                            "name": "File Structure, Extensions, and Comments",
+                            "concept_intent": "Organize .py files and packages; use comments/docstrings; entry-point idiom.",
+                            "code_intent": '# single-line comment; """docstring"""; if __name__ == "__main__": main()'
+                        },
+                        {
+                            "name": "Managing Environment Variables and PATH",
+                            "concept_intent": "Make Python and pip discoverable; understand PATH and environment settings.",
+                            "code_intent": "where python / which python; setx PATH ...; export PATH=..."
+                        },
+                        {
+                            "name": "Using the print() Function Effectively",
+                            "concept_intent": "Control formatting with f-strings, separators and end characters.",
+                            "code_intent": 'print(f"sum={a+b}"); print(a, b, sep=","); print("no newline", end="")'
+                        },
+                        {
+                            "name": "Troubleshooting Common Setup Errors",
+                            "concept_intent": "Diagnose missing commands, version mismatches, and import issues.",
+                            "code_intent": "'pip' is not recognized; ModuleNotFoundError; python vs python3; pip install <pkg>"
+                        }
+                    ]
+                },
+                {
+                    "name": "Variables & Data Types",
+                    "subtopics": [
+                        {
+                            "name": "Declaring and Naming Variables",
+                            "concept_intent": "Assign values with clear, descriptive names following conventions.",
+                            "code_intent": 'x = 1; name = "Alice"; total_count = 0'
+                        },
+                        {
+                            "name": "Integer and Floating-Point Numbers",
+                            "concept_intent": "Work with ints/floats, arithmetic, and conversion between types.",
+                            "code_intent": "x=3; y=2.5; z=x+y; int(2.9); float('3.14')"
+                        },
+                        {
+                            "name": "Strings and String Formatting",
+                            "concept_intent": "Build and format strings using concatenation, f-strings, and format().",
+                            "code_intent": 'f"{name} has {n} apples"; "{} {}".format(a, b); "a,b".split(",")'
+                        },
+                        {
+                            "name": "Booleans and Logical Expressions",
+                            "concept_intent": "Use True/False values and combine conditions with and/or/not.",
+                            "code_intent": "True/False; (a>0 and b<5) or not flag"
+                        },
+                        {
+                            "name": "Type Conversion and Casting",
+                            "concept_intent": "Convert values safely between types to avoid runtime errors.",
+                            "code_intent": "int('3'); str(123); float('2.7')"
+                        },
+                        {
+                            "name": "Type Checking with type() and isinstance()",
+                            "concept_intent": "Inspect variable types and validate interfaces.",
+                            "code_intent": "type(x) is int; isinstance(x, (int, float))"
+                        },
+                        {
+                            "name": "Constants and Immutability Concepts",
+                            "concept_intent": "Prefer constants and immutable types for clarity and safety.",
+                            "code_intent": "PI = 3.14159; CONFIG = {...}; t = (1,2,3)  # tuple immutable"
+                        }
+                    ]
+                },
+                {
+                    "name": "Basic Input and Output",
+                    "subtopics": [
+                        {
+                            "name": "Using input() to Read User Data",
+                            "concept_intent": "Prompt users and parse textual input into the right types.",
+                            "code_intent": 'name = input("Name: "); age = int(input("Age: "))'
+                        },
+                        {
+                            "name": "Basic Text Output with print()",
+                            "concept_intent": "Display messages and variables for user feedback.",
+                            "code_intent": 'print("Hello"); print("x=", x)'
+                        },
+                        {
+                            "name": "String Concatenation and Formatting (f-strings, .format())",
+                            "concept_intent": "Combine values and format text clearly.",
+                            "code_intent": '"Hello, " + name; f"Hi {name}"; "Hi {}".format(name)'
+                        },
+                        {
+                            "name": "Handling Input Types (Converting to int, float, etc.)",
+                            "concept_intent": "Parse and cast input robustly to avoid exceptions.",
+                            "code_intent": "int(input()); float(input()); bool(int_str)"
+                        },
+                        {
+                            "name": "Printing Special Characters and Escape Sequences",
+                            "concept_intent": "Represent newlines, tabs, and paths safely in strings.",
+                            "code_intent": r'print("Line1\nLine2"); print(r"C:\path\to\file")'
+                        },
+                        {
+                            "name": "Multi-line Input and Output",
+                            "concept_intent": "Work with multi-line strings for messages or templates.",
+                            "code_intent": 'text = """a\nb\nc""" ; print(text)'
+                        },
+                        {
+                            "name": "Best Practices for User-Friendly I/O",
+                            "concept_intent": "Design clear prompts and consistent outputs.",
+                            "code_intent": 'print("Enter value: ", end=""); val = input().strip()'
+                        }
+                    ]
+                },
+                {
+                    "name": "Operators",
+                    "subtopics": [
+                        {
+                            "name": "Arithmetic Operators (+, -, *, /, %, //, **)",
+                            "concept_intent": "Perform arithmetic, integer division, modulo, and powers.",
+                            "code_intent": "a+b; a-b; a*b; a/b; a%2; a//2; a**3"
+                        },
+                        {
+                            "name": "Comparison Operators (==, !=, >, <, >=, <=)",
+                            "concept_intent": "Compare values for equality and ordering.",
+                            "code_intent": "x==y; x!=y; x>y; x<=y"
+                        },
+                        {
+                            "name": "Logical Operators (and, or, not)",
+                            "concept_intent": "Combine boolean conditions to control flow.",
+                            "code_intent": "flag and ready or not done"
+                        },
+                        {
+                            "name": "Assignment Operators (=, +=, -=, etc. )",
+                            "concept_intent": "Update variables concisely with compound operations.",
+                            "code_intent": "x=1; x+=2; x*=3"
+                        },
+                        {
+                            "name": "Operator Precedence and Associativity",
+                            "concept_intent": "Understand evaluation order to avoid logic bugs.",
+                            "code_intent": "a+b*c; (a+b)*c; a**b**c"
+                        },
+                        {
+                            "name": "Membership (in, not in) and Identity Operators (is, is not)",
+                            "concept_intent": "Check presence and object identity correctly.",
+                            "code_intent": "'a' in s; x is None; y is not None"
+                        },
+                        {
+                            "name": "Bitwise Operators and Binary Representation (Advanced)",
+                            "concept_intent": "Manipulate integers at the bit level and view binary forms.",
+                            "code_intent": "x & y; x | y; x ^ y; x << 1; x >> 1; bin(x)"
+                        }
+                    ]
+                },
+                {
+                    "name": "Comments & Code Readability",
+                    "subtopics": [
+                        {
+                            "name": "Single-line vs Multi-line Comments",
+                            "concept_intent": "Document code at the right granularity using comments.",
+                            "code_intent": '# single; """multi-line docstring"""'
+                        },
+                        {
+                            "name": "Docstrings and Inline Documentation",
+                            "concept_intent": "Explain purpose, parameters, and returns in docstrings.",
+                            "code_intent": 'def f(): """Explain behavior."""; x = 1  # count'
+                        },
+                        {
+                            "name": "Code Indentation and Block Structure",
+                            "concept_intent": "Use consistent indentation to define blocks clearly.",
+                            "code_intent": "if x:\n    do_something()"
+                        },
+                        {
+                            "name": "Naming Conventions (PEP8 Guidelines)",
+                            "concept_intent": "Apply snake_case, PascalCase, and constant naming styles.",
+                            "code_intent": "snake_case, PascalCase, UPPER_SNAKE"
+                        },
+                        {
+                            "name": "Structuring Code for Readability",
+                            "concept_intent": "Break code into small, focused functions and modules.",
+                            "code_intent": "extract functions; avoid deep nesting"
+                        },
+                        {
+                            "name": "Avoiding Magic Numbers and Hardcoding",
+                            "concept_intent": "Use named constants and configs for clarity and changeability.",
+                            "code_intent": "MAX_RETRY = 3; if retry > MAX_RETRY: ..."
+                        },
+                        {
+                            "name": "Writing Self-Documenting Code",
+                            "concept_intent": "Prefer clear names and simple logic over comments alone.",
+                            "code_intent": "clear variable names; small functions"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "Control Structures",
+            "description": "Logic Decision Zone - Master decision-making and flow control",
+            "order": 2,
+            "topics": [
+                {
+                    "name": "Conditional Statements",
+                    "subtopics": [
+                        {
+                            "name": "if Statement Syntax and Structure",
+                            "concept_intent": "Branch code execution based on a single condition.",
+                            "code_intent": "if cond:\n    ..."
+                        },
+                        {
+                            "name": "if-else and elif Ladder",
+                            "concept_intent": "Handle multiple exclusive cases clearly and safely.",
+                            "code_intent": "if a:\n    ...\nelif b:\n    ...\nelse:\n    ..."
+                        },
+                        {
+                            "name": "Nested Conditional Statements",
+                            "concept_intent": "Represent hierarchical logic while keeping readability.",
+                            "code_intent": "if a:\n    if b:\n        ..."
+                        },
+                        {
+                            "name": "Boolean Logic in Conditions",
+                            "concept_intent": "Combine logical operators to express complex decisions.",
+                            "code_intent": "if (a and b) or not c:\n    ..."
+                        },
+                        {
+                            "name": "Ternary Operators (One-liner conditionals)",
+                            "concept_intent": "Write concise conditional assignments for simple branches.",
+                            "code_intent": "x = 1 if cond else 0"
+                        },
+                        {
+                            "name": "Using Conditions with Input",
+                            "concept_intent": "Validate and branch on user input safely.",
+                            "code_intent": 'age = int(input()); print("adult" if age>=18 else "minor")'
+                        },
+                        {
+                            "name": "Common Logic Pitfalls and Debugging",
+                            "concept_intent": "Avoid common mistakes like identity vs equality and truthiness traps.",
+                            "code_intent": "== vs is; truthy/falsey; print() checks"
+                        }
+                    ]
+                },
+                {
+                    "name": "Error Handling",
+                    "subtopics": [
+                        {
+                            "name": "Understanding Common Runtime Errors",
+                            "concept_intent": "Recognize common exceptions and their causes.",
+                            "code_intent": "ZeroDivisionError; NameError; TypeError"
+                        },
+                        {
+                            "name": "Try-Except Block Structure",
+                            "concept_intent": "Catch and handle errors to keep programs robust.",
+                            "code_intent": "try:\n    ...\nexcept Exception as e:\n    ..."
+                        },
+                        {
+                            "name": "Catching Multiple Exceptions",
+                            "concept_intent": "Handle specific errors differently for better recovery.",
+                            "code_intent": "except (ValueError, TypeError) as e:"
+                        },
+                        {
+                            "name": "else and finally Clauses in Error Handling",
+                            "concept_intent": "Execute success/finalization code reliably around errors.",
+                            "code_intent": "try: ...\nexcept: ...\nelse: ...\nfinally: ..."
+                        },
+                        {
+                            "name": "Raising Custom Exceptions",
+                            "concept_intent": "Signal invalid states with explicit, meaningful exceptions.",
+                            "code_intent": "raise ValueError('bad input')"
+                        },
+                        {
+                            "name": "Using assert Statements",
+                            "concept_intent": "Enforce invariants during development and testing.",
+                            "code_intent": "assert x>=0, 'x must be non-negative'"
+                        },
+                        {
+                            "name": "Error Messages and Debugging Tools",
+                            "concept_intent": "Inspect stack traces and step through code to locate issues.",
+                            "code_intent": "print(e); traceback; pdb.set_trace()"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "Loops & Iteration",
+            "description": "Cognitive Repetition Zone - Master repetitive tasks and iteration",
+            "order": 3,
+            "topics": [
+                {
+                    "name": "Loops",
+                    "subtopics": [
+                        {
+                            "name": "for Loop with range()",
+                            "concept_intent": "Iterate a fixed number of times using a counter sequence.",
+                            "code_intent": "for i in range(5): print(i)"
+                        },
+                        {
+                            "name": "Iterating Over Lists, Tuples, and Strings",
+                            "concept_intent": "Traverse sequences element-by-element for processing.",
+                            "code_intent": "for x in items: ... ; for ch in s: ..."
+                        },
+                        {
+                            "name": "while Loop and Loop Conditions",
+                            "concept_intent": "Repeat until a condition becomes false; ensure progress.",
+                            "code_intent": "while n>0:\n    n-=1"
+                        },
+                        {
+                            "name": "break, continue, and pass Statements",
+                            "concept_intent": "Control loop flow with early exit, skipping, or placeholders.",
+                            "code_intent": "for x in xs:\n    if bad: break\n    if skip: continue\n    pass"
+                        },
+                        {
+                            "name": "Looping with enumerate() and zip()",
+                            "concept_intent": "Access indices and synchronize multiple iterables cleanly.",
+                            "code_intent": "for i, x in enumerate(xs): ...; for a,b in zip(xs, ys): ..."
+                        },
+                        {
+                            "name": "Infinite Loops and Loop Safety",
+                            "concept_intent": "Detect and prevent infinite loops with explicit breaks.",
+                            "code_intent": "while True:\n    if should_stop: break"
+                        },
+                        {
+                            "name": "Comparing for and while Loops",
+                            "concept_intent": "Choose the loop type that best expresses the iteration intent.",
+                            "code_intent": "for i in range(n): ...  vs  while i<n: ...; i+=1"
+                        }
+                    ]
+                },
+                {
+                    "name": "Nested Loops",
+                    "subtopics": [
+                        {
+                            "name": "Syntax of Nested for Loops",
+                            "concept_intent": "Combine loops to process multi-dimensional data.",
+                            "code_intent": "for i in range(n):\n    for j in range(m): ..."
+                        },
+                        {
+                            "name": "Nested while and Mixed Loops",
+                            "concept_intent": "Mix loop types for complex iteration patterns.",
+                            "code_intent": "while i<n:\n    for j in range(m): ..."
+                        },
+                        {
+                            "name": "Printing Patterns (e.g., triangle, pyramid)",
+                            "concept_intent": "Use indices to generate structured text patterns.",
+                            "code_intent": "for i in range(1,6): print('*'*i)"
+                        },
+                        {
+                            "name": "Matrix Traversal and Processing",
+                            "concept_intent": "Access rows/columns systematically in 2D data.",
+                            "code_intent": "for i in range(rows):\n    for j in range(cols): ..."
+                        },
+                        {
+                            "name": "Loop Depth and Performance Considerations",
+                            "concept_intent": "Avoid excessive nested loops and prefer early exits.",
+                            "code_intent": "avoid O(n^3); break early"
+                        },
+                        {
+                            "name": "Managing Inner vs Outer Loop Variables",
+                            "concept_intent": "Keep variable scopes clear and counters independent.",
+                            "code_intent": "use distinct names; reset counters properly"
+                        },
+                        {
+                            "name": "Avoiding Logical Errors in Nested Structures",
+                            "concept_intent": "Validate indices and boundaries to prevent mistakes.",
+                            "code_intent": "watch indices; test small cases"
+                        }
+                    ]
+                },
+                {
+                    "name": "Strings & String Methods",
+                    "subtopics": [
+                        {
+                            "name": "String Indexing and Slicing",
+                            "concept_intent": "Extract substrings and characters by position and ranges.",
+                            "code_intent": "s[0]; s[-1]; s[2:5]; s[:3]; s[::2]"
+                        },
+                        {
+                            "name": "String Immutability",
+                            "concept_intent": "Understand strings cannot be changed in place; create new ones.",
+                            "code_intent": 's = "hi"; s = s + "!"'
+                        },
+                        {
+                            "name": "Case Conversion Methods (lower(), upper(), etc.)",
+                            "concept_intent": "Normalize text for comparisons and display.",
+                            "code_intent": "s.lower(); s.upper(); s.title(); s.capitalize()"
+                        },
+                        {
+                            "name": "Searching and Replacing Text",
+                            "concept_intent": "Find substrings and replace them safely.",
+                            "code_intent": "s.find('a'); s.replace('a','b'); 'a' in s"
+                        },
+                        {
+                            "name": "String Splitting and Joining",
+                            "concept_intent": "Tokenize text and reassemble with custom separators.",
+                            "code_intent": '"a,b,c".split(\",\"); \",\".join(items)'
+                        },
+                        {
+                            "name": "Validating and Cleaning Input Strings",
+                            "concept_intent": "Strip whitespace and check simple patterns.",
+                            "code_intent": "s.strip(); s.isdigit(); s.isalpha(); s.isalnum()"
+                        },
+                        {
+                            "name": "Escape Sequences and Raw Strings",
+                            "concept_intent": "Represent special characters and windows paths correctly.",
+                            "code_intent": r'print("A\tB\nC"); r"C:\path\file.txt"'
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "Data Structures & Modularity",
+            "description": "System Design Zone - Master data organization and code modularity",
+            "order": 4,
+            "topics": [
+                {
+                    "name": "Lists & Tuples",
+                    "subtopics": [
+                        {
+                            "name": "Creating and Modifying Lists",
+                            "concept_intent": "Build dynamic sequences and update contents in place.",
+                            "code_intent": "xs=[1,2]; xs.append(3); xs[0]=9"
+                        },
+                        {
+                            "name": "List Methods (append(), remove(), sort(), etc.)",
+                            "concept_intent": "Use built-ins to manage order, membership, and size.",
+                            "code_intent": "xs.append(x); xs.remove(x); xs.sort(); xs.reverse()"
+                        },
+                        {
+                            "name": "List Indexing, Slicing, and Comprehension",
+                            "concept_intent": "Access by position and build lists from expressions.",
+                            "code_intent": "xs[1:4]; [x*x for x in xs if x%2==0]"
+                        },
+                        {
+                            "name": "Tuples and Their Immutability",
+                            "concept_intent": "Use fixed-size ordered collections for safety and hashing.",
+                            "code_intent": "t=(1,2,3); hash(t)"
+                        },
+                        {
+                            "name": "Tuple Unpacking and Multiple Assignment",
+                            "concept_intent": "Bind multiple values cleanly to variables.",
+                            "code_intent": "a,b = (1,2); a,b = b,a"
+                        },
+                        {
+                            "name": "Iterating Through Lists and Tuples",
+                            "concept_intent": "Traverse elements for processing and aggregation.",
+                            "code_intent": "for x in xs: ... ; for a,b in pairs: ..."
+                        },
+                        {
+                            "name": "When to Use Lists vs Tuples",
+                            "concept_intent": "Pick mutable vs immutable based on use and semantics.",
+                            "code_intent": "list for dynamic; tuple for fixed keys"
+                        }
+                    ]
+                },
+                {
+                    "name": "Sets",
+                    "subtopics": [
+                        {
+                            "name": "Creating and Using Sets",
+                            "concept_intent": "Represent unique, unordered collections efficiently.",
+                            "code_intent": "s=set([1,2,2]); s.add(3)"
+                        },
+                        {
+                            "name": "Set Operations (union, intersection, difference, etc.)",
+                            "concept_intent": "Combine and compare sets for relationships.",
+                            "code_intent": "a|b; a&b; a-b; a^b"
+                        },
+                        {
+                            "name": "Set Methods (add(), remove(), etc.)",
+                            "concept_intent": "Modify membership safely and check existence.",
+                            "code_intent": "s.add(x); s.remove(x); x in s"
+                        },
+                        {
+                            "name": "Working with Duplicates and Membership",
+                            "concept_intent": "Eliminate duplicates and query presence fast.",
+                            "code_intent": "unique = set(xs); if key in seen: ..."
+                        },
+                        {
+                            "name": "Frozen Sets and Hashing",
+                            "concept_intent": "Use immutable sets as dict keys or set members.",
+                            "code_intent": "fs = frozenset([1,2]); d[fs]=True"
+                        },
+                        {
+                            "name": "Performance Benefits of Sets",
+                            "concept_intent": "Use O(1) average-time membership checks.",
+                            "code_intent": "x in s  # fast membership"
+                        },
+                        {
+                            "name": "Converting Between Sets and Other Types",
+                            "concept_intent": "Switch representations for operations then convert back.",
+                            "code_intent": "list(set(xs)); set('aab')"
+                        }
+                    ]
+                },
+                {
+                    "name": "Functions",
+                    "subtopics": [
+                        {
+                            "name": "Defining Functions with def",
+                            "concept_intent": "Package reusable logic with clear inputs/outputs.",
+                            "code_intent": "def add(a,b): return a+b"
+                        },
+                        {
+                            "name": "Parameters, Arguments, and Return Values",
+                            "concept_intent": "Pass values and receive results explicitly.",
+                            "code_intent": "def f(x,y=0,*args,**kw): return x+y"
+                        },
+                        {
+                            "name": "Variable Scope and global/nonlocal",
+                            "concept_intent": "Understand name resolution and side-effects scope.",
+                            "code_intent": "x=0; def f():\n    global x; x+=1"
+                        },
+                        {
+                            "name": "Default and Keyword Arguments",
+                            "concept_intent": "Make APIs flexible and self-documenting.",
+                            "code_intent": "def connect(host='localhost', port=5432): ..."
+                        },
+                        {
+                            "name": "Docstrings and Function Annotations",
+                            "concept_intent": "Describe behavior and types for tools and readers.",
+                            "code_intent": "def f(a: int) -> int:\n    \"\"\"Squares a number\"\"\"\n    return a*a"
+                        },
+                        {
+                            "name": "Lambda Functions and Anonymous Functions",
+                            "concept_intent": "Define small inline functions for brief use.",
+                            "code_intent": "sorted(xs, key=lambda x: x[1])"
+                        },
+                        {
+                            "name": "Higher-Order Functions and Functional Programming Basics",
+                            "concept_intent": "Use map/filter/reduce and pass functions as values.",
+                            "code_intent": "list(map(str, xs)); list(filter(pred, xs))"
+                        }
+                    ]
+                },
+                {
+                    "name": "Dictionaries",
+                    "subtopics": [
+                        {
+                            "name": "Creating and Accessing Dictionary Items",
+                            "concept_intent": "Map keys to values and retrieve them efficiently.",
+                            "code_intent": "d={'a':1}; d['a']; d.get('b',0)"
+                        },
+                        {
+                            "name": "Adding, Updating, and Deleting Keys",
+                            "concept_intent": "Maintain and mutate mappings safely.",
+                            "code_intent": "d['x']=1; d.update(y=2); del d['x']"
+                        },
+                        {
+                            "name": "Looping Through Keys, Values, and Items",
+                            "concept_intent": "Traverse mappings by keys, values, or pairs.",
+                            "code_intent": "for k,v in d.items(): ..."
+                        },
+                        {
+                            "name": "Dictionary Methods (get(), pop(), update(), etc.)",
+                            "concept_intent": "Use helpers for defaults, removal, and merges.",
+                            "code_intent": "d.get('k',0); d.pop('k',None); d.update(other)"
+                        },
+                        {
+                            "name": "Nesting Dictionaries",
+                            "concept_intent": "Represent structured data with nested mappings.",
+                            "code_intent": "user={'name':{'first':'A','last':'B'}}"
+                        },
+                        {
+                            "name": "Using Dictionaries for Counting (e.g., frequency maps)",
+                            "concept_intent": "Aggregate occurrences efficiently by key.",
+                            "code_intent": "from collections import Counter; Counter(xs)"
+                        },
+                        {
+                            "name": "Dictionary Comprehensions",
+                            "concept_intent": "Build mappings from sequences in one expression.",
+                            "code_intent": "{x: x*x for x in range(5)}"
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
 
     print("🚀 Starting PyGrounds zone population...")
     print("=" * 60)
-    
+
     # Clean up existing data with detailed feedback
     print("🧹 Cleaning existing data...")
-    
-    # Get counts before deletion for feedback
+
     existing_subtopics = Subtopic.objects.count()
     existing_topics = Topic.objects.count()
     existing_zones = GameZone.objects.count()
-    
+
     if existing_subtopics > 0 or existing_topics > 0 or existing_zones > 0:
         print(f"  📊 Found existing data:")
         print(f"    • {existing_zones} zones")
-        print(f"    • {existing_topics} topics") 
+        print(f"    • {existing_topics} topics")
         print(f"    • {existing_subtopics} subtopics")
         print("  🗑️  Deleting all existing data...")
-        
+
         # Delete in proper order (child to parent) to avoid foreign key issues
         Subtopic.objects.all().delete()
         print("    ✅ Subtopics deleted")
-        
+
         Topic.objects.all().delete()
         print("    ✅ Topics deleted")
-        
+
         GameZone.objects.all().delete()
         print("    ✅ Zones deleted")
-        
+
         # Also clean up any orphaned embeddings
         try:
             from content_ingestion.models import Embedding
@@ -339,7 +790,7 @@ def populate_zones():
                 print(f"    ✅ {count} orphaned embeddings deleted")
         except Exception as e:
             print(f"    ⚠️  Could not clean orphaned embeddings: {e}")
-            
+
         print("  🎯 Database cleaned successfully!")
     else:
         print("  ✨ Database is already clean - no existing data found")
@@ -353,6 +804,9 @@ def populate_zones():
     print(f"📊 Will create: {total_zones} zones, {total_topics} topics, {total_subtopics} subtopics\n")
 
     # Create zones, topics, and subtopics
+    code_intents_map = {}
+    concept_intents_map = {}
+
     for zone_idx, zone_data in enumerate(zones_data, 1):
         zone = GameZone.objects.create(
             name=zone_data["name"],
@@ -368,37 +822,60 @@ def populate_zones():
                 description=topic_data.get("description", topic_data["name"]),
             )
             print(f"  📚 Topic: {topic.name}")
-            for sub_idx, subtopic_name in enumerate(topic_data["subtopics"], 1):
+            for sub_idx, sub in enumerate(topic_data["subtopics"], 1):
+                # sub may be a dict with name/intent fields
+                if isinstance(sub, dict):
+                    sub_name = sub["name"]
+                    concept_intent = sub.get("concept_intent", "")
+                    code_intent = sub.get("code_intent", "")
+                else:
+                    sub_name = str(sub)
+                    concept_intent = ""
+                    code_intent = ""
+
                 subtopic = Subtopic.objects.create(
                     topic=topic,
-                    name=subtopic_name,
+                    name=sub_name,
+                    concept_intent=concept_intent,
+                    code_intent=code_intent
                 )
                 print(f"    📝 Subtopic: {subtopic.name}")
+                if concept_intent:
+                    print(f"        💡 Concept: {concept_intent[:60]}...")
+                if code_intent:
+                    print(f"        💻 Code: {code_intent[:60]}...")
+
+                # Save mapping for embedding generation
+                if concept_intent:
+                    concept_intents_map[subtopic.id] = concept_intent
+                if code_intent:
+                    code_intents_map[subtopic.id] = code_intent
         print()
 
     print("=" * 60)
     print("🎉 PyGrounds zone population complete!\n")
-    
+
     # Verify the data was created correctly
     final_zones = GameZone.objects.count()
     final_topics = Topic.objects.count()
     final_subtopics = Subtopic.objects.count()
-    
+
     print("📈 Final Summary:")
     print(f"  • Created {final_zones} zones (expected: {total_zones})")
     print(f"  • Created {final_topics} topics (expected: {total_topics})")
     print(f"  • Created {final_subtopics} subtopics (expected: {total_subtopics})")
-    
-    # Verify counts match expectations
+
     if final_zones == total_zones and final_topics == total_topics and final_subtopics == total_subtopics:
         print("  ✅ All data created successfully!")
     else:
         print("  ⚠️  Warning: Some data may not have been created correctly")
         print("     Please check the logs above for any errors")
 
-    generate_subtopic_embeddings()
+    # Generate embeddings with both intent maps
+    generate_subtopic_embeddings(concept_intents_map=concept_intents_map, code_intents_map=code_intents_map)
 
     print("\n🎮 Your PyGrounds learning structure is ready!")
+
 
 if __name__ == "__main__":
     try:

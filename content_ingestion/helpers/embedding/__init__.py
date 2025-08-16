@@ -1,7 +1,3 @@
-"""
-Embedding system with multi-model support and batch processing.
-"""
-
 from .models import EmbeddingModelType, EmbeddingConfig, MODEL_CONFIGS, CHUNK_TYPE_TO_MODEL
 from .generator import EmbeddingGenerator, embed_chunks_with_models
 

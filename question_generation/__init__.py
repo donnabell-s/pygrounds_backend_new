@@ -32,21 +32,22 @@ from .helpers.db_operations import (
     get_existing_questions_count,
     delete_questions_by_criteria
 )
-from .helpers.generation_core import (
-    generate_questions_for_subtopic_combination,
-    run_multithreaded_generation
-)
+# Temporarily comment out imports to fix Django startup issues
+# from .helpers.generation_core import (
+#     generate_questions_for_subtopic_combination,
+#     run_multithreaded_generation
+# )
 
-# Clean API views
-from .views.question_api import (
-    generate_questions_bulk,
-    generate_questions_single_subtopic,
-    generate_pre_assessment,
-    get_rag_context
-)
-from .views.test_views import (
-    deepseek_test_view,
-    test_prompt_generation, 
-    health_check,
-    get_generation_stats
-)
+# Clean API views  
+# from .views.question_api import (
+#     generate_questions_bulk,
+#     generate_questions_single_subtopic,
+#     generate_pre_assessment,
+#     get_rag_context
+# )
+# from .views.test_views import (
+#     deepseek_test_view,
+#     test_prompt_generation, 
+#     health_check,
+#     get_generation_stats
+# )

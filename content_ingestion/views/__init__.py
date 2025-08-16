@@ -1,68 +1,57 @@
-"""
-Content ingestion views package - Final consolidated version.
-All views organized by functionality for better maintainability.
-"""
-
-# ==================== ADMIN VIEWS ====================
-# Administrative operations and enhanced management features
+# Document management and admin views
 from .admin_views import (
-    # Admin CRUD operations
-    ZoneList, ZoneDetail,
-    TopicList, TopicDetail,
-    SubtopicList, SubtopicDetail,
-    DocumentList, DocumentDetail,
-    
-    # Document CRUD operations
     upload_pdf, list_documents, get_document_detail, delete_document,
-    
-    # Document testing and validation
+    delete_document_with_chunks, reprocess_document,
     test_pdf_analysis, test_pdf_chunking,
-    
-    # Relationship views
+    ZoneList, ZoneDetail, TopicList, TopicDetail, 
+    SubtopicList, SubtopicDetail, DocumentList, DocumentDetail,
     ZoneTopicsView, TopicSubtopicsView
 )
 
-# ==================== SPECIALIZED VIEWS ====================
-# Embedding operations
-from .embeddingViews import (
-    embed_document_chunks, get_chunk_embeddings,
-    get_chunk_embeddings_detailed, get_topic_subtopic_embeddings_detailed,
-    generate_subtopic_embeddings
-)
-
-# TOC parser views (functional)
+# TOC parsing views
 from .tocParserView import (
     generate_document_toc, get_section_content, get_document_toc
 )
 
-# Chunk processing views (functional)
+# Document chunking and pipeline views
 from .chunkPagesView import (
     process_document_pipeline, chunk_document_pages, generate_document_embeddings,
     get_document_chunks, get_single_chunk, get_document_chunks_full,
-    get_chunks_by_type, get_coding_chunks_for_minigames
+    get_chunks_by_type, get_coding_chunks_for_minigames,
+    upload_and_process_pipeline
+)
+
+# Embedding views
+from .embeddingViews import (
+    embed_document_chunks, get_chunk_embeddings, get_chunk_embeddings_detailed,
+    generate_subtopic_embeddings, get_topic_subtopic_embeddings_detailed
+)
+
+# Semantic similarity views
+from .semantic_views import (
+    process_semantic_similarities, process_all_semantic_similarities,
+    get_subtopic_similar_chunks, get_semantic_overview
 )
 
 __all__ = [
-    # Document management
+    # Admin and document management
     'upload_pdf', 'list_documents', 'get_document_detail', 'delete_document',
+    'delete_document_with_chunks', 'reprocess_document', 
     'test_pdf_analysis', 'test_pdf_chunking',
-    
-    # Embedding operations
-    'embed_document_chunks', 'get_chunk_embeddings', 'get_chunk_embeddings_detailed',
-    'get_topic_subtopic_embeddings_detailed', 'generate_subtopic_embeddings',
-    
-    # Relationship views
-    'ZoneTopicsView', 'TopicSubtopicsView',
-    
-    # Admin CRUD operations (concise names)
     'ZoneList', 'ZoneDetail', 'TopicList', 'TopicDetail',
     'SubtopicList', 'SubtopicDetail', 'DocumentList', 'DocumentDetail',
-    
-    # TOC parser views (functional)
+    'ZoneTopicsView', 'TopicSubtopicsView',
+    # TOC parsing
     'generate_document_toc', 'get_section_content', 'get_document_toc',
-    
-    # Chunk processing views (functional)
+    # Chunking and pipeline
     'process_document_pipeline', 'chunk_document_pages', 'generate_document_embeddings',
     'get_document_chunks', 'get_single_chunk', 'get_document_chunks_full',
-    'get_chunks_by_type', 'get_coding_chunks_for_minigames'
+    'get_chunks_by_type', 'get_coding_chunks_for_minigames',
+    'upload_and_process_pipeline',
+    # Embeddings
+    'embed_document_chunks', 'get_chunk_embeddings', 'get_chunk_embeddings_detailed',
+    'generate_subtopic_embeddings', 'get_topic_subtopic_embeddings_detailed',
+    # Semantic similarity
+    'process_semantic_similarities', 'process_all_semantic_similarities',
+    'get_subtopic_similar_chunks', 'get_semantic_overview'
 ]

@@ -44,13 +44,30 @@ def process_document_pipeline(request, document_id):
         try:
             embedding_gen = EmbeddingGenerator()
             chunks = DocumentChunk.objects.filter(document=document)
-            embedding_result = embedding_gen.generate_batch_embeddings(chunks)
+            embedding_result = embedding_gen.embed_and_save_batch(chunks)
             pipeline_results['pipeline_steps']['embedding'] = {
                 'status': 'success',
-                'embeddings_created': len(embedding_result.get('embeddings', []))
+                'embeddings_created': embedding_result.get('embeddings_generated', 0),
+                'database_saves': embedding_result.get('database_saves', 0)
             }
         except Exception as e:
             pipeline_results['pipeline_steps']['embedding'] = {'status': 'error', 'error': str(e)}
+        
+        # Step 4: Semantic Similarity Processing
+        try:
+            from ..helpers.semantic_similarity import compute_semantic_similarities_for_document
+            semantic_result = compute_semantic_similarities_for_document(
+                document_id=document_id, 
+                similarity_threshold=0.1,  # Store similarities above 0.1
+                top_k_results=10  # Store top 10 similar chunks per subtopic
+            )
+            pipeline_results['pipeline_steps']['semantic_similarity'] = {
+                'status': semantic_result['status'],
+                'processed_subtopics': semantic_result.get('processed_subtopics', 0),
+                'total_similarities': semantic_result.get('total_similarities', 0)
+            }
+        except Exception as e:
+            pipeline_results['pipeline_steps']['semantic_similarity'] = {'status': 'error', 'error': str(e)}
         
         document.processing_status = 'COMPLETED'
         document.save()
@@ -93,7 +110,6 @@ def chunk_document_pages(request, document_id):
                 'id': chunk.id,
                 'chunk_type': chunk.chunk_type,
                 'page_number': chunk.page_number,
-                'subtopic_title': chunk.subtopic_title,
                 'text_preview': chunk.text[:100] + '...' if len(chunk.text) > 100 else chunk.text
             })
         
@@ -130,17 +146,18 @@ def generate_document_embeddings(request, document_id):
         
         embedding_gen = EmbeddingGenerator()
         chunks = DocumentChunk.objects.filter(document=document)
-        embedding_result = embedding_gen.generate_batch_embeddings(chunks)
+        embedding_result = embedding_gen.embed_and_save_batch(chunks)
         
         return Response({
             'status': 'success',
-            'message': f'Embeddings generated successfully',
+            'message': f'Embeddings generated and saved successfully',
             'document': {
                 'id': document.id,
                 'title': document.title,
                 'chunk_count': chunk_count
             },
-            'embeddings_created': len(embedding_result.get('embeddings', []))
+            'embeddings_generated': embedding_result.get('embeddings_generated', 0),
+            'database_saves': embedding_result.get('database_saves', 0)
         }, status=status.HTTP_200_OK)
         
     except Exception as e:
@@ -204,9 +221,7 @@ def get_single_chunk(request, chunk_id):
             'text': chunk.text,
             'page_number': chunk.page_number,
             'order_in_doc': chunk.order_in_doc,
-            'subtopic_title': chunk.subtopic_title,
             'token_count': chunk.token_count,
-            'parser_metadata': chunk.parser_metadata,
             'has_embedding': hasattr(chunk, 'embeddings') and chunk.embeddings.exists()
         }
         
@@ -239,9 +254,7 @@ def get_document_chunks_full(request, document_id):
                 'text': chunk.text,
                 'page_number': chunk.page_number,
                 'order_in_doc': chunk.order_in_doc,
-                'subtopic_title': chunk.subtopic_title,
                 'token_count': chunk.token_count,
-                'parser_metadata': chunk.parser_metadata
             })
         
         return Response({
@@ -284,7 +297,6 @@ def get_chunks_by_type(request, document_id, chunk_type):
                 'id': chunk.id,
                 'chunk_type': chunk.chunk_type,
                 'page_number': chunk.page_number,
-                'subtopic_title': chunk.subtopic_title,
                 'text_preview': chunk.text[:200] + '...' if len(chunk.text) > 200 else chunk.text,
                 'token_count': chunk.token_count
             })
@@ -336,7 +348,6 @@ def get_coding_chunks_for_minigames(request, document_id):
                 'id': chunk.id,
                 'chunk_type': chunk.chunk_type,
                 'page_number': chunk.page_number,
-                'subtopic_title': chunk.subtopic_title,
                 'text': chunk.text,
                 'token_count': chunk.token_count,
                 'minigame_metadata': {
@@ -382,7 +393,6 @@ def _group_optimized_chunks_by_page(chunks_data):
             'id': chunk.id,
             'chunk_type': chunk.chunk_type,
             'order_in_doc': chunk.order_in_doc,
-            'subtopic_title': chunk.subtopic_title,
             'text_preview': chunk.text[:100] + '...' if len(chunk.text) > 100 else chunk.text,
             'token_count': chunk.token_count
         })
@@ -396,3 +406,147 @@ def _get_difficulty_distribution(chunks_data):
         type_counts[chunk_type] = type_counts.get(chunk_type, 0) + 1
     
     return type_counts
+
+
+@api_view(['POST'])
+def upload_and_process_pipeline(request):
+    """
+    Complete pipeline endpoint: Upload file + run full processing pipeline.
+    
+    Expected form data:
+    - file: PDF file to upload (required)
+    - difficulty: Document difficulty level (optional, defaults to 'intermediate')
+    
+    Processing steps:
+    1. Upload and save document (title auto-extracted from filename)
+    2. Generate TOC
+    3. Chunk pages according to TOC
+    4. Generate embeddings
+    5. Compute semantic similarities
+    """
+    try:
+        # Check if file is provided
+        if 'file' not in request.FILES:
+            return Response({
+                'status': 'error',
+                'message': 'No file provided. Please upload a PDF file.'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Import necessary modules
+        from content_ingestion.serializers import DocumentSerializer
+        from content_ingestion.helpers.toc_parser import generate_toc_entries_for_document
+        from content_ingestion.helpers.page_chunking.toc_chunk_processor import GranularChunkProcessor
+        from content_ingestion.helpers.embedding.generator import EmbeddingGenerator
+        from content_ingestion.helpers.semantic_similarity import compute_semantic_similarities_for_document
+        import os
+        
+        # Prepare document data
+        uploaded_file = request.FILES['file']
+        difficulty = request.data.get('difficulty', 'intermediate')
+        
+        # Auto-extract title from filename (remove extension)
+        title = os.path.splitext(uploaded_file.name)[0]
+        
+        document_data = {
+            'file': uploaded_file,
+            'title': title,
+            'difficulty': difficulty
+        }
+        
+        # Validate and save uploaded document
+        serializer = DocumentSerializer(data=document_data)
+        if not serializer.is_valid():
+            return Response({
+                'status': 'error',
+                'message': 'Invalid document data',
+                'errors': serializer.errors
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Save document and set processing status
+        document = serializer.save()
+        document.processing_status = 'PROCESSING'
+        document.save()
+        
+        # Initialize pipeline results
+        pipeline_results = {
+            'document_id': document.id,
+            'document_title': document.title,
+            'difficulty': document.difficulty,
+            'pipeline_steps': {},
+            'status': 'success'
+        }
+        
+        try:
+            # Step 1: Generate TOC
+            toc_result = generate_toc_entries_for_document(document)
+            pipeline_results['pipeline_steps']['toc'] = {
+                'status': 'success',
+                'entries_count': len(toc_result) if toc_result else 0
+            }
+        except Exception as e:
+            pipeline_results['pipeline_steps']['toc'] = {'status': 'error', 'error': str(e)}
+        
+        try:
+            # Step 2: Chunk document pages according to TOC
+            chunk_processor = GranularChunkProcessor()
+            chunking_result = chunk_processor.process_entire_document(document)
+            pipeline_results['pipeline_steps']['chunking'] = {
+                'status': 'success',
+                'chunks_created': chunking_result.get('total_chunks_created', 0)
+            }
+        except Exception as e:
+            pipeline_results['pipeline_steps']['chunking'] = {'status': 'error', 'error': str(e)}
+        
+        try:
+            # Step 3: Generate embeddings
+            embedding_generator = EmbeddingGenerator()
+            chunks = DocumentChunk.objects.filter(document=document)
+            embedding_result = embedding_generator.embed_and_save_batch(chunks)
+            pipeline_results['pipeline_steps']['embeddings'] = {
+                'status': 'success',
+                'embeddings_generated': embedding_result.get('embeddings_generated', 0),
+                'database_saves': embedding_result.get('database_saves', 0)
+            }
+        except Exception as e:
+            pipeline_results['pipeline_steps']['embeddings'] = {'status': 'error', 'error': str(e)}
+        
+        try:
+            # Step 4: Semantic Similarity Processing
+            semantic_result = compute_semantic_similarities_for_document(
+                document_id=document.id, 
+                similarity_threshold=0.1,  # Store similarities above 0.1
+                top_k_results=10  # Store top 10 similar chunks per subtopic
+            )
+            pipeline_results['pipeline_steps']['semantic_similarity'] = {
+                'status': semantic_result['status'],
+                'processed_subtopics': semantic_result.get('processed_subtopics', 0),
+                'total_similarities': semantic_result.get('total_similarities', 0)
+            }
+        except Exception as e:
+            pipeline_results['pipeline_steps']['semantic_similarity'] = {'status': 'error', 'error': str(e)}
+        
+        # Update document status
+        document.processing_status = 'COMPLETED'
+        document.save()
+        
+        # Check if any steps failed
+        failed_steps = [step for step, data in pipeline_results['pipeline_steps'].items() 
+                       if data.get('status') == 'error']
+        
+        if failed_steps:
+            pipeline_results['status'] = 'partial_success'
+            pipeline_results['failed_steps'] = failed_steps
+            return Response(pipeline_results, status=status.HTTP_207_MULTI_STATUS)
+        
+        return Response(pipeline_results, status=status.HTTP_201_CREATED)
+        
+    except Exception as e:
+        # Update document status if it was created
+        if 'document' in locals():
+            document.processing_status = 'ERROR'
+            document.save()
+        
+        return Response({
+            'status': 'error',
+            'message': f'Pipeline processing failed: {str(e)}'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

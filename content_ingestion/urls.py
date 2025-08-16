@@ -4,6 +4,7 @@ from .views import (
     upload_pdf, list_documents, get_document_detail, delete_document, test_pdf_analysis, test_pdf_chunking,
     # Functional processing steps  
     process_document_pipeline, chunk_document_pages, generate_document_embeddings,
+    upload_and_process_pipeline,
     # Core steps
     generate_document_toc, get_section_content, get_document_toc,
     get_chunk_embeddings,
@@ -16,6 +17,11 @@ from .views import (
     # Admin views
     ZoneList, ZoneDetail, TopicList, TopicDetail,
     SubtopicList, SubtopicDetail
+)
+# Semantic similarity views
+from .views.semantic_views import (
+    process_semantic_similarities, process_all_semantic_similarities,
+    get_subtopic_similar_chunks, get_semantic_overview
 )
 
 app_name = 'content_ingestion'
@@ -30,6 +36,7 @@ urlpatterns = [
     path('documents/<int:document_id>/delete/', delete_document, name='document-delete'),
 
     # ========== PIPELINE (FUNCTIONAL) ==========
+    path('pipeline/', upload_and_process_pipeline, name='complete-pipeline'),
     path('pipeline/<int:document_id>/', process_document_pipeline, name='process-document'),
     path('pipeline/<int:document_id>/chunks/', chunk_document_pages, name='chunk-document'),
     path('pipeline/<int:document_id>/embeddings/', generate_document_embeddings, name='embed-document'),
@@ -51,6 +58,12 @@ urlpatterns = [
     path('embeddings/<int:document_id>/detailed/', get_chunk_embeddings_detailed, name='embeddings-detailed'),
     path('embeddings/subtopics/', generate_subtopic_embeddings, name='embeddings-subtopics'),
     path('embeddings/topics/detailed/', get_topic_subtopic_embeddings_detailed, name='embeddings-topics'),
+
+    # ========== SEMANTIC SIMILARITY ==========
+    path('semantic/<int:document_id>/', process_semantic_similarities, name='semantic-process'),
+    path('semantic/all/', process_all_semantic_similarities, name='semantic-process-all'),
+    path('semantic/subtopic/<int:subtopic_id>/chunks/', get_subtopic_similar_chunks, name='semantic-chunks'),
+    path('semantic/overview/', get_semantic_overview, name='semantic-overview'),
 
     # ========== RESOURCES ==========
     path('zones/', ZoneList.as_view(), name='zones'),

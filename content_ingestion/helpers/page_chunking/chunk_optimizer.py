@@ -123,13 +123,9 @@ class ChunkOptimizer:
             'rag_keywords': self._extract_rag_keywords(final_title, structured_content)[:8],  # Limit keywords
             
             # Optimization flags
-            'title_cleaned': clean_title != chunk.subtopic_title,
+            'title_cleaned': True,
             'content_improved': len(self._clean_content(chunk.text)) != len(chunk.text),
             'structure_enhanced': True,
-            
-            # Original metadata (minimal)
-            'original_title': chunk.subtopic_title,
-            'original_metadata': chunk.parser_metadata
         }
     
     def _extract_clean_title(self, title: str) -> tuple[str, str]:
@@ -413,5 +409,4 @@ KEY LEARNING POINTS:
             'title_cleaned': False,
             'content_improved': False,
             'structure_enhanced': False,
-            'original_metadata': chunk.parser_metadata
         }

@@ -8,8 +8,9 @@ RESTful URL patterns following clean design principles:
 """
 
 from django.urls import path
-from .views import (
-    # Question management
+
+# Import directly from module files to avoid circular imports
+from .views.questionManagement import (
     get_subtopic_questions, 
     get_topic_questions_summary,
     get_question_by_id,
@@ -22,18 +23,21 @@ from .views import (
     get_all_beginner_questions,
     get_all_intermediate_questions,
     get_all_advanced_questions,
-    get_all_master_questions,
-    # New question generation API
+    get_all_master_questions
+)
+from .views.question_api import (
     generate_questions_bulk,
     generate_questions_single_subtopic, 
     generate_pre_assessment,
-    get_rag_context,
-    # New test views
+    get_rag_context
+)
+from .views.test_views import (
     deepseek_test_view,
     test_prompt_generation,
     health_check,
-    get_generation_stats,
-    # Admin views
+    get_generation_stats
+)
+from .views.admin_views import (
     AdminGeneratedQuestionListView, AdminGeneratedQuestionDetailView,
     AdminPreAssessmentQuestionListView, AdminPreAssessmentQuestionDetailView,
     AdminSemanticSubtopicListView,

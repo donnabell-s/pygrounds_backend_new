@@ -11,7 +11,8 @@ from django.db.models import Count, Q
 from django.http import Http404
 
 from .imports import *
-from ..models import GeneratedQuestion, PreAssessmentQuestion, SemanticSubtopic
+from ..models import GeneratedQuestion, PreAssessmentQuestion
+from content_ingestion.models import SemanticSubtopic  # Moved to content_ingestion
 from ..serializers import (
     GeneratedQuestionSerializer, PreAssessmentQuestionSerializer,
     QuestionSummarySerializer, SemanticSubtopicSerializer
@@ -241,8 +242,10 @@ class AdminSemanticSubtopicListView(generics.ListAPIView):
         # Filter by chunk count
         min_chunks = self.request.query_params.get('min_chunks')
         if min_chunks:
-            # This is a rough filter since we can't easily filter on JSON array length
-            queryset = [obj for obj in queryset if len(obj.ranked_chunks) >= int(min_chunks)]
+            # Filter based on total chunks (concept + code)
+            queryset = [obj for obj in queryset if 
+                       (len(obj.ranked_concept_chunks) if obj.ranked_concept_chunks else 0) + 
+                       (len(obj.ranked_code_chunks) if obj.ranked_code_chunks else 0) >= int(min_chunks)]
             
         return queryset
 
@@ -250,9 +253,17 @@ class AdminSemanticSubtopicListView(generics.ListAPIView):
 @api_view(['GET'])
 def semantic_statistics(request):
     """Get semantic analysis statistics."""
+    # For now, calculate this manually since JSON array length queries are complex
+    semantic_subtopics = SemanticSubtopic.objects.all()
+    subtopics_with_chunks = sum(
+        1 for s in semantic_subtopics 
+        if (s.ranked_concept_chunks and len(s.ranked_concept_chunks) > 0) or 
+           (s.ranked_code_chunks and len(s.ranked_code_chunks) > 0)
+    )
+    
     stats = {
         'total_semantic_subtopics': SemanticSubtopic.objects.count(),
-        'subtopics_with_chunks': SemanticSubtopic.objects.exclude(ranked_chunks=[]).count(),
+        'subtopics_with_chunks': subtopics_with_chunks,
         'average_chunks_per_subtopic': 0,
         'recent_updates': SemanticSubtopic.objects.select_related('subtopic').order_by('-updated_at')[:10].values(
             'subtopic__name', 'subtopic__topic__name', 'updated_at'
@@ -260,9 +271,12 @@ def semantic_statistics(request):
     }
     
     # Calculate average chunks per subtopic
-    semantic_subtopics = SemanticSubtopic.objects.all()
     if semantic_subtopics:
-        total_chunks = sum(len(s.ranked_chunks) for s in semantic_subtopics)
+        total_chunks = sum(
+            (len(s.ranked_concept_chunks) if s.ranked_concept_chunks else 0) + 
+            (len(s.ranked_code_chunks) if s.ranked_code_chunks else 0) 
+            for s in semantic_subtopics
+        )
         stats['average_chunks_per_subtopic'] = total_chunks / len(semantic_subtopics)
     
     return Response(stats)
@@ -300,7 +314,11 @@ def admin_dashboard_stats(request):
         },
         'semantic': {
             'total_semantic_subtopics': SemanticSubtopic.objects.count(),
-            'subtopics_with_semantic_data': SemanticSubtopic.objects.exclude(ranked_chunks=[]).count()
+            'subtopics_with_semantic_data': sum(
+                1 for s in SemanticSubtopic.objects.all() 
+                if (s.ranked_concept_chunks and len(s.ranked_concept_chunks) > 0) or 
+                   (s.ranked_code_chunks and len(s.ranked_code_chunks) > 0)
+            )
         }
     }
     
