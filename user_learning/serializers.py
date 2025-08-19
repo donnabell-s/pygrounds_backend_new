@@ -70,10 +70,12 @@ class UserZoneProgressSerializer(serializers.ModelSerializer):
 
 class UserTopicProficiencySerializer(serializers.ModelSerializer):
     topic = TopicSerializer()
+    # ⬅️ Convenience field so each proficiency also has zone at the root
+    zone = ZoneSerializer(source="topic.zone", read_only=True)
 
     class Meta:
         model = UserTopicProficiency
-        fields = ['topic', 'proficiency_percent']
+        fields = ["topic", "zone", "proficiency_percent"]
 
 
 class UserSubtopicMasterySerializer(serializers.ModelSerializer):

@@ -39,7 +39,7 @@ class GameZoneSerializer(serializers.ModelSerializer):
 class TopicSerializer(serializers.ModelSerializer):
     class Meta:
         model = Topic
-        fields = ['id', 'zone', 'name', 'description', 'order']
+        fields = ['id', 'zone', 'name', 'description']
 
 class SubtopicSerializer(serializers.ModelSerializer):
     class Meta:
