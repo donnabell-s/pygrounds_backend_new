@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     'reading',
     'django_filters',
     #'minigames',
+    
 ]
 
 MIDDLEWARE = [
@@ -72,6 +73,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
 ]
+CORS_ALLOW_CREDENTIALS = False
 
 REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
@@ -81,7 +83,9 @@ REST_FRAMEWORK = {
         "rest_framework.filters.SearchFilter",
         "rest_framework.filters.OrderingFilter",
     ],
+    "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.AllowAny"], 
 }
+
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),
