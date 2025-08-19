@@ -1,29 +1,19 @@
-"""
-RAG context operations for retrieving and formatting semantic content.
-Handles semantic similarity retrieval and context formatting for question generation.
-"""
+# RAG (Retrieval Augmented Generation) context manager
+# Gets relevant content chunks based on semantic similarity
 
 from typing import Optional
 from django.db import models
-
+import logging
+logger = logging.getLogger(__name__)
 
 def get_rag_context_for_subtopic(subtopic, difficulty: str) -> str:
-    """
-    Retrieve RAG context using SemanticSubtopic ranked chunks.
-    
-    This function is the core of our RAG system:
-    1. Gets pre-computed semantic similarity scores from SemanticSubtopic
-    2. Retrieves top-ranked chunk IDs based on difficulty requirements
-    3. Fetches actual chunk content from database
-    4. Formats context for LLM consumption
-    
-    Args:
-        subtopic: Subtopic instance to generate context for
-        difficulty: One of ['beginner', 'intermediate', 'advanced', 'master']
-        
-    Returns:
-        str: Formatted context string for LLM, including chunks and metadata
-    """
+    # Get relevant content chunks for question generation
+    # Uses semantic similarity to fetch best matching content for the difficulty level
+    #
+    # Process:
+    # 1. Get semantic subtopic data
+    # 2. Select chunks based on difficulty
+    # 3. Format context for LLM
     try:
         from content_ingestion.models import SemanticSubtopic  # Moved to content_ingestion
         from content_ingestion.models import DocumentChunk

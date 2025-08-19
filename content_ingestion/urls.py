@@ -1,10 +1,9 @@
 from django.urls import path
 from .views import (
-    # Document management (unified)
-    upload_pdf, list_documents, get_document_detail, delete_document, test_pdf_analysis, test_pdf_chunking,
+    # Document management
+    upload_pdf, list_documents, get_document_detail, delete_document,
     # Functional processing steps  
     process_document_pipeline, chunk_document_pages, generate_document_embeddings,
-    upload_and_process_pipeline,
     # Core steps
     generate_document_toc, get_section_content, get_document_toc,
     get_chunk_embeddings,
@@ -24,19 +23,16 @@ from .views.semantic_views import (
     get_subtopic_similar_chunks, get_semantic_overview
 )
 
-app_name = 'content_ingestion'
-
 urlpatterns = [
     # ========== DOCUMENTS ==========
-    path('upload/', upload_pdf, name='upload'),
-    path('test-analysis/', test_pdf_analysis, name='test-analysis'),
-    path('test-chunking/', test_pdf_chunking, name='test-chunking'),
-    path('documents/', list_documents, name='documents'),
-    path('documents/<int:document_id>/', get_document_detail, name='document-detail'),
-    path('documents/<int:document_id>/delete/', delete_document, name='document-delete'),
+    # Document management endpoints
+    path('docs/', list_documents, name='docs-list'),
+    path('docs/upload/', upload_pdf, name='docs-upload'),
+    path('docs/<int:document_id>/', get_document_detail, name='docs-detail'),
+    path('docs/<int:document_id>/delete/', delete_document, name='docs-delete'),
 
     # ========== PIPELINE (FUNCTIONAL) ==========
-    path('pipeline/', upload_and_process_pipeline, name='complete-pipeline'),
+    # Pipeline processing endpoints
     path('pipeline/<int:document_id>/', process_document_pipeline, name='process-document'),
     path('pipeline/<int:document_id>/chunks/', chunk_document_pages, name='chunk-document'),
     path('pipeline/<int:document_id>/embeddings/', generate_document_embeddings, name='embed-document'),
@@ -65,21 +61,18 @@ urlpatterns = [
     path('semantic/subtopic/<int:subtopic_id>/chunks/', get_subtopic_similar_chunks, name='semantic-chunks'),
     path('semantic/overview/', get_semantic_overview, name='semantic-overview'),
 
-    # ========== RESOURCES ==========
+    # ========== RESOURCE MANAGEMENT ==========
+    # Zones
     path('zones/', ZoneList.as_view(), name='zones'),
     path('zones/<int:pk>/', ZoneDetail.as_view(), name='zone-detail'),
+    path('zones/<int:zone_id>/topics/', ZoneTopicsView, name='zone-topics'),
+    
+    # Topics
     path('topics/', TopicList.as_view(), name='topics'),
     path('topics/<int:pk>/', TopicDetail.as_view(), name='topic-detail'),
-    path('zones/<int:zone_id>/topics/', ZoneTopicsView, name='zone-topics'),
+    path('topics/<int:topic_id>/subtopics/', TopicSubtopicsView, name='topic-subtopics'),
+    
+    # Subtopics
     path('subtopics/', SubtopicList.as_view(), name='subtopics'),
     path('subtopics/<int:pk>/', SubtopicDetail.as_view(), name='subtopic-detail'),
-    path('topics/<int:topic_id>/subtopics/', TopicSubtopicsView, name='topic-subtopics'),
-
-    # ========== ADMIN RESOURCES ==========
-    path('admin/zones/', ZoneList.as_view(), name='admin-zones'),
-    path('admin/zones/<int:pk>/', ZoneDetail.as_view(), name='admin-zone-detail'),
-    path('admin/topics/', TopicList.as_view(), name='admin-topics'),
-    path('admin/topics/<int:pk>/', TopicDetail.as_view(), name='admin-topic-detail'),
-    path('admin/subtopics/', SubtopicList.as_view(), name='admin-subtopics'),
-    path('admin/subtopics/<int:pk>/', SubtopicDetail.as_view(), name='admin-subtopic-detail'),
 ]

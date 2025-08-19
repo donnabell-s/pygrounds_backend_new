@@ -25,7 +25,7 @@ from content_ingestion.models import GameZone, Topic, Subtopic
 
 def generate_subtopic_embeddings(concept_intents_map=None, code_intents_map=None):
     """
-    Generate embeddings for subtopics using advanced embedding system.
+    Generate embeddings for subtopics using the new ProcessPool system.
     Creates BOTH MiniLM (concept) and CodeBERT (code) embeddings for dual compatibility.
 
     Args:
@@ -34,121 +34,148 @@ def generate_subtopic_embeddings(concept_intents_map=None, code_intents_map=None
     """
     concept_intents_map = concept_intents_map or {}
     code_intents_map = code_intents_map or {}
+    
     try:
-        from content_ingestion.helpers.embedding import EmbeddingGenerator
-
-        embedding_generator = EmbeddingGenerator()
-        print("\n🔮 Generating dual embeddings for subtopics using intent-based system...")
+        from multiprocessing import Pool
+        import psutil
+        from django.db import transaction
+        from django.db.models import Q
+        
+        print("\n🔮 Generating dual embeddings for subtopics using ProcessPool system...")
         print("=" * 60)
 
-        # Only subtopics without any embeddings yet (assumes reverse name 'embeddings')
-        subtopics = Subtopic.objects.filter(embeddings__isnull=True)
-        print(f"\n📝 Generating dual embeddings for {subtopics.count()} subtopics...")
+        # Get subtopics without embeddings and with intent fields
+        subtopics = Subtopic.objects.filter(
+            embeddings__isnull=True
+        ).filter(
+            Q(concept_intent__isnull=False) | Q(code_intent__isnull=False)
+        )
+        
+        print(f"\n📝 Found {subtopics.count()} subtopics ready for embedding generation...")
 
-        minilm_success = 0
-        codebert_success = 0
+        if subtopics.count() == 0:
+            print("✨ No subtopics need embedding generation!")
+            return
+
+        # Update all to processing status
+        subtopics.update(embedding_status='processing')
+
+        # Determine optimal number of processes
+        cpu_count = psutil.cpu_count(logical=True)
+        max_workers = min(4, max(1, cpu_count - 1))  # Use up to 4 processes, leave 1 CPU free
+        print(f"🔋 Using {max_workers} worker processes...")
+
+        # Prepare all tasks
+        all_tasks = []
+        for subtopic in subtopics:
+            if subtopic.concept_intent:
+                all_tasks.append((subtopic.id, 'concept'))
+            if subtopic.code_intent:
+                all_tasks.append((subtopic.id, 'code'))
+
+        print(f"📋 Prepared {len(all_tasks)} embedding tasks...")
+
+        success_count = 0
         failed_count = 0
 
-        for subtopic in subtopics:
-            try:
-                from content_ingestion.models import Embedding
-
-                base_text = f"{subtopic.topic.name} - {subtopic.name}"
-
-                # Build concept text (MiniLM) - prioritize database intent, fallback to map
-                concept_intent = subtopic.concept_intent or concept_intents_map.get(subtopic.id)
-                if concept_intent:
-                    minilm_text = f"{base_text}: {concept_intent}"
-                    minilm_data = embedding_generator.generate_embedding(
-                        text=minilm_text, chunk_type='Concept'
-                    )
-                else:
-                    # fallback to default helper
-                    minilm_data = embedding_generator.generate_subtopic_embedding(
-                        subtopic_name=subtopic.name,
-                        topic_name=subtopic.topic.name
-                    )
-
-                # Build code text (CodeBERT) - prioritize database intent, fallback to map
-                code_intent = subtopic.code_intent or code_intents_map.get(subtopic.id)
-                if code_intent:
-                    codebert_text = f"Python task: {base_text}. Use: {code_intent}"
-                else:
-                    codebert_text = base_text
-
-                codebert_data = embedding_generator.generate_embedding(
-                    text=codebert_text, chunk_type='Code'
-                )
-
-                # Create ONE embedding record with BOTH vectors (dual-embedding approach)
-                if minilm_data.get('vector') and codebert_data.get('vector'):
-                    # Both embeddings successful - create single record with both vectors
-                    Embedding.objects.create(
-                        subtopic=subtopic,
-                        content_type='subtopic',
-                        minilm_vector=minilm_data['vector'],
-                        codebert_vector=codebert_data['vector'],
-                        model_name=f"dual:{minilm_data['model_name']}+{codebert_data['model_name']}",
-                        model_type='dual',  # Custom type for dual embeddings
-                        dimension=max(minilm_data['dimension'], codebert_data['dimension'])
-                    )
-                    minilm_success += 1
-                    codebert_success += 1
-                elif minilm_data.get('vector'):
-                    # Only MiniLM embedding successful
-                    Embedding.objects.create(
-                        subtopic=subtopic,
-                        content_type='subtopic',
-                        minilm_vector=minilm_data['vector'],
-                        model_name=minilm_data['model_name'],
-                        model_type=getattr(minilm_data.get('model_type'), 'value', str(minilm_data.get('model_type'))),
-                        dimension=minilm_data['dimension']
-                    )
-                    minilm_success += 1
-                elif codebert_data.get('vector'):
-                    # Only CodeBERT embedding successful
-                    Embedding.objects.create(
-                        subtopic=subtopic,
-                        content_type='subtopic',
-                        codebert_vector=codebert_data['vector'],
-                        model_name=codebert_data['model_name'],
-                        model_type=getattr(codebert_data.get('model_type'), 'value', str(codebert_data.get('model_type'))),
-                        dimension=codebert_data['dimension']
-                    )
-                    codebert_success += 1
-
-                print(f"  ✅ {subtopic.name}")
-                intent_used = []
-                if concept_intent:
-                    intent_used.append(f"Concept: {'✓' if minilm_data.get('vector') else '✗'}")
-                if code_intent:
-                    intent_used.append(f"Code: {'✓' if codebert_data.get('vector') else '✗'}")
-                
-                if intent_used:
-                    print(f"     {' | '.join(intent_used)}")
-                else:
-                    print(f"     MiniLM: {'✓' if minilm_data.get('vector') else '✗'} | CodeBERT: {'✓' if codebert_data.get('vector') else '✗'}")
-
-            except Exception as e:
-                print(f"  ❌ Failed to embed subtopic '{subtopic.name}': {e}")
-                failed_count += 1
-
-        print(f"\n🎉 Intent-based subtopic embedding generation complete!")
-        print(f"  • Total subtopics: {Subtopic.objects.count()}")
-        print(f"  • MiniLM embeddings created: {minilm_success}")
-        print(f"  • CodeBERT embeddings created: {codebert_success}")
-        print(f"  • Failed: {failed_count}")
         try:
-            print(f"  • Total embedding records: {Subtopic.objects.filter(embeddings__isnull=False).count()}")
+            # Import the worker function from our separate module
+            from content_ingestion.embedding_worker import generate_embedding_task
+            
+            print("\n🚀 Starting parallel embedding generation...")
+            
+            # Execute all tasks in parallel
+            with Pool(processes=max_workers) as pool:
+                results = pool.map(generate_embedding_task, all_tasks)
+            
+            print("📊 Processing results...")
+            
+            # Group results by subtopic ID
+            subtopic_vectors = {}
+            task_index = 0
+            
+            for model_type, vector in results:
+                task_subtopic_id, task_model_type = all_tasks[task_index]
+                
+                if task_subtopic_id not in subtopic_vectors:
+                    subtopic_vectors[task_subtopic_id] = {}
+                    
+                if vector is not None:
+                    subtopic_vectors[task_subtopic_id][model_type] = vector
+                    success_count += 1
+                else:
+                    failed_count += 1
+                    
+                task_index += 1
+
+            # Process results by subtopic
+            for subtopic in subtopics:
+                subtopic_results = subtopic_vectors.get(subtopic.id, {})
+
+                # Create embedding record if we have any vectors
+                if subtopic_results:
+                    from content_ingestion.models import Embedding
+                    
+                    try:
+                        Embedding.objects.create(
+                            subtopic=subtopic,
+                            content_type='subtopic',
+                            model_type='dual',
+                            model_name=f"dual:minilm+codebert",
+                            dimension=384,  # Standard dimension
+                            minilm_vector=subtopic_results.get('concept'),
+                            codebert_vector=subtopic_results.get('code')
+                        )
+                        
+                        # Update status to completed
+                        subtopic.embedding_status = 'completed'
+                        subtopic.embedding_error = None
+                        subtopic.save()
+                        
+                        print(f"  ✅ {subtopic.name}")
+                        intent_status = []
+                        if 'concept' in subtopic_results:
+                            intent_status.append("Concept: ✓")
+                        if 'code' in subtopic_results:
+                            intent_status.append("Code: ✓")
+                        print(f"     {' | '.join(intent_status)}")
+                        
+                    except Exception as e:
+                        print(f"  ❌ Failed to save embedding for '{subtopic.name}': {e}")
+                        subtopic.embedding_status = 'failed'
+                        subtopic.embedding_error = str(e)
+                        subtopic.save()
+                else:
+                    print(f"  ❌ No embeddings generated for '{subtopic.name}'")
+                    subtopic.embedding_status = 'failed'
+                    subtopic.embedding_error = 'No embeddings were generated'
+                    subtopic.save()
+
+        except Exception as e:
+            print(f"❌ Error during parallel processing: {e}")
+            # Update all to failed status
+            subtopics.update(embedding_status='failed', embedding_error=str(e))
+            failed_count = subtopics.count()
+
+        print(f"\n🎉 Subtopic embedding generation complete!")
+        print(f"  • Total subtopics processed: {subtopics.count()}")
+        print(f"  • Successful embeddings: {success_count}")
+        print(f"  • Failed: {failed_count}")
+        
+        # Count total embeddings
+        try:
+            total_with_embeddings = Subtopic.objects.filter(embeddings__isnull=False).distinct().count()
+            print(f"  • Subtopics with embeddings: {total_with_embeddings}")
         except Exception:
             pass
 
-    except ImportError:
-        print("\n⚠️  Advanced embedding utilities not available - skipping embedding generation")
-        print("   Topics and subtopics created without embeddings")
+    except ImportError as e:
+        print(f"\n⚠️  Embedding system not available: {e}")
+        print("   Subtopics created without embeddings")
+        print("   You can generate embeddings later using the admin interface")
     except Exception as e:
         print(f"\n❌ Error generating embeddings: {e}")
-        print("   Topics and subtopics created without embeddings")
+        print("   Subtopics created without embeddings")
 
 
 def populate_zones():

@@ -1,8 +1,5 @@
-"""
-Semantic Similarity Views for content ingestion.
-
-These views handle semantic similarity processing between subtopics and document chunks.
-"""
+# Semantic Similarity Views for content ingestion
+# Handles semantic similarity processing between subtopics and document chunks
 from django.shortcuts import get_object_or_404
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -21,15 +18,11 @@ logger = logging.getLogger(__name__)
 
 @api_view(['POST'])
 def process_semantic_similarities(request, document_id):
-    """
-    Process semantic similarities for a specific document.
-    
-    POST /content_ingestion/semantic/<document_id>/
-    
-    Optional parameters:
-    - similarity_threshold (float): Minimum similarity score (default: 0.1)
-    - top_k_results (int): Maximum results per subtopic (default: 10)
-    """
+    # Process semantic similarities for a specific document
+    # POST /content_ingestion/semantic/<document_id>/
+    # Optional:
+    # - similarity_threshold (float): Min score (default: 0.1)
+    # - top_k_results (int): Max results per subtopic (default: 10)
     try:
         document = get_object_or_404(UploadedDocument, id=document_id)
         
@@ -50,6 +43,11 @@ def process_semantic_similarities(request, document_id):
                 'message': 'top_k_results must be between 1 and 50'
             }, status=status.HTTP_400_BAD_REQUEST)
         
+        # Update document status
+        document.processing_status = 'PROCESSING'
+        document.processing_message = 'Computing semantic similarities between document chunks and subtopics...'
+        document.save()
+        
         # Process semantic similarities
         result = compute_semantic_similarities_for_document(
             document_id=document_id,
@@ -58,6 +56,11 @@ def process_semantic_similarities(request, document_id):
         )
         
         if result['status'] == 'success':
+            # Update success status
+            document.processing_status = 'COMPLETED'
+            document.processing_message = f'Successfully processed semantic similarities for {result.get("processed_subtopics", 0)} subtopics'
+            document.save()
+            
             return Response({
                 'status': 'success',
                 'message': f'Semantic similarities processed for "{document.title}"',
@@ -73,11 +76,19 @@ def process_semantic_similarities(request, document_id):
             }, status=status.HTTP_200_OK)
             
     except ValueError as e:
+        if 'document' in locals():
+            document.processing_status = 'FAILED'
+            document.processing_message = f'Invalid parameter: {str(e)}'
+            document.save()
         return Response({
             'status': 'error',
             'message': f'Invalid parameter: {str(e)}'
         }, status=status.HTTP_400_BAD_REQUEST)
     except Exception as e:
+        if 'document' in locals():
+            document.processing_status = 'FAILED'
+            document.processing_message = f'Processing failed: {str(e)}'
+            document.save()
         logger.error(f"Error processing semantic similarities for document {document_id}: {str(e)}")
         return Response({
             'status': 'error',

@@ -20,16 +20,12 @@ client = OpenAI(
 )
 
 def send_llm_messages(messages, tools=None, model="deepseek-chat", **kwargs):
-    """
-    Send messages to DeepSeek or compatible LLM. Supports optional tool use.
-    Args:
-        messages: List of dicts (OpenAI/DeepSeek chat message format)
-        tools: List of tool/function definitions (optional)
-        model: Model name string (default: deepseek-chat)
-        **kwargs: Other OpenAI API kwargs (e.g., temperature, max_tokens)
-    Returns:
-        OpenAI Message object (.content and maybe .tool_calls)
-    """
+    # Send messages to DeepSeek LLM
+    # Parameters:
+    # - messages: Chat message list in OpenAI format
+    # - tools: Optional function definitions for tool use
+    # - model: Model to use (default: deepseek-chat)
+    # - kwargs: Additional OpenAI API parameters
     params = {
         "model": model,
         "messages": messages,
@@ -45,9 +41,7 @@ def send_llm_messages(messages, tools=None, model="deepseek-chat", **kwargs):
         raise
 
 def invoke_deepseek(prompt, system_prompt="You are a helpful assistant.", model="deepseek-chat", **kwargs):
-    """
-    One-shot method for DeepSeek. Returns just the model's text response.
-    """
+    # Simple one-shot prompt to DeepSeek, returns text response
     messages = [
         {"role": "system", "content": system_prompt},
         {"role": "user", "content": prompt},

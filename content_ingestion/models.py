@@ -36,6 +36,11 @@ class UploadedDocument(models.Model):
         choices=PROCESSING_STATUS,
         default='PENDING',
     )
+    processing_message = models.TextField(
+        blank=True, 
+        null=True,
+        help_text='Detailed status message about current processing step'
+    )
     parsed_pages = ArrayField(
         base_field=models.IntegerField(),
         default=list,
@@ -43,6 +48,7 @@ class UploadedDocument(models.Model):
         help_text='Pages already parsed'
     )
     total_pages = models.IntegerField(default=0)
+    is_deleted = models.BooleanField(default=False)
 
     difficulty = models.CharField(
         max_length=20,
@@ -51,15 +57,83 @@ class UploadedDocument(models.Model):
         help_text='Content difficulty level'
     )
 
+    def delete(self, *args, **kwargs):
+        """Override delete to clean up all related data comprehensively"""
+        import logging
+        import os
+        logger = logging.getLogger(__name__)
+        
+        logger.info(f"Starting deletion of document: {self.title} (ID: {self.id})")
+        
+        try:
+            from django.db import transaction
+            
+            with transaction.atomic():
+                # 1. Clean up embeddings associated with document chunks
+                from content_ingestion.models import Embedding
+                
+                try:
+                    chunk_embeddings = Embedding.objects.filter(
+                        document_chunk__document=self,
+                        content_type='chunk'
+                    )
+                    chunk_count = chunk_embeddings.count()
+                    if chunk_count > 0:
+                        chunk_embeddings.delete()
+                        logger.info(f"Deleted {chunk_count} chunk embeddings for document {self.id}")
+                except Exception as e:
+                    logger.warning(f"Error cleaning up chunk embeddings: {e}")
+
+                # 2. Delete TOC entries (will cascade)
+                try:
+                    toc_count = self.tocentry_set.count()
+                    if toc_count > 0:
+                        self.tocentry_set.all().delete()
+                        logger.info(f"Deleted {toc_count} TOC entries for document {self.id}")
+                except Exception as e:
+                    logger.warning(f"Error cleaning up TOC entries: {e}")
+
+                # 3. Delete document chunks (will cascade, but we're being explicit)
+                try:
+                    chunk_count = self.chunks.count()
+                    if chunk_count > 0:
+                        self.chunks.all().delete()
+                        logger.info(f"Deleted {chunk_count} document chunks for document {self.id}")
+                except Exception as e:
+                    logger.warning(f"Error cleaning up document chunks: {e}")
+
+                # 4. Delete the physical file if it exists
+                try:
+                    if self.file and hasattr(self.file, 'path'):
+                        file_path = self.file.path
+                        if os.path.exists(file_path):
+                            os.remove(file_path)
+                            logger.info(f"Deleted physical file: {file_path}")
+                        else:
+                            logger.info(f"Physical file not found: {file_path}")
+                except Exception as e:
+                    logger.warning(f"Error deleting physical file: {e}")
+
+                # 5. Finally delete the document itself
+                super().delete(*args, **kwargs)
+                logger.info(f"Successfully deleted document {self.title}")
+                
+        except Exception as e:
+            logger.error(f"Error during document deletion: {e}")
+            # Try to delete the document anyway, even if cleanup failed
+            try:
+                super().delete(*args, **kwargs)
+                logger.info(f"Document deleted despite cleanup errors: {self.title}")
+            except Exception as final_e:
+                logger.error(f"Final deletion attempt failed: {final_e}")
+                raise
+
     def __str__(self):
         return f"{self.title} ({self.processing_status})"
 
 
 class DocumentChunk(models.Model):
-    """
-    Individual content segments extracted from an UploadedDocument.
-    Supports RAG embedding and token counting.
-    """
+    # Content segments from document with embedding support
     document = models.ForeignKey(
         UploadedDocument, on_delete=models.CASCADE, related_name='chunks'
     )
@@ -115,7 +189,6 @@ class GameZone(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField()
     order = models.IntegerField(unique=True)
-    is_unlocked = models.BooleanField(default=False)
 
     class Meta:
         ordering = ['order']
@@ -138,18 +211,84 @@ class Topic(models.Model):
 
 
 class Subtopic(models.Model):
+    EMBEDDING_STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('processing', 'Processing'),
+        ('completed', 'Completed'),
+        ('failed', 'Failed'),
+        ('not_started', 'Not Started'),
+    ]
+
     topic = models.ForeignKey(Topic, on_delete=models.CASCADE, related_name='subtopics')
     name = models.CharField(max_length=100)
+    
+    # Document chunk associations
+    document_chunks = models.ManyToManyField(
+        DocumentChunk, 
+        blank=True,
+        related_name='related_subtopics',
+        help_text="Associated document chunks for this subtopic"
+    )
     
     # Intent descriptions for better semantic embedding
     concept_intent = models.TextField(
         blank=True, null=True,
-        help_text="Conceptual description for MiniLM embedding - explains what to understand"
+        help_text="Description of what to understand (for MiniLM)"
     )
     code_intent = models.TextField(
         blank=True, null=True, 
-        help_text="Code-focused description for CodeBERT embedding - explains what to implement"
+        help_text="Description of what to implement (for CodeBERT)"
     )
+    
+    # Embedding status tracking
+    embedding_status = models.CharField(
+        max_length=20,
+        choices=EMBEDDING_STATUS_CHOICES,
+        default='not_started',
+        help_text="Current status of embedding generation"
+    )
+    embedding_error = models.TextField(
+        blank=True, null=True,
+        help_text="Error message if embedding generation failed"
+    )
+    embedding_updated_at = models.DateTimeField(
+        auto_now=True,
+        help_text="When the embedding status was last updated"
+    )
+
+    def delete(self, *args, **kwargs):
+        """Override delete to clean up related embeddings (only subtopic type)"""
+        import logging
+        logger = logging.getLogger(__name__)
+
+        try:
+            from content_ingestion.models import Embedding
+            from django.db import transaction
+
+            with transaction.atomic():
+                # 1. Remove ManyToMany relationships with document chunks
+                self.document_chunks.clear()
+
+                # 2. Clean up only subtopic-type embeddings
+                try:
+                    Embedding.objects.filter(
+                        subtopic=self,
+                        content_type='subtopic'  # Only delete subtopic embeddings
+                    ).delete()
+                except Exception as e:
+                    logger.warning(f"Error cleaning up subtopic embeddings: {e}")
+
+                # 3. Proceed with normal deletion
+                super().delete(*args, **kwargs)
+
+        except Exception as e:
+            logger.error(f"Error during subtopic deletion: {e}")
+            # Final attempt to delete just the subtopic
+            try:
+                # Try one last time without any cleanup
+                super().delete(*args, **kwargs)
+            except Exception as final_e:
+                logger.error(f"Final deletion attempt failed: {final_e}")
 
     class Meta:
         ordering = ['topic__zone__order', 'topic__name', 'name']
@@ -197,7 +336,7 @@ class Embedding(models.Model):
     model_type = models.CharField(
         max_length=50,
         default='sentence',
-        help_text='Type of model: code_bert, sentence, general'
+        help_text='Type of model: code_bert, sentence'
     )
     dimension = models.IntegerField(
         default=384,
@@ -265,18 +404,9 @@ class Embedding(models.Model):
 
 
 class SemanticSubtopic(models.Model):
-    """
-    Stores semantic similarity between subtopics and chunk embeddings for RAG retrieval.
-    
-    This model stores the semantic similarity scores between a subtopic and document chunks:
-    - Each subtopic gets analyzed against available chunks using dual embeddings
-    - Concept chunks (MiniLM) are ranked separately from code chunks (CodeBERT)
-    - Question generation uses these for targeted context retrieval
-    
-    The ranked fields contain lists of dictionaries:
-    [{"chunk_id": 123, "similarity": 0.85, "chunk_type": "Concept"}, ...]
-    Ordered by similarity score (highest first) for efficient top-k retrieval.
-    """
+    # Stores semantic matches between subtopics and chunks
+    # Ranks concept chunks (MiniLM) and code chunks (CodeBERT) separately
+    # Format: [{"chunk_id": 123, "similarity": 0.85, "chunk_type": "Concept"}, ...]
     # One-to-one relationship with Subtopic
     subtopic = models.OneToOneField(
         Subtopic, 
@@ -312,9 +442,7 @@ class SemanticSubtopic(models.Model):
         return f"{self.subtopic.name} - {concept_count} concept, {code_count} code chunks"
     
     def get_concept_chunk_ids(self, limit=5, min_similarity=0.5):
-        """
-        Get ranked concept chunk IDs for RAG retrieval.
-        """
+        # Get ranked concept chunk IDs
         if not self.ranked_concept_chunks:
             return []
         
@@ -326,9 +454,7 @@ class SemanticSubtopic(models.Model):
         return [chunk['chunk_id'] for chunk in filtered_chunks[:limit]]
     
     def get_code_chunk_ids(self, limit=5, min_similarity=0.5):
-        """
-        Get ranked code chunk IDs for RAG retrieval.
-        """
+        # Get ranked code chunk IDs
         if not self.ranked_code_chunks:
             return []
         
@@ -340,10 +466,7 @@ class SemanticSubtopic(models.Model):
         return [chunk['chunk_id'] for chunk in filtered_chunks[:limit]]
     
     def get_top_chunk_ids(self, limit=5, chunk_type=None, min_similarity=0.5):
-        """
-        Get ranked chunk IDs for RAG retrieval based on semantic similarity.
-        Legacy method - use get_concept_chunk_ids() or get_code_chunk_ids() for better performance.
-        """
+        # Legacy: Get ranked chunk IDs (use get_concept/code_chunk_ids instead)
         if chunk_type == 'Concept':
             return self.get_concept_chunk_ids(limit=limit, min_similarity=min_similarity)
         elif chunk_type in ['Code', 'Example', 'Exercise', 'Try_It']:

@@ -1,12 +1,11 @@
-"""
-Main Question Generation API Views.
-Focused API endpoints for question generation with clean, readable code.
-"""
+# Main API endpoints for question generation 
+# Includes bulk generation, single topic/subtopic generation, and preassessment questions
 
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import get_object_or_404
+from django.db import transaction
 
 from content_ingestion.models import GameZone, Topic, Subtopic
 from ..helpers.generation_core import (
@@ -18,23 +17,19 @@ from ..helpers.question_processing import parse_llm_json_response
 from ..helpers.llm_utils import invoke_deepseek, CODING_TEMPERATURE, NON_CODING_TEMPERATURE
 from ..helpers.deepseek_prompts import deepseek_prompt_manager
 
+import logging
+logger = logging.getLogger(__name__)
 
 @api_view(['POST'])
 def generate_questions_bulk(request):
-    """
-    Generate questions in bulk across multiple zones and difficulties.
-    
-    POST {
-        "game_type": "coding|non_coding",
-        "difficulty_levels": ["beginner", "intermediate"],
-        "num_questions_per_subtopic": 2,
-        "zone_ids": [1, 2, 3] (optional - if not provided, uses all zones)
-    }
-    
-    Returns:
-    - Generation statistics and first 5 questions
-    - Full results saved to JSON file in question_outputs/
-    """
+    # Bulk question generation endpoint
+    # Parameters:
+    # - game_type: 'coding' or 'non_coding' (required)
+    # - difficulty_levels: ['beginner', 'intermediate', etc] (required)
+    # - num_questions_per_subtopic: int (required)
+    # - zone_ids: [int] or null (optional)
+    # - topic_ids: [int] or null (optional)
+    # - subtopic_ids: [int] or null (optional)
     try:
         # Extract parameters
         game_type = request.data.get('game_type', 'non_coding')

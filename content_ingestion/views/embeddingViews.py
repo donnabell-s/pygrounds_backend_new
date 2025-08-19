@@ -1,17 +1,13 @@
-"""
-Unified Embedding Views for RAG functionality.
-Includes chunk, topic, and subtopic embedding endpoints.
-"""
+# Unified Embedding Views for RAG functionality
+# Includes chunk, topic, and subtopic embedding endpoints
 
 from ..helpers.view_imports import *
 from ..helpers.helper_imports import *
 
 @api_view(['POST'])
 def embed_document_chunks(request, document_id):
-    """
-    Generate embeddings for all document chunks for RAG retrieval.
-    Uses dual embedding system: Concept chunks -> MiniLM, others -> CodeBERT.
-    """
+    # Generate embeddings for all document chunks for RAG retrieval
+    # Uses dual embedding system: Concept chunks -> MiniLM, others -> CodeBERT
     try:
         from content_ingestion.helpers.embedding import EmbeddingGenerator
         from content_ingestion.models import DocumentChunk, Embedding
@@ -283,7 +279,7 @@ def get_chunk_embeddings_detailed(request, document_id):
 
 @api_view(['POST'])
 def generate_subtopic_embeddings(request):
-    """Generate dual embeddings (MiniLM + CodeBERT) for all subtopics."""
+    # Generate dual embeddings (MiniLM + CodeBERT) for all subtopics
     try:
         from content_ingestion.helpers.embedding import EmbeddingGenerator
         from content_ingestion.models import Embedding, Subtopic

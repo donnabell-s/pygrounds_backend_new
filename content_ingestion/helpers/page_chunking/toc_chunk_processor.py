@@ -235,8 +235,6 @@ class GranularChunkProcessor:
             'chunk_types_distribution': {},
         }
         
-        print(f"\n🔄 STARTING GRANULAR DOCUMENT PROCESSING")
-        print(f"{'─'*60}")
         print(f"Document: {document.title}")
         print(f"Document total pages: {document.total_pages}")
         

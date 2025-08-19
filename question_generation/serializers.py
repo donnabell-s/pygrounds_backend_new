@@ -35,9 +35,9 @@ class PreAssessmentQuestionSerializer(serializers.ModelSerializer):
         model = PreAssessmentQuestion
         fields = [
             'id', 'topic_ids', 'subtopic_ids', 'question_text', 'answer_options',
-            'correct_answer', 'estimated_difficulty', 'created_at', 'updated_at'
+            'correct_answer', 'estimated_difficulty', 'order'
         ]
-        read_only_fields = ['id', 'created_at', 'updated_at']
+        read_only_fields = ['id']
 
 
 class QuestionSummarySerializer(serializers.ModelSerializer):

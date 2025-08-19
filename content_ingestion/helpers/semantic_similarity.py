@@ -1,12 +1,3 @@
-"""
-Semantic similarity utilities for matching subtopics to document chunks.
-Refactored to use functional programming for better readability and maintainability.
-
-This module provides functionality to:
-1. Compute semantic similarity between subtopic embeddings and chunk embeddings
-2. Rank chunks by similarity score for each subtopic
-3. Store results in SemanticSubtopic model for fast RAG retrieval
-"""
 import numpy as np
 from typing import List, Dict, Any, Optional, Tuple
 from sklearn.metrics.pairwise import cosine_similarity
@@ -24,18 +15,11 @@ def process_all_subtopics(document_id: Optional[int] = None,
                          similarity_threshold: float = 0.1,
                          top_k_results: int = 10,
                          use_intents: bool = True) -> Dict[str, Any]:
-    """
-    Process semantic similarity for all subtopics against available chunks using dual embeddings.
-    
-    Args:
-        document_id: If provided, only process chunks from this document
-        similarity_threshold: Minimum similarity score to store (default: 0.1)
-        top_k_results: Maximum number of similar chunks to store per subtopic (default: 10)
-        use_intents: If True, use intent-based embeddings when available
-        
-    Returns:
-        Processing results with statistics
-    """
+    # Process semantic similarity for all subtopics using dual embeddings
+    # document_id: optional - limit to specific document
+    # similarity_threshold: min score to store (default: 0.1)
+    # top_k_results: max chunks per subtopic (default: 10)
+    # use_intents: use intent-based embeddings if available
     print(f"🔍 Starting dual-embedding semantic similarity processing...")
     if use_intents:
         print(f"   Using intent-based embeddings when available")
@@ -134,7 +118,7 @@ def process_single_subtopic(subtopic_id: int,
                            document_id: Optional[int] = None,
                            similarity_threshold: float = 0.1,
                            top_k_results: int = 10) -> Dict[str, Any]:
-    """Process semantic similarity for a single subtopic."""
+    # Process semantic similarity for a single subtopic
     try:
         subtopic = Subtopic.objects.get(id=subtopic_id)
     except Subtopic.DoesNotExist:
@@ -173,7 +157,7 @@ def process_single_subtopic(subtopic_id: int,
 # === EMBEDDING FUNCTIONS ===
 
 def get_subtopic_embedding(subtopic: Subtopic, model_type: str = None, use_intents: bool = True) -> Optional[Dict[str, Any]]:
-    """Get embedding data for a subtopic with specific model type."""
+    # Get embedding data for a subtopic with specific model type
     try:
         # For subtopics, we now have dual embeddings, so don't filter by model_type
         # Just get the subtopic's embedding record (should be dual type with both vectors)
@@ -223,7 +207,7 @@ def get_subtopic_embedding(subtopic: Subtopic, model_type: str = None, use_inten
 
 
 def generate_intent_based_embedding(subtopic: Subtopic, model_type: str = None) -> Optional[Dict[str, Any]]:
-    """Generate embedding on-the-fly using subtopic's intent fields."""
+    # Generate embedding on-the-fly using subtopic's intent fields
     from content_ingestion.helpers.embedding.generator import get_embedding_generator
     
     try:
@@ -270,7 +254,7 @@ def generate_intent_based_embedding(subtopic: Subtopic, model_type: str = None) 
 
 
 def get_chunks_with_embeddings(document_id: Optional[int] = None, model_type: str = None) -> List[Dict[str, Any]]:
-    """Get chunks that have embeddings for the specified model type."""
+    # Get chunks that have embeddings for the specified model type
     try:
         # Build query to get chunks with embeddings
         embeddings_query = Embedding.objects.filter(document_chunk__isnull=False)
@@ -330,7 +314,7 @@ def get_chunks_with_embeddings(document_id: Optional[int] = None, model_type: st
 def compute_subtopic_similarities(subtopic_data: Dict[str, Any], 
                                 chunks_data: List[Dict[str, Any]], 
                                 similarity_threshold: float) -> List[Dict[str, Any]]:
-    """Compute cosine similarities between subtopic and chunks."""
+    # Compute cosine similarities between subtopic and chunks
     if not subtopic_data or not chunks_data:
         return []
     
@@ -369,7 +353,7 @@ def compute_subtopic_similarities(subtopic_data: Dict[str, Any],
 # === STORAGE FUNCTIONS ===
 
 def store_semantic_results(subtopic: Subtopic, similarity_results: List[Dict[str, Any]]):
-    """Store semantic similarity results in the database."""
+    # Store semantic similarity results in the database
     from content_ingestion.models import SemanticSubtopic
     
     try:
@@ -411,7 +395,7 @@ def store_semantic_results(subtopic: Subtopic, similarity_results: List[Dict[str
 
 
 def store_semantic_results_separate(subtopic: Subtopic, concept_similarities: List[Dict[str, Any]], code_similarities: List[Dict[str, Any]]):
-    """Store concept and code similarity results separately in their respective fields."""
+    # Store concept and code similarity results separately
     from content_ingestion.models import SemanticSubtopic
     
     try:
@@ -461,7 +445,7 @@ def store_semantic_results_separate(subtopic: Subtopic, concept_similarities: Li
 def compute_semantic_similarities_for_document(document_id: int, 
                                              similarity_threshold: float = 0.1,
                                              top_k_results: int = 10) -> Dict[str, Any]:
-    """Compute semantic similarities for a specific document."""
+    # Compute semantic similarities for a specific document
     return process_all_subtopics(
         document_id=document_id,
         similarity_threshold=similarity_threshold,
@@ -471,7 +455,7 @@ def compute_semantic_similarities_for_document(document_id: int,
 
 def compute_semantic_similarities_all(similarity_threshold: float = 0.1,
                                     top_k_results: int = 10) -> Dict[str, Any]:
-    """Compute semantic similarities for all available content."""
+    # Compute semantic similarities for all available content
     return process_all_subtopics(
         similarity_threshold=similarity_threshold,
         top_k_results=top_k_results
@@ -482,7 +466,7 @@ def get_similar_chunks_for_subtopic(subtopic_id: int,
                                   chunk_type: Optional[str] = None,
                                   limit: int = 5,
                                   min_similarity: float = 0.5) -> List[int]:
-    """Get ranked chunk IDs for a subtopic based on semantic similarity."""
+    # Get ranked chunk IDs for a subtopic based on semantic similarity
     from content_ingestion.models import SemanticSubtopic
     
     try:

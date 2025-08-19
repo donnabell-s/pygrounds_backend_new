@@ -1,7 +1,4 @@
-"""
-Question processing utilities for generation, hashing, and formatting.
-Contains core utilities for question manipulation and processing.
-"""
+# Question processing utilities for formatting, validation, and deduplication
 
 import hashlib
 import json
@@ -9,18 +6,8 @@ from typing import List, Dict, Any, Optional
 
 
 def generate_question_hash(question_text, subtopic_combination, game_type):
-    """
-    Generate a hash for question deduplication.
-    Combines question text essence with subtopic combination to avoid duplicates.
-    
-    Args:
-        question_text: The question text content
-        subtopic_combination: List/queryset of subtopics
-        game_type: 'coding' or 'non_coding'
-        
-    Returns:
-        str: 12-character hash for deduplication
-    """
+    # Create a unique hash for a question to prevent duplicates
+    # Uses first 5 meaningful words from question + subtopic IDs + game type
     # Extract key words from question text (remove common words)
     common_words = {'a', 'an', 'the', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by', 'is', 'are', 'was', 'were', 'be', 'been', 'being', 'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could', 'should'}
     
@@ -38,15 +25,8 @@ def generate_question_hash(question_text, subtopic_combination, game_type):
 
 
 def parse_llm_json_response(llm_response: str) -> Optional[List[Dict[str, Any]]]:
-    """
-    Parse LLM response and extract JSON array of questions.
-    
-    Args:
-        llm_response: Raw response from LLM
-        
-    Returns:
-        List of question dictionaries or None if parsing failed
-    """
+    # Extract and parse JSON array of questions from LLM response
+    # Returns None if parsing fails
     try:
         clean_resp = llm_response.strip()
         

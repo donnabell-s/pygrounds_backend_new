@@ -1,23 +1,30 @@
+# Manages prompts for different question types in DeepSeek LLM
+
 class DeepSeekPromptManager:
+    # Core prompt templates for different game types
 
     def get_prompt_for_minigame(self, game_type, context):
-     
-        if game_type == 'coding':
-            return self.get_coding_prompt(context)
-        elif game_type == 'non_coding':
-            return self.get_non_coding_prompt(context)
-        elif game_type == 'pre_assessment':
-            return self.get_pre_assessment_prompt(context)
-        else:
+        # Route to appropriate prompt based on game type
+        prompts = {
+            'coding': self.get_coding_prompt,
+            'non_coding': self.get_non_coding_prompt,
+            'pre_assessment': self.get_pre_assessment_prompt
+        }
+        
+        if game_type not in prompts:
             raise ValueError(f"Unknown game_type: {game_type}")
+            
+        return prompts[game_type](context)
 
     def get_coding_prompt(self, context):
-      return f"""
-          OUTPUT ONLY VALID JSON. DO NOT add explanations, markdown, or backticks.
+        # Create a coding challenge prompt
+        # Format: Short bug fix tasks with sample I/O
+        return f"""
+          OUTPUT ONLY VALID JSON.
 
           ROLE: Senior Python challenge architect.
 
-          RAG_CONTEXT (use only what is relevant; ignore the rest if noisy):
+          RAG_CONTEXT:
           <<<
           {context['rag_context']}
           >>>

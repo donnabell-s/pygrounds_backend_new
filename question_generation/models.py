@@ -1,15 +1,3 @@
-"""
-Question Generation Models
-
-This module defines the core models for the question generation system:
-
-1. GeneratedQuestion: Stores generated questions with metadata and game-specific data
-2. PreAssessmentQuestion: Stores manually-authored pre-assessment questions
-
-The semantic similarity system is now handled by SemanticSubtopic in content_ingestion.models
-which stores pre-computed rankings for fast RAG context retrieval during question generation.
-"""
-
 from django.db import models
 from django.db.models import JSONField
 from content_ingestion.models import Topic, Subtopic, DocumentChunk

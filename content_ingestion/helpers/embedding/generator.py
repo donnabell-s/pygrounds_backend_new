@@ -235,6 +235,92 @@ class EmbeddingGenerator:
                 'error': str(e)
             }
 
+    def generate_subtopic_dual_embeddings(self, subtopic) -> Dict[str, Any]:
+        """
+        Generate dual embeddings for a subtopic using intent-based content.
+        Creates both MiniLM (concept) and CodeBERT (code) embeddings and saves them to the database.
+        
+        Args:
+            subtopic: Subtopic model instance with concept_intent and/or code_intent fields
+            
+        Returns:
+            Dict with success status and embedding info
+        """
+        from content_ingestion.models import Embedding
+        
+        results = {
+            'subtopic_id': subtopic.id,
+            'subtopic_name': subtopic.name,
+            'concept_embedding': None,
+            'code_embedding': None,
+            'embeddings_created': 0,
+            'errors': []
+        }
+        
+        try:
+            # Remove existing subtopic embeddings to replace them
+            Embedding.objects.filter(
+                subtopic=subtopic,
+                content_type='subtopic'
+            ).delete()
+            
+            # Generate concept embedding (MiniLM) if concept_intent exists
+            if subtopic.concept_intent:
+                concept_text = f"{subtopic.topic.name} - {subtopic.name}: {subtopic.concept_intent}"
+                concept_result = self.generate_embedding(concept_text, chunk_type='Concept')
+                
+                if concept_result['vector'] is not None:
+                    # Save concept embedding
+                    concept_embedding = Embedding.objects.create(
+                        subtopic=subtopic,
+                        content_type='subtopic',
+                        model_type='sentence',
+                        model_name=concept_result['model_name'],
+                        dimension=concept_result['dimension'],
+                        minilm_vector=concept_result['vector']
+                    )
+                    results['concept_embedding'] = concept_embedding.id
+                    results['embeddings_created'] += 1
+                else:
+                    results['errors'].append(f"Failed to generate concept embedding: {concept_result.get('error', 'Unknown error')}")
+            
+            # Generate code embedding (CodeBERT) if code_intent exists
+            if subtopic.code_intent:
+                code_text = f"{subtopic.topic.name} - {subtopic.name}: {subtopic.code_intent}"
+                code_result = self.generate_embedding(code_text, chunk_type='Code')
+                
+                if code_result['vector'] is not None:
+                    # Save code embedding (update existing or create new)
+                    if results['concept_embedding']:
+                        # Update existing embedding with CodeBERT vector
+                        concept_embedding = Embedding.objects.get(id=results['concept_embedding'])
+                        concept_embedding.codebert_vector = code_result['vector']
+                        concept_embedding.save()
+                    else:
+                        # Create new embedding with only CodeBERT vector
+                        code_embedding = Embedding.objects.create(
+                            subtopic=subtopic,
+                            content_type='subtopic',
+                            model_type='code_bert',
+                            model_name=code_result['model_name'],
+                            dimension=code_result['dimension'],
+                            codebert_vector=code_result['vector']
+                        )
+                        results['code_embedding'] = code_embedding.id
+                        results['embeddings_created'] += 1
+                else:
+                    results['errors'].append(f"Failed to generate code embedding: {code_result.get('error', 'Unknown error')}")
+            
+            results['success'] = results['embeddings_created'] > 0
+            logger.info(f"Generated {results['embeddings_created']} embeddings for subtopic '{subtopic.name}'")
+            
+        except Exception as e:
+            logger.error(f"Error generating dual embeddings for subtopic {subtopic.id}: {e}")
+            results['success'] = False
+            results['errors'].append(str(e))
+        
+        return results
+
     def _prepare_text_for_embedding(self, text: str, config: 'EmbeddingConfig') -> str:
         """
         Light cleanup and length control for the text.

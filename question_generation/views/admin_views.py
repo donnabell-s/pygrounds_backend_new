@@ -1,6 +1,5 @@
-"""
-Admin CRUD views for question management (without create).
-"""
+# Admin interface views for managing generated questions and preassessment questions
+# Includes CRUD operations, bulk actions, and dashboard statistics
 
 from rest_framework import generics, status, filters
 from rest_framework.decorators import api_view
@@ -8,16 +7,18 @@ from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
 from django.shortcuts import get_object_or_404
 from django.db.models import Count, Q
+from django.db import transaction
 from django.http import Http404
 
-from .imports import *
 from ..models import GeneratedQuestion, PreAssessmentQuestion
-from content_ingestion.models import SemanticSubtopic  # Moved to content_ingestion
+from content_ingestion.models import SemanticSubtopic, Topic, Subtopic
 from ..serializers import (
     GeneratedQuestionSerializer, PreAssessmentQuestionSerializer,
     QuestionSummarySerializer, SemanticSubtopicSerializer
 )
-from content_ingestion.models import Topic, Subtopic
+
+import logging
+logger = logging.getLogger(__name__)
 
 
 class StandardResultsSetPagination(PageNumberPagination):
@@ -26,74 +27,58 @@ class StandardResultsSetPagination(PageNumberPagination):
     max_page_size = 100
 
 
-# ==================== GENERATED QUESTIONS ADMIN ====================
+# Generated question management views
 
 class AdminGeneratedQuestionListView(generics.ListAPIView):
-    """
-    Admin view for listing generated questions with advanced filtering.
-    No create - questions are generated through the generation system.
-    """
+    # List and filter generated questions for admin interface
+    # Supports filtering by status, difficulty, type, and hierarchy (zone/topic/subtopic)
     serializer_class = QuestionSummarySerializer
     pagination_class = StandardResultsSetPagination
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['question_text', 'subtopic__name', 'topic__name']
-    ordering_fields = ['created_at', 'estimated_difficulty', 'validation_status']
-    ordering = ['-created_at']
+    ordering_fields = ['id', 'estimated_difficulty', 'order']
+    ordering = ['-id']
 
     def get_queryset(self):
-        queryset = GeneratedQuestion.objects.select_related('topic', 'subtopic', 'subtopic__topic__zone').all()
+        # Get questions with related entities to minimize DB queries
+        queryset = GeneratedQuestion.objects.select_related(
+            'topic', 'subtopic', 'subtopic__topic__zone'
+        ).all()
         
-        # Filter by validation status
-        validation_status = self.request.query_params.get('validation_status')
-        if validation_status:
-            queryset = queryset.filter(validation_status=validation_status)
+        # Apply filters from query parameters
+        filters = {
+            'validation_status': ('validation_status', None),
+            'difficulty': ('estimated_difficulty', None),
+            'game_type': ('game_type', None),
+            'subtopic_id': ('subtopic_id', None),
+            'topic_id': ('topic_id', None),
+            'zone_id': ('topic__zone_id', None)
+        }
         
-        # Filter by difficulty
-        difficulty = self.request.query_params.get('difficulty')
-        if difficulty:
-            queryset = queryset.filter(estimated_difficulty=difficulty)
-        
-        # Filter by game type
-        game_type = self.request.query_params.get('game_type')
-        if game_type:
-            queryset = queryset.filter(game_type=game_type)
-        
-        # Filter by subtopic
-        subtopic_id = self.request.query_params.get('subtopic_id')
-        if subtopic_id:
-            queryset = queryset.filter(subtopic_id=subtopic_id)
-        
-        # Filter by topic
-        topic_id = self.request.query_params.get('topic_id')
-        if topic_id:
-            queryset = queryset.filter(topic_id=topic_id)
-        
-        # Filter by zone
-        zone_id = self.request.query_params.get('zone_id')
-        if zone_id:
-            queryset = queryset.filter(topic__zone_id=zone_id)
+        # Apply each filter if its parameter exists in the request
+        for param, (field, transform) in filters.items():
+            value = self.request.query_params.get(param)
+            if value:
+                queryset = queryset.filter(**{field: value})
             
         return queryset
 
     def get_serializer_class(self):
-        # Use detailed serializer for single question views
-        if self.request.query_params.get('detailed') == 'true':
-            return GeneratedQuestionSerializer
-        return QuestionSummarySerializer
+        # Return detailed serializer for individual question views, summary for lists
+        return (GeneratedQuestionSerializer 
+                if self.request.query_params.get('detailed') == 'true'
+                else QuestionSummarySerializer)
 
 
 class AdminGeneratedQuestionDetailView(generics.RetrieveUpdateDestroyAPIView):
-    """
-    Admin view for retrieving, updating, or deleting generated questions.
-    No create endpoint - questions must be generated through the system.
-    """
+    # Handle individual question operations (view/update/delete)
     queryset = GeneratedQuestion.objects.select_related('topic', 'subtopic').all()
     serializer_class = GeneratedQuestionSerializer
 
 
 @api_view(['GET'])
 def question_statistics(request):
-    """Get comprehensive question statistics."""
+    # Get statistics about generated questions
     stats = {
         'total_questions': GeneratedQuestion.objects.count(),
         'by_validation_status': dict(
@@ -183,36 +168,38 @@ def bulk_delete_questions(request):
     })
 
 
-# ==================== PRE-ASSESSMENT QUESTIONS ====================
+# Preassessment question management
 
 class AdminPreAssessmentQuestionListView(generics.ListCreateAPIView):
-    """
-    Admin view for managing pre-assessment questions.
-    These can be created manually by admins.
-    """
+    # List and filter preassessment questions
+    # Supports manual creation by admins and filtering by difficulty
     queryset = PreAssessmentQuestion.objects.all()
     serializer_class = PreAssessmentQuestionSerializer
     pagination_class = StandardResultsSetPagination
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
-    search_fields = ['question_text']
-    ordering_fields = ['created_at', 'estimated_difficulty']
-    ordering = ['-created_at']
+    search_fields = ['question_text', 'topic__name']
+    ordering_fields = ['id', 'estimated_difficulty']
+    ordering = ['-id']
 
     def get_queryset(self):
         queryset = super().get_queryset()
         
-        # Filter by difficulty
+        # Filter by difficulty if specified
         difficulty = self.request.query_params.get('difficulty')
         if difficulty:
             queryset = queryset.filter(estimated_difficulty=difficulty)
             
-        return queryset
+        # Filter by topic_id if specified
+        topic_id = self.request.query_params.get('topic_id')
+        if topic_id:
+            # Use contains lookup since topic_ids is a JSONField list
+            queryset = queryset.filter(topic_ids__contains=[topic_id])
+            
+        return queryset.order_by('order')
 
 
 class AdminPreAssessmentQuestionDetailView(generics.RetrieveUpdateDestroyAPIView):
-    """
-    Admin view for pre-assessment question CRUD operations.
-    """
+    # Handle individual preassessment question operations
     queryset = PreAssessmentQuestion.objects.all()
     serializer_class = PreAssessmentQuestionSerializer
 

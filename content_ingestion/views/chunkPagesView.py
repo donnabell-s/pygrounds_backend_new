@@ -1,20 +1,39 @@
 from ..helpers.view_imports import *
 from ..helpers.helper_imports import *
 from content_ingestion.models import CHUNK_TYPE_CHOICES
+from multiprocessing import Pool
+import psutil
 
-@api_view(['POST'])
-def process_document_pipeline(request, document_id):
+def _run_document_pipeline_background(document_id, reprocess=False):
+    """
+    Background function to run the complete document processing pipeline using ProcessPool.
+    This runs in a separate thread to manage the ProcessPool without blocking HTTP response.
+    """
     try:
-        document = get_object_or_404(UploadedDocument, id=document_id)
+        document = UploadedDocument.objects.get(id=document_id)
         
-        if document.processing_status == 'PROCESSING':
-            return Response({
-                'status': 'error',
-                'message': 'Document is already being processed'
-            }, status=status.HTTP_400_BAD_REQUEST)
-        
+        # Set processing status
         document.processing_status = 'PROCESSING'
+        document.processing_message = 'Starting document processing pipeline...'
         document.save()
+        
+        # Determine optimal number of processes (use fewer since each step is sequential)
+        cpu_count = psutil.cpu_count(logical=True)
+        max_workers = min(2, max(1, cpu_count - 2))  # Use up to 2 processes for document pipeline
+        
+        # Prepare processing tasks in order
+        processing_steps = []
+        
+        if reprocess:
+            processing_steps.append((document_id, reprocess, 'cleanup'))
+        
+        # Add the main processing steps
+        processing_steps.extend([
+            (document_id, reprocess, 'toc'),
+            (document_id, reprocess, 'chunking'),
+            (document_id, reprocess, 'embedding'),
+            (document_id, reprocess, 'semantic')
+        ])
         
         pipeline_results = {
             'document_id': document_id,
@@ -23,70 +42,140 @@ def process_document_pipeline(request, document_id):
         }
         
         try:
-            toc_result = generate_toc_entries_for_document(document)
-            pipeline_results['pipeline_steps']['toc'] = {
-                'status': 'success',
-                'entries_count': len(toc_result.get('entries', []))
-            }
-        except Exception as e:
-            pipeline_results['pipeline_steps']['toc'] = {'status': 'error', 'error': str(e)}
+            # Import the worker function from our separate module
+            from content_ingestion.document_worker import process_document_task
+            
+            # Process steps sequentially (since they depend on each other)
+            for step_data in processing_steps:
+                step_name = step_data[2]
+                
+                # Update status message
+                status_messages = {
+                    'cleanup': 'Cleaning up previous processing artifacts...',
+                    'toc': 'Parsing document structure and generating table of contents...',
+                    'chunking': 'Chunking document content into semantic units...',
+                    'embedding': 'Generating embeddings for content chunks...',
+                    'semantic': 'Computing semantic similarities between content chunks...'
+                }
+                
+                document.processing_message = status_messages.get(step_name, f'Processing {step_name}...')
+                document.save()
+                
+                # Execute single step in process pool
+                with Pool(processes=1) as pool:  # Use single process for sequential steps
+                    result = pool.apply(process_document_task, (step_data,))
+                
+                step_result_name, step_result = result
+                pipeline_results['pipeline_steps'][step_result_name] = step_result
+                
+                # Stop if any step fails critically
+                if step_result['status'] == 'error' and step_name in ['toc', 'chunking']:
+                    logger.error(f"Critical step {step_name} failed for document {document_id}: {step_result['message']}")
+                    break
         
-        try:
-            processor = GranularChunkProcessor()
-            chunk_result = processor.process_entire_document(document)
-            pipeline_results['pipeline_steps']['chunking'] = {
-                'status': 'success',
-                'chunks_created': len(chunk_result.get('chunks_created', []))
-            }
         except Exception as e:
-            pipeline_results['pipeline_steps']['chunking'] = {'status': 'error', 'error': str(e)}
-        
-        try:
-            embedding_gen = EmbeddingGenerator()
-            chunks = DocumentChunk.objects.filter(document=document)
-            embedding_result = embedding_gen.embed_and_save_batch(chunks)
-            pipeline_results['pipeline_steps']['embedding'] = {
-                'status': 'success',
-                'embeddings_created': embedding_result.get('embeddings_generated', 0),
-                'database_saves': embedding_result.get('database_saves', 0)
+            logger.error(f"ProcessPool error for document {document_id}: {str(e)}")
+            pipeline_results['pipeline_steps']['process_error'] = {
+                'status': 'error',
+                'message': f'Process pool error: {str(e)}',
+                'error': str(e)
             }
-        except Exception as e:
-            pipeline_results['pipeline_steps']['embedding'] = {'status': 'error', 'error': str(e)}
         
-        # Step 4: Semantic Similarity Processing
-        try:
-            from ..helpers.semantic_similarity import compute_semantic_similarities_for_document
-            semantic_result = compute_semantic_similarities_for_document(
-                document_id=document_id, 
-                similarity_threshold=0.1,  # Store similarities above 0.1
-                top_k_results=10  # Store top 10 similar chunks per subtopic
-            )
-            pipeline_results['pipeline_steps']['semantic_similarity'] = {
-                'status': semantic_result['status'],
-                'processed_subtopics': semantic_result.get('processed_subtopics', 0),
-                'total_similarities': semantic_result.get('total_similarities', 0)
-            }
-        except Exception as e:
-            pipeline_results['pipeline_steps']['semantic_similarity'] = {'status': 'error', 'error': str(e)}
+        # Update final status based on pipeline results
+        failed_steps = [step for step, result in pipeline_results['pipeline_steps'].items() 
+                       if result.get('status') == 'error']
         
-        document.processing_status = 'COMPLETED'
+        if failed_steps:
+            document.processing_status = 'FAILED'
+            document.processing_message = f'Processing failed at steps: {", ".join(failed_steps)}'
+        else:
+            # Check critical steps completed successfully and produced results
+            toc_result = pipeline_results['pipeline_steps'].get('toc', {})
+            chunking_result = pipeline_results['pipeline_steps'].get('chunking', {})
+            
+            # Verify TOC was generated successfully
+            toc_success = (toc_result.get('status') == 'success' and 
+                          toc_result.get('entries_count', 0) > 0)
+            
+            # Verify chunks were created successfully  
+            chunking_success = (chunking_result.get('status') == 'success' and 
+                              chunking_result.get('chunks_created', 0) > 0)
+            
+            if toc_success and chunking_success:
+                document.processing_status = 'COMPLETED'
+                document.processing_message = 'Document processing completed successfully'
+            elif not toc_success:
+                document.processing_status = 'FAILED'
+                document.processing_message = 'Failed to generate table of contents or no TOC entries found'
+            elif not chunking_success:
+                document.processing_status = 'FAILED'
+                document.processing_message = 'Failed to create document chunks or no chunks generated'
+            else:
+                document.processing_status = 'FAILED'
+                document.processing_message = 'Critical processing steps did not complete successfully'
+        
         document.save()
         
+        logger.info(f"Background ProcessPool processing completed for document {document_id}: {document.title} - Status: {document.processing_status}")
+        
+    except UploadedDocument.DoesNotExist:
+        logger.error(f"Document {document_id} not found in background processing")
+    except Exception as e:
+        try:
+            document = UploadedDocument.objects.get(id=document_id)
+            document.processing_status = 'FAILED'
+            document.processing_message = f'Processing failed: {str(e)}'
+            document.save()
+        except:
+            pass
+        logger.error(f"Background pipeline error for document {document_id}: {str(e)}")
+
+@api_view(['POST'])
+def process_document_pipeline(request, document_id):
+    """
+    Start processing an uploaded document through the full pipeline using ProcessPool.
+    
+    This endpoint starts the processing in a background thread that manages ProcessPool 
+    and returns immediately. Use GET /docs/<document_id>/ to check the processing status.
+    """
+    try:
+        document = get_object_or_404(UploadedDocument, id=document_id)
+        
+        if document.processing_status == 'PROCESSING':
+            return Response({
+                'status': 'error',
+                'message': 'Document is already being processed',
+                'document_id': document_id,
+                'current_status': document.processing_status,
+                'current_message': document.processing_message
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Get reprocess flag from request
+        reprocess = request.data.get('reprocess', False)
+        
+        # Start background processing with ProcessPool
+        import threading
+        thread = threading.Thread(
+            target=_run_document_pipeline_background,
+            args=(document_id, reprocess),
+            daemon=True
+        )
+        thread.start()
+        
+        # Return immediately while processing continues in background
         return Response({
             'status': 'success',
-            'message': f'Document "{document.title}" processed successfully',
-            'results': pipeline_results
-        }, status=status.HTTP_200_OK)
+            'message': f'Document processing started in background using ProcessPool for "{document.title}"',
+            'document_id': document_id,
+            'processing_status': 'PROCESSING',
+            'note': 'Use GET /api/content_ingestion/docs/{document_id}/ to check processing status'
+        }, status=status.HTTP_202_ACCEPTED)
         
     except Exception as e:
-        if 'document' in locals():
-            document.processing_status = 'FAILED'
-            document.save()
-        
-        logger.error(f"Pipeline error for document {document_id}: {str(e)}")
+        logger.error(f"Error starting ProcessPool pipeline for document {document_id}: {str(e)}")
         return Response({
             'status': 'error',
-            'message': f'Processing failed: {str(e)}'
+            'message': f'Failed to start processing: {str(e)}'
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(['POST'])

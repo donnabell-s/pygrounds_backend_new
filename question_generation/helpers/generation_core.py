@@ -1,7 +1,5 @@
-"""
-Core question generation logic and orchestration functions.
-Contains the main generation workflows and coordination between components.
-"""
+# Core question generation functionality
+# Handles generating questions for topics/subtopics with RAG context and LLM integration
 
 import time
 from concurrent.futures import ThreadPoolExecutor, TimeoutError
@@ -26,20 +24,14 @@ def generate_questions_for_subtopic_combination(subtopic_combination,
                                               game_type: str, 
                                               zone, 
                                               thread_manager=None) -> Dict[str, Any]:
-    """
-    Generate questions for a specific combination of subtopics.
-    
-    Args:
-        subtopic_combination: List/queryset of subtopics
-        difficulty: Difficulty level
-        num_questions: Number of questions to generate
-        game_type: 'coding' or 'non_coding'
-        zone: GameZone instance
-        thread_manager: Optional thread manager
-        
-    Returns:
-        Dictionary with generation results and statistics
-    """
+    # Generate questions for given subtopics using RAG context
+    # Parameters:
+    # - subtopic_combination: List of subtopics to combine content from
+    # - difficulty: Question difficulty level
+    # - num_questions: How many questions to generate
+    # - game_type: Either 'coding' or 'non_coding'
+    # - zone: The zone these subtopics belong to
+    # - thread_manager: Optional manager for parallel processing
     try:
         subtopic_names = extract_subtopic_names(subtopic_combination)
         
