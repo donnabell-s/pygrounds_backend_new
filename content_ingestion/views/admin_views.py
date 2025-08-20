@@ -144,16 +144,34 @@ class ZoneDetail(generics.RetrieveUpdateDestroyAPIView):
         try:
             instance = self.get_object()
             
-            # Check if zone has any topics
-            if instance.topics.exists():
+            # Check for force delete parameter
+            force_delete = request.query_params.get('force', 'false').lower() == 'true'
+            
+            # Check if zone has any topics and warn user unless force delete
+            if instance.topics.exists() and not force_delete:
+                topic_count = instance.topics.count()
                 return Response(
-                    {'error': 'Cannot delete zone that contains topics. Delete all topics in this zone first.'},
+                    {
+                        'error': f'Zone contains {topic_count} topic(s). All topics and their content will be permanently deleted.',
+                        'warning': 'Add ?force=true to the request URL to confirm deletion.',
+                        'topic_count': topic_count
+                    },
                     status=status.HTTP_400_BAD_REQUEST
                 )
             
-            instance.delete()
+            # Log the deletion for audit purposes
+            topic_count = instance.topics.count()
+            zone_name = instance.name
+            if topic_count > 0:
+                logger.warning(f"Deleting zone '{zone_name}' with {topic_count} topics (CASCADE)")
+            
+            instance.delete()  # CASCADE will automatically delete related topics
+            
             return Response(
-                {'message': f'Zone "{instance.name}" was successfully deleted'},
+                {
+                    'message': f'Zone "{zone_name}" was successfully deleted',
+                    'deleted_topics': topic_count if topic_count > 0 else 0
+                },
                 status=status.HTTP_200_OK
             )
             

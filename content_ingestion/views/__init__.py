@@ -13,7 +13,7 @@ from .tocParserView import (
 
 # Document chunking and pipeline views
 from .chunkPagesView import (
-    process_document_pipeline, chunk_document_pages, generate_document_embeddings,
+    process_document_pipeline, cancel_document_pipeline, chunk_document_pages, generate_document_embeddings,
     get_document_chunks, get_single_chunk, get_document_chunks_full,
     get_chunks_by_type, get_coding_chunks_for_minigames
 )

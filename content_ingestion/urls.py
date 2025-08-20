@@ -3,7 +3,7 @@ from .views import (
     # Document management
     upload_pdf, list_documents, get_document_detail, delete_document,
     # Functional processing steps  
-    process_document_pipeline, chunk_document_pages, generate_document_embeddings,
+    process_document_pipeline, cancel_document_pipeline, chunk_document_pages, generate_document_embeddings,
     # Core steps
     generate_document_toc, get_section_content, get_document_toc,
     get_chunk_embeddings,
@@ -34,6 +34,7 @@ urlpatterns = [
     # ========== PIPELINE (FUNCTIONAL) ==========
     # Pipeline processing endpoints
     path('pipeline/<int:document_id>/', process_document_pipeline, name='process-document'),
+    path('pipeline/<int:document_id>/cancel/', cancel_document_pipeline, name='cancel-document'),
     path('pipeline/<int:document_id>/chunks/', chunk_document_pages, name='chunk-document'),
     path('pipeline/<int:document_id>/embeddings/', generate_document_embeddings, name='embed-document'),
 

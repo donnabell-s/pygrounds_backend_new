@@ -839,7 +839,6 @@ def populate_zones():
             name=zone_data["name"],
             description=zone_data.get("description", ""),
             order=zone_data.get("order", zone_idx),
-            is_unlocked=zone_data.get("is_unlocked", False),
         )
         print(f"✅ Zone {zone.order}: {zone.name}")
         for topic_idx, topic_data in enumerate(zone_data["topics"], 1):

@@ -49,6 +49,12 @@ def _run_document_pipeline_background(document_id, reprocess=False):
             for step_data in processing_steps:
                 step_name = step_data[2]
                 
+                # Check if processing was cancelled before each step
+                document.refresh_from_db()
+                if document.processing_status == 'PENDING':
+                    logger.info(f"Processing cancelled for document {document_id} before step {step_name}")
+                    return  # Exit early if cancelled
+                
                 # Update status message
                 status_messages = {
                     'cleanup': 'Cleaning up previous processing artifacts...',
@@ -177,6 +183,100 @@ def process_document_pipeline(request, document_id):
             'status': 'error',
             'message': f'Failed to start processing: {str(e)}'
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['POST'])
+def cancel_document_pipeline(request, document_id):
+    """
+    Cancel the document processing pipeline and clean up any partially created objects.
+    
+    This will:
+    1. Mark the document as cancelled
+    2. Delete any partially created chunks, embeddings, etc.
+    3. Reset the document to PENDING status
+    """
+    try:
+        document = get_object_or_404(UploadedDocument, id=document_id)
+        
+        if document.processing_status not in ['PROCESSING', 'FAILED']:
+            return Response({
+                'status': 'error',
+                'message': f'Cannot cancel document with status: {document.processing_status}',
+                'current_status': document.processing_status
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        logger.info(f"Cancelling pipeline for document {document_id}: {document.title}")
+        
+        # Clean up any partially created objects
+        cleanup_count = _cleanup_document_objects(document)
+        
+        # Reset document status
+        document.processing_status = 'PENDING'
+        document.processing_message = 'Processing cancelled by user. Ready to restart.'
+        document.save()
+        
+        logger.info(f"Pipeline cancelled for document {document_id}. Cleaned up {cleanup_count} objects.")
+        
+        return Response({
+            'status': 'success',
+            'message': f'Document processing cancelled for "{document.title}"',
+            'document_id': document_id,
+            'processing_status': 'PENDING',
+            'cleaned_objects': cleanup_count
+        }, status=status.HTTP_200_OK)
+        
+    except Exception as e:
+        logger.error(f"Error cancelling pipeline for document {document_id}: {str(e)}")
+        return Response({
+            'status': 'error',
+            'message': f'Failed to cancel processing: {str(e)}'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+def _cleanup_document_objects(document):
+    """
+    Clean up all objects created during document processing.
+    Returns the count of objects cleaned up.
+    """
+    cleanup_count = 0
+    
+    try:
+        # Delete document chunks
+        chunks = document.chunks.all()
+        chunk_count = chunks.count()
+        if chunk_count > 0:
+            chunks.delete()
+            cleanup_count += chunk_count
+            logger.info(f"Deleted {chunk_count} document chunks")
+        
+        # Delete TOC entries
+        toc_entries = document.toc_entries.all()
+        toc_count = toc_entries.count()
+        if toc_count > 0:
+            toc_entries.delete()
+            cleanup_count += toc_count
+            logger.info(f"Deleted {toc_count} TOC entries")
+        
+        # Delete any document-related embeddings
+        from content_ingestion.models import Embedding
+        embeddings = Embedding.objects.filter(document_chunk__document=document)
+        embedding_count = embeddings.count()
+        if embedding_count > 0:
+            embeddings.delete()
+            cleanup_count += embedding_count
+            logger.info(f"Deleted {embedding_count} embeddings")
+        
+        # Clear parsed pages tracking
+        document.parsed_pages = []
+        document.save()
+        
+        logger.info(f"Total cleanup: {cleanup_count} objects removed")
+        
+    except Exception as e:
+        logger.error(f"Error during cleanup: {str(e)}")
+    
+    return cleanup_count
+
 
 @api_view(['POST'])
 def chunk_document_pages(request, document_id):
