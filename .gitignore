@@ -16,6 +16,12 @@ venv/
 # Environment Variables
 .env
 
+# Database backups
+backups/
+*.dump
+# Allow db_dump.sql for sharing
+# *.sql
+
 # VS Code
 .vscode/
 

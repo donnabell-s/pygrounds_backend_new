@@ -26,8 +26,27 @@ class MyTopicProgressView(APIView):
     def get(self, request):
         from .models import UserTopicProficiency
         from .serializers import UserTopicProficiencySerializer
-        progress = UserTopicProficiency.objects.filter(user=request.user)
-        return Response(UserTopicProficiencySerializer(progress, many=True).data)
+        import logging
+        logger = logging.getLogger(__name__)
+        
+        try:
+            progress = UserTopicProficiency.objects.filter(user=request.user).select_related('topic__zone')
+            logger.info(f"Found {progress.count()} topic progress records for user {request.user.username}")
+            
+            # Check for any broken zone relationships
+            valid_progress = []
+            for p in progress:
+                if p.topic and p.topic.zone:
+                    valid_progress.append(p)
+                else:
+                    logger.warning(f"Skipping topic progress for topic {p.topic.name if p.topic else 'Unknown'} - missing zone")
+            
+            serializer = UserTopicProficiencySerializer(valid_progress, many=True)
+            return Response(serializer.data)
+            
+        except Exception as e:
+            logger.error(f"Error in MyTopicProgressView: {e}")
+            return Response([], status=200)  # Return empty list instead of error
 
 
 class MySubtopicStatsView(APIView):
