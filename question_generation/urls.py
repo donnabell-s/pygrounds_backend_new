@@ -46,6 +46,8 @@ from .views.admin_views import (
     AdminSemanticSubtopicListView
 )
 
+from .views.getQuestions import (PreAssessmentQuestionListView)
+
 urlpatterns = [
     # ========== QUESTION GENERATION API ==========
     # Batch Generation
@@ -91,4 +93,6 @@ urlpatterns = [
     path('test/prompt/', test_prompt_generation, name='test-prompt'),
     path('test/health/', health_check, name='health-check'),
     path('test/stats/', get_generation_stats, name='generation-stats'),
+
+    path('preassessment/', PreAssessmentQuestionListView.as_view(), name='preassessment-questions'),
 ]
