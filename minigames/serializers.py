@@ -16,7 +16,7 @@ class QuestionSerializer(serializers.ModelSerializer):
             'question_text',   # replaces 'text'
             'correct_answer',  # replaces 'answer'
             'game_type',
-            'minigame_type',
+            # 'minigame_type',
             'game_data',       # contains function_name, sample_input/output, etc
         ]
 
