@@ -1,0 +1,428 @@
+[
+  {
+    "id": 104,
+    "question_text": "What does the print() function do in Python?",
+    "answer_options": [
+      "It asks the user for input",
+      "It displays text on the screen",
+      "It performs a calculation",
+      "It creates a new variable"
+    ],
+    "correct_answer": "It displays text on the screen",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      32,
+      30
+    ],
+    "subtopic_ids": [
+      220,
+      210
+    ],
+    "order": 0,
+    "created_at": null
+  },
+  {
+    "id": 105,
+    "question_text": "Which symbol is used to write a single-line comment in Python?",
+    "answer_options": [
+      "//",
+      "#",
+      "--",
+      "/*"
+    ],
+    "correct_answer": "#",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      34
+    ],
+    "subtopic_ids": [
+      233,
+      235
+    ],
+    "order": 1,
+    "created_at": null
+  },
+  {
+    "id": 106,
+    "question_text": "What is the correct way to create a variable named 'age' with the value 25?",
+    "answer_options": [
+      "age = 25",
+      "25 = age",
+      "variable age 25",
+      "set age to 25"
+    ],
+    "correct_answer": "age = 25",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      31,
+      33
+    ],
+    "subtopic_ids": [
+      212,
+      229
+    ],
+    "order": 2,
+    "created_at": null
+  },
+  {
+    "id": 107,
+    "question_text": "Which data type would you use to store someone's name?",
+    "answer_options": [
+      "Integer",
+      "Float",
+      "String",
+      "Boolean"
+    ],
+    "correct_answer": "String",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      31
+    ],
+    "subtopic_ids": [
+      214,
+      212
+    ],
+    "order": 3,
+    "created_at": null
+  },
+  {
+    "id": 108,
+    "question_text": "What does the input() function do?",
+    "answer_options": [
+      "Prints text to the screen",
+      "Reads text entered by the user",
+      "Converts numbers to text",
+      "Checks if a condition is true"
+    ],
+    "correct_answer": "Reads text entered by the user",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      32
+    ],
+    "subtopic_ids": [
+      219,
+      222
+    ],
+    "order": 4,
+    "created_at": null
+  },
+  {
+    "id": 109,
+    "question_text": "Which operator checks if two values are equal?",
+    "answer_options": [
+      "=",
+      "==",
+      "!=",
+      ">"
+    ],
+    "correct_answer": "==",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      33,
+      35
+    ],
+    "subtopic_ids": [
+      227,
+      243
+    ],
+    "order": 5,
+    "created_at": null
+  },
+  {
+    "id": 110,
+    "question_text": "What will '3 + 4 * 2' evaluate to in Python?",
+    "answer_options": [
+      "14",
+      "11",
+      "10",
+      "9"
+    ],
+    "correct_answer": "11",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      33
+    ],
+    "subtopic_ids": [
+      226,
+      230
+    ],
+    "order": 6,
+    "created_at": null
+  },
+  {
+    "id": 111,
+    "question_text": "How do you start an if statement in Python?",
+    "answer_options": [
+      "if condition:",
+      "if (condition)",
+      "if condition then",
+      "check if condition:"
+    ],
+    "correct_answer": "if condition:",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      35,
+      34
+    ],
+    "subtopic_ids": [
+      240,
+      235
+    ],
+    "order": 7,
+    "created_at": null
+  },
+  {
+    "id": 112,
+    "question_text": "Which loop runs as long as a condition is true?",
+    "answer_options": [
+      "for loop",
+      "while loop",
+      "if loop",
+      "repeat loop"
+    ],
+    "correct_answer": "while loop",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      37
+    ],
+    "subtopic_ids": [
+      256,
+      260
+    ],
+    "order": 8,
+    "created_at": null
+  },
+  {
+    "id": 113,
+    "question_text": "What is the purpose of a try-except block?",
+    "answer_options": [
+      "To create a loop",
+      "To handle errors gracefully",
+      "To define a function",
+      "To compare values"
+    ],
+    "correct_answer": "To handle errors gracefully",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      36
+    ],
+    "subtopic_ids": [
+      248,
+      247
+    ],
+    "order": 9,
+    "created_at": null
+  },
+  {
+    "id": 114,
+    "question_text": "Which method converts a string to all lowercase letters?",
+    "answer_options": [
+      ".lower()",
+      ".small()",
+      ".minimize()",
+      ".case_down()"
+    ],
+    "correct_answer": ".lower()",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      39
+    ],
+    "subtopic_ids": [
+      270,
+      269
+    ],
+    "order": 10,
+    "created_at": null
+  },
+  {
+    "id": 115,
+    "question_text": "How do you add an item to the end of a list?",
+    "answer_options": [
+      ".add()",
+      ".insert()",
+      ".append()",
+      ".push()"
+    ],
+    "correct_answer": ".append()",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      40
+    ],
+    "subtopic_ids": [
+      276,
+      275
+    ],
+    "order": 11,
+    "created_at": null
+  },
+  {
+    "id": 116,
+    "question_text": "What does the 'and' operator do?",
+    "answer_options": [
+      "Checks if both conditions are true",
+      "Checks if either condition is true",
+      "Reverses a condition",
+      "Adds two numbers"
+    ],
+    "correct_answer": "Checks if both conditions are true",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      33,
+      35
+    ],
+    "subtopic_ids": [
+      228,
+      243
+    ],
+    "order": 12,
+    "created_at": null
+  },
+  {
+    "id": 117,
+    "question_text": "Which data structure uses key-value pairs?",
+    "answer_options": [
+      "List",
+      "Tuple",
+      "Dictionary",
+      "Set"
+    ],
+    "correct_answer": "Dictionary",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      43
+    ],
+    "subtopic_ids": [
+      296,
+      297
+    ],
+    "order": 13,
+    "created_at": null
+  },
+  {
+    "id": 118,
+    "question_text": "What is the output of 'Hello' + 'World'?",
+    "answer_options": [
+      "HelloWorld",
+      "Hello World",
+      "Hello+World",
+      "Error"
+    ],
+    "correct_answer": "HelloWorld",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      32
+    ],
+    "subtopic_ids": [
+      221,
+      220
+    ],
+    "order": 14,
+    "created_at": null
+  },
+  {
+    "id": 119,
+    "question_text": "How do you define a function in Python?",
+    "answer_options": [
+      "function my_func():",
+      "def my_func():",
+      "define my_func():",
+      "func my_func():"
+    ],
+    "correct_answer": "def my_func():",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      42
+    ],
+    "subtopic_ids": [
+      289,
+      290
+    ],
+    "order": 15,
+    "created_at": null
+  },
+  {
+    "id": 120,
+    "question_text": "Which collection does not allow duplicate items?",
+    "answer_options": [
+      "List",
+      "Tuple",
+      "Set",
+      "Dictionary"
+    ],
+    "correct_answer": "Set",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      41
+    ],
+    "subtopic_ids": [
+      282,
+      285
+    ],
+    "order": 16,
+    "created_at": null
+  },
+  {
+    "id": 121,
+    "question_text": "What does the range(5) function generate?",
+    "answer_options": [
+      "Numbers 1 through 5",
+      "Numbers 0 through 4",
+      "Five random numbers",
+      "A list with five items"
+    ],
+    "correct_answer": "Numbers 0 through 4",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      37
+    ],
+    "subtopic_ids": [
+      254,
+      255
+    ],
+    "order": 17,
+    "created_at": null
+  },
+  {
+    "id": 122,
+    "question_text": "How can you check the data type of a variable?",
+    "answer_options": [
+      "check_type()",
+      "type()",
+      "what_is()",
+      "data_type()"
+    ],
+    "correct_answer": "type()",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      31
+    ],
+    "subtopic_ids": [
+      217
+    ],
+    "order": 18,
+    "created_at": null
+  },
+  {
+    "id": 123,
+    "question_text": "Imagine you're building a simple calculator. Which concept would help you handle user input errors, like entering text instead of numbers?",
+    "answer_options": [
+      "Loops",
+      "Functions",
+      "Error Handling",
+      "Conditional Statements"
+    ],
+    "correct_answer": "Error Handling",
+    "estimated_difficulty": "advanced",
+    "topic_ids": [
+      36,
+      32
+    ],
+    "subtopic_ids": [
+      248,
+      222,
+      225
+    ],
+    "order": 19,
+    "created_at": null
+  }
+]

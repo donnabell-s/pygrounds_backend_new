@@ -24,9 +24,11 @@ from .views.question_generators import (
 
 from .views.question_api import (
     generate_questions_bulk,
-    generate_questions_single_subtopic,
     generate_pre_assessment,
-    get_rag_context
+    get_rag_context,
+    get_generation_status,
+    get_worker_details,
+    cancel_generation
 )
 
 from .views.test_views import (
@@ -49,9 +51,6 @@ urlpatterns = [
     # Batch Generation
     path('generate/bulk/', generate_questions_bulk, name='generate-questions-bulk'),
     
-    # Single Subtopic Generation
-    path('generate/subtopic/<int:subtopic_id>/', generate_questions_single_subtopic, name='generate-questions-subtopic'),
-    
     # Pre-assessment Generation
     path('generate/preassessment/', generate_pre_assessment, name='generate-preassessment'),
     
@@ -62,6 +61,11 @@ urlpatterns = [
     
     # RAG Context Endpoint
     path('rag-context/<int:subtopic_id>/', get_rag_context, name='get-rag-context'),
+    
+    # Real-time Status Tracking
+    path('generate/status/<str:session_id>/', get_generation_status, name='get-generation-status'),
+    path('generate/workers/<str:session_id>/', get_worker_details, name='get-worker-details'),
+    path('generate/cancel/<str:session_id>/', cancel_generation, name='cancel-generation'),
     
     # ========== QUESTION RETRIEVAL API ==========
     # Question Listing

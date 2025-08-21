@@ -23,7 +23,8 @@ def generate_questions_for_subtopic_combination(subtopic_combination,
                                               num_questions: int, 
                                               game_type: str, 
                                               zone, 
-                                              thread_manager=None) -> Dict[str, Any]:
+                                              thread_manager=None,
+                                              session_id=None) -> Dict[str, Any]:
     # Generate questions for given subtopics using RAG context
     # Parameters:
     # - subtopic_combination: List of subtopics to combine content from
@@ -32,6 +33,20 @@ def generate_questions_for_subtopic_combination(subtopic_combination,
     # - game_type: Either 'coding' or 'non_coding'
     # - zone: The zone these subtopics belong to
     # - thread_manager: Optional manager for parallel processing
+    # - session_id: Optional session ID for cancellation checking
+    
+    # Check for cancellation if session_id provided
+    if session_id:
+        from .generation_status import generation_status_tracker
+        if generation_status_tracker.is_session_cancelled(session_id):
+            return {
+                'success': False,
+                'error': 'Generation was cancelled',
+                'subtopic_names': extract_subtopic_names(subtopic_combination),
+                'difficulty': difficulty,
+                'questions_saved': 0
+            }
+    
     try:
         subtopic_names = extract_subtopic_names(subtopic_combination)
         
@@ -58,11 +73,12 @@ def generate_questions_for_subtopic_combination(subtopic_combination,
             prompt,
             system_prompt=system_prompt,
             model="deepseek-chat",
-            temperature=temperature
+            temperature=temperature,
+            max_tokens=8000  # Higher token limit for complete responses with all fields
         )
         
         # Parse response
-        questions_json = parse_llm_json_response(llm_response)
+        questions_json = parse_llm_json_response(llm_response, game_type)
         if not questions_json:
             return {
                 'success': False,
@@ -133,7 +149,9 @@ def create_system_prompt(subtopic_names: List[str],
             f"Generate {num_questions} coding challenges "
             f"for {len(subtopic_names)} subtopics: {', '.join(subtopic_names)}. "
             f"Zone: {zone.name} (Zone {zone.order}), Difficulty: {difficulty}. "
-            f"Format as JSON array: question_text, function_name, sample_input, sample_output, hidden_tests, buggy_code, difficulty"
+            f"CRITICAL: ALL JSON objects MUST include these 10 fields: question_text, buggy_question_text, function_name, sample_input, sample_output, hidden_tests, buggy_code, correct_code, buggy_correct_code, difficulty. "
+            f"Each question MUST have 'correct_code' with working solution and 'buggy_correct_code' with fixed version of buggy code. "
+            f"IMPORTANT: If ANY field is missing in ANY question, the entire batch will be rejected."
         )
     else:  # non_coding
         return (
@@ -150,12 +168,12 @@ def process_zone_difficulty_combination(args) -> Dict[str, Any]:
     Generates questions for all subtopic combinations within this zone-difficulty pair.
     
     Args:
-        args: Tuple of (zone, difficulty, num_questions_per_subtopic, game_type, thread_id, thread_manager)
+        args: Tuple of (zone, difficulty, num_questions_per_subtopic, game_type, thread_id, session_id)
         
     Returns:
         Dictionary with processing results
     """
-    (zone, difficulty, num_questions_per_subtopic, game_type, thread_id, thread_manager) = args
+    (zone, difficulty, num_questions_per_subtopic, game_type, thread_id, session_id) = args
     
     result = {
         'thread_id': thread_id,
@@ -188,7 +206,7 @@ def process_zone_difficulty_combination(args) -> Dict[str, Any]:
                 try:
                     generation_result = generate_questions_for_subtopic_combination(
                         subtopic_combination, difficulty, num_questions_per_subtopic, 
-                        game_type, zone, thread_manager
+                        game_type, zone, thread_manager=None, session_id=session_id
                     )
                     
                     if generation_result['success']:
@@ -196,7 +214,26 @@ def process_zone_difficulty_combination(args) -> Dict[str, Any]:
                         result['combination_stats']['successful'] += 1
                     else:
                         result['combination_stats']['failed'] += 1
-                        print(f"❌ Thread {thread_id}: Failed combination: {generation_result['subtopic_names']}")
+                        subtopic_names = generation_result['subtopic_names']
+                        print(f"❌ Thread {thread_id}: Failed combination: {subtopic_names}")
+                        
+                        # Only try fallback for combinations of size > 1
+                        if combination_size > 1 and 'error' in generation_result:
+                            print(f"🔄 Thread {thread_id}: Attempting fallback to individual subtopics")
+                            # Try each subtopic individually as a fallback
+                            for individual_subtopic in subtopic_combination:
+                                try:
+                                    fallback_result = generate_questions_for_subtopic_combination(
+                                        [individual_subtopic], difficulty, num_questions_per_subtopic,
+                                        game_type, zone, thread_manager=None, session_id=session_id
+                                    )
+                                    
+                                    if fallback_result['success']:
+                                        result['total_generated'] += fallback_result['questions_saved']
+                                        result['combination_stats']['successful'] += 1
+                                        print(f"✅ Thread {thread_id}: Fallback successful for: {fallback_result['subtopic_names']}")
+                                except Exception as e:
+                                    print(f"❌ Thread {thread_id}: Fallback failed for subtopic: {str(e)}")
                         
                 except Exception as e:
                     result['combination_stats']['failed'] += 1
@@ -216,92 +253,130 @@ def run_multithreaded_generation(zones,
                                 difficulty_levels: List[str], 
                                 num_questions_per_subtopic: int, 
                                 game_type: str, 
-                                max_workers: int = None) -> Dict[str, Any]:
+                                session_id: str = None,
+                                max_workers: int = 4) -> Dict[str, Any]:
     """
     Run multithreaded question generation across zones and difficulties.
     
     Args:
         zones: QuerySet or list of GameZone instances
         difficulty_levels: List of difficulty levels to process
-        num_questions_per_subtopic: Questions to generate per subtopic combination
+        num_questions_per_subtopic: Number of questions to generate per subtopic
         game_type: 'coding' or 'non_coding'
-        max_workers: Optional max worker threads
+        session_id: Optional session ID for tracking generation progress
+        max_workers: Maximum number of concurrent workers
         
     Returns:
         Dictionary with generation results and statistics
     """
-    from ..helpers.threading_manager import LLMThreadPoolManager
+    import threading
+    from concurrent.futures import ThreadPoolExecutor
     
-    # Initialize thread manager
-    thread_manager = LLMThreadPoolManager(max_workers=max_workers, game_type=game_type)
+    # Track session progress if session_id provided
+    if session_id:
+        from .generation_status import generation_status_tracker
+        zone_names = [zone.name for zone in zones]
+        generation_status_tracker.create_session(
+            session_id=session_id,
+            total_workers=len(zones) * len(difficulty_levels),
+            zones=zone_names,
+            difficulties=difficulty_levels
+        )
     
-    if not thread_manager.initialize_json_file():
-        return {
-            'success': False,
-            'error': 'Failed to initialize JSON file',
-            'results': []
-        }
-    
-    print(f"🎯 Starting multithreaded generation with {thread_manager.max_workers} workers")
+    print(f"🎯 Starting multithreaded generation with {max_workers} workers")
     
     # Prepare tasks: each task is a (zone, difficulty) combination
     tasks = []
+    thread_id = 0
     for zone in zones:
         for difficulty in difficulty_levels:
-            task_args = (zone, difficulty, num_questions_per_subtopic, game_type, len(tasks), thread_manager)
+            task_args = (zone, difficulty, num_questions_per_subtopic, game_type, thread_id, session_id)
             tasks.append(task_args)
+            thread_id += 1
     
     # Execute tasks
     results = []
     successful_results = []
     failed_results = []
+    cancelled = False
+    start_time = time.time()
     
-    with ThreadPoolExecutor(max_workers=thread_manager.max_workers) as executor:
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
         try:
-            # Submit all tasks with timeout
-            future_results = executor.map(
-                process_zone_difficulty_combination, 
-                tasks, 
-                timeout=thread_manager.task_timeout * len(tasks)
-            )
+            futures = []
+            for task in tasks:
+                # Check for cancellation before submitting each task
+                if session_id:
+                    from .generation_status import generation_status_tracker
+                    if generation_status_tracker.is_session_cancelled(session_id):
+                        cancelled = True
+                        break
+                
+                future = executor.submit(process_zone_difficulty_combination, task)
+                futures.append(future)
             
             # Collect results
-            for result in future_results:
-                results.append(result)
-                if result.get('success', False):
-                    successful_results.append(result)
-                else:
-                    failed_results.append(result)
+            for future in futures:
+                try:
+                    if session_id:
+                        from .generation_status import generation_status_tracker
+                        if generation_status_tracker.is_session_cancelled(session_id):
+                            cancelled = True
+                            break
                     
-        except TimeoutError:
+                    result = future.result(timeout=None)
+                    results.append(result)
+                    
+                    if result.get('success', False):
+                        successful_results.append(result)
+                    else:
+                        failed_results.append(result)
+                        
+                    if session_id:
+                        from .generation_status import generation_status_tracker
+                        generation_status_tracker.update_status(session_id, {
+                            'completed_workers': len(results),
+                            'successful_workers': len(successful_results),
+                            'failed_workers': len(failed_results)
+                        })
+                            
+                except Exception as e:
+                    failed_results.append({
+                        'success': False,
+                        'error': str(e)
+                    })
+        except Exception as e:
             return {
                 'success': False,
-                'error': 'Generation timed out',
-                'partial_results': results,
-                'timeout_seconds': thread_manager.task_timeout * len(tasks)
+                'error': f'Generation failed: {str(e)}',
+                'partial_results': results
             }
     
     # Calculate final statistics
     total_generated = sum(r.get('total_generated', 0) for r in successful_results)
-    thread_stats = thread_manager.get_stats()
+    success_rate = len(successful_results) / len(tasks) if tasks else 0
+    execution_time = time.time() - start_time
     
-    # Finalize JSON file
-    additional_stats = {
-        'total_zones_processed': len(set(r['zone_id'] for r in successful_results)),
-        'total_difficulties_processed': len(difficulty_levels),
-        'successful_zone_difficulty_pairs': len(successful_results),
-        'failed_zone_difficulty_pairs': len(failed_results)
-    }
-    
-    thread_manager.finalize_json_file(additional_stats)
+    # Update final session status if session_id provided
+    if session_id:
+        from .generation_status import generation_status_tracker
+        final_status = {
+            'status': 'cancelled' if cancelled else 'completed',
+            'completed_workers': len(results),
+            'successful_workers': len(successful_results),
+            'failed_workers': len(failed_results),
+            'total_questions': total_generated,
+            'success_rate': success_rate,
+            'total_duration': execution_time
+        }
+        generation_status_tracker.update_status(session_id, final_status)
     
     return {
         'success': True,
+        'cancelled': cancelled,
         'total_generated': total_generated,
-        'duplicates_skipped': thread_stats['duplicate_count'],
-        'thread_stats': thread_stats,
-        'successful_results': len(successful_results),
-        'failed_results': len(failed_results),
-        'json_filename': thread_manager.json_filename,
-        'results': results
+        'successful_tasks': len(successful_results),
+        'failed_tasks': len(failed_results),
+        'results': results,
+        'execution_time': execution_time
     }

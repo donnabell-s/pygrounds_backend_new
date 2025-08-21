@@ -17,10 +17,8 @@ class DeepSeekPromptManager:
         return prompts[game_type](context)
 
     def get_coding_prompt(self, context):
-        # Create a coding challenge prompt
-        # Format: Short bug fix tasks with sample I/O
         return f"""
-          OUTPUT ONLY VALID JSON.
+          OUTPUT ONLY VALID JSON. MUST INCLUDE ALL 10 REQUIRED FIELDS FOR EACH QUESTION.
 
           ROLE: Senior Python challenge architect.
 
@@ -36,39 +34,41 @@ class DeepSeekPromptManager:
           GOAL:
           Generate {context['num_questions']} compact, real-world Python debugging tasks.
 
-          HARD RULES:
-          - All questions are about **fixing a single bug** in short code.
-          - No external libraries, no randomness, no file I/O, no multi-part tasks.
-          - `question_text` ≤ 12 words; start with an action verb (Build, Fix, Sort, Extract, Format, Transform).
-          - `buggy_question_text` **must describe symptoms** (observable behavior), not the fix, and must NOT be empty.
-          - Always include `buggy_code` (≤ 20 lines).
-          - The **intended correct behavior** must be inferable from `sample_input` + `sample_output`.
-          - Use **snake_case** for `function_name`.
-          - Hidden tests must be structured objects, not free text.
-
-          OUTPUT SCHEMA (array of length = NUM_QUESTIONS):
+          MANDATORY OUTPUT SCHEMA - MUST INCLUDE ALL 10 FIELDS:
           [
             {{
               "question_text": "<≤12 words>",
-              "buggy_question_text": "<symptom-only, 8–20 words>",
+              "buggy_question_text": "<symptom-only, 8–20 words>", 
               "function_name": "<snake_case>",
-              "sample_input": "<Python-literal tuple, e.g., (3,) or ([1,2], 'x')>",
-              "sample_output": "<Python-literal or newline-joined string>",
+              "sample_input": "<Python-literal tuple>",
+              "sample_output": "<expected result>",
               "hidden_tests": [
-                {{"input": "(2,)", "expected_output": "'2\\n1'"}},
-                {{"input": "(1,)", "expected_output": "'1'"}}
+                {{"input": "(test1,)", "expected_output": "result1"}},
+                {{"input": "(test2,)", "expected_output": "result2"}}
               ],
-              "buggy_code": "def fn(...):\\n    ...",
+              "buggy_code": "def function_name(...):\\n    # buggy implementation",
+              "correct_code": "def function_name(...):\\n    # correct implementation for question_text",
+              "buggy_correct_code": "def function_name(...):\\n    # fixed version of buggy_code",
               "difficulty": "{context['difficulty']}"
             }}
           ]
 
-          VALIDATION HINTS:
-          - Keep total JSON under ~1200 tokens.
-          - Prefer small, testable tasks (string ops, loops, indexing, conditionals, formatting).
-          - Avoid trick questions and avoid relying on undefined globals.
+          CRITICAL FAILURE PREVENTION REQUIREMENTS:
+          - Every JSON object MUST have exactly these 10 fields, with NO fields missing
+          - MANDATORY: "buggy_code": Contains intentional bugs that align with buggy_question_text
+          - MANDATORY: "correct_code": Working solution for the main question_text problem  
+          - MANDATORY: "buggy_correct_code": Corrected version that fixes the bugs in buggy_code
+          - IMPORTANT: If ANY field is missing, the entire batch will be rejected and no questions will be saved
 
-          RETURN: Only the JSON array.
+          RULES:
+          - Create engaging, simple coding tasks with real-world context
+          - No external libraries, randomness, file I/O, or multi-part tasks
+          - Use engaging contexts: secret messages, gamer tags, social media, etc.
+          - `buggy_question_text` describes symptoms, not solutions
+          - Use snake_case for function names
+          - Keep code under 20 lines each
+
+          RETURN: Only the JSON array with ALL required fields.
 """
 
 
@@ -132,31 +132,62 @@ VALIDATION HINTS:
       return f"""
 OUTPUT ONLY VALID JSON. DO NOT add explanations, markdown, or backticks.
 
-ROLE: Assessment designer.
+ROLE: You are a Python Master and Educational Game Designer creating a welcoming pre-assessment for complete beginners with ZERO programming experience.
 
-COVER THESE EXACT SUBTOPICS:
+COMPREHENSIVE COVERAGE REQUIRED - ALL THESE SUBTOPICS (99 total):
 <<<
 {context['topics_and_subtopics']}
 >>>
 
-NUM_QUESTIONS: {context['num_questions']}
+ASSESSMENT PURPOSE:
+This is a PRE-ASSESSMENT GAME for absolute beginners to determine their starting point in Python learning. Students taking this have likely NEVER programmed before and need a friendly, non-intimidating introduction to gauge their readiness level.
 
-REQUIREMENTS:
-- Cover every listed subtopic at least once across the set.
-- Mix conceptual and practical items; keep stems clear and brief.
-- Choices must be concise; one unambiguous correct answer.
-- Use exact subtopic names in `subtopics_covered`.
+TOTAL QUESTIONS: {context['num_questions']} (typically 20 for comprehensive beginner assessment)
+
+BEGINNER-FIRST DESIGN PHILOSOPHY:
+As a Python Master designing for beginners, you understand that effective pre-assessment requires:
+
+1. **GENTLE DIFFICULTY PROGRESSION**:
+   - 50% Beginner: Fundamental concepts, simple syntax recognition, basic terminology
+   - 40% Intermediate: Basic application of concepts, simple problem recognition  
+   - 10% Advanced: Identify students with some prior experience
+   - ONLY 1 MASTER LEVEL QUESTION FOR INSPIRATION AND MOTIVATION
+2. **ACCESSIBLE LANGUAGE & CONCEPTS**:
+   - Use simple, clear explanations
+   - Relate to everyday concepts when possible
+   - Avoid jargon unless explaining it
+   - Make questions feel like puzzles, not tests
+
+3. **STRATEGIC SUBTOPIC COVERAGE**:
+   - Bundle 2-4 related foundational subtopics per question
+   - Focus on concepts that indicate learning readiness
+   - Cover basics that determine appropriate starting difficulty
+
+
+ABSOLUTE REQUIREMENTS:
+- Use EXACT subtopic names from the provided list in `subtopics_covered` - DO NOT paraphrase or shorten them
+- COPY the subtopic names EXACTLY as they appear in the topic list above - character for character
+- Example: Use "Basic Text Output with print()" NOT "Basic Output" or "Print Statements"
+- Example: Use "Using input() to Read User Data" NOT "Input Functions" or "User Input"
+- Make all questions welcoming and game-like, never intimidating
+- Ensure someone with zero experience can still engage meaningfully
+- Cover foundational concepts that predict learning success
+- All answer choices should be clearly distinct and logical
+
+CRITICAL: The `subtopics_covered` array must contain EXACT MATCHES to the subtopic names listed in the COMPREHENSIVE COVERAGE section above. Any paraphrasing will cause database mapping failures.
 
 OUTPUT SCHEMA:
 [
   {{
-    "question_text": "<≤20 words>",
-    "choices": ["<opt1>", "<opt2>", "<opt3>", "<opt4>"],
-    "correct_answer": "<must match one of choices>",
-    "subtopics_covered": ["<exact subtopic name>", "..."],
-    "difficulty": "beginner|intermediate|advanced"
+    "question_text": "<clear, beginner-friendly question with simple language and relatable examples>",
+    "choices": ["<simple, clear option A>", "<simple, clear option B>", "<simple, clear option C>", "<simple, clear option D>"],
+    "correct_answer": "<must exactly match one choice>",
+    "subtopics_covered": ["<exact subtopic name 1>", "<exact subtopic name 2>", "<exact subtopic name 3>"],
+    "difficulty": "beginner|intermediate|advanced|master"
   }}
 ]
+
+MANDATE: Create {context['num_questions']} welcoming, game-like questions that help complete beginners discover their Python learning readiness while efficiently covering ALL 99 subtopics.
 
 RETURN: Only the JSON array.
 """

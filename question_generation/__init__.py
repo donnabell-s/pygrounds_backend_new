@@ -6,13 +6,6 @@ Provides clean API endpoints and efficient helper utilities.
 """
 
 # Core helper functions and classes
-from .helpers.threading_manager import LLMThreadPoolManager
-from .helpers.file_operations import (
-    initialize_generation_json_file,
-    finalize_generation_json_file,
-    load_generation_results,
-    append_question_batch_to_json
-)
 from .helpers.question_processing import (
     generate_question_hash,
     parse_llm_json_response,

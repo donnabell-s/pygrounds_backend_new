@@ -5,7 +5,34 @@ from content_ingestion.models import SemanticSubtopic  # Moved to content_ingest
 from content_ingestion.models import Topic, Subtopic
 
 
+class TopicNestedSerializer(serializers.ModelSerializer):
+    """Nested serializer for Topic with zone information"""
+    zone = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = Topic
+        fields = ['id', 'name', 'zone']
+    
+    def get_zone(self, obj):
+        return {
+            'id': obj.zone.id,
+            'name': obj.zone.name,
+            'order': obj.zone.order
+        }
+
+
+class SubtopicNestedSerializer(serializers.ModelSerializer):
+    """Nested serializer for Subtopic"""
+    topic = TopicNestedSerializer(read_only=True)
+    
+    class Meta:
+        model = Subtopic
+        fields = ['id', 'name', 'topic']
+
+
 class GeneratedQuestionSerializer(serializers.ModelSerializer):
+    topic = TopicNestedSerializer(read_only=True)
+    subtopic = SubtopicNestedSerializer(read_only=True)
     topic_name = serializers.SerializerMethodField()
     subtopic_name = serializers.SerializerMethodField()
     zone_name = serializers.SerializerMethodField()
@@ -42,6 +69,8 @@ class PreAssessmentQuestionSerializer(serializers.ModelSerializer):
 
 class QuestionSummarySerializer(serializers.ModelSerializer):
     """Lightweight serializer for question lists"""
+    topic = TopicNestedSerializer(read_only=True)
+    subtopic = SubtopicNestedSerializer(read_only=True)
     topic_name = serializers.SerializerMethodField()
     subtopic_name = serializers.SerializerMethodField()
     question_preview = serializers.SerializerMethodField()
@@ -49,7 +78,7 @@ class QuestionSummarySerializer(serializers.ModelSerializer):
     class Meta:
         model = GeneratedQuestion
         fields = [
-            'id', 'topic_name', 'subtopic_name', 'question_preview',
+            'id', 'topic', 'subtopic', 'topic_name', 'subtopic_name', 'question_preview',
             'estimated_difficulty', 'game_type', 'validation_status'
         ]
     

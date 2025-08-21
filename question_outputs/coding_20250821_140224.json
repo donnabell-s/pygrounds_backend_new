@@ -1,0 +1,525 @@
+[
+  {
+    "id": 1979,
+    "question_text": "Print a secret message with asterisk borders",
+    "correct_answer": "",
+    "game_type": "coding",
+    "difficulty": "master",
+    "topic": "Basic Input and Output",
+    "subtopic": "Basic Text Output with print()",
+    "game_data": {
+      "function_name": "print_secret_message",
+      "sample_input": "('Hello',)",
+      "sample_output": "*********\n* Hello *\n*********",
+      "hidden_tests": [
+        {
+          "input": "('Python',)",
+          "expected_output": "**********\n* Python *\n**********"
+        },
+        {
+          "input": "('Debug',)",
+          "expected_output": "*********\n* Debug *\n*********"
+        }
+      ],
+      "buggy_code": "def print_secret_message(message):\n    border = '*' * len(message)\n    print(border)\n    print(f'* {message} *')\n    print(border)",
+      "buggy_question_text": "Message appears without proper border formatting",
+      "subtopic_names": [
+        "Basic Text Output with print()"
+      ],
+      "zone_name": "Python Basics",
+      "zone_order": 1,
+      "rag_context": "Topic: Basic Input and Output\nSubtopic: Basic Text Output with print()\nGame Type: non_coding\nContent Types Found: Code, Exercise\nRetrieved Chunks: 7\n\nLEARNING CONTENT:\n--- Code ---\n520 | Chapter 15: More About Type Hints from typing import overload, Union, TypeVar T = TypeVar('T') S = TypeVar('S')\n\nDocument: Fluent Python\n--- Code ---\nSet Literals The syntax of set literals—{1}, {1, 2}, etc.—looks exactly like the math notation, with one important exception: there’s no literal notation for the empty set, so we must remember to write set().\n\nDocument: Fluent Python\n--- Code ---\nIterator[T] is a shortcut for Generator[T, None, None]. Both annotations mean “a generator that yields items of type T, but that does not consume or return values.” Generators able to consume and return values are coroutines, our next topic.\n\nDocument: Fluent Python\n--- Code ---\nHere is an example invoking @lru_cache with nondefault parameters: @lru_cache(maxsize=2**20, typed=True) def costly_function(a, b): ... Now let’s study another powerful decorator: functools.singledispatch.\n\nDocument: Fluent Python\n--- Exercise ---\nSentence Classes with __iter__ The next variations of Sentence implement the standard iterable protocol, first by implementing the Iterator design pattern, and then with generator functions.\n\nDocument: Fluent Python\n--- Code ---\nd.pop(k, [default]) Remove and return value at k, or default or None if missing d.popitem() Remove and return the last inserted item as (key, value) ® d.__reversed__() Support for reverse(d)—returns iterator for keys from last to first inserted.\n\nDocument: Fluent Python\n--- Code ---\nThis suggests that a good naming convention for covariant and contravariant type variables in Python would be: T_out = TypeVar('T_out', covariant=True) T_in = TypeVar('T_in', contravariant=True) Then we could define the classes like this: class BeverageDispenser(Generic[T_out]): ... class TrashCan(Generic[T_in]): ... Is it too late to change the naming convention establish"
+    },
+    "created_at": null
+  },
+  {
+    "id": 1980,
+    "question_text": "Print a secret message with asterisk borders",
+    "correct_answer": "",
+    "game_type": "coding",
+    "difficulty": "advanced",
+    "topic": "Basic Input and Output",
+    "subtopic": "Basic Text Output with print()",
+    "game_data": {
+      "function_name": "print_secret_message",
+      "sample_input": "('Hello',)",
+      "sample_output": "************\n*  Hello   *\n************",
+      "hidden_tests": [
+        {
+          "input": "('Python',)",
+          "expected_output": "************\n*  Python  *\n************"
+        },
+        {
+          "input": "('Debug',)",
+          "expected_output": "************\n*   Debug  *\n************"
+        }
+      ],
+      "buggy_code": "def print_secret_message(message):\n    border = '*' * 10\n    print(border)\n    print(f'*  {message}  *')\n    print(border)",
+      "buggy_question_text": "Message appears without proper border formatting",
+      "subtopic_names": [
+        "Basic Text Output with print()"
+      ],
+      "zone_name": "Python Basics",
+      "zone_order": 1,
+      "rag_context": "Topic: Basic Input and Output\nSubtopic: Basic Text Output with print()\nGame Type: non_coding\nContent Types Found: Code, Exercise\nRetrieved Chunks: 7\n\nLEARNING CONTENT:\n--- Code ---\n520 | Chapter 15: More About Type Hints from typing import overload, Union, TypeVar T = TypeVar('T') S = TypeVar('S')\n\nDocument: Fluent Python\n--- Code ---\nSet Literals The syntax of set literals—{1}, {1, 2}, etc.—looks exactly like the math notation, with one important exception: there’s no literal notation for the empty set, so we must remember to write set().\n\nDocument: Fluent Python\n--- Code ---\nIterator[T] is a shortcut for Generator[T, None, None]. Both annotations mean “a generator that yields items of type T, but that does not consume or return values.” Generators able to consume and return values are coroutines, our next topic.\n\nDocument: Fluent Python\n--- Code ---\nHere is an example invoking @lru_cache with nondefault parameters: @lru_cache(maxsize=2**20, typed=True) def costly_function(a, b): ... Now let’s study another powerful decorator: functools.singledispatch.\n\nDocument: Fluent Python\n--- Exercise ---\nSentence Classes with __iter__ The next variations of Sentence implement the standard iterable protocol, first by implementing the Iterator design pattern, and then with generator functions.\n\nDocument: Fluent Python\n--- Code ---\nd.pop(k, [default]) Remove and return value at k, or default or None if missing d.popitem() Remove and return the last inserted item as (key, value) ® d.__reversed__() Support for reverse(d)—returns iterator for keys from last to first inserted.\n\nDocument: Fluent Python\n--- Code ---\nThis suggests that a good naming convention for covariant and contravariant type variables in Python would be: T_out = TypeVar('T_out', covariant=True) T_in = TypeVar('T_in', contravariant=True) Then we could define the classes like this: class BeverageDispenser(Generic[T_out]): ... class TrashCan(Generic[T_in]): ... Is it too late to change the naming convention establish"
+    },
+    "created_at": null
+  },
+  {
+    "id": 1981,
+    "question_text": "Format user input as title case with proper spacing",
+    "correct_answer": "",
+    "game_type": "coding",
+    "difficulty": "master",
+    "topic": "Basic Input and Output",
+    "subtopic": "Best Practices for User-Friendly I/O",
+    "game_data": {
+      "function_name": "format_user_title",
+      "sample_input": "('john doe',)",
+      "sample_output": "John Doe",
+      "hidden_tests": [
+        {
+          "input": "('mARY jANE',)",
+          "expected_output": "Mary Jane"
+        },
+        {
+          "input": "('dr.strange',)",
+          "expected_output": "Dr. Strange"
+        },
+        {
+          "input": "('',)",
+          "expected_output": ""
+        }
+      ],
+      "buggy_code": "def format_user_title(name):\n    return name.upper()",
+      "buggy_question_text": "Function returns incorrect capitalization and spacing for multi-word inputs",
+      "subtopic_names": [
+        "Best Practices for User-Friendly I/O"
+      ],
+      "zone_name": "Python Basics",
+      "zone_order": 1,
+      "rag_context": "Topic: Basic Input and Output\nSubtopic: Best Practices for User-Friendly I/O\nGame Type: non_coding\nContent Types Found: Code, Exercise\nRetrieved Chunks: 7\n\nLEARNING CONTENT:\n--- Code ---\nSet Literals The syntax of set literals—{1}, {1, 2}, etc.—looks exactly like the math notation, with one important exception: there’s no literal notation for the empty set, so we must remember to write set().\n\nDocument: Fluent Python\n--- Code ---\nIterator[T] is a shortcut for Generator[T, None, None]. Both annotations mean “a generator that yields items of type T, but that does not consume or return values.” Generators able to consume and return values are coroutines, our next topic.\n\nDocument: Fluent Python\n--- Code ---\nHere is an example invoking @lru_cache with nondefault parameters: @lru_cache(maxsize=2**20, typed=True) def costly_function(a, b): ... Now let’s study another powerful decorator: functools.singledispatch.\n\nDocument: Fluent Python\n--- Code ---\n520 | Chapter 15: More About Type Hints from typing import overload, Union, TypeVar T = TypeVar('T') S = TypeVar('S')\n\nDocument: Fluent Python\n--- Exercise ---\nSentence Classes with __iter__ The next variations of Sentence implement the standard iterable protocol, first by implementing the Iterator design pattern, and then with generator functions.\n\nDocument: Fluent Python\n--- Code ---\nd.pop(k, [default]) Remove and return value at k, or default or None if missing d.popitem() Remove and return the last inserted item as (key, value) ® d.__reversed__() Support for reverse(d)—returns iterator for keys from last to first inserted.\n\nDocument: Fluent Python\n--- Code ---\nThis suggests that a good naming convention for covariant and contravariant type variables in Python would be: T_out = TypeVar('T_out', covariant=True) T_in = TypeVar('T_in', contravariant=True) Then we could define the classes like this: class BeverageDispenser(Generic[T_out]): ... class TrashCan(Generic[T_in]): ... Is it too late to change the naming convention est"
+    },
+    "created_at": null
+  },
+  {
+    "id": 1982,
+    "question_text": "Convert mixed input types to float for calculations",
+    "correct_answer": "",
+    "game_type": "coding",
+    "difficulty": "master",
+    "topic": "Basic Input and Output",
+    "subtopic": "Handling Input Types (Converting to int, float, etc.)",
+    "game_data": {
+      "function_name": "calculate_average",
+      "sample_input": "('5', '3.5', '7')",
+      "sample_output": "5.166666666666667",
+      "hidden_tests": [
+        {
+          "input": "('10', '15.5', '20')",
+          "expected_output": "15.166666666666666"
+        },
+        {
+          "input": "('abc', '5', '10')",
+          "expected_output": "ValueError"
+        },
+        {
+          "input": "('3.14', '2.71', '1.618')",
+          "expected_output": "2.489333333333333"
+        }
+      ],
+      "buggy_code": "def calculate_average(*values):\n    total = 0\n    for val in values:\n        total += float(val)\n    return total / len(values)",
+      "buggy_question_text": "Function crashes when input contains non-numeric strings",
+      "subtopic_names": [
+        "Handling Input Types (Converting to int, float, etc.)"
+      ],
+      "zone_name": "Python Basics",
+      "zone_order": 1,
+      "rag_context": "Topic: Basic Input and Output\nSubtopic: Handling Input Types (Converting to int, float, etc.)\nGame Type: non_coding\nContent Types Found: Concept\nRetrieved Chunks: 3\n\nLEARNING CONTENT:\n--- Concept ---\nnumeric tower, 279 numeric types checking for convertibility, 468, 480 emulating using special methods, 9-12 hashability of, 84 support for, 479 NumPy, 64-67 O object references aliasing, 204-208 deep copies, 211-213 del and garbage collection, 219-221 distinction between objects and their names, 201 function parameters as references, 213-218 further reading on, 224 immutability and, 221 overview of, 223 shallow copies, 208-211 Soapbox discussion, 225 variables as labels versus boxes, 202-204 objects callable objects, 237-239, 598-599 first-class, 231 flexible object creation, 843-845 mutable, 225 treating functions like, 232-234 user-defined callable objects, 239 operator module, 243-247 operator overloading augmented assignment operators, 580-585 basics of, 562 further reading on, 587 infix operator method names, 576 infix operators, 561 overloading * for scalar multiplication, 572-574 overloading + for vector addition, 566-572 overview of, 585 rich comparison operators, 577-580 significant changes to, 562 Soapbox discussion, 588 topics covered, 562 unary operators, 563-566 using @ as infix operator, 574-576 Optional type, 270 OR-patterns,\n\nDocument: Fluent Python\n--- Concept ---\nChapter Summary | 481 protocols is with static type checkers, which can take into account type hints to make structural typing more reliable. Next we talked about the design and coding of a static protocol and how to extend it. The chapter ended with “The numbers ABCs and Numeric Protocols” on page 478, which tells the sad story of the derelict state of the numeric tower and a few existing shortcomings of the proposed alternative: the numeric static protocols such as SupportsFloat and others added to the typing module in Python 3.8. The main message of this chapter is that we have four comple"
+    },
+    "created_at": null
+  },
+  {
+    "id": 1998,
+    "question_text": "Print a welcome message with username",
+    "correct_answer": "",
+    "game_type": "coding",
+    "difficulty": "beginner",
+    "topic": "Basic Input and Output",
+    "subtopic": "Basic Text Output with print()",
+    "game_data": {
+      "function_name": "print_welcome",
+      "sample_input": "('gamer123',)",
+      "sample_output": "Welcome, gamer123! Ready to play?",
+      "hidden_tests": [
+        {
+          "input": "('coder42',)",
+          "expected_output": "Welcome, coder42! Ready to play?"
+        },
+        {
+          "input": "('python_fan',)",
+          "expected_output": "Welcome, python_fan! Ready to play?"
+        }
+      ],
+      "buggy_code": "def print_welcome(username):\n    print('Welcome,')\n    print(username)\n    print('! Ready to play?')",
+      "buggy_question_text": "The welcome message prints on separate lines instead of one",
+      "subtopic_names": [
+        "Basic Text Output with print()"
+      ],
+      "zone_name": "Python Basics",
+      "zone_order": 1,
+      "rag_context": "Topic: Basic Input and Output\nSubtopic: Basic Text Output with print()\nGame Type: non_coding\nContent Types Found: Code, Exercise\nRetrieved Chunks: 7\n\nLEARNING CONTENT:\n--- Code ---\n520 | Chapter 15: More About Type Hints from typing import overload, Union, TypeVar T = TypeVar('T') S = TypeVar('S')\n\nDocument: Fluent Python\n--- Code ---\nSet Literals The syntax of set literals—{1}, {1, 2}, etc.—looks exactly like the math notation, with one important exception: there’s no literal notation for the empty set, so we must remember to write set().\n\nDocument: Fluent Python\n--- Code ---\nIterator[T] is a shortcut for Generator[T, None, None]. Both annotations mean “a generator that yields items of type T, but that does not consume or return values.” Generators able to consume and return values are coroutines, our next topic.\n\nDocument: Fluent Python\n--- Code ---\nHere is an example invoking @lru_cache with nondefault parameters: @lru_cache(maxsize=2**20, typed=True) def costly_function(a, b): ... Now let’s study another powerful decorator: functools.singledispatch.\n\nDocument: Fluent Python\n--- Exercise ---\nSentence Classes with __iter__ The next variations of Sentence implement the standard iterable protocol, first by implementing the Iterator design pattern, and then with generator functions.\n\nDocument: Fluent Python\n--- Code ---\nd.pop(k, [default]) Remove and return value at k, or default or None if missing d.popitem() Remove and return the last inserted item as (key, value) ® d.__reversed__() Support for reverse(d)—returns iterator for keys from last to first inserted.\n\nDocument: Fluent Python\n--- Code ---\nThis suggests that a good naming convention for covariant and contravariant type variables in Python would be: T_out = TypeVar('T_out', covariant=True) T_in = TypeVar('T_in', contravariant=True) Then we could define the classes like this: class BeverageDispenser(Generic[T_out]): ... class TrashCan(Generic[T_in]): ... Is it too late to change the naming convention establish"
+    },
+    "created_at": null
+  },
+  {
+    "id": 2009,
+    "question_text": "Print a secret message with asterisk borders",
+    "correct_answer": "",
+    "game_type": "coding",
+    "difficulty": "intermediate",
+    "topic": "Basic Input and Output",
+    "subtopic": "Basic Text Output with print()",
+    "game_data": {
+      "function_name": "print_secret_message",
+      "sample_input": "('Hello World',)",
+      "sample_output": "************\n*Hello World*\n************",
+      "hidden_tests": [
+        {
+          "input": "('Python',)",
+          "expected_output": "**********\n*Python*\n**********"
+        },
+        {
+          "input": "('Debug',)",
+          "expected_output": "********\n*Debug*\n********"
+        }
+      ],
+      "buggy_code": "def print_secret_message(message):\n    border = '*' * len(message)\n    print(border)\n    print(f'*{message}*')\n    print(border)",
+      "buggy_question_text": "Message prints without proper border formatting",
+      "subtopic_names": [
+        "Basic Text Output with print()"
+      ],
+      "zone_name": "Python Basics",
+      "zone_order": 1,
+      "rag_context": "Topic: Basic Input and Output\nSubtopic: Basic Text Output with print()\nGame Type: non_coding\nContent Types Found: Code, Exercise\nRetrieved Chunks: 7\n\nLEARNING CONTENT:\n--- Code ---\n520 | Chapter 15: More About Type Hints from typing import overload, Union, TypeVar T = TypeVar('T') S = TypeVar('S')\n\nDocument: Fluent Python\n--- Code ---\nSet Literals The syntax of set literals—{1}, {1, 2}, etc.—looks exactly like the math notation, with one important exception: there’s no literal notation for the empty set, so we must remember to write set().\n\nDocument: Fluent Python\n--- Code ---\nIterator[T] is a shortcut for Generator[T, None, None]. Both annotations mean “a generator that yields items of type T, but that does not consume or return values.” Generators able to consume and return values are coroutines, our next topic.\n\nDocument: Fluent Python\n--- Code ---\nHere is an example invoking @lru_cache with nondefault parameters: @lru_cache(maxsize=2**20, typed=True) def costly_function(a, b): ... Now let’s study another powerful decorator: functools.singledispatch.\n\nDocument: Fluent Python\n--- Exercise ---\nSentence Classes with __iter__ The next variations of Sentence implement the standard iterable protocol, first by implementing the Iterator design pattern, and then with generator functions.\n\nDocument: Fluent Python\n--- Code ---\nd.pop(k, [default]) Remove and return value at k, or default or None if missing d.popitem() Remove and return the last inserted item as (key, value) ® d.__reversed__() Support for reverse(d)—returns iterator for keys from last to first inserted.\n\nDocument: Fluent Python\n--- Code ---\nThis suggests that a good naming convention for covariant and contravariant type variables in Python would be: T_out = TypeVar('T_out', covariant=True) T_in = TypeVar('T_in', contravariant=True) Then we could define the classes like this: class BeverageDispenser(Generic[T_out]): ... class TrashCan(Generic[T_in]): ... Is it too late to change the naming convention establish"
+    },
+    "created_at": null
+  },
+  {
+    "id": 2010,
+    "question_text": "Print a formatted gamer tag with level",
+    "correct_answer": "",
+    "game_type": "coding",
+    "difficulty": "intermediate",
+    "topic": "Basic Input and Output",
+    "subtopic": "Basic Text Output with print()",
+    "game_data": {
+      "function_name": "print_gamer_tag",
+      "sample_input": "('Shadow', 25)",
+      "sample_output": "Gamer: Shadow | Level: 25",
+      "hidden_tests": [
+        {
+          "input": "('Ninja', 42)",
+          "expected_output": "Gamer: Ninja | Level: 42"
+        },
+        {
+          "input": "('ProGamer', 99)",
+          "expected_output": "Gamer: ProGamer | Level: 99"
+        }
+      ],
+      "buggy_code": "def print_gamer_tag(name, level):\n    print(f'Gamer:{name}|Level:{level}')",
+      "buggy_question_text": "Gamer tag prints with incorrect spacing and formatting",
+      "subtopic_names": [
+        "Basic Text Output with print()"
+      ],
+      "zone_name": "Python Basics",
+      "zone_order": 1,
+      "rag_context": "Topic: Basic Input and Output\nSubtopic: Basic Text Output with print()\nGame Type: non_coding\nContent Types Found: Code, Exercise\nRetrieved Chunks: 7\n\nLEARNING CONTENT:\n--- Code ---\n520 | Chapter 15: More About Type Hints from typing import overload, Union, TypeVar T = TypeVar('T') S = TypeVar('S')\n\nDocument: Fluent Python\n--- Code ---\nSet Literals The syntax of set literals—{1}, {1, 2}, etc.—looks exactly like the math notation, with one important exception: there’s no literal notation for the empty set, so we must remember to write set().\n\nDocument: Fluent Python\n--- Code ---\nIterator[T] is a shortcut for Generator[T, None, None]. Both annotations mean “a generator that yields items of type T, but that does not consume or return values.” Generators able to consume and return values are coroutines, our next topic.\n\nDocument: Fluent Python\n--- Code ---\nHere is an example invoking @lru_cache with nondefault parameters: @lru_cache(maxsize=2**20, typed=True) def costly_function(a, b): ... Now let’s study another powerful decorator: functools.singledispatch.\n\nDocument: Fluent Python\n--- Exercise ---\nSentence Classes with __iter__ The next variations of Sentence implement the standard iterable protocol, first by implementing the Iterator design pattern, and then with generator functions.\n\nDocument: Fluent Python\n--- Code ---\nd.pop(k, [default]) Remove and return value at k, or default or None if missing d.popitem() Remove and return the last inserted item as (key, value) ® d.__reversed__() Support for reverse(d)—returns iterator for keys from last to first inserted.\n\nDocument: Fluent Python\n--- Code ---\nThis suggests that a good naming convention for covariant and contravariant type variables in Python would be: T_out = TypeVar('T_out', covariant=True) T_in = TypeVar('T_in', contravariant=True) Then we could define the classes like this: class BeverageDispenser(Generic[T_out]): ... class TrashCan(Generic[T_in]): ... Is it too late to change the naming convention establish"
+    },
+    "created_at": null
+  },
+  {
+    "id": 2011,
+    "question_text": "Print a social media post with hashtags",
+    "correct_answer": "",
+    "game_type": "coding",
+    "difficulty": "intermediate",
+    "topic": "Basic Input and Output",
+    "subtopic": "Basic Text Output with print()",
+    "game_data": {
+      "function_name": "print_social_post",
+      "sample_input": "('Learning Python!', ['coding', 'python'])",
+      "sample_output": "Learning Python! #coding #python",
+      "hidden_tests": [
+        {
+          "input": "('Debugging is fun', ['debug', 'programming'])",
+          "expected_output": "Debugging is fun #debug #programming"
+        },
+        {
+          "input": "('New project', ['dev', 'code'])",
+          "expected_output": "New project #dev #code"
+        }
+      ],
+      "buggy_code": "def print_social_post(text, hashtags):\n    print(text)\n    for tag in hashtags:\n        print(f'#{tag}')",
+      "buggy_question_text": "Hashtags print on separate lines instead of together",
+      "subtopic_names": [
+        "Basic Text Output with print()"
+      ],
+      "zone_name": "Python Basics",
+      "zone_order": 1,
+      "rag_context": "Topic: Basic Input and Output\nSubtopic: Basic Text Output with print()\nGame Type: non_coding\nContent Types Found: Code, Exercise\nRetrieved Chunks: 7\n\nLEARNING CONTENT:\n--- Code ---\n520 | Chapter 15: More About Type Hints from typing import overload, Union, TypeVar T = TypeVar('T') S = TypeVar('S')\n\nDocument: Fluent Python\n--- Code ---\nSet Literals The syntax of set literals—{1}, {1, 2}, etc.—looks exactly like the math notation, with one important exception: there’s no literal notation for the empty set, so we must remember to write set().\n\nDocument: Fluent Python\n--- Code ---\nIterator[T] is a shortcut for Generator[T, None, None]. Both annotations mean “a generator that yields items of type T, but that does not consume or return values.” Generators able to consume and return values are coroutines, our next topic.\n\nDocument: Fluent Python\n--- Code ---\nHere is an example invoking @lru_cache with nondefault parameters: @lru_cache(maxsize=2**20, typed=True) def costly_function(a, b): ... Now let’s study another powerful decorator: functools.singledispatch.\n\nDocument: Fluent Python\n--- Exercise ---\nSentence Classes with __iter__ The next variations of Sentence implement the standard iterable protocol, first by implementing the Iterator design pattern, and then with generator functions.\n\nDocument: Fluent Python\n--- Code ---\nd.pop(k, [default]) Remove and return value at k, or default or None if missing d.popitem() Remove and return the last inserted item as (key, value) ® d.__reversed__() Support for reverse(d)—returns iterator for keys from last to first inserted.\n\nDocument: Fluent Python\n--- Code ---\nThis suggests that a good naming convention for covariant and contravariant type variables in Python would be: T_out = TypeVar('T_out', covariant=True) T_in = TypeVar('T_in', contravariant=True) Then we could define the classes like this: class BeverageDispenser(Generic[T_out]): ... class TrashCan(Generic[T_in]): ... Is it too late to change the naming convention establish"
+    },
+    "created_at": null
+  },
+  {
+    "id": 2012,
+    "question_text": "Print a progress bar with percentage",
+    "correct_answer": "",
+    "game_type": "coding",
+    "difficulty": "intermediate",
+    "topic": "Basic Input and Output",
+    "subtopic": "Basic Text Output with print()",
+    "game_data": {
+      "function_name": "print_progress_bar",
+      "sample_input": "(75,)",
+      "sample_output": "[██████████░░░░░░░░] 75%",
+      "hidden_tests": [
+        {
+          "input": "(50,)",
+          "expected_output": "[██████████░░░░░░░░] 50%"
+        },
+        {
+          "input": "(25,)",
+          "expected_output": "[██████████░░░░░░░░] 25%"
+        }
+      ],
+      "buggy_code": "def print_progress_bar(percent):\n    filled = '█' * (percent // 5)\n    empty = '░' * (20 - percent // 5)\n    print(f'[{filled}{empty}] {percent}%')",
+      "buggy_question_text": "Progress bar shows incorrect percentage and formatting",
+      "subtopic_names": [
+        "Basic Text Output with print()"
+      ],
+      "zone_name": "Python Basics",
+      "zone_order": 1,
+      "rag_context": "Topic: Basic Input and Output\nSubtopic: Basic Text Output with print()\nGame Type: non_coding\nContent Types Found: Code, Exercise\nRetrieved Chunks: 7\n\nLEARNING CONTENT:\n--- Code ---\n520 | Chapter 15: More About Type Hints from typing import overload, Union, TypeVar T = TypeVar('T') S = TypeVar('S')\n\nDocument: Fluent Python\n--- Code ---\nSet Literals The syntax of set literals—{1}, {1, 2}, etc.—looks exactly like the math notation, with one important exception: there’s no literal notation for the empty set, so we must remember to write set().\n\nDocument: Fluent Python\n--- Code ---\nIterator[T] is a shortcut for Generator[T, None, None]. Both annotations mean “a generator that yields items of type T, but that does not consume or return values.” Generators able to consume and return values are coroutines, our next topic.\n\nDocument: Fluent Python\n--- Code ---\nHere is an example invoking @lru_cache with nondefault parameters: @lru_cache(maxsize=2**20, typed=True) def costly_function(a, b): ... Now let’s study another powerful decorator: functools.singledispatch.\n\nDocument: Fluent Python\n--- Exercise ---\nSentence Classes with __iter__ The next variations of Sentence implement the standard iterable protocol, first by implementing the Iterator design pattern, and then with generator functions.\n\nDocument: Fluent Python\n--- Code ---\nd.pop(k, [default]) Remove and return value at k, or default or None if missing d.popitem() Remove and return the last inserted item as (key, value) ® d.__reversed__() Support for reverse(d)—returns iterator for keys from last to first inserted.\n\nDocument: Fluent Python\n--- Code ---\nThis suggests that a good naming convention for covariant and contravariant type variables in Python would be: T_out = TypeVar('T_out', covariant=True) T_in = TypeVar('T_in', contravariant=True) Then we could define the classes like this: class BeverageDispenser(Generic[T_out]): ... class TrashCan(Generic[T_in]): ... Is it too late to change the naming convention establish"
+    },
+    "created_at": null
+  },
+  {
+    "id": 2013,
+    "question_text": "Print a multi-line address format",
+    "correct_answer": "",
+    "game_type": "coding",
+    "difficulty": "intermediate",
+    "topic": "Basic Input and Output",
+    "subtopic": "Basic Text Output with print()",
+    "game_data": {
+      "function_name": "print_address",
+      "sample_input": "('123 Main St', 'Springfield', 'IL', '62704')",
+      "sample_output": "123 Main St\nSpringfield, IL 62704",
+      "hidden_tests": [
+        {
+          "input": "('456 Oak Ave', 'Chicago', 'IL', '60601')",
+          "expected_output": "456 Oak Ave\nChicago, IL 60601"
+        },
+        {
+          "input": "('789 Pine Rd', 'New York', 'NY', '10001')",
+          "expected_output": "789 Pine Rd\nNew York, NY 10001"
+        }
+      ],
+      "buggy_code": "def print_address(street, city, state, zipcode):\n    print(f'{street}, {city}, {state} {zipcode}')",
+      "buggy_question_text": "Address prints on one line instead of multiple lines",
+      "subtopic_names": [
+        "Basic Text Output with print()"
+      ],
+      "zone_name": "Python Basics",
+      "zone_order": 1,
+      "rag_context": "Topic: Basic Input and Output\nSubtopic: Basic Text Output with print()\nGame Type: non_coding\nContent Types Found: Code, Exercise\nRetrieved Chunks: 7\n\nLEARNING CONTENT:\n--- Code ---\n520 | Chapter 15: More About Type Hints from typing import overload, Union, TypeVar T = TypeVar('T') S = TypeVar('S')\n\nDocument: Fluent Python\n--- Code ---\nSet Literals The syntax of set literals—{1}, {1, 2}, etc.—looks exactly like the math notation, with one important exception: there’s no literal notation for the empty set, so we must remember to write set().\n\nDocument: Fluent Python\n--- Code ---\nIterator[T] is a shortcut for Generator[T, None, None]. Both annotations mean “a generator that yields items of type T, but that does not consume or return values.” Generators able to consume and return values are coroutines, our next topic.\n\nDocument: Fluent Python\n--- Code ---\nHere is an example invoking @lru_cache with nondefault parameters: @lru_cache(maxsize=2**20, typed=True) def costly_function(a, b): ... Now let’s study another powerful decorator: functools.singledispatch.\n\nDocument: Fluent Python\n--- Exercise ---\nSentence Classes with __iter__ The next variations of Sentence implement the standard iterable protocol, first by implementing the Iterator design pattern, and then with generator functions.\n\nDocument: Fluent Python\n--- Code ---\nd.pop(k, [default]) Remove and return value at k, or default or None if missing d.popitem() Remove and return the last inserted item as (key, value) ® d.__reversed__() Support for reverse(d)—returns iterator for keys from last to first inserted.\n\nDocument: Fluent Python\n--- Code ---\nThis suggests that a good naming convention for covariant and contravariant type variables in Python would be: T_out = TypeVar('T_out', covariant=True) T_in = TypeVar('T_in', contravariant=True) Then we could define the classes like this: class BeverageDispenser(Generic[T_out]): ... class TrashCan(Generic[T_in]): ... Is it too late to change the naming convention establish"
+    },
+    "created_at": null
+  },
+  {
+    "id": 2029,
+    "question_text": "Create a user-friendly input validator for usernames",
+    "correct_answer": "",
+    "game_type": "coding",
+    "difficulty": "advanced",
+    "topic": "Basic Input and Output",
+    "subtopic": "Best Practices for User-Friendly I/O",
+    "game_data": {
+      "function_name": "validate_username",
+      "sample_input": "('john_doe123',)",
+      "sample_output": "True",
+      "hidden_tests": [
+        {
+          "input": "('',)",
+          "expected_output": "False"
+        },
+        {
+          "input": "('user name',)",
+          "expected_output": "False"
+        },
+        {
+          "input": "('valid_user123',)",
+          "expected_output": "True"
+        }
+      ],
+      "buggy_code": "def validate_username(username):\n    if len(username) < 3:\n        return False\n    if ' ' in username:\n        return True\n    return username.isalnum()",
+      "buggy_question_text": "Username validator crashes with empty input and allows spaces",
+      "subtopic_names": [
+        "Best Practices for User-Friendly I/O"
+      ],
+      "zone_name": "Python Basics",
+      "zone_order": 1,
+      "rag_context": "Topic: Basic Input and Output\nSubtopic: Best Practices for User-Friendly I/O\nGame Type: non_coding\nContent Types Found: Code, Exercise\nRetrieved Chunks: 7\n\nLEARNING CONTENT:\n--- Code ---\nSet Literals The syntax of set literals—{1}, {1, 2}, etc.—looks exactly like the math notation, with one important exception: there’s no literal notation for the empty set, so we must remember to write set().\n\nDocument: Fluent Python\n--- Code ---\nIterator[T] is a shortcut for Generator[T, None, None]. Both annotations mean “a generator that yields items of type T, but that does not consume or return values.” Generators able to consume and return values are coroutines, our next topic.\n\nDocument: Fluent Python\n--- Code ---\nHere is an example invoking @lru_cache with nondefault parameters: @lru_cache(maxsize=2**20, typed=True) def costly_function(a, b): ... Now let’s study another powerful decorator: functools.singledispatch.\n\nDocument: Fluent Python\n--- Code ---\n520 | Chapter 15: More About Type Hints from typing import overload, Union, TypeVar T = TypeVar('T') S = TypeVar('S')\n\nDocument: Fluent Python\n--- Exercise ---\nSentence Classes with __iter__ The next variations of Sentence implement the standard iterable protocol, first by implementing the Iterator design pattern, and then with generator functions.\n\nDocument: Fluent Python\n--- Code ---\nd.pop(k, [default]) Remove and return value at k, or default or None if missing d.popitem() Remove and return the last inserted item as (key, value) ® d.__reversed__() Support for reverse(d)—returns iterator for keys from last to first inserted.\n\nDocument: Fluent Python\n--- Code ---\nThis suggests that a good naming convention for covariant and contravariant type variables in Python would be: T_out = TypeVar('T_out', covariant=True) T_in = TypeVar('T_in', contravariant=True) Then we could define the classes like this: class BeverageDispenser(Generic[T_out]): ... class TrashCan(Generic[T_in]): ... Is it too late to change the naming convention est"
+    },
+    "created_at": null
+  },
+  {
+    "id": 2030,
+    "question_text": "Build a formatted phone number display function",
+    "correct_answer": "",
+    "game_type": "coding",
+    "difficulty": "advanced",
+    "topic": "Basic Input and Output",
+    "subtopic": "Best Practices for User-Friendly I/O",
+    "game_data": {
+      "function_name": "format_phone_number",
+      "sample_input": "('1234567890',)",
+      "sample_output": "(123) 456-7890",
+      "hidden_tests": [
+        {
+          "input": "('',)",
+          "expected_output": "Invalid input"
+        },
+        {
+          "input": "('123',)",
+          "expected_output": "Invalid input"
+        },
+        {
+          "input": "('5551234567',)",
+          "expected_output": "(555) 123-4567"
+        }
+      ],
+      "buggy_code": "def format_phone_number(phone):\n    if len(phone) != 10:\n        return phone\n    return f'({phone[:3]}) {phone[3:6]}-{phone[6:]}'",
+      "buggy_question_text": "Phone formatter shows wrong format and crashes with invalid input",
+      "subtopic_names": [
+        "Best Practices for User-Friendly I/O"
+      ],
+      "zone_name": "Python Basics",
+      "zone_order": 1,
+      "rag_context": "Topic: Basic Input and Output\nSubtopic: Best Practices for User-Friendly I/O\nGame Type: non_coding\nContent Types Found: Code, Exercise\nRetrieved Chunks: 7\n\nLEARNING CONTENT:\n--- Code ---\nSet Literals The syntax of set literals—{1}, {1, 2}, etc.—looks exactly like the math notation, with one important exception: there’s no literal notation for the empty set, so we must remember to write set().\n\nDocument: Fluent Python\n--- Code ---\nIterator[T] is a shortcut for Generator[T, None, None]. Both annotations mean “a generator that yields items of type T, but that does not consume or return values.” Generators able to consume and return values are coroutines, our next topic.\n\nDocument: Fluent Python\n--- Code ---\nHere is an example invoking @lru_cache with nondefault parameters: @lru_cache(maxsize=2**20, typed=True) def costly_function(a, b): ... Now let’s study another powerful decorator: functools.singledispatch.\n\nDocument: Fluent Python\n--- Code ---\n520 | Chapter 15: More About Type Hints from typing import overload, Union, TypeVar T = TypeVar('T') S = TypeVar('S')\n\nDocument: Fluent Python\n--- Exercise ---\nSentence Classes with __iter__ The next variations of Sentence implement the standard iterable protocol, first by implementing the Iterator design pattern, and then with generator functions.\n\nDocument: Fluent Python\n--- Code ---\nd.pop(k, [default]) Remove and return value at k, or default or None if missing d.popitem() Remove and return the last inserted item as (key, value) ® d.__reversed__() Support for reverse(d)—returns iterator for keys from last to first inserted.\n\nDocument: Fluent Python\n--- Code ---\nThis suggests that a good naming convention for covariant and contravariant type variables in Python would be: T_out = TypeVar('T_out', covariant=True) T_in = TypeVar('T_in', contravariant=True) Then we could define the classes like this: class BeverageDispenser(Generic[T_out]): ... class TrashCan(Generic[T_in]): ... Is it too late to change the naming convention est"
+    },
+    "created_at": null
+  },
+  {
+    "id": 2031,
+    "question_text": "Create a secure password strength checker",
+    "correct_answer": "",
+    "game_type": "coding",
+    "difficulty": "advanced",
+    "topic": "Basic Input and Output",
+    "subtopic": "Best Practices for User-Friendly I/O",
+    "game_data": {
+      "function_name": "check_password_strength",
+      "sample_input": "('StrongPass123!',)",
+      "sample_output": "Strong",
+      "hidden_tests": [
+        {
+          "input": "('weak',)",
+          "expected_output": "Weak"
+        },
+        {
+          "input": "('Medium123',)",
+          "expected_output": "Medium"
+        },
+        {
+          "input": "('VeryStrong123!@#',)",
+          "expected_output": "Very Strong"
+        }
+      ],
+      "buggy_code": "def check_password_strength(password):\n    if len(password) < 8:\n        return 'Weak'\n    if any(c.isdigit() for c in password):\n        return 'Strong'\n    return 'Medium'",
+      "buggy_question_text": "Password checker misses special characters and gives wrong feedback",
+      "subtopic_names": [
+        "Best Practices for User-Friendly I/O"
+      ],
+      "zone_name": "Python Basics",
+      "zone_order": 1,
+      "rag_context": "Topic: Basic Input and Output\nSubtopic: Best Practices for User-Friendly I/O\nGame Type: non_coding\nContent Types Found: Code, Exercise\nRetrieved Chunks: 7\n\nLEARNING CONTENT:\n--- Code ---\nSet Literals The syntax of set literals—{1}, {1, 2}, etc.—looks exactly like the math notation, with one important exception: there’s no literal notation for the empty set, so we must remember to write set().\n\nDocument: Fluent Python\n--- Code ---\nIterator[T] is a shortcut for Generator[T, None, None]. Both annotations mean “a generator that yields items of type T, but that does not consume or return values.” Generators able to consume and return values are coroutines, our next topic.\n\nDocument: Fluent Python\n--- Code ---\nHere is an example invoking @lru_cache with nondefault parameters: @lru_cache(maxsize=2**20, typed=True) def costly_function(a, b): ... Now let’s study another powerful decorator: functools.singledispatch.\n\nDocument: Fluent Python\n--- Code ---\n520 | Chapter 15: More About Type Hints from typing import overload, Union, TypeVar T = TypeVar('T') S = TypeVar('S')\n\nDocument: Fluent Python\n--- Exercise ---\nSentence Classes with __iter__ The next variations of Sentence implement the standard iterable protocol, first by implementing the Iterator design pattern, and then with generator functions.\n\nDocument: Fluent Python\n--- Code ---\nd.pop(k, [default]) Remove and return value at k, or default or None if missing d.popitem() Remove and return the last inserted item as (key, value) ® d.__reversed__() Support for reverse(d)—returns iterator for keys from last to first inserted.\n\nDocument: Fluent Python\n--- Code ---\nThis suggests that a good naming convention for covariant and contravariant type variables in Python would be: T_out = TypeVar('T_out', covariant=True) T_in = TypeVar('T_in', contravariant=True) Then we could define the classes like this: class BeverageDispenser(Generic[T_out]): ... class TrashCan(Generic[T_in]): ... Is it too late to change the naming convention est"
+    },
+    "created_at": null
+  },
+  {
+    "id": 2032,
+    "question_text": "Implement a user-friendly date input parser",
+    "correct_answer": "",
+    "game_type": "coding",
+    "difficulty": "advanced",
+    "topic": "Basic Input and Output",
+    "subtopic": "Best Practices for User-Friendly I/O",
+    "game_data": {
+      "function_name": "parse_date_input",
+      "sample_input": "('2023-12-25',)",
+      "sample_output": "2023-12-25",
+      "hidden_tests": [
+        {
+          "input": "('12/25/2023',)",
+          "expected_output": "2023-12-25"
+        },
+        {
+          "input": "('invalid',)",
+          "expected_output": "Invalid date format"
+        },
+        {
+          "input": "('25-12-2023',)",
+          "expected_output": "2023-12-25"
+        }
+      ],
+      "buggy_code": "def parse_date_input(date_str):\n    if '-' in date_str:\n        return date_str\n    elif '/' in date_str:\n        parts = date_str.split('/')\n        return f'{parts[2]}-{parts[0]}-{parts[1]}'\n    else:\n        return date_str",
+      "buggy_question_text": "Date parser fails with different formats and invalid dates",
+      "subtopic_names": [
+        "Best Practices for User-Friendly I/O"
+      ],
+      "zone_name": "Python Basics",
+      "zone_order": 1,
+      "rag_context": "Topic: Basic Input and Output\nSubtopic: Best Practices for User-Friendly I/O\nGame Type: non_coding\nContent Types Found: Code, Exercise\nRetrieved Chunks: 7\n\nLEARNING CONTENT:\n--- Code ---\nSet Literals The syntax of set literals—{1}, {1, 2}, etc.—looks exactly like the math notation, with one important exception: there’s no literal notation for the empty set, so we must remember to write set().\n\nDocument: Fluent Python\n--- Code ---\nIterator[T] is a shortcut for Generator[T, None, None]. Both annotations mean “a generator that yields items of type T, but that does not consume or return values.” Generators able to consume and return values are coroutines, our next topic.\n\nDocument: Fluent Python\n--- Code ---\nHere is an example invoking @lru_cache with nondefault parameters: @lru_cache(maxsize=2**20, typed=True) def costly_function(a, b): ... Now let’s study another powerful decorator: functools.singledispatch.\n\nDocument: Fluent Python\n--- Code ---\n520 | Chapter 15: More About Type Hints from typing import overload, Union, TypeVar T = TypeVar('T') S = TypeVar('S')\n\nDocument: Fluent Python\n--- Exercise ---\nSentence Classes with __iter__ The next variations of Sentence implement the standard iterable protocol, first by implementing the Iterator design pattern, and then with generator functions.\n\nDocument: Fluent Python\n--- Code ---\nd.pop(k, [default]) Remove and return value at k, or default or None if missing d.popitem() Remove and return the last inserted item as (key, value) ® d.__reversed__() Support for reverse(d)—returns iterator for keys from last to first inserted.\n\nDocument: Fluent Python\n--- Code ---\nThis suggests that a good naming convention for covariant and contravariant type variables in Python would be: T_out = TypeVar('T_out', covariant=True) T_in = TypeVar('T_in', contravariant=True) Then we could define the classes like this: class BeverageDispenser(Generic[T_out]): ... class TrashCan(Generic[T_in]): ... Is it too late to change the naming convention est"
+    },
+    "created_at": null
+  },
+  {
+    "id": 2033,
+    "question_text": "Create a smart input sanitizer for user comments",
+    "correct_answer": "",
+    "game_type": "coding",
+    "difficulty": "advanced",
+    "topic": "Basic Input and Output",
+    "subtopic": "Best Practices for User-Friendly I/O",
+    "game_data": {
+      "function_name": "sanitize_comment",
+      "sample_input": "('Hello <script>alert()</script> world!',)",
+      "sample_output": "Hello world!",
+      "hidden_tests": [
+        {
+          "input": "('',)",
+          "expected_output": "No comment provided"
+        },
+        {
+          "input": "('Normal text here',)",
+          "expected_output": "Normal text here"
+        },
+        {
+          "input": "('<b>Bold</b> and <i>italic</i>',)",
+          "expected_output": "Bold and italic"
+        }
+      ],
+      "buggy_code": "def sanitize_comment(comment):\n    import re\n    if len(comment.strip()) == 0:\n        return comment\n    return re.sub(r'<.*?>', '', comment)",
+      "buggy_question_text": "Comment sanitizer allows HTML tags and doesn't handle empty input",
+      "subtopic_names": [
+        "Best Practices for User-Friendly I/O"
+      ],
+      "zone_name": "Python Basics",
+      "zone_order": 1,
+      "rag_context": "Topic: Basic Input and Output\nSubtopic: Best Practices for User-Friendly I/O\nGame Type: non_coding\nContent Types Found: Code, Exercise\nRetrieved Chunks: 7\n\nLEARNING CONTENT:\n--- Code ---\nSet Literals The syntax of set literals—{1}, {1, 2}, etc.—looks exactly like the math notation, with one important exception: there’s no literal notation for the empty set, so we must remember to write set().\n\nDocument: Fluent Python\n--- Code ---\nIterator[T] is a shortcut for Generator[T, None, None]. Both annotations mean “a generator that yields items of type T, but that does not consume or return values.” Generators able to consume and return values are coroutines, our next topic.\n\nDocument: Fluent Python\n--- Code ---\nHere is an example invoking @lru_cache with nondefault parameters: @lru_cache(maxsize=2**20, typed=True) def costly_function(a, b): ... Now let’s study another powerful decorator: functools.singledispatch.\n\nDocument: Fluent Python\n--- Code ---\n520 | Chapter 15: More About Type Hints from typing import overload, Union, TypeVar T = TypeVar('T') S = TypeVar('S')\n\nDocument: Fluent Python\n--- Exercise ---\nSentence Classes with __iter__ The next variations of Sentence implement the standard iterable protocol, first by implementing the Iterator design pattern, and then with generator functions.\n\nDocument: Fluent Python\n--- Code ---\nd.pop(k, [default]) Remove and return value at k, or default or None if missing d.popitem() Remove and return the last inserted item as (key, value) ® d.__reversed__() Support for reverse(d)—returns iterator for keys from last to first inserted.\n\nDocument: Fluent Python\n--- Code ---\nThis suggests that a good naming convention for covariant and contravariant type variables in Python would be: T_out = TypeVar('T_out', covariant=True) T_in = TypeVar('T_in', contravariant=True) Then we could define the classes like this: class BeverageDispenser(Generic[T_out]): ... class TrashCan(Generic[T_in]): ... Is it too late to change the naming convention est"
+    },
+    "created_at": null
+  }
+]

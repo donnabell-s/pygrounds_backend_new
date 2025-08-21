@@ -25,7 +25,7 @@ class GeneratedQuestion(models.Model):
     # Metadata & tracking
     validation_status = models.CharField(
         max_length=20,
-        choices=[('pending', 'Pending Validation'), ('approved', 'Approved'), ('rejected', 'Rejected'), ('needs_review', 'Needs Review')],
+        choices=[('pending', 'Pending Validation'), ('processing', 'Processing')],
         default='pending'
     )
    

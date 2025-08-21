@@ -1,10 +1,146 @@
 """
 Database operations for saving generated questions to the Django ORM.
-Handles question creation, validation, and batch operations with proper deduplication.
+Handles question creation, validation, and batch operations with JSON export.
 """
 
+import json
+import os
+from datetime import datetime
 from django.db import transaction
 from typing import List, Dict, Any, Optional, Tuple
+
+
+def export_question_to_json(question_obj, game_type: str):
+    """
+    Export a single question to the appropriate JSON file in question_outputs folder.
+    Uses a single file per game type with session timestamp.
+    
+    Args:
+        question_obj: GeneratedQuestion instance
+        game_type: 'coding' or 'non_coding'
+    """
+    try:
+        # Create question_outputs directory if it doesn't exist
+        output_dir = os.path.join(os.path.dirname(__file__), '..', '..', 'question_outputs')
+        os.makedirs(output_dir, exist_ok=True)
+        
+        # Use a simple filename format - one file per game type per session
+        # We'll create/reuse files with today's date
+        date_str = datetime.now().strftime("%Y%m%d")
+        
+        # Find the most recent file for this game type and date, or create a new one
+        pattern = f"{game_type}_{date_str}_*.json"
+        import glob
+        existing_files = glob.glob(os.path.join(output_dir, pattern))
+        
+        if existing_files:
+            # Use the most recent file
+            filepath = max(existing_files, key=os.path.getctime)
+        else:
+            # Create a new file with current timestamp
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            filename = f"{game_type}_{timestamp}.json"
+            filepath = os.path.join(output_dir, filename)
+        
+        # Prepare question data for JSON export
+        question_data = {
+            'id': question_obj.id,
+            'question_text': question_obj.question_text,
+            'correct_answer': question_obj.correct_answer,
+            'game_type': question_obj.game_type,
+            'difficulty': question_obj.estimated_difficulty,
+            'topic': question_obj.topic.name if question_obj.topic else None,
+            'subtopic': question_obj.subtopic.name if question_obj.subtopic else None,
+            'game_data': question_obj.game_data,
+            'created_at': question_obj.created_at.isoformat() if hasattr(question_obj, 'created_at') else None
+        }
+        
+        # Check if file exists, if not create with empty array
+        if not os.path.exists(filepath):
+            with open(filepath, 'w', encoding='utf-8') as f:
+                json.dump([], f, indent=2)
+        
+        # Read existing data
+        try:
+            with open(filepath, 'r', encoding='utf-8') as f:
+                existing_data = json.load(f)
+        except (json.JSONDecodeError, FileNotFoundError):
+            existing_data = []
+        
+        # Append new question
+        existing_data.append(question_data)
+        
+        # Write back to file
+        with open(filepath, 'w', encoding='utf-8') as f:
+            json.dump(existing_data, f, indent=2, ensure_ascii=False)
+            
+    except Exception as e:
+        print(f"Failed to export question to JSON: {e}")
+
+
+def export_preassessment_question_to_json(question_obj):
+    """
+    Export a single pre-assessment question to the JSON file in question_outputs folder.
+    
+    Args:
+        question_obj: PreAssessmentQuestion instance
+    """
+    try:
+        # Create question_outputs directory if it doesn't exist
+        output_dir = os.path.join(os.path.dirname(__file__), '..', '..', 'question_outputs')
+        os.makedirs(output_dir, exist_ok=True)
+        
+        # Use a simple filename format for pre-assessment questions
+        date_str = datetime.now().strftime("%Y%m%d")
+        
+        # Find the most recent pre-assessment file for this date, or create a new one
+        pattern = f"pre_assessment_{date_str}_*.json"
+        import glob
+        existing_files = glob.glob(os.path.join(output_dir, pattern))
+        
+        if existing_files:
+            # Use the most recent file
+            filepath = max(existing_files, key=os.path.getctime)
+        else:
+            # Create a new file with current timestamp
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            filename = f"pre_assessment_{timestamp}.json"
+            filepath = os.path.join(output_dir, filename)
+        
+        # Prepare question data for JSON export
+        question_data = {
+            'id': question_obj.id,
+            'question_text': question_obj.question_text,
+            'answer_options': question_obj.answer_options,
+            'correct_answer': question_obj.correct_answer,
+            'estimated_difficulty': question_obj.estimated_difficulty,
+            'topic_ids': question_obj.topic_ids,
+            'subtopic_ids': question_obj.subtopic_ids,
+            'order': question_obj.order,
+            'created_at': question_obj.created_at.isoformat() if hasattr(question_obj, 'created_at') else None
+        }
+        
+        # Check if file exists, if not create with empty array
+        if not os.path.exists(filepath):
+            with open(filepath, 'w', encoding='utf-8') as f:
+                json.dump([], f, indent=2)
+        
+        # Read existing data
+        try:
+            with open(filepath, 'r', encoding='utf-8') as f:
+                existing_data = json.load(f)
+        except (json.JSONDecodeError, FileNotFoundError):
+            existing_data = []
+        
+        # Append new question
+        existing_data.append(question_data)
+        
+        # Write back to file
+        with open(filepath, 'w', encoding='utf-8') as f:
+            json.dump(existing_data, f, indent=2, ensure_ascii=False)
+            
+    except Exception as e:
+        print(f"Failed to export pre-assessment question to JSON: {e}")
 
 
 def save_minigame_questions_to_db_enhanced(questions_json: List[Dict[str, Any]], 
@@ -31,7 +167,6 @@ def save_minigame_questions_to_db_enhanced(questions_json: List[Dict[str, Any]],
         Tuple of (saved_questions, duplicate_questions)
     """
     from question_generation.models import GeneratedQuestion
-    from ..helpers.question_processing import generate_question_hash
     
     saved_questions = []
     duplicate_questions = []
@@ -43,20 +178,8 @@ def save_minigame_questions_to_db_enhanced(questions_json: List[Dict[str, Any]],
                 # Extract core question data
                 question_text = q.get('question_text') or q.get('question', '')
                 
-                # DEDUPLICATION CHECK
-                if thread_manager:
-                    question_hash = generate_question_hash(question_text, subtopic_combination, game_type)
-                    is_unique = thread_manager.check_and_add_question_hash(question_hash)
-                    
-                    if not is_unique:
-                        duplicate_questions.append({
-                            'question_text': question_text[:100] + "...",
-                            'hash': question_hash,
-                            'subtopic_combination': [s.name for s in subtopic_combination],
-                            'difficulty': difficulty,
-                            'reason': 'duplicate_detected'
-                        })
-                        continue  # Skip duplicate question
+                # Skip deduplication for now since we removed the threading manager
+                # TODO: Implement simple deduplication if needed
                 
                 # Prepare data based on game type
                 if game_type == 'coding':
@@ -90,9 +213,9 @@ def save_minigame_questions_to_db_enhanced(questions_json: List[Dict[str, Any]],
                     question_text=question_text,
                     correct_answer=correct_answer,
                     subtopic=primary_subtopic,  # Primary subtopic for DB relation
-                    difficulty=difficulty,
+                    topic=primary_subtopic.topic,  # Add topic field
+                    estimated_difficulty=difficulty,  # Use correct field name
                     game_type=game_type,
-                    rag_context=rag_context[:2000] if rag_context else '',  # Truncate if too long
                     game_data={
                         'function_name': function_name,
                         'sample_input': sample_input,
@@ -102,32 +225,18 @@ def save_minigame_questions_to_db_enhanced(questions_json: List[Dict[str, Any]],
                         'buggy_question_text': buggy_question_text,
                         'subtopic_names': [s.name for s in subtopic_combination],
                         'zone_name': zone.name,
-                        'zone_order': zone.order
+                        'zone_order': zone.order,
+                        'rag_context': rag_context[:2000] if rag_context else ''  # Store RAG context in game_data
                     }
                 )
                 
                 saved_questions.append(question_obj)
                 
-                # Append to JSON file if thread manager is available
-                if thread_manager:
-                    question_data = {
-                        'question_text': question_text,
-                        'correct_answer': correct_answer,
-                        'difficulty': difficulty,
-                        'subtopic_names': [s.name for s in subtopic_combination],
-                        **({
-                            'function_name': function_name,
-                            'sample_input': sample_input,
-                            'sample_output': sample_output,
-                            'hidden_tests': hidden_tests,
-                            'buggy_code': buggy_code,
-                            'buggy_question_text': buggy_question_text,
-                        } if game_type == 'coding' else {
-                            'answer': correct_answer
-                        })
-                    }
-                    
-                    thread_manager.append_question_to_json(question_data)
+                # Generate JSON output for question_outputs folder
+                try:
+                    export_question_to_json(question_obj, game_type)
+                except Exception as json_error:
+                    print(f"Warning: Failed to export question to JSON: {json_error}")
                 
             except Exception as e:
                 print(f"❌ Error saving question: {str(e)}")
