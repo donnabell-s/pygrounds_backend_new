@@ -9,19 +9,21 @@ set "DB_NAME=pygrounds_db"
 set "DB_USER=postgres"
 set "PGPASSWORD=root"
 
-REM Accept path to .dump as first arg, otherwise auto-pick newest in backups\
+REM ====== PICK DUMP FILE (arg or newest in backups\ then current folder) ======
 set "DUMP_FILE=%~1"
 if "%DUMP_FILE%"=="" (
-  for /f "delims=" %%F in ('dir /b /a:-d /o:-d "backups\*.dump" 2^>nul') do (
-    set "DUMP_FILE=backups\%%F"
-    goto :havefile
+  if exist "backups\" (
+    for /f "delims=" %%F in ('dir /b /a:-d /o:-d "backups\*.dump" 2^>nul') do (
+      set "DUMP_FILE=backups\%%F"
+      goto :havefile
+    )
   )
   for /f "delims=" %%F in ('dir /b /a:-d /o:-d "*.dump" 2^>nul') do (
     set "DUMP_FILE=%%F"
     goto :havefile
   )
+  echo No dump file specified and none found in "backups\" or current folder.
   echo Usage: %~nx0 path\to\backup.dump
-  echo Or place a .dump in "backups\" (newest will be used automatically).
   exit /b 1
 )
 :havefile
@@ -32,38 +34,52 @@ if not exist "%DUMP_FILE%" (
 )
 
 echo.
-echo [1/4] Checking database "%DB_NAME%" existence...
+echo Using dump: "%DUMP_FILE%"
 set "PATH=%PG_BIN%;%PATH%"
+
+REM ====== VERIFY TOOLS EXIST ======
+where pg_restore.exe >nul 2>&1
+if errorlevel 1 (
+  echo pg_restore.exe not found on PATH. Check PG_BIN: "%PG_BIN%"
+  exit /b 1
+)
+where psql.exe >nul 2>&1
+if errorlevel 1 (
+  echo psql.exe not found on PATH. Check PG_BIN: "%PG_BIN%"
+  exit /b 1
+)
+
+REM ====== ENSURE DB EXISTS ======
+echo.
+echo [1/3] Checking database "%DB_NAME%"...
 "%PG_BIN%\psql.exe" -h "%DB_HOST%" -p %DB_PORT% -U "%DB_USER%" -tAc "SELECT 1 FROM pg_database WHERE datname='%DB_NAME%';" | find "1" >nul
-IF errorlevel 1 (
-  echo [2/4] Creating database "%DB_NAME%"...
+if errorlevel 1 (
+  echo [2/3] Creating database "%DB_NAME%"...
   "%PG_BIN%\createdb.exe" -h "%DB_HOST%" -p %DB_PORT% -U "%DB_USER%" "%DB_NAME%"
   if errorlevel 1 (
-    echo Failed to create database.
+    echo Failed to create database. Check credentials and server status.
     exit /b 1
   )
 ) else (
   echo Database exists.
 )
 
+REM ====== RESTORE ======
 echo.
-echo [3/4] Restoring "%DUMP_FILE%" into "%DB_NAME%"...
+echo [3/3] Restoring into "%DB_NAME%"...
 "%PG_BIN%\pg_restore.exe" ^
   -h "%DB_HOST%" -p %DB_PORT% -U "%DB_USER%" -d "%DB_NAME%" ^
   --clean --if-exists --no-owner --no-privileges -v ^
   "%DUMP_FILE%"
-
 if errorlevel 1 (
   echo.
-  echo Restore FAILED.
-  echo If errors mention missing users_*, user_learning_*, or minigames_* tables:
-  echo   - Recreate the dump with EXCLUDE_MODE=DATA_ONLY (recommended), or
-  echo   - Ensure those apps/tables exist in target (schemas present).
+  echo Restore FAILED. Common causes:
+  echo  - Wrong credentials (DB_USER/PGPASSWORD)
+  echo  - Dump created with different major Postgres version
+  echo  - Excluded tables referenced by FKs (switch dump to DATA_ONLY mode)
   exit /b 1
 )
 
 echo.
-echo [4/4] ✅ Restore complete.
-echo.
-pause
+echo ✅ Restore complete.
 endlocal
