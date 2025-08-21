@@ -1,6 +1,12 @@
 """
-Question management and CRUD operations.
-Handles retrieval, filtering, and statistics for generated questions.
+Question management and CRUD oper        formatted = [{
+            'id': q.id,
+            'question_text': q.question_text,
+            'estimated_difficulty': q.estimated_difficulty,
+            'game_type': q.game_type,
+            'correct_answer': q.correct_answer,
+            'validation_status': q.validation_status,
+        } for q in questions]es retrieval, filtering, and statistics for generated questions.
 """
 
 from .imports import *
@@ -55,9 +61,7 @@ def get_subtopic_questions(request, subtopic_id):
         stats = {
             'total_questions': len(questions),
             'by_difficulty': dict(questions_query.values('estimated_difficulty').annotate(count=Count('estimated_difficulty')).values_list('estimated_difficulty', 'count')),
-            'by_minigame_type': dict(questions_query.values('minigame_type').annotate(count=Count('minigame_type')).values_list('minigame_type', 'count')),
             'by_game_type': dict(questions_query.values('game_type').annotate(count=Count('game_type')).values_list('game_type', 'count')),
-            'latest_generated': questions[0].created_at.isoformat() if questions else None
         }
 
         return Response({
@@ -172,8 +176,6 @@ def get_question_by_id(request, question_id):
         
         # Add extra fields for single question view
         question_data.update({
-            'answer_options': question.answer_options,
-            'explanation': question.explanation,
             'subtopic': {
                 'id': question.subtopic.id,
                 'name': question.subtopic.name,
@@ -241,12 +243,8 @@ def get_questions_batch(request):
                 'id': question.id,
                 'question_text': question.question_text,
                 'correct_answer': question.correct_answer,
-                'answer_options': question.answer_options,
-                'explanation': question.explanation,
                 'estimated_difficulty': question.estimated_difficulty,
                 'game_type': question.game_type,
-                'minigame_type': question.minigame_type,
-                'quality_score': question.quality_score,
                 'validation_status': question.validation_status,
                 'game_data': question.game_data,  # Complete game data
                 'subtopic': {
@@ -328,8 +326,6 @@ def get_questions_by_filters(request):
                 'correct_answer': question.correct_answer,
                 'estimated_difficulty': question.estimated_difficulty,
                 'game_type': question.game_type,
-                'minigame_type': question.minigame_type,
-                'quality_score': question.quality_score,
                 'validation_status': question.validation_status,
                 'game_data': question.game_data,  # Complete game data including buggy_code, etc.
                 'subtopic': {
@@ -338,7 +334,6 @@ def get_questions_by_filters(request):
                     'topic_name': question.topic.name,
                     'zone_name': question.topic.zone.name
                 },
-                'created_at': question.created_at.isoformat() if hasattr(question, 'created_at') else None
             })
 
         return Response({
@@ -525,8 +520,6 @@ def get_questions_batch_filtered(request):
                 'correct_answer': question.correct_answer,
                 'estimated_difficulty': question.estimated_difficulty,
                 'game_type': question.game_type,
-                'minigame_type': question.minigame_type,
-                'quality_score': question.quality_score,
                 'validation_status': question.validation_status,
                 'game_data': question.game_data,  # Complete game data including buggy_code, etc.
                 'subtopic': {
@@ -535,7 +528,6 @@ def get_questions_batch_filtered(request):
                     'topic_name': question.topic.name,
                     'zone_name': question.topic.zone.name
                 },
-                'created_at': question.created_at.isoformat() if hasattr(question, 'created_at') else None
             })
 
         return Response({
@@ -561,7 +553,7 @@ def get_questions_batch_filtered(request):
 
 def clean_game_data_for_frontend(game_data):
     """
-    Clean game_data by removing or truncating long fields like rag_context.
+    Clean game_data by removing or truncating long fields.
     Keeps essential game information while reducing response size.
     """
     if not game_data:
@@ -570,19 +562,20 @@ def clean_game_data_for_frontend(game_data):
     # Create a copy to avoid modifying the original
     cleaned_data = game_data.copy()
     
-    # Remove or truncate the long rag_context field
-    if 'rag_context' in cleaned_data:
-        rag_context = cleaned_data['rag_context']
-        if isinstance(rag_context, dict):
-            # Keep only summary info, remove the long context text
-            cleaned_data['rag_context'] = {
-                'used': rag_context.get('used', False),
-                'chunks_retrieved': rag_context.get('chunks_retrieved', 0) if 'chunks_retrieved' in rag_context else len(rag_context.get('context', '').split('\n\n')) if 'context' in rag_context else 0,
-                'average_similarity': rag_context.get('average_similarity', 0),
-                'similarity_threshold': rag_context.get('similarity_threshold', '50%'),
-                'chunk_types_found': rag_context.get('chunk_types_found', [])
-                # Removed the long 'context' field
-            }
+    # Remove deprecated/unused fields from game_data
+    fields_to_remove = ['used', 'context', 'auto_generated', 'pipeline_version', 'is_cross_subtopic']
+    for field in fields_to_remove:
+        cleaned_data.pop(field, None)
+    
+    # Remove deprecated fields from nested rag_context if it exists
+    if 'rag_context' in cleaned_data and isinstance(cleaned_data['rag_context'], dict):
+        rag_context_fields_to_remove = ['used', 'context']
+        for field in rag_context_fields_to_remove:
+            cleaned_data['rag_context'].pop(field, None)
+        
+        # Remove rag_context entirely if it's empty
+        if not cleaned_data['rag_context']:
+            cleaned_data.pop('rag_context', None)
     
     return cleaned_data
 
@@ -599,8 +592,6 @@ def format_question_response(question, include_full_game_data=False):
         'correct_answer': question.correct_answer,
         'estimated_difficulty': question.estimated_difficulty,
         'game_type': question.game_type,
-        'minigame_type': question.minigame_type,
-        'quality_score': question.quality_score,
         'validation_status': question.validation_status,
         'game_data': game_data,
         'subtopic': {

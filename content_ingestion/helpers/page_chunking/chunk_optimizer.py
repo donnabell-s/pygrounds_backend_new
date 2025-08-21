@@ -85,7 +85,7 @@ class ChunkOptimizer:
         Optimize a single chunk for LLM consumption.
         """
         # Extract clean title
-        clean_title, title_section = self._extract_clean_title(chunk.topic_title)
+        clean_title, title_section = self._extract_clean_title(chunk.subtopic_title)
         
         # Clean and structure content
         clean_content = self._clean_content(chunk.text)
@@ -123,13 +123,9 @@ class ChunkOptimizer:
             'rag_keywords': self._extract_rag_keywords(final_title, structured_content)[:8],  # Limit keywords
             
             # Optimization flags
-            'title_cleaned': clean_title != chunk.topic_title,
+            'title_cleaned': True,
             'content_improved': len(self._clean_content(chunk.text)) != len(chunk.text),
             'structure_enhanced': True,
-            
-            # Original metadata (minimal)
-            'original_title': chunk.topic_title,
-            'original_metadata': chunk.parser_metadata
         }
     
     def _extract_clean_title(self, title: str) -> tuple[str, str]:
@@ -398,8 +394,8 @@ KEY LEARNING POINTS:
         """Fallback format if optimization fails."""
         return {
             'id': chunk.id,
-            'original_title': chunk.topic_title,
-            'clean_title': chunk.topic_title,
+            'original_title': chunk.subtopic_title,
+            'clean_title': chunk.subtopic_title,
             'section_number': '',
             'page_number': chunk.page_number + 1,
             'content_type': 'text',
@@ -413,5 +409,4 @@ KEY LEARNING POINTS:
             'title_cleaned': False,
             'content_improved': False,
             'structure_enhanced': False,
-            'original_metadata': chunk.parser_metadata
         }

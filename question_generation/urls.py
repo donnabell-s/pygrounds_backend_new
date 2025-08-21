@@ -1,68 +1,94 @@
 """
 Question Generation URL Configuration
 
-RESTful URL patterns following clean design principles:
-- Short, descriptive paths
-- Resource-based naming 
-- Clear action verbs for operations
+RESTful API endpoints following clean design principles:
+- Resource-based routing with clear hierarchical structure
+- Consistent naming conventions (kebab-case for URLs, underscore for view functions)
+- Logical grouping of related endpoints
 """
 
 from django.urls import path
-from .views import (
-    # Question management
-    get_subtopic_questions, 
+
+from .views.questionManagement import (
+    get_subtopic_questions,
     get_topic_questions_summary,
     get_question_by_id,
-    get_questions_batch,
-    get_questions_by_filters,
     get_all_questions,
-    get_questions_batch_filtered,
-    get_all_coding_questions,
-    get_all_non_coding_questions,
-    get_all_beginner_questions,
-    get_all_intermediate_questions,
-    get_all_advanced_questions,
-    get_all_master_questions,
-    # Question generation 
-    deepseek_test_view,
-    generate_questions_with_deepseek,
-    
-    # Session management
-    RAGSessionListView, CompareSubtopicAndGenerateView,
+)
 
-    PreAssessmentQuestionListView,
-   
-    test_question_generation,
-    test_minigame_generation_no_save,
+from .views.question_generators import (
+    generate_preassessment_only,
+    generate_coding_questions_only,
+    generate_noncoding_questions_only,
+)
+
+from .views.question_api import (
+    generate_questions_bulk,
+    generate_pre_assessment,
+    get_rag_context,
+    get_generation_status,
+    get_worker_details,
+    cancel_generation
+)
+
+from .views.test_views import (
+    deepseek_test_view,
+    test_prompt_generation,
+    health_check,
+    get_generation_stats
+)
+
+from .views.admin_views import (
+    AdminGeneratedQuestionListView,
+    AdminGeneratedQuestionDetailView,
+    AdminPreAssessmentQuestionListView,
+    AdminPreAssessmentQuestionDetailView,
+    AdminSemanticSubtopicListView
 )
 
 urlpatterns = [
-    # Main generation endpoint (mode: "minigame" or "pre_assessment")
-    path('generate/', generate_questions_with_deepseek, name='generate_questions'),
+    # ========== QUESTION GENERATION API ==========
+    # Batch Generation
+    path('generate/bulk/', generate_questions_bulk, name='generate-questions-bulk'),
     
-    # Testing endpoints
-    path('test/', deepseek_test_view, name='test_generation'),
-    path('test/minigame/', test_minigame_generation_no_save, name='test_minigame_no_save'),
+    # Pre-assessment Generation
+    path('generate/preassessment/', generate_pre_assessment, name='generate-preassessment'),
     
-    # Question retrieval endpoints  
-    path('subtopic/<int:subtopic_id>/', get_subtopic_questions, name='get_subtopic_questions'),
-    path('topic/<int:topic_id>/summary/', get_topic_questions_summary, name='get_topic_summary'),
+    # Specific Question Type Generation
+    path('generate/preassessment/solo/', generate_preassessment_only, name='generate-preassessment-only'),
+    path('generate/coding/solo/', generate_coding_questions_only, name='generate-coding-only'),
+    path('generate/noncoding/solo/', generate_noncoding_questions_only, name='generate-noncoding-only'),
     
-    # Question Management
-    path('questions/subtopic/<int:subtopic_id>/', get_subtopic_questions, name='subtopic_questions'),
-    path('questions/topic/<int:topic_id>/summary/', get_topic_questions_summary, name='topic_questions_summary'),
+    # RAG Context Endpoint
+    path('rag-context/<int:subtopic_id>/', get_rag_context, name='get-rag-context'),
     
-    # RAG Sessions
-    path('rag/sessions/', RAGSessionListView.as_view(), name='rag_sessions'),
-
-    path('preassessment/', PreAssessmentQuestionListView.as_view(), name='preassessment_questions'),
-    # GETTER
-    path('question/<int:question_id>/', get_question_by_id, name='get_question_by_id'),        # Single question by ID
-    path('all/', get_all_questions, name='get_all_questions'),                                 # Get all questions with pagination
-    path('all/coding/', get_all_coding_questions, name='get_all_coding_questions'),            # Get all coding questions
-    path('all/non_coding/', get_all_non_coding_questions, name='get_all_non_coding_questions'), # Get all non-coding questions  
-    path('all/beginner/', get_all_beginner_questions, name='get_all_beginner_questions'),      # Get all beginner questions
-    path('all/intermediate/', get_all_intermediate_questions, name='get_all_intermediate_questions'), # Get all intermediate questions
-    path('all/advanced/', get_all_advanced_questions, name='get_all_advanced_questions'),      # Get all advanced questions
-    path('all/master/', get_all_master_questions, name='get_all_master_questions'),            # Get all master questions
+    # Real-time Status Tracking
+    path('generate/status/<str:session_id>/', get_generation_status, name='get-generation-status'),
+    path('generate/workers/<str:session_id>/', get_worker_details, name='get-worker-details'),
+    path('generate/cancel/<str:session_id>/', cancel_generation, name='cancel-generation'),
+    
+    # ========== QUESTION RETRIEVAL API ==========
+    # Question Listing
+    path('question/<int:question_id>/', get_question_by_id, name='get-question-by-id'),
+    path('subtopic/<int:subtopic_id>/', get_subtopic_questions, name='get-subtopic-questions'),
+    path('topic/<int:topic_id>/summary/', get_topic_questions_summary, name='get-topic-summary'),
+    path('all/', get_all_questions, name='get-all-questions'),
+    
+    # ========== ADMIN API ==========
+    # Generated Questions Management
+    path('admin/questions/', AdminGeneratedQuestionListView.as_view(), name='admin-questions'),
+    path('admin/questions/<int:pk>/', AdminGeneratedQuestionDetailView.as_view(), name='admin-question-detail'),
+    
+    # Pre-assessment Questions Management
+    path('admin/pre-assessment/', AdminPreAssessmentQuestionListView.as_view(), name='admin-pre-assessment'),
+    path('admin/pre-assessment/<int:pk>/', AdminPreAssessmentQuestionDetailView.as_view(), name='admin-pre-assessment-detail'),
+    
+    # Semantic Data Management
+    path('admin/semantic/', AdminSemanticSubtopicListView.as_view(), name='admin-semantic'),
+    
+    # ========== TESTING AND DEBUG ==========
+    path('test/', deepseek_test_view, name='deepseek-test'),
+    path('test/prompt/', test_prompt_generation, name='test-prompt'),
+    path('test/health/', health_check, name='health-check'),
+    path('test/stats/', get_generation_stats, name='generation-stats'),
 ]

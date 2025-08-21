@@ -19,6 +19,9 @@ venv/
 # VS Code
 .vscode/
 
+# Local ML Models (too large for git)
+models/
+
 # Document uploads
 pdfs\
 

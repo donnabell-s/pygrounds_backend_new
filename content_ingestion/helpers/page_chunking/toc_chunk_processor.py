@@ -3,10 +3,12 @@ import re
 from typing import List, Dict, Any
 from django.db import transaction
 from content_ingestion.models import UploadedDocument, DocumentChunk, TOCEntry
-from .chunk_extractor_utils import extract_unstructured_chunks, infer_chunk_type, clean_chunk_text
-from content_ingestion.helpers.embedding_utils import EmbeddingGenerator
+from .chunk_extractor_utils import extract_unstructured_chunks
+from .chunk_classifier import infer_chunk_type
+from .text_cleaner import clean_chunk_text
+from content_ingestion.helpers.embedding import EmbeddingGenerator
 from content_ingestion.helpers.toc_parser.toc_utils import find_content_boundaries
-from content_ingestion.helpers.token_utils import TokenCounter
+from content_ingestion.helpers.utils.token_utils import TokenCounter
 import tempfile
 import os
 
@@ -233,8 +235,6 @@ class GranularChunkProcessor:
             'chunk_types_distribution': {},
         }
         
-        print(f"\n🔄 STARTING GRANULAR DOCUMENT PROCESSING")
-        print(f"{'─'*60}")
         print(f"Document: {document.title}")
         print(f"Document total pages: {document.total_pages}")
         
@@ -295,8 +295,9 @@ class GranularChunkProcessor:
         print(f"Pages processed: {results['total_pages_processed']}")
         if results['sample_content_filtered'] > 0:
             print(f"Sample content chunks filtered: {results['sample_content_filtered']}")
-        if embedding_results['total'] > 0:
-            print(f"Embeddings generated: {embedding_results['success']}/{embedding_results['total']}")
+        total_processed = embedding_results.get('success', 0) + embedding_results.get('failed', 0)
+        if total_processed > 0:
+            print(f"Embeddings generated: {embedding_results.get('success', 0)}/{total_processed}")
         if 'total_tokens' in token_analysis:
             print(f"Total tokens: {token_analysis['total_tokens']} (avg: {token_analysis['avg_tokens_per_chunk']} per chunk)")
             print(f"Estimated GPT-4 cost: ${token_analysis['estimated_costs']['gpt_4']['estimated_input_cost_usd']:.4f}")
@@ -332,9 +333,10 @@ class GranularChunkProcessor:
         print(f"📝 Found {chunks_to_embed.count()} chunks to embed")
         
         # Generate embeddings in batch
-        embedding_results = self.embedding_generator.embed_chunks_batch(chunks_to_embed)
+        embedding_results = self.embedding_generator.embed_and_save_batch(chunks_to_embed)
         
-        print(f"✅ Embedding complete: {embedding_results['success']}/{embedding_results['total']} successful")
+        total_processed = embedding_results.get('success', 0) + embedding_results.get('failed', 0)
+        print(f"✅ Embedding complete: {embedding_results.get('success', 0)}/{total_processed} successful")
         
         return embedding_results
     
@@ -414,16 +416,11 @@ class GranularChunkProcessor:
                 temp_pdf.save(temp_path)
                 
                 print(f"   🔧 Processing {len(temp_pdf)} pages with granular chunking")
+                print("   🔗 Note: PDF link warnings below are handled automatically - content extraction will proceed normally")
                 
                 # Extract granular chunks using enhanced chunking
-                try:
-                    raw_chunks = extract_unstructured_chunks(temp_path)
-                    print(f"   📝 Extracted {len(raw_chunks)} granular chunks")
-                except Exception as extract_error:
-                    print(f"   ⚠️  Granular extraction failed: {str(extract_error)}")
-                    print(f"   🔄 Falling back to basic text extraction")
-                    raw_chunks = self._fallback_granular_extraction(temp_pdf, start_page, end_page)
-                    print(f"   📝 Extracted {len(raw_chunks)} chunks using fallback method")
+                raw_chunks = extract_unstructured_chunks(temp_path)
+                print(f"   📝 Extracted {len(raw_chunks)} granular chunks")
                 
                 if not raw_chunks:
                     print(f"   ⚠️  No content extracted")
@@ -435,7 +432,7 @@ class GranularChunkProcessor:
                 pages_per_chunk = max(1, (end_page - start_page + 1) / max(1, len(raw_chunks)))
                 
                 for chunk_idx, chunk in enumerate(raw_chunks):
-                    if self._is_sample_placeholder_content(chunk['content']):
+                    if self._is_sample_placeholder_content(chunk['text']):
                         sample_chunks_filtered += 1
                         continue
                     
@@ -443,24 +440,11 @@ class GranularChunkProcessor:
                     estimated_page = start_page + int(chunk_idx * pages_per_chunk)
                     chunk_page = min(estimated_page, end_page)
                     
-                    # Get TOC-based topic and subtopic titles for this page
-                    topic_title, subtopic_title = self._get_toc_titles_for_page(document, chunk_page + 1)  # Convert to 1-based
-                    
                     enhanced_chunk = {
-                        'text': chunk['content'],
+                        'text': chunk['text'],
                         'chunk_type': chunk['chunk_type'],
                         'page_number': chunk_page,
                         'order_in_doc': chunk_idx,
-                        'topic_title': topic_title,
-                        'subtopic_title': subtopic_title,
-                        'parser_metadata': {
-                            'source': chunk['source'],
-                            'extraction_type': 'granular_document_processing',
-                            'original_chunk_type': chunk['chunk_type'],
-                            'page_range': f"{start_page+1}-{end_page+1}",
-                            'estimated_page': chunk_page + 1,
-                            'chunk_index': chunk_idx
-                        }
                     }
                     valid_chunks.append(enhanced_chunk)
                 
@@ -485,39 +469,6 @@ class GranularChunkProcessor:
                 temp_pdf.close()
             if doc:
                 doc.close()
-    
-    def _fallback_granular_extraction(self, temp_pdf: fitz.Document, start_page: int, end_page: int) -> List[Dict[str, Any]]:
-        """
-        Fallback method for granular text extraction when unstructured fails.
-        Extracts text from each page and creates smaller chunks.
-        """
-        chunks = []
-        chunk_order = 0
-        
-        for page_idx in range(len(temp_pdf)):
-            page = temp_pdf.load_page(page_idx)
-            text = page.get_text()
-            
-            if not text.strip() or len(text.strip()) < 50:
-                continue
-            
-            # Split page text into paragraphs for granular chunks
-            paragraphs = [p.strip() for p in text.split('\n\n') if p.strip() and len(p.strip()) > 30]
-            
-            for para in paragraphs:
-                if len(para) < 30:  # Skip very short paragraphs
-                    continue
-                    
-                chunk_type = infer_chunk_type(para)
-                
-                chunks.append({
-                    'content': clean_chunk_text(para),
-                    'chunk_type': chunk_type,
-                    'source': 'fallback_granular'
-                })
-                chunk_order += 1
-        
-        return chunks
     
     def _save_granular_chunks(self, document: UploadedDocument, chunks: List[Dict[str, Any]]) -> int:
         """
@@ -544,11 +495,7 @@ class GranularChunkProcessor:
                         text=chunk['text'],
                         page_number=chunk['page_number'],
                         order_in_doc=chunk['order_in_doc'],
-                        topic_title=chunk.get('topic_title', ''),
-                        subtopic_title=chunk.get('subtopic_title', ''),
                         token_count=token_count,
-                        token_encoding=self.token_counter.encoding_name,
-                        parser_metadata=chunk.get('parser_metadata', {})
                     )
                     saved_count += 1
                 except Exception as e:

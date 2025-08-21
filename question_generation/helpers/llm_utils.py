@@ -9,6 +9,10 @@ logger = logging.getLogger(__name__)
 DEEPSEEK_API_KEY = os.environ.get("DEEPSEEK_API_KEY")
 DEEPSEEK_BASE_URL = os.environ.get("DEEPSEEK_API_URL")
 
+# Temperature settings for different question types
+CODING_TEMPERATURE = 0.0    # Very deterministic for coding questions
+NON_CODING_TEMPERATURE = 0.8  # More creative for non-coding questions
+
 
 client = OpenAI(
     api_key=DEEPSEEK_API_KEY,
@@ -16,16 +20,12 @@ client = OpenAI(
 )
 
 def send_llm_messages(messages, tools=None, model="deepseek-chat", **kwargs):
-    """
-    Send messages to DeepSeek or compatible LLM. Supports optional tool use.
-    Args:
-        messages: List of dicts (OpenAI/DeepSeek chat message format)
-        tools: List of tool/function definitions (optional)
-        model: Model name string (default: deepseek-chat)
-        **kwargs: Other OpenAI API kwargs (e.g., temperature, max_tokens)
-    Returns:
-        OpenAI Message object (.content and maybe .tool_calls)
-    """
+    # Send messages to DeepSeek LLM
+    # Parameters:
+    # - messages: Chat message list in OpenAI format
+    # - tools: Optional function definitions for tool use
+    # - model: Model to use (default: deepseek-chat)
+    # - kwargs: Additional OpenAI API parameters
     params = {
         "model": model,
         "messages": messages,
@@ -41,12 +41,13 @@ def send_llm_messages(messages, tools=None, model="deepseek-chat", **kwargs):
         raise
 
 def invoke_deepseek(prompt, system_prompt="You are a helpful assistant.", model="deepseek-chat", **kwargs):
-    """
-    One-shot method for DeepSeek. Returns just the model's text response.
-    """
+    # Simple one-shot prompt to DeepSeek, returns text response
     messages = [
         {"role": "system", "content": system_prompt},
         {"role": "user", "content": prompt},
     ]
+    # Set default max_tokens to 8000 if not provided
+    if "max_tokens" not in kwargs:
+        kwargs["max_tokens"] = 8000
     msg = send_llm_messages(messages, model=model, **kwargs)
     return msg.content

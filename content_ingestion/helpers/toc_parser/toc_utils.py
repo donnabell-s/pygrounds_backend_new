@@ -1,7 +1,33 @@
 import fitz  # PyMuPDF
 import re
+import warnings
+import os
+import sys
 from typing import List, Dict, Optional, Any, Tuple
 from dataclasses import dataclass, field
+
+# Suppress PyMuPDF warnings about bad annotations/links
+warnings.filterwarnings("ignore", message=".*bad link.*")
+warnings.filterwarnings("ignore", message=".*annot item.*")
+
+# Try to suppress PyMuPDF C-level warnings by redirecting stderr temporarily
+def suppress_stderr():
+    """Context manager to suppress stderr output temporarily."""
+    class DevNull:
+        def write(self, msg):
+            pass
+        def flush(self):
+            pass
+    
+    return DevNull()
+
+# Configure PyMuPDF to be less verbose if possible
+try:
+    # Some versions of PyMuPDF support setting verbosity
+    if hasattr(fitz, 'TOOLS'):
+        fitz.TOOLS.mupdf_display_errors(False)
+except:
+    pass
 
 @dataclass
 class TOCEntry:
@@ -124,27 +150,197 @@ def find_content_boundaries(pdf_path: str) -> Tuple[int, int]:
 
 def extract_toc(pdf_path: str) -> List[List[Any]]:
     """
-    Extracts TOC from PDF metadata if available.
+    Extracts TOC from PDF metadata if available, with fallback for bad annotations.
     Returns list of [level, title, page].
     """
     try:
         doc = fitz.open(pdf_path)
-        return doc.get_toc()
+        
+        # First try: Standard TOC extraction
+        toc = doc.get_toc()
+        
+        # If TOC is empty or very small, try manual link extraction
+        if not toc or len(toc) < 3:
+            print("[TOC] Metadata TOC empty or insufficient, trying manual link extraction...")
+            toc = _extract_toc_from_links(doc)
+        
+        doc.close()
+        return toc
+        
     except FileNotFoundError:
         raise FileNotFoundError(f"PDF file not found at {pdf_path}")
     except Exception as e:
         raise Exception(f"Error reading PDF: {e}")
 
+def _extract_toc_from_links(doc: fitz.Document) -> List[List[Any]]:
+    """
+    Manual TOC extraction by scanning PDF links and annotations.
+    Fallback when standard get_toc() fails due to bad annotations.
+    """
+    toc_entries = []
+    
+    try:
+        # Look through first few pages for TOC with working links
+        for page_num in range(min(15, len(doc))):
+            page = doc.load_page(page_num)
+            
+            # Get page text for pattern matching
+            try:
+                page_text = page.get_text()
+            except:
+                # If get_text() fails due to bad annotations, try alternative method
+                page_text = page.get_text("text", flags=~fitz.TEXT_PRESERVE_LIGATURES)
+            
+            # Check if this looks like a TOC page
+            if not _is_likely_toc_page(page_text):
+                continue
+            
+            # Try to extract links from this page
+            try:
+                links = page.get_links()
+                for link in links:
+                    if link.get('kind') == fitz.LINK_GOTO:  # Internal link
+                        # Get the text around this link position
+                        link_text = _extract_text_at_position(page, link.get('from', {}))
+                        if link_text and len(link_text.strip()) > 3:
+                            dest_page = link.get('page', 0)
+                            level = _guess_level_from_text(link_text)
+                            toc_entries.append([level, link_text.strip(), dest_page + 1])
+            except Exception as e:
+                print(f"[TOC] Warning: Could not extract links from page {page_num + 1}: {e}")
+                continue
+    
+    except Exception as e:
+        print(f"[TOC] Manual link extraction failed: {e}")
+    
+    # Sort by page number and remove duplicates
+    toc_entries = _clean_extracted_toc(toc_entries)
+    print(f"[TOC] Manual extraction found {len(toc_entries)} entries")
+    
+    return toc_entries
+
+def _is_likely_toc_page(text: str) -> bool:
+    """Check if page text looks like a table of contents."""
+    text_lower = text.lower()
+    toc_keywords = ['contents', 'table of contents', 'chapter', 'section']
+    
+    # Must have TOC keywords and number patterns
+    has_toc_keyword = any(keyword in text_lower for keyword in toc_keywords)
+    has_page_numbers = len(re.findall(r'\b\d{1,3}\b', text)) > 5
+    has_dots = '.' in text and text.count('.') > 10
+    
+    return has_toc_keyword and (has_page_numbers or has_dots)
+
+def _extract_text_at_position(page: fitz.Page, rect_dict: dict) -> str:
+    """Extract text at a specific rectangle position on the page."""
+    try:
+        if not rect_dict:
+            return ""
+        
+        # Create rectangle from link position
+        rect = fitz.Rect(
+            rect_dict.get('x0', 0),
+            rect_dict.get('y0', 0), 
+            rect_dict.get('x1', 100),
+            rect_dict.get('y1', 20)
+        )
+        
+        # Expand rectangle slightly to catch nearby text
+        rect = rect + (-10, -2, 50, 2)
+        
+        # Extract text from this area
+        text = page.get_text("text", clip=rect)
+        return text.strip()
+        
+    except Exception:
+        return ""
+
+def _guess_level_from_text(text: str) -> int:
+    """Guess the hierarchical level of a TOC entry from its text."""
+    # Check for numbering patterns
+    if re.match(r'^\s*\d+\.\d+\.\d+', text):
+        return 2
+    elif re.match(r'^\s*\d+\.\d+', text):
+        return 1
+    elif re.match(r'^\s*\d+\.?', text):
+        return 0
+    elif re.match(r'^\s*[A-Z]\.', text):
+        return 0
+    
+    # Check for keywords
+    text_lower = text.lower()
+    if any(word in text_lower for word in ['chapter', 'part', 'section']):
+        return 0
+    elif any(word in text_lower for word in ['exercise', 'example', 'problem']):
+        return 1
+    
+    return 0
+
+def _clean_extracted_toc(toc_entries: List[List[Any]]) -> List[List[Any]]:
+    """Clean and deduplicate extracted TOC entries."""
+    if not toc_entries:
+        return []
+    
+    # Remove very short or invalid entries
+    cleaned = []
+    for entry in toc_entries:
+        if len(entry) >= 3 and len(str(entry[1]).strip()) > 3:
+            title = str(entry[1]).strip()
+            # Remove entries that are just page numbers or dots
+            if not title.replace('.', '').replace(' ', '').isdigit():
+                cleaned.append(entry)
+    
+    # Sort by page number and remove duplicates
+    cleaned.sort(key=lambda x: x[2])
+    unique_entries = []
+    seen_titles = set()
+    
+    for entry in cleaned:
+        title_key = str(entry[1]).strip().lower()
+        if title_key not in seen_titles:
+            seen_titles.add(title_key)
+            unique_entries.append(entry)
+    
+    return unique_entries
+
 def fallback_toc_text(doc: fitz.Document, page_limit: int = 15) -> List[str]:
     """
     Scans the first few pages for 'Contents' or TOC patterns.
     Returns list of page texts likely containing TOC.
+    Handles bad annotations gracefully.
     """
     toc_pages = []
     found_toc_start = False
 
     for page_num in range(min(page_limit, len(doc))):
-        text = doc.load_page(page_num).get_text()
+        try:
+            # Try standard text extraction first
+            text = doc.load_page(page_num).get_text()
+        except Exception as e:
+            print(f"[TOC] Warning: Standard text extraction failed for page {page_num + 1}: {e}")
+            try:
+                # Fallback: Use alternative text extraction method
+                page = doc.load_page(page_num)
+                text = page.get_text("text", flags=~fitz.TEXT_PRESERVE_LIGATURES)
+            except Exception as e2:
+                print(f"[TOC] Warning: Fallback text extraction also failed for page {page_num + 1}: {e2}")
+                # Final fallback: Try getting text blocks
+                try:
+                    text_blocks = page.get_text("dict")
+                    text = ""
+                    for block in text_blocks.get("blocks", []):
+                        if "lines" in block:
+                            for line in block["lines"]:
+                                for span in line.get("spans", []):
+                                    text += span.get("text", "") + " "
+                                text += "\n"
+                except Exception as e3:
+                    print(f"[TOC] Error: All text extraction methods failed for page {page_num + 1}: {e3}")
+                    continue
+        
+        if not text or len(text.strip()) < 10:
+            continue
+            
         is_toc_page = False
 
         if "contents" in text.lower():
@@ -170,6 +366,7 @@ def fallback_toc_text(doc: fitz.Document, page_limit: int = 15) -> List[str]:
 
         if is_toc_page:
             toc_pages.append(text)
+            print(f"[TOC] Found TOC content on page {page_num + 1}")
 
     return toc_pages
 

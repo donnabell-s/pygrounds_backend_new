@@ -1,371 +1,148 @@
 import re
+import logging
+from typing import List, Dict, Any, Optional, Tuple
 from unstructured.partition.pdf import partition_pdf
 from unstructured.chunking.title import chunk_by_title
 from unstructured.cleaners.core import clean_extra_whitespace
 
-def clean_raw_text(text):
-    """
-    Clean raw text from PDF before processing to remove titles, links, and noise.
-    """
-    if not text:
-        return ""
-    
-    # Enhanced URL removal with comprehensive patterns
-    # Remove URLs with various protocols and special characters
-    text = re.sub(r'https?://[^\s]+', '', text)
-    text = re.sub(r'https?:/[^\s]*', '', text)  # Catch partial protocols
-    text = re.sub(r'www\.[^\s]+', '', text)
-    text = re.sub(r'[a-zA-Z0-9.-]+\.(com|org|net|edu|gov|io)[^\s]*', '', text)
-    
-    # Remove URLs with Unicode characters like /​/​
-    text = re.sub(r'https?:/​/​[^\s]*', '', text)
-    text = re.sub(r'[a-zA-Z0-9.-]+\.​[a-zA-Z0-9.-]+[^\s]*', '', text)
-    
-    # Remove partial URLs and paths that look like URLs
-    text = re.sub(r'/​[a-zA-Z0-9._-]+/[^\s]*', '', text)  # Paths with Unicode slash
-    text = re.sub(r'/[a-zA-Z0-9._-]+/[a-zA-Z0-9._/-]*', '', text)  # Regular paths
-    text = re.sub(r'[a-zA-Z0-9.-]+\.​[a-zA-Z]+', '', text)  # Domains with Unicode dot
-    
-    # Remove GitHub and repository-specific patterns
-    text = re.sub(r'github\.com[^\s]*', '', text)
-    text = re.sub(r'PacktPublishing[^\s]*', '', text)
-    text = re.sub(r'Expert-​Python[^\s]*', '', text)
-    text = re.sub(r'/​tree/​[^\s]*', '', text)
-    text = re.sub(r'/​master/​[^\s]*', '', text)
-    
-    # Remove incomplete URLs that start with protocol but are broken
-    text = re.sub(r'https:/​/​\s*for\s+this\s+chapter', 'for this chapter', text)
-    text = re.sub(r'https:/​/​\s*', '', text)
-    
-    # Remove markdown links [text](url)
-    text = re.sub(r'\[([^\]]+)\]\([^)]+\)', r'\1', text)
-    
-    # Remove standalone reference numbers [1], [2], etc.
-    text = re.sub(r'\[\d+\]', '', text)
-    
-    # Remove page numbers and footers
-    text = re.sub(r'Page \d+ of \d+', '', text, flags=re.IGNORECASE)
-    text = re.sub(r'^\d+$', '', text, flags=re.MULTILINE)
-    
-    # Remove common PDF artifacts
-    text = re.sub(r'Copyright.*', '', text, flags=re.IGNORECASE)
-    text = re.sub(r'All rights reserved.*', '', text, flags=re.IGNORECASE)
-    
-    # Remove excessive whitespace
-    text = re.sub(r'\s+', ' ', text).strip()
-    
-    return text
+from .chunk_classifier import infer_chunk_type
+from .text_cleaner import clean_raw_text, clean_chunk_text
+from .cross_page_merger import enhance_cross_page_chunking
 
-# Enhanced chunk classifier with coding context
-def infer_chunk_type(text, default="Concept"):
-    """
-    Classify chunk type with enhanced detection for coding content.
-    Only returns the 5 valid chunk types: Concept, Exercise, Code, Try_It, Example
-    """
-    text_lower = text.lower()
-    
-    # Code-specific detection (highest priority)
-    if text.strip().startswith(">>>") or ">>>" in text or "..." in text or "import " in text or "def " in text:
-        return "Code"
-    elif "try it" in text_lower or "try this" in text_lower or "give it a try" in text_lower:
-        return "Try_It"
-    elif "for example" in text_lower or text_lower.startswith("example:") or "here's an example" in text_lower:
-        return "Example"
-    elif "exercise" in text_lower or "practice" in text_lower or "challenge" in text_lower:
-        return "Exercise"
-    else:
-        # Everything else is a Concept (includes notes, introductions, definitions, etc.)
-        return "Concept"
+logger = logging.getLogger(__name__)
 
-# Remove visual duplicates and normalize chunk text
-def clean_chunk_text(text, subtopic_title=None, topic_title=None, sub_subtopic_title=None, sub_sub_subtopic_title=None):
-    """
-    Clean and normalize chunk text while preserving code structure.
-    Removes titles, links, and other unwanted formatting.
-    
-    Args:
-        text: Raw chunk text
-        subtopic_title: Subtopic title to remove from text if present
-        topic_title: Topic title to remove from text if present
-        sub_subtopic_title: Sub-subtopic title to remove from text if present (3rd level)
-        sub_sub_subtopic_title: Sub-sub-subtopic title to remove from text if present (4th level)
-    """
-    lines = text.strip().split("\n")
-    cleaned_lines = []
-    
-    # Create patterns to match titles
-    title_patterns = []
-    if subtopic_title:
-        # Remove numbering from title (e.g., "17.2. Use matplotlib" -> "Use matplotlib")
-        clean_subtopic = re.sub(r'^\d+\.?\d*\.?\s*', '', subtopic_title.strip())
-        title_patterns.extend([
-            subtopic_title.lower().strip(),
-            clean_subtopic.lower().strip(),
-            # Also match numbered patterns like "2.2. Windows"
-            f"\\d+\\.\\d*\\.?\\s*{re.escape(clean_subtopic.lower().strip())}"
-        ])
-    if topic_title:
-        clean_topic = re.sub(r'^\d+\.?\d*\.?\s*', '', topic_title.strip())
-        title_patterns.extend([
-            topic_title.lower().strip(),
-            clean_topic.lower().strip(),
-            # Also match chapter patterns like "Chapter 2 Setting Up Python"
-            f"chapter\\s*\\d*\\s*{re.escape(clean_topic.lower().strip())}"
-        ])
-    if sub_subtopic_title:
-        clean_sub_subtopic = re.sub(r'^\d+\.?\d*\.?\d*\.?\s*', '', sub_subtopic_title.strip())
-        title_patterns.extend([
-            sub_subtopic_title.lower().strip(),
-            clean_sub_subtopic.lower().strip(),
-            # Also match deep numbered patterns like "2.2.1. Installation Steps"
-            f"\\d+\\.\\d+\\.\\d*\\.?\\s*{re.escape(clean_sub_subtopic.lower().strip())}"
-        ])
-    if sub_sub_subtopic_title:
-        clean_sub_sub_subtopic = re.sub(r'^\d+\.?\d*\.?\d*\.?\d*\.?\s*', '', sub_sub_subtopic_title.strip())
-        title_patterns.extend([
-            sub_sub_subtopic_title.lower().strip(),
-            clean_sub_sub_subtopic.lower().strip(),
-            # Also match very deep numbered patterns like "2.2.1.3. Advanced Configuration"
-            f"\\d+\\.\\d+\\.\\d+\\.\\d*\\.?\\s*{re.escape(clean_sub_sub_subtopic.lower().strip())}"
-        ])
-    
-    for line in lines:
-        original_line = line
-        line = line.strip()
-        
-        # Skip empty lines
-        if not line:
-            continue
-        
-        # Check if this line contains title patterns
-        line_lower = line.lower()
-        should_skip = False
-        
-        if title_patterns:
-            for pattern in title_patterns:
-                # Direct substring match
-                if isinstance(pattern, str) and not pattern.startswith('\\') and 'chapter' not in pattern:
-                    if pattern in line_lower and len(line.split()) <= 12:  # Reasonable line length for titles
-                        should_skip = True
-                        break
-                # Regex pattern match
-                elif pattern.startswith('\\') or 'chapter' in pattern:
-                    if re.search(pattern, line_lower):
-                        should_skip = True
-                        break
-        
-        # Also check for direct "Chapter X Title" pattern
-        if topic_title and f"chapter" in line_lower and topic_title.lower() in line_lower:
-            should_skip = True
-        
-        # Also check for sub-subtopic patterns
-        if sub_subtopic_title and sub_subtopic_title.lower() in line_lower and len(line.split()) <= 15:
-            should_skip = True
-        
-        # Also check for sub-sub-subtopic patterns
-        if sub_sub_subtopic_title and sub_sub_subtopic_title.lower() in line_lower and len(line.split()) <= 15:
-            should_skip = True
-        
-        if should_skip:
-            continue
-            
-        # Remove common title patterns
-        if (line.isupper() and len(line) < 100) or \
-           (line.startswith('#') and not line.startswith('# ')) or \
-           (line.endswith(':') and len(line.split()) <= 4):
-            continue
-            
-        # Enhanced URL and link removal with comprehensive patterns
-        # Remove URLs with various protocols and special characters
-        line = re.sub(r'https?://[^\s]+', '', line)
-        line = re.sub(r'https?:/[^\s]*', '', line)  # Catch partial protocols
-        line = re.sub(r'www\.[^\s]+', '', line)
-        line = re.sub(r'[a-zA-Z0-9.-]+\.(com|org|net|edu|gov|io)[^\s]*', '', line)
-        
-        # Remove URLs with Unicode characters like /​/​
-        line = re.sub(r'https?:/​/​[^\s]*', '', line)
-        line = re.sub(r'[a-zA-Z0-9.-]+\.​[a-zA-Z0-9.-]+[^\s]*', '', line)
-        
-        # Remove partial URLs and paths that look like URLs
-        line = re.sub(r'/​[a-zA-Z0-9._-]+/[^\s]*', '', line)  # Paths with Unicode slash
-        line = re.sub(r'/[a-zA-Z0-9._-]+/[a-zA-Z0-9._/-]*', '', line)  # Regular paths
-        line = re.sub(r'[a-zA-Z0-9.-]+\.​[a-zA-Z]+', '', line)  # Domains with Unicode dot
-        
-        # Remove GitHub and repository-specific patterns
-        line = re.sub(r'github\.com[^\s]*', '', line)
-        line = re.sub(r'PacktPublishing[^\s]*', '', line)
-        line = re.sub(r'Expert-​Python[^\s]*', '', line)
-        line = re.sub(r'/​tree/​[^\s]*', '', line)
-        line = re.sub(r'/​master/​[^\s]*', '', line)
-        
-        # Remove incomplete URLs that start with protocol but are broken
-        line = re.sub(r'https:/​/​\s*for\s+this\s+chapter', 'for this chapter', line)
-        line = re.sub(r'https:/​/​\s*', '', line)
-        
-        # Remove markdown links [text](url)
-        line = re.sub(r'\[([^\]]+)\]\([^)]+\)', r'\1', line)
-        
-        # Remove standalone markdown reference links [1], [2], etc.
-        line = re.sub(r'\[\d+\]', '', line)
-        
-        # Remove page numbers and references like "Page 1 of 10"
-        line = re.sub(r'Page \d+ of \d+', '', line, flags=re.IGNORECASE)
-        line = re.sub(r'^\d+$', '', line)  # Standalone numbers
-        
-        # Remove chapter/section headers that are just numbers and titles
-        if re.match(r'^\d+\.?\s*[A-Z][a-z\s]+$', line) and len(line.split()) <= 5:
-            continue
-            
-        # Clean up the line
-        line = re.sub(r'\s+', ' ', line).strip()
-        
-        if line:  # Only add non-empty lines
-            cleaned_lines.append(line)
-    
-    # Handle duplicate line detection more carefully for code
-    if len(cleaned_lines) > 1 and cleaned_lines[0] == cleaned_lines[1]:
-        # Only remove duplicates if they don't look like code
-        if not (">>>" in cleaned_lines[0] or cleaned_lines[0].strip().startswith(("def ", "class ", "import ", "from "))):
-            cleaned_lines.pop(0)
-    
-    # Handle duplicate segments for non-code content
-    if len(cleaned_lines) == 1 and cleaned_lines[0]:
-        segments = cleaned_lines[0].split()
-        mid = len(segments) // 2
-        if mid > 0 and segments[:mid] == segments[mid:]:
-            # Check if this might be code before removing duplicates
-            if not any(code_indicator in cleaned_lines[0] for code_indicator in [">>>", "def ", "import ", "="]):
-                cleaned_lines[0] = " ".join(segments[:mid])
-    
-    result = "\n".join(cleaned_lines).strip()
-    
-    # Final cleanup - remove excessive whitespace
-    result = re.sub(r'\n\s*\n\s*\n', '\n\n', result)  # Max 2 consecutive newlines
-    result = re.sub(r'\s+', ' ', result)  # Normalize spaces
-    
-    return result
 
-def create_contextual_code_chunk(code_text, surrounding_elements, element_index):
-    """
-    Create a code chunk with surrounding context for better RAG understanding.
-    
-    Args:
-        code_text: The raw code content
-        surrounding_elements: List of nearby text elements
-        element_index: Index of current element in the list
-        
-    Returns:
-        Enhanced code text with context
-    """
-    context_parts = []
-    
-    # Look for context before the code (up to 2 elements back)
-    context_before = []
-    for i in range(max(0, element_index - 2), element_index):
-        if i < len(surrounding_elements):
-            elem_text = getattr(surrounding_elements[i], 'text', '').strip()
-            if elem_text and len(elem_text) > 20:  # Meaningful context
-                # Check if it's explanatory text
-                if any(indicator in elem_text.lower() for indicator in [
-                    "example", "try", "use", "type", "enter", "run", "execute",
-                    "following", "shows", "demonstrates", "illustrates"
-                ]):
-                    context_before.append(elem_text)
-    
-    # Look for context after the code (up to 1 element forward)
-    context_after = []
-    for i in range(element_index + 1, min(len(surrounding_elements), element_index + 2)):
-        if i < len(surrounding_elements):
-            elem_text = getattr(surrounding_elements[i], 'text', '').strip()
-            if elem_text and len(elem_text) > 15:  # Meaningful context
-                # Check if it's explanatory text
-                if any(indicator in elem_text.lower() for indicator in [
-                    "output", "result", "returns", "prints", "displays",
-                    "this", "notice", "see", "above", "code"
-                ]):
-                    context_after.append(elem_text)
-    
-    # Build contextual chunk
-    if context_before:
-        context_parts.extend(context_before[-1:])  # Take most recent context
-    
-    context_parts.append(f"CODE:\n{code_text}")
-    
-    if context_after:
-        context_parts.extend(context_after[:1])  # Take immediate following context
-    
-    return "\n\n".join(context_parts)
-
-def create_contextual_exercise_chunk(exercise_text, surrounding_elements, element_index):
-    """
-    Create an exercise chunk with surrounding context for better RAG understanding.
-    """
-    context_parts = []
-    
-    # Look for instructional context before the exercise
-    context_before = []
-    for i in range(max(0, element_index - 1), element_index):
-        if i < len(surrounding_elements):
-            elem_text = getattr(surrounding_elements[i], 'text', '').strip()
-            if elem_text and len(elem_text) > 30:
-                # Check if it's instructional or explanatory
-                if any(indicator in elem_text.lower() for indicator in [
-                    "practice", "now", "try", "apply", "use what", "time to",
-                    "your turn", "test", "skill", "knowledge"
-                ]):
-                    context_before.append(elem_text)
-    
-    # Build contextual exercise chunk
-    if context_before:
-        context_parts.extend(context_before)
-    
-    context_parts.append(f"EXERCISE:\n{exercise_text}")
-    
-    return "\n\n".join(context_parts)
-
-# Enhanced PDF parsing with contextual chunking
 def extract_unstructured_chunks(file_path):
     """
-    Parse PDF into text chunks with enhanced context preservation for coding content.
+    Enhanced extraction using unstructured library with improved chunking for coding vs conceptual content.
+    
+    This function processes PDFs to create contextually appropriate chunks that distinguish between:
+    - Conceptual content (for non-coding questions)
+    - Coding content (for coding questions - includes Code, Try_It, Exercise, Example)
     """
-    raw_elements = partition_pdf(filename=file_path, strategy="hi_res")
-    cleaned_elements = []
-    
-    for el in raw_elements:
-        if hasattr(el, "text") and el.text:
-            el.text = clean_extra_whitespace(el.text)
-            cleaned_elements.append(el)
-
-    # Use smaller max_characters for better granularity, larger overlap for context
-    chunks = chunk_by_title(cleaned_elements, max_characters=400, overlap=75)
-
-    enhanced_chunks = []
-    
-    for i, chunk in enumerate(chunks):
-        chunk_text = chunk.text if hasattr(chunk, "text") else str(chunk)
-        chunk_type = infer_chunk_type(chunk_text)
+    try:
+        print(f"Starting unstructured processing for {file_path}")
+        print("📋 Analyzing PDF structure and extracting content elements...")
         
-        # Create contextual chunks for coding-related content
-        if chunk_type in ["Code", "Exercise", "Try_It"]:
-            if chunk_type == "Code":
-                enhanced_text = create_contextual_code_chunk(
-                    chunk_text, cleaned_elements, i
-                )
-            elif chunk_type in ["Exercise", "Try_It"]:
-                enhanced_text = create_contextual_exercise_chunk(
-                    chunk_text, cleaned_elements, i
-                )
-            else:
-                enhanced_text = chunk_text
-        else:
-            enhanced_text = chunk_text
+        # Partition the PDF
+        elements = partition_pdf(
+            filename=file_path,
+            extract_images_in_pdf=False,
+            infer_table_structure=True,
+            chunking_strategy="by_title",
+            max_characters=1000,  # Increased for better context
+            new_after_n_chars=800,  # Adaptive chunking
+            combine_text_under_n_chars=200,  # Combine small fragments
+            overlap=50
+        )
         
-        enhanced_chunks.append({
-            "content": clean_chunk_text(enhanced_text),
-            "chunk_type": chunk_type,
-            "source": "unstructured_enhanced",
-            "has_context": chunk_type in ["Code", "Exercise", "Try_It"],
-            "original_type": chunk_type
-        })
+        print(f"✅ Successfully extracted {len(elements)} elements from PDF")
+        print("📝 Note: Any 'skipping bad link/annot' messages above are normal - corrupted PDF links are automatically handled")
+        
+        # Process elements into chunks
+        processed_chunks = []
+        
+        for i, element in enumerate(elements):
+            text = str(element)
+            
+            if not text or len(text.strip()) < 10:  # Skip very short chunks
+                continue
+            
+            # Clean the raw text first
+            cleaned_text = clean_raw_text(text)
+            
+            if not cleaned_text or len(cleaned_text.strip()) < 10:
+                continue
+            
+            # Infer the chunk type using our enhanced classifier
+            chunk_type = infer_chunk_type(cleaned_text)
+            
+            # Determine adaptive max_characters based on content type
+            if chunk_type in ['Code', 'Try_It', 'Exercise', 'Example']:
+                # Coding content needs more context
+                target_length = 600
+                context_preservation = True
+            else:  # Concept
+                # Conceptual content can be more concise
+                target_length = 400
+                context_preservation = True
+            
+            # Further clean the text with context preservation
+            final_cleaned_text = clean_chunk_text(cleaned_text)
+            
+            if not final_cleaned_text or len(final_cleaned_text.strip()) < 10:
+                continue
+            
+            # Create contextual chunk based on type
+            # For now, we'll use basic context since we don't have subtopic info in this function
+            # This could be enhanced when integrated with document structure parsing
+            contextual_text = _create_basic_context(final_cleaned_text, chunk_type)
+            
+            # Store the processed chunk with page information for cross-page merging
+            chunk_data = {
+                'text': contextual_text,
+                'chunk_type': chunk_type,
+                'element_type': str(type(element).__name__),
+                'sequence_number': i,
+                'page_number': getattr(element.metadata, 'page_number', i // 10) if hasattr(element, 'metadata') else i // 10,  # Estimate page if not available
+                'original_length': len(text),
+                'processed_length': len(contextual_text),
+                'target_length': target_length
+            }
+            
+            processed_chunks.append(chunk_data)
+        
+        print(f"Processed {len(processed_chunks)} initial chunks")
+        
+        # Apply cross-page merging to handle split content
+        final_chunks = enhance_cross_page_chunking(processed_chunks)
+        
+        # Log final chunk type distribution
+        chunk_types = {}
+        for chunk in final_chunks:
+            chunk_type = chunk['chunk_type']
+            chunk_types[chunk_type] = chunk_types.get(chunk_type, 0) + 1
+        
+        print(f"Final chunk type distribution: {chunk_types}")
+        
+        return final_chunks
+        
+    except Exception as e:
+        logger.error(f"Error in extract_unstructured_chunks: {str(e)}")
+        print(f"Error processing {file_path}: {str(e)}")
+        return []
 
-    return enhanced_chunks
+
+def _create_basic_context(text: str, chunk_type: str) -> str:
+    """
+    Create basic contextual enhancement when detailed subtopic info is not available.
+    Since chunk_type field already contains the type information, we just return the clean text.
+    """
+    return text
+
+
+def get_chunk_statistics(chunks: List[Dict[str, Any]]) -> Dict[str, Any]:
+    """
+    Get statistics about the processed chunks for analysis and debugging.
+    """
+    if not chunks:
+        return {}
+    
+    chunk_types = {}
+    total_original_length = 0
+    total_processed_length = 0
+    
+    for chunk in chunks:
+        chunk_type = chunk.get('chunk_type', 'Unknown')
+        chunk_types[chunk_type] = chunk_types.get(chunk_type, 0) + 1
+        total_original_length += chunk.get('original_length', 0)
+        total_processed_length += chunk.get('processed_length', 0)
+    
+    return {
+        'total_chunks': len(chunks),
+        'chunk_type_distribution': chunk_types,
+        'total_original_length': total_original_length,
+        'total_processed_length': total_processed_length,
+        'compression_ratio': total_processed_length / total_original_length if total_original_length > 0 else 0,
+        'average_chunk_length': total_processed_length / len(chunks) if chunks else 0
+    }
