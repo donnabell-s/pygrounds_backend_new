@@ -95,5 +95,5 @@ urlpatterns = [
     path('test/health/', health_check, name='health-check'),
     path('test/stats/', get_generation_stats, name='generation-stats'),
 
-    path('preassessment/', PreAssessmentQuestionListView.as_view(), name='preassessment-questions'),
+
 ]
