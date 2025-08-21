@@ -71,6 +71,7 @@ urlpatterns = [
     
     # ========== QUESTION RETRIEVAL API ==========
     # Question Listing
+    path('preassessment/', PreAssessmentQuestionListView.as_view(), name='preassessment-questions'),
     path('question/<int:question_id>/', get_question_by_id, name='get-question-by-id'),
     path('subtopic/<int:subtopic_id>/', get_subtopic_questions, name='get-subtopic-questions'),
     path('topic/<int:topic_id>/summary/', get_topic_questions_summary, name='get-topic-summary'),
