@@ -1,4 +1,15 @@
 from django.contrib import admin
-from .models import GeneratedQuestion
+from django.apps import apps
 
-admin.site.register(GeneratedQuestion)
+Model = None
+for model_name in ("GeneratedQuestion", "Question"):
+    try:
+        Model = apps.get_model("question_generation", model_name)
+        if Model:
+            break
+    except LookupError:
+        continue
+
+# Register only if we actually found a suitable model
+if Model:
+    admin.site.register(Model)

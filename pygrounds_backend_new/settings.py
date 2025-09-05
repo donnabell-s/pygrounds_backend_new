@@ -50,7 +50,7 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'users',
     #'content_ingestion',
-    #'question_generation',
+    'question_generation',
     'user_learning',
     'reading',
     'django_filters',
