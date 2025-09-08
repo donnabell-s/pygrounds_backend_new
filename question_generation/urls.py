@@ -8,6 +8,7 @@ RESTful API endpoints following clean design principles:
 """
 
 from django.urls import path
+from .api import recalibrate_question 
 
 from .views.questionManagement import (
     get_subtopic_questions,
@@ -95,5 +96,7 @@ urlpatterns = [
     path('test/health/', health_check, name='health-check'),
     path('test/stats/', get_generation_stats, name='generation-stats'),
 
+     # ========== RECALBIRATE QUESTIONS ==========
+     path('recalibrate-question/<int:question_id>/', recalibrate_question, name='recalibrate_question'),
 
 ]

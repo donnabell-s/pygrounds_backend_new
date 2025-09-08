@@ -79,10 +79,17 @@ INSTALLED_APPS = [
     'corsheaders',
     'rest_framework_simplejwt',
     'users',
-    'content_ingestion',
+    #'content_ingestion',
     'question_generation',
     'user_learning',
+<<<<<<< HEAD
     'minigames'
+=======
+    'reading',
+    'django_filters',
+    #'minigames',
+    
+>>>>>>> bd876997ca1b6a6ac0ca9c5e52d8f99fb5dfa330
 ]
 
 MIDDLEWARE = [
@@ -106,6 +113,7 @@ CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_HEADERS = [
     '*'
 ]
+CORS_ALLOW_CREDENTIALS = False
 
 # Allow all methods
 CORS_ALLOW_METHODS = [
@@ -131,10 +139,16 @@ CORS_PREFLIGHT_MAX_AGE = 86400
 CORS_URLS_REGEX = r'^/api/.*$'
 
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
-    ),
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE": 10,
+    "DEFAULT_FILTER_BACKENDS": [
+        "django_filters.rest_framework.DjangoFilterBackend",
+        "rest_framework.filters.SearchFilter",
+        "rest_framework.filters.OrderingFilter",
+    ],
+    "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.AllowAny"], 
 }
+
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
@@ -217,6 +231,7 @@ STATIC_URL = 'static/'
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
+<<<<<<< HEAD
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Logging configuration
@@ -244,3 +259,6 @@ LOGGING = {
 # Set maximum file upload size to 25MB (slightly above our 20MB app limit for safety)
 FILE_UPLOAD_MAX_MEMORY_SIZE = 25 * 1024 * 1024  # 25MB
 DATA_UPLOAD_MAX_MEMORY_SIZE = 25 * 1024 * 1024  # 25MB
+=======
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+>>>>>>> bd876997ca1b6a6ac0ca9c5e52d8f99fb5dfa330

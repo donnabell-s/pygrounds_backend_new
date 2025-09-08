@@ -1,5 +1,7 @@
 from django.contrib import admin
 from .models import GeneratedQuestion, PreAssessmentQuestion
+from django.apps import apps
+
 # SemanticSubtopic is now in content_ingestion.models
 
 @admin.register(GeneratedQuestion)
@@ -48,3 +50,16 @@ class PreAssessmentQuestionAdmin(admin.ModelAdmin):
     def question_preview(self, obj):
         return obj.question_text[:50] + '...' if len(obj.question_text) > 50 else obj.question_text
     question_preview.short_description = 'Question Preview'
+
+Model = None
+for model_name in ("GeneratedQuestion", "Question"):
+    try:
+        Model = apps.get_model("question_generation", model_name)
+        if Model:
+            break
+    except LookupError:
+        continue
+
+# Register only if we actually found a suitable model
+if Model:
+    admin.site.register(Model)
