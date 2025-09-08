@@ -1,41 +1,8 @@
 from django.db import models
 from django.utils.text import slugify
 
-class Topic(models.Model):
-    name = models.CharField(max_length=255, unique=True)
-    slug = models.SlugField(max_length=255, unique=True, blank=True)
-
-    class Meta:
-        ordering = ["name"]
-
-    def save(self, *args, **kwargs):
-        if not self.slug:
-            self.slug = slugify(self.name)
-        super().save(*args, **kwargs)
-
-    def __str__(self):
-        return self.name
-
-
-class Subtopic(models.Model):
-    topic = models.ForeignKey(Topic, on_delete=models.CASCADE, related_name="subtopics")
-    name = models.CharField(max_length=255)
-    slug = models.SlugField(max_length=255, blank=True)
-    order_in_topic = models.PositiveIntegerField(default=0)
-
-    class Meta:
-        constraints = [
-            models.UniqueConstraint(fields=["topic", "name"], name="uniq_topic_subtopic")
-        ]
-        ordering = ["topic__name", "order_in_topic", "name"]
-
-    def save(self, *args, **kwargs):
-        if not self.slug:
-            self.slug = slugify(self.name)
-        super().save(*args, **kwargs)
-
-    def __str__(self):
-        return f"{self.topic.name} / {self.name}"
+# Import Topic and Subtopic from content_ingestion to maintain consistency
+from content_ingestion.models import Topic, Subtopic
 
 
 class ReadingMaterial(models.Model):

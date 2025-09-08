@@ -202,10 +202,20 @@ class Topic(models.Model):
 
     zone = models.ForeignKey(GameZone, on_delete=models.CASCADE, related_name='topics')
     name = models.CharField(max_length=100)
+    slug = models.SlugField(max_length=100, unique=True, blank=True)
     description = models.TextField()
 
     class Meta:
         ordering = ['zone__order', 'id']
+    
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            from django.utils.text import slugify
+            self.slug = slugify(self.name)
+        super().save(*args, **kwargs)
+    
+    def __str__(self):
+        return self.name
 
 
 class Subtopic(models.Model):
@@ -219,6 +229,8 @@ class Subtopic(models.Model):
 
     topic = models.ForeignKey(Topic, on_delete=models.CASCADE, related_name='subtopics')
     name = models.CharField(max_length=100)
+    slug = models.SlugField(max_length=100, blank=True)
+    order_in_topic = models.PositiveIntegerField(default=0)
     
     # Document chunk associations
     document_chunks = models.ManyToManyField(
@@ -288,8 +300,20 @@ class Subtopic(models.Model):
             except Exception as final_e:
                 logger.error(f"Final deletion attempt failed: {final_e}")
 
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            from django.utils.text import slugify
+            self.slug = slugify(self.name)
+        super().save(*args, **kwargs)
+    
+    def __str__(self):
+        return f"{self.topic.name} / {self.name}"
+
     class Meta:
-        ordering = ['topic__zone__order', 'id']
+        constraints = [
+            models.UniqueConstraint(fields=["topic", "name"], name="uniq_content_topic_subtopic")
+        ]
+        ordering = ['topic__zone__order', 'order_in_topic', 'name']
 
 
 class Embedding(models.Model):

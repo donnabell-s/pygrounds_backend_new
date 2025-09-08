@@ -60,6 +60,7 @@ for model_name in ("GeneratedQuestion", "Question"):
     except LookupError:
         continue
 
-# Register only if we actually found a suitable model
-if Model:
+# Don't register here since GeneratedQuestion is already registered above with @admin.register
+# Only register if it's a different model (like "Question") that isn't already registered
+if Model and Model.__name__ not in ['GeneratedQuestion', 'PreAssessmentQuestion']:
     admin.site.register(Model)

@@ -79,17 +79,14 @@ INSTALLED_APPS = [
     'corsheaders',
     'rest_framework_simplejwt',
     'users',
-    #'content_ingestion',
+    'content_ingestion',
     'question_generation',
     'user_learning',
-<<<<<<< HEAD
-    'minigames'
-=======
+    'minigames',
     'reading',
     'django_filters',
     #'minigames',
     
->>>>>>> bd876997ca1b6a6ac0ca9c5e52d8f99fb5dfa330
 ]
 
 MIDDLEWARE = [
@@ -231,7 +228,6 @@ STATIC_URL = 'static/'
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
-<<<<<<< HEAD
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Logging configuration
@@ -259,6 +255,4 @@ LOGGING = {
 # Set maximum file upload size to 25MB (slightly above our 20MB app limit for safety)
 FILE_UPLOAD_MAX_MEMORY_SIZE = 25 * 1024 * 1024  # 25MB
 DATA_UPLOAD_MAX_MEMORY_SIZE = 25 * 1024 * 1024  # 25MB
-=======
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
->>>>>>> bd876997ca1b6a6ac0ca9c5e52d8f99fb5dfa330

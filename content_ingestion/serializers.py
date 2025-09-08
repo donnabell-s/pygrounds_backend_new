@@ -76,8 +76,8 @@ class TopicSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Topic
-        fields = ['id', 'zone', 'zone_name', 'name', 'description', 'subtopics_count']
-        read_only_fields = ['zone_name', 'subtopics_count']
+        fields = ['id', 'zone', 'zone_name', 'name', 'slug', 'description', 'subtopics_count']
+        read_only_fields = ['zone_name', 'subtopics_count', 'slug']  # slug is auto-generated
     
     def get_zone_name(self, obj):
         return obj.zone.name if obj.zone else None
@@ -103,12 +103,12 @@ class SubtopicSerializer(serializers.ModelSerializer):
     class Meta:
         model = Subtopic
         fields = [
-            'id', 'topic', 'topic_name', 'zone_name', 'name',
+            'id', 'topic', 'topic_name', 'zone_name', 'name', 'slug', 'order_in_topic',
             'concept_intent', 'code_intent', 'has_embedding',
             'embedding_status', 'embedding_error', 'embedding_updated_at'
         ]
         read_only_fields = [
-            'topic_name', 'zone_name', 'has_embedding',
+            'topic_name', 'zone_name', 'has_embedding', 'slug',  # slug is auto-generated
             'embedding_status', 'embedding_error', 'embedding_updated_at'
         ]
     

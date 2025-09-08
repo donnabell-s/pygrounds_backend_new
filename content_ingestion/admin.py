@@ -17,15 +17,17 @@ class GameZoneAdmin(admin.ModelAdmin):
 
 @admin.register(Topic)
 class TopicAdmin(admin.ModelAdmin):
-    list_display = ['zone', 'name', 'description']
+    list_display = ['zone', 'name', 'slug', 'description']
     list_filter = ['zone']
     ordering = ['zone__order', 'name']
+    readonly_fields = ['slug']  # slug is auto-generated
 
 @admin.register(Subtopic)
 class SubtopicAdmin(admin.ModelAdmin):
-    list_display = ['topic', 'name']
+    list_display = ['topic', 'name', 'slug', 'order_in_topic']
     list_filter = ['topic__zone']
-    ordering = ['topic__zone__order', 'topic__name', 'name']
+    ordering = ['topic__zone__order', 'topic__name', 'order_in_topic', 'name']
+    readonly_fields = ['slug']  # slug is auto-generated
 
 @admin.register(TOCEntry)
 class TOCEntryAdmin(admin.ModelAdmin):
