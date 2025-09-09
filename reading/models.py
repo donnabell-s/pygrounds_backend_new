@@ -1,6 +1,5 @@
 from django.db import models
 from django.utils.text import slugify
-
 # Import Topic and Subtopic from content_ingestion to maintain consistency
 from content_ingestion.models import Topic, Subtopic
 

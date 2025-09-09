@@ -15,7 +15,6 @@ urlpatterns = [
         path('', include('content_ingestion.urls')),
         path('', include('user_learning.urls')),
         path('', include("reading.urls")),
-        path('', include("question_generation.urls")),
 
     ])),
     path('api/', include('minigames.urls')),

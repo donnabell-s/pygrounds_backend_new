@@ -16,6 +16,8 @@ class ReadingMaterialSerializer(serializers.ModelSerializer):
             "id",
             "title",
             "content",
+            "topic_ref",
+            "subtopic_ref", 
             "order_in_topic",
             "created_at",
             "updated_at",

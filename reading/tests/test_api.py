@@ -1,5 +1,6 @@
 from rest_framework.test import APITestCase
-from reading.models import Topic, Subtopic, ReadingMaterial
+from reading.models import ReadingMaterial
+from content_ingestion.models import Topic, Subtopic
 
 class ReadingAPITests(APITestCase):
     def setUp(self):

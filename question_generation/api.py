@@ -32,7 +32,7 @@ from question_generation.utils.recalibrator import recalibrate_difficulty_for_qu
 
 
 @api_view(["POST"])
-@permission_classes([IsAdminUser])
+# @permission_classes([IsAdminUser])
 def recalibrate_question(request, question_id: int):
     """
     Trigger difficulty recalibration for a specific question by ID.

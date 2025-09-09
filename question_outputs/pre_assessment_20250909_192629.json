@@ -1,0 +1,635 @@
+[
+  {
+    "id": 1,
+    "question_text": "You want to display the message 'Hello, World!' on the screen. Which of these lines of code will do that?",
+    "answer_options": [
+      "print('Hello, World!')",
+      "display('Hello, World!')",
+      "show('Hello, World!')",
+      "write('Hello, World!')"
+    ],
+    "correct_answer": "print('Hello, World!')",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      1
+    ],
+    "subtopic_ids": [
+      7,
+      3
+    ],
+    "order": 0,
+    "created_at": null
+  },
+  {
+    "id": 2,
+    "question_text": "Which of these is a valid way to store the number 10 in a variable?",
+    "answer_options": [
+      "my_number = 10",
+      "10 = my_number",
+      "variable my_number is 10",
+      "set my_number to 10"
+    ],
+    "correct_answer": "my_number = 10",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      2,
+      4
+    ],
+    "subtopic_ids": [
+      9,
+      10,
+      26
+    ],
+    "order": 1,
+    "created_at": null
+  },
+  {
+    "id": 3,
+    "question_text": "You want to ask the user for their name and then greet them. Which code snippet correctly does this?",
+    "answer_options": [
+      "name = input('Enter your name: '); print('Hello, ' + name)",
+      "name = print('Enter your name: '); input('Hello, ' + name)",
+      "input('Enter your name: '); print('Hello, name')",
+      "print('Enter your name: '); name = input(); print('Hello, ' + name)"
+    ],
+    "correct_answer": "name = input('Enter your name: '); print('Hello, ' + name)",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      3
+    ],
+    "subtopic_ids": [
+      16,
+      17,
+      18
+    ],
+    "order": 2,
+    "created_at": null
+  },
+  {
+    "id": 4,
+    "question_text": "Which operator checks if two values are equal?",
+    "answer_options": [
+      "=",
+      "==",
+      "!=",
+      ">"
+    ],
+    "correct_answer": "==",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      4
+    ],
+    "subtopic_ids": [
+      24
+    ],
+    "order": 3,
+    "created_at": null
+  },
+  {
+    "id": 5,
+    "question_text": "What is the purpose of adding comments in your code?",
+    "answer_options": [
+      "To make the code run faster",
+      "To explain what the code does for other programmers",
+      "To hide parts of the code from the computer",
+      "To automatically fix errors"
+    ],
+    "correct_answer": "To explain what the code does for other programmers",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      5
+    ],
+    "subtopic_ids": [
+      30
+    ],
+    "order": 4,
+    "created_at": null
+  },
+  {
+    "id": 6,
+    "question_text": "If you want to run some code only when a condition is true, which statement do you use?",
+    "answer_options": [
+      "for",
+      "while",
+      "if",
+      "print"
+    ],
+    "correct_answer": "if",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      6
+    ],
+    "subtopic_ids": [
+      37
+    ],
+    "order": 5,
+    "created_at": null
+  },
+  {
+    "id": 7,
+    "question_text": "What does the 'try-except' block help you do?",
+    "answer_options": [
+      "Make the code run faster",
+      "Handle errors gracefully without crashing",
+      "Skip parts of the code you don't like",
+      "Automatically write code for you"
+    ],
+    "correct_answer": "Handle errors gracefully without crashing",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      7
+    ],
+    "subtopic_ids": [
+      45,
+      44
+    ],
+    "order": 6,
+    "created_at": null
+  },
+  {
+    "id": 8,
+    "question_text": "Which loop repeats a block of code a specific number of times, like 5 times?",
+    "answer_options": [
+      "while loop",
+      "for loop with range()",
+      "if loop",
+      "repeat loop"
+    ],
+    "correct_answer": "for loop with range()",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      8
+    ],
+    "subtopic_ids": [
+      51,
+      57
+    ],
+    "order": 7,
+    "created_at": null
+  },
+  {
+    "id": 9,
+    "question_text": "If you have a list of names: ['Alice', 'Bob', 'Charlie'], how do you get the first name?",
+    "answer_options": [
+      "names[0]",
+      "names[1]",
+      "names.first",
+      "get names(0)"
+    ],
+    "correct_answer": "names[0]",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      11
+    ],
+    "subtopic_ids": [
+      74,
+      72
+    ],
+    "order": 8,
+    "created_at": null
+  },
+  {
+    "id": 10,
+    "question_text": "What is the main difference between a list and a tuple?",
+    "answer_options": [
+      "Lists are for numbers, tuples are for text",
+      "Lists can be changed, tuples cannot",
+      "Tuples are faster than lists",
+      "Lists use parentheses, tuples use brackets"
+    ],
+    "correct_answer": "Lists can be changed, tuples cannot",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      11
+    ],
+    "subtopic_ids": [
+      75,
+      78
+    ],
+    "order": 9,
+    "created_at": null
+  },
+  {
+    "id": 11,
+    "question_text": "Which of these creates a set that automatically removes duplicates?",
+    "answer_options": [
+      "{1, 2, 2, 3}",
+      "[1, 2, 2, 3]",
+      "(1, 2, 2, 3)",
+      "\"1, 2, 2, 3\""
+    ],
+    "correct_answer": "{1, 2, 2, 3}",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      12
+    ],
+    "subtopic_ids": [
+      79,
+      82
+    ],
+    "order": 10,
+    "created_at": null
+  },
+  {
+    "id": 12,
+    "question_text": "How do you define a function that says 'Hello' when called?",
+    "answer_options": [
+      "def say_hello(): print('Hello')",
+      "function say_hello: print('Hello')",
+      "say_hello = print('Hello')",
+      "define say_hello(): print('Hello')"
+    ],
+    "correct_answer": "def say_hello(): print('Hello')",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      13
+    ],
+    "subtopic_ids": [
+      86,
+      87
+    ],
+    "order": 11,
+    "created_at": null
+  },
+  {
+    "id": 13,
+    "question_text": "In a dictionary, what is used to access a value?",
+    "answer_options": [
+      "Index number",
+      "Key",
+      "Value itself",
+      "Position in the dictionary"
+    ],
+    "correct_answer": "Key",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      14
+    ],
+    "subtopic_ids": [
+      93,
+      94
+    ],
+    "order": 12,
+    "created_at": null
+  },
+  {
+    "id": 14,
+    "question_text": "Which escape sequence represents a new line in a string?",
+    "answer_options": [
+      "\\n",
+      "\\t",
+      "\\'",
+      "\\\\"
+    ],
+    "correct_answer": "\\n",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      3,
+      10
+    ],
+    "subtopic_ids": [
+      20,
+      71
+    ],
+    "order": 13,
+    "created_at": null
+  },
+  {
+    "id": 15,
+    "question_text": "What does the 'and' operator do?",
+    "answer_options": [
+      "Checks if both conditions are true",
+      "Checks if at least one condition is true",
+      "Reverses the condition",
+      "Adds two conditions together"
+    ],
+    "correct_answer": "Checks if both conditions are true",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      4,
+      6
+    ],
+    "subtopic_ids": [
+      25,
+      40
+    ],
+    "order": 14,
+    "created_at": null
+  },
+  {
+    "id": 16,
+    "question_text": "If you want to stop a loop early, which statement do you use?",
+    "answer_options": [
+      "stop",
+      "exit",
+      "break",
+      "end"
+    ],
+    "correct_answer": "break",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      8
+    ],
+    "subtopic_ids": [
+      54,
+      56
+    ],
+    "order": 15,
+    "created_at": null
+  },
+  {
+    "id": 17,
+    "question_text": "Which method converts a string to all uppercase letters?",
+    "answer_options": [
+      ".upper()",
+      ".capitalize()",
+      ".lower()",
+      ".case()"
+    ],
+    "correct_answer": ".upper()",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      10
+    ],
+    "subtopic_ids": [
+      67,
+      66
+    ],
+    "order": 16,
+    "created_at": null
+  },
+  {
+    "id": 18,
+    "question_text": "What is the result of 10 // 3?",
+    "answer_options": [
+      "3.333",
+      "3",
+      "1",
+      "4"
+    ],
+    "correct_answer": "3",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      4
+    ],
+    "subtopic_ids": [
+      23
+    ],
+    "order": 17,
+    "created_at": null
+  },
+  {
+    "id": 19,
+    "question_text": "How can you check the data type of a variable x?",
+    "answer_options": [
+      "type(x)",
+      "check_type(x)",
+      "x.type",
+      "whatis(x)"
+    ],
+    "correct_answer": "type(x)",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      2
+    ],
+    "subtopic_ids": [
+      14,
+      13
+    ],
+    "order": 18,
+    "created_at": null
+  },
+  {
+    "id": 20,
+    "question_text": "Which of these is a valid way to write a multi-line comment?",
+    "answer_options": [
+      "# This is a comment spanning multiple lines",
+      "/* This is a comment */",
+      "\"\"\"This is a comment\"\"\"",
+      "-- This is a comment --"
+    ],
+    "correct_answer": "\"\"\"This is a comment\"\"\"",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      5
+    ],
+    "subtopic_ids": [
+      30,
+      31
+    ],
+    "order": 19,
+    "created_at": null
+  },
+  {
+    "id": 21,
+    "question_text": "What does the 'is' operator check?",
+    "answer_options": [
+      "If two values are equal",
+      "If two variables refer to the same object",
+      "If a value is true",
+      "If a variable exists"
+    ],
+    "correct_answer": "If two variables refer to the same object",
+    "estimated_difficulty": "advanced",
+    "topic_ids": [
+      4
+    ],
+    "subtopic_ids": [
+      28
+    ],
+    "order": 20,
+    "created_at": null
+  },
+  {
+    "id": 22,
+    "question_text": "In error handling, what does the 'finally' clause do?",
+    "answer_options": [
+      "Runs only if there is an error",
+      "Runs only if there is no error",
+      "Always runs, regardless of errors",
+      "Skips the rest of the code"
+    ],
+    "correct_answer": "Always runs, regardless of errors",
+    "estimated_difficulty": "advanced",
+    "topic_ids": [
+      7
+    ],
+    "subtopic_ids": [
+      47,
+      45
+    ],
+    "order": 21,
+    "created_at": null
+  },
+  {
+    "id": 23,
+    "question_text": "How do you create a list of squares for numbers 1 to 5 using list comprehension?",
+    "answer_options": [
+      "[x**2 for x in range(1,6)]",
+      "[square(x) for x in 1 to 5]",
+      "list(squares(1,5))",
+      "for x in range(1,6): squares.append(x**2)"
+    ],
+    "correct_answer": "[x**2 for x in range(1,6)]",
+    "estimated_difficulty": "advanced",
+    "topic_ids": [
+      11
+    ],
+    "subtopic_ids": [
+      74,
+      77
+    ],
+    "order": 22,
+    "created_at": null
+  },
+  {
+    "id": 24,
+    "question_text": "What is a lambda function?",
+    "answer_options": [
+      "A function that only works with numbers",
+      "A small anonymous function",
+      "A function that never returns a value",
+      "A function that is always true"
+    ],
+    "correct_answer": "A small anonymous function",
+    "estimated_difficulty": "advanced",
+    "topic_ids": [
+      13
+    ],
+    "subtopic_ids": [
+      91,
+      92
+    ],
+    "order": 23,
+    "created_at": null
+  },
+  {
+    "id": 25,
+    "question_text": "Which set operation gives elements in either set A or set B?",
+    "answer_options": [
+      "intersection",
+      "difference",
+      "union",
+      "symmetric_difference"
+    ],
+    "correct_answer": "union",
+    "estimated_difficulty": "advanced",
+    "topic_ids": [
+      12
+    ],
+    "subtopic_ids": [
+      80,
+      84
+    ],
+    "order": 24,
+    "created_at": null
+  },
+  {
+    "id": 26,
+    "question_text": "How do you handle multiple exceptions in one except block?",
+    "answer_options": [
+      "except (ValueError, TypeError):",
+      "except ValueError and TypeError:",
+      "except multiple(ValueError, TypeError):",
+      "except ValueError, except TypeError:"
+    ],
+    "correct_answer": "except (ValueError, TypeError):",
+    "estimated_difficulty": "advanced",
+    "topic_ids": [
+      7
+    ],
+    "subtopic_ids": [
+      46,
+      50
+    ],
+    "order": 25,
+    "created_at": null
+  },
+  {
+    "id": 27,
+    "question_text": "What does the 'nonlocal' keyword do?",
+    "answer_options": [
+      "Declares a global variable",
+      "Declares a variable in an outer function scope",
+      "Prevents a variable from being changed",
+      "Imports a variable from another module"
+    ],
+    "correct_answer": "Declares a variable in an outer function scope",
+    "estimated_difficulty": "advanced",
+    "topic_ids": [
+      13
+    ],
+    "subtopic_ids": [
+      88,
+      86
+    ],
+    "order": 26,
+    "created_at": null
+  },
+  {
+    "id": 28,
+    "question_text": "In nested loops, how do you avoid confusion between inner and outer loop variables?",
+    "answer_options": [
+      "Use the same variable name for both",
+      "Always use 'i' for inner and 'j' for outer",
+      "Use descriptive variable names",
+      "Avoid using nested loops altogether"
+    ],
+    "correct_answer": "Use descriptive variable names",
+    "estimated_difficulty": "advanced",
+    "topic_ids": [
+      9
+    ],
+    "subtopic_ids": [
+      63,
+      64
+    ],
+    "order": 27,
+    "created_at": null
+  },
+  {
+    "id": 29,
+    "question_text": "Which dictionary method returns a value for a key if it exists, or a default if not?",
+    "answer_options": [
+      ".get()",
+      ".find()",
+      ".return()",
+      ".default()"
+    ],
+    "correct_answer": ".get()",
+    "estimated_difficulty": "advanced",
+    "topic_ids": [
+      14
+    ],
+    "subtopic_ids": [
+      96,
+      98
+    ],
+    "order": 28,
+    "created_at": null
+  },
+  {
+    "id": 30,
+    "question_text": "Imagine you're building a simple text-based adventure game. You need to check if the player's input is a valid direction ('north', 'south', 'east', 'west'). Which Python concept is most efficient for storing and checking these options?",
+    "answer_options": [
+      "A list of strings",
+      "A tuple of strings",
+      "A set of strings",
+      "A dictionary with number keys"
+    ],
+    "correct_answer": "A set of strings",
+    "estimated_difficulty": "master",
+    "topic_ids": [
+      12,
+      4
+    ],
+    "subtopic_ids": [
+      79,
+      28,
+      84,
+      82
+    ],
+    "order": 29,
+    "created_at": null
+  }
+]
