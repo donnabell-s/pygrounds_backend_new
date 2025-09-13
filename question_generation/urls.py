@@ -6,7 +6,7 @@ RESTful API endpoints following clean design principles:
 - Consistent naming conventions (kebab-case for URLs, underscore for view functions)
 - Logical grouping of related endpoints
 """
-
+from users.jwt_views import EmailTokenObtainPairView
 from django.urls import path
 from .api import recalibrate_question 
 
@@ -98,5 +98,7 @@ urlpatterns = [
 
      # ========== RECALBIRATE QUESTIONS ==========
      path('recalibrate-question/<int:question_id>/', recalibrate_question, name='recalibrate_question'),
+     
+     path('api/token/', EmailTokenObtainPairView.as_view(), name='token_obtain_pair'),
 
 ]

@@ -78,13 +78,13 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'rest_framework_simplejwt',
-    'users',
-    'content_ingestion',
-    'question_generation',
-    'user_learning',
-    'minigames',
-    'reading',
     'django_filters',
+    'users',
+    #'content_ingestion',
+    #'question_generation',
+    #'user_learning',
+    #'minigames',
+    'reading',
     #'minigames',
     
 ]
@@ -143,14 +143,22 @@ REST_FRAMEWORK = {
         "rest_framework.filters.SearchFilter",
         "rest_framework.filters.OrderingFilter",
     ],
-    "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.AllowAny"], 
+    #enable JWT
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+        "rest_framework.authentication.SessionAuthentication",
+    ],
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.AllowAny",
+    ],
 }
 
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
 }
+
 
 
 ROOT_URLCONF = 'pygrounds_backend_new.urls'

@@ -9,14 +9,23 @@ from .views import (
     SubtopicListByTopicView,
     MaterialsByTopicSubtopicView,
 )
+from .admin_views import (
+    TopicAdminViewSet,
+    SubtopicAdminViewSet,
+    AdminReadingMaterialViewSet,
+)
 
-router = DefaultRouter()
-router.register(r"reading-materials", ReadingMaterialViewSet, basename="reading-material")
-router.register(r"topics", TopicViewSet, basename="topic")
+public_router = DefaultRouter()
+public_router.register(r"reading-materials", ReadingMaterialViewSet, basename="reading-material")
+public_router.register(r"topics", TopicViewSet, basename="topic")
+
+admin_router = DefaultRouter()
+admin_router.register(r"admin/topics", TopicAdminViewSet, basename="admin-topics")
+admin_router.register(r"admin/subtopics", SubtopicAdminViewSet, basename="admin-subtopics")
+admin_router.register(r"admin/materials", AdminReadingMaterialViewSet, basename="admin-materials")
 
 urlpatterns = [
-    path("", include(router.urls)),
-
+    path("", include(public_router.urls)),
     path("reading/topics/", TopicListView.as_view(), name="topics-list"),
     path(
         "reading/topics/<slug:topic_key>/subtopics/",
@@ -29,4 +38,5 @@ urlpatterns = [
         name="materials-by-topic-subtopic",
     ),
     path("topics/<str:topic_name>/toc/", TopicTOC.as_view(), name="topic-toc"),
+    path("reading/", include(admin_router.urls)),
 ]
