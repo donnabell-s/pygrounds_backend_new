@@ -80,12 +80,12 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'django_filters',
     'users',
-    #'content_ingestion',
-    #'question_generation',
-    #'user_learning',
-    #'minigames',
+    'content_ingestion',
+    'question_generation',
+    'user_learning',
+    'minigames',
     'reading',
-    #'minigames',
+  
     
 ]
 
@@ -107,9 +107,7 @@ CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 
 # Allow all headers
-CORS_ALLOW_HEADERS = [
-    '*'
-]
+CORS_ALLOW_HEADERS = ['*']
 CORS_ALLOW_CREDENTIALS = False
 
 # Allow all methods
