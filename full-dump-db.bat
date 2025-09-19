@@ -50,5 +50,6 @@ echo 1. git add db_dump.sql
 echo 2. git commit -m "Update database dump with latest data"
 echo 3. git push
 echo.
+echo Use the restore-db.bat script to restore from this dump.
 pause
 endlocal
