@@ -82,12 +82,15 @@ INSTALLED_APPS = [
     'users',
     'content_ingestion',
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     'question_generation',
     'user_learning',
     'minigames',
     'reading',
   
 =======
+=======
+>>>>>>> Stashed changes
     #'question_generation',
     #'user_learning',
     #'minigames',
@@ -97,6 +100,9 @@ INSTALLED_APPS = [
 =======
   
 >>>>>>> origin/merge-read/recalib-wip
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     
 ]

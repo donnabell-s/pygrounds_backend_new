@@ -27,6 +27,7 @@ class SubtopicSerializer(serializers.ModelSerializer):
     class Meta:
         model = Subtopic
         fields = ["id", "name", "slug", "order_in_topic"]
+<<<<<<< Updated upstream
 
 class TopicSerializer(serializers.ModelSerializer):
     class Meta:
@@ -38,6 +39,8 @@ class SubtopicSerializer(serializers.ModelSerializer):
     class Meta:
         model = Subtopic
         fields = ["id", "name", "slug", "order_in_topic"]
+=======
+>>>>>>> Stashed changes
 
 
 class ReadingMaterialSerializer(serializers.ModelSerializer):
@@ -97,7 +100,10 @@ class TopicAdminSerializer(serializers.ModelSerializer):
     slug = serializers.CharField(required=False, allow_blank=True, default="")
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 
 
@@ -106,6 +112,9 @@ class TopicAdminSerializer(serializers.ModelSerializer):
 
 =======
 >>>>>>> origin/merge-read/recalib-wip
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     class Meta:
         model = CITopic
@@ -116,7 +125,10 @@ class TopicAdminSerializer(serializers.ModelSerializer):
         if not name:
             raise serializers.ValidationError({"name": "Name is required."})
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 
         s = slugify(attrs.get("slug") or name)
@@ -126,6 +138,9 @@ class TopicAdminSerializer(serializers.ModelSerializer):
             qs = qs.exclude(pk=self.instance.pk)
 
 =======
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         s = slugify(attrs.get("slug") or name)
 
@@ -133,6 +148,10 @@ class TopicAdminSerializer(serializers.ModelSerializer):
         if self.instance:
             qs = qs.exclude(pk=self.instance.pk)
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+>>>>>>> origin/merge-read/recalib-wip
+>>>>>>> Stashed changes
 =======
 >>>>>>> origin/merge-read/recalib-wip
 >>>>>>> Stashed changes
@@ -148,7 +167,10 @@ class TopicAdminSerializer(serializers.ModelSerializer):
 
 class SubtopicAdminSerializer(serializers.ModelSerializer):
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     topic = serializers.PrimaryKeyRelatedField(queryset=CITopic.objects.all())
     slug = serializers.CharField(required=False, allow_blank=True)
@@ -157,6 +179,9 @@ class SubtopicAdminSerializer(serializers.ModelSerializer):
         model = CISubtopic
         fields = ["id", "name", "slug", "order_in_topic", "topic"]
         extra_kwargs = { "slug": {"required": False, "allow_blank": True} }
+=======
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     topic = serializers.PrimaryKeyRelatedField(queryset=Topic.objects.all())
@@ -169,6 +194,10 @@ class SubtopicAdminSerializer(serializers.ModelSerializer):
             "slug": {"required": False, "allow_blank": True, "default": ""},
         }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+>>>>>>> origin/merge-read/recalib-wip
+>>>>>>> Stashed changes
 =======
 >>>>>>> origin/merge-read/recalib-wip
 >>>>>>> Stashed changes
@@ -184,13 +213,19 @@ class SubtopicAdminSerializer(serializers.ModelSerializer):
         s = slugify(attrs.get("slug") or name)
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         qs = Subtopic.objects.filter(topic=topic, slug__iexact=s)
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         qs = CISubtopic.objects.filter(topic=topic, slug__iexact=s)
 =======
         qs = Subtopic.objects.filter(topic=topic, slug__iexact=s)
 >>>>>>> origin/merge-read/recalib-wip
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         if self.instance:
             qs = qs.exclude(pk=self.instance.pk)

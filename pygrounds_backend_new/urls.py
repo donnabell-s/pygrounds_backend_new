@@ -15,11 +15,17 @@ urlpatterns = [
     path("api/token/verify/", TokenVerifyView.as_view(), name="token_verify"),
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     # reading + users 
     path("api/", include("reading.urls")),
     path("api/user/", include("users.urls")),
+=======
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
    
@@ -34,6 +40,10 @@ urlpatterns = [
     
  
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+>>>>>>> origin/merge-read/recalib-wip
+>>>>>>> Stashed changes
 =======
 >>>>>>> origin/merge-read/recalib-wip
 >>>>>>> Stashed changes
