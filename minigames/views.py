@@ -56,7 +56,7 @@ class StartGameSession(APIView):
 
         questions = fetch_questions_for_game(user, game_type, limit=question_count)
         GameQuestion.objects.bulk_create([
-            GameQuestion(session=session, question_id=q.id)
+            GameQuestion(session=session, question=q)
             for q in questions
         ])
 
@@ -261,7 +261,7 @@ class StartCrosswordGame(APIView):
         placed_questions = [q for q in questions if sanitized_map[q.id] in placed_words]
 
         GameQuestion.objects.bulk_create([
-            GameQuestion(session=session, question_id=q.id) for q in placed_questions
+            GameQuestion(session=session, question=q) for q in placed_questions
         ])
 
         word_to_gqid = {}
@@ -350,7 +350,7 @@ class StartWordSearchGame(APIView):
         placed_questions = [q for q in questions if sanitized_map[q.id] in placed_words]
 
         GameQuestion.objects.bulk_create([
-            GameQuestion(session=session, question_id=q.id) for q in placed_questions
+            GameQuestion(session=session, question=q) for q in placed_questions
         ])
 
         WordSearchData.objects.create(
