@@ -1,6 +1,32 @@
 from django.utils.text import slugify
 from rest_framework import serializers
-from reading.models import Topic, Subtopic, ReadingMaterial
+
+from content_ingestion.models import Topic as CITopic, Subtopic as CISubtopic
+from reading.models import ReadingMaterial
+
+
+
+class TopicSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CITopic
+        fields = ["id", "name", "slug"]
+
+
+class SubtopicSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CISubtopic
+        fields = ["id", "name", "slug", "order_in_topic"]
+
+class TopicSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Topic
+        fields = ["id", "name", "slug"]
+
+
+class SubtopicSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Subtopic
+        fields = ["id", "name", "slug", "order_in_topic"]
 
 class TopicSerializer(serializers.ModelSerializer):
     class Meta:
@@ -70,19 +96,46 @@ class IdOnlySerializer(serializers.Serializer):
 class TopicAdminSerializer(serializers.ModelSerializer):
     slug = serializers.CharField(required=False, allow_blank=True, default="")
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+
+
+class TopicAdminSerializer(serializers.ModelSerializer):
+    slug = serializers.CharField(required=False, allow_blank=True)
+
+=======
+>>>>>>> origin/merge-read/recalib-wip
+>>>>>>> Stashed changes
     class Meta:
-        model = Topic
+        model = CITopic
         fields = ["id", "name", "slug"]
 
     def validate(self, attrs):
         name = (attrs.get("name") or getattr(self.instance, "name", "") or "").strip()
         if not name:
             raise serializers.ValidationError({"name": "Name is required."})
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+
+        s = slugify(attrs.get("slug") or name)
+
+        qs = CITopic.objects.all()
+        if self.instance:
+            qs = qs.exclude(pk=self.instance.pk)
+
+=======
+>>>>>>> Stashed changes
         s = slugify(attrs.get("slug") or name)
 
         qs = Topic.objects.all()
         if self.instance:
             qs = qs.exclude(pk=self.instance.pk)
+<<<<<<< Updated upstream
+=======
+>>>>>>> origin/merge-read/recalib-wip
+>>>>>>> Stashed changes
         if qs.filter(name__iexact=name).exists():
             raise serializers.ValidationError({"name": "A topic with this name already exists."})
         if qs.filter(slug__iexact=s).exists():
@@ -94,6 +147,18 @@ class TopicAdminSerializer(serializers.ModelSerializer):
 
 
 class SubtopicAdminSerializer(serializers.ModelSerializer):
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+    topic = serializers.PrimaryKeyRelatedField(queryset=CITopic.objects.all())
+    slug = serializers.CharField(required=False, allow_blank=True)
+
+    class Meta:
+        model = CISubtopic
+        fields = ["id", "name", "slug", "order_in_topic", "topic"]
+        extra_kwargs = { "slug": {"required": False, "allow_blank": True} }
+=======
+>>>>>>> Stashed changes
     topic = serializers.PrimaryKeyRelatedField(queryset=Topic.objects.all())
     slug = serializers.CharField(required=False, allow_blank=True, default="")
 
@@ -103,6 +168,10 @@ class SubtopicAdminSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             "slug": {"required": False, "allow_blank": True, "default": ""},
         }
+<<<<<<< Updated upstream
+=======
+>>>>>>> origin/merge-read/recalib-wip
+>>>>>>> Stashed changes
 
     def validate(self, attrs):
         topic = attrs.get("topic") or getattr(self.instance, "topic", None)
@@ -114,7 +183,15 @@ class SubtopicAdminSerializer(serializers.ModelSerializer):
 
         s = slugify(attrs.get("slug") or name)
 
+<<<<<<< Updated upstream
         qs = Subtopic.objects.filter(topic=topic, slug__iexact=s)
+=======
+<<<<<<< HEAD
+        qs = CISubtopic.objects.filter(topic=topic, slug__iexact=s)
+=======
+        qs = Subtopic.objects.filter(topic=topic, slug__iexact=s)
+>>>>>>> origin/merge-read/recalib-wip
+>>>>>>> Stashed changes
         if self.instance:
             qs = qs.exclude(pk=self.instance.pk)
         if qs.exists():

@@ -2,7 +2,16 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import AllowAny  # swap to IsAdminUser for prod
 from rest_framework import filters
 
+<<<<<<< Updated upstream
 from reading.models import Topic, Subtopic, ReadingMaterial
+=======
+<<<<<<< HEAD
+from content_ingestion.models import Topic as CITopic, Subtopic as CISubtopic
+from reading.models import ReadingMaterial
+=======
+from reading.models import Topic, Subtopic, ReadingMaterial
+>>>>>>> origin/merge-read/recalib-wip
+>>>>>>> Stashed changes
 from .serializers import (
     TopicAdminSerializer,
     SubtopicAdminSerializer,
@@ -10,7 +19,15 @@ from .serializers import (
 )
 
 class TopicAdminViewSet(ModelViewSet):
+<<<<<<< Updated upstream
     queryset = Topic.objects.all().order_by("name", "id")
+=======
+<<<<<<< HEAD
+    queryset = CITopic.objects.all().order_by("name", "id")
+=======
+    queryset = Topic.objects.all().order_by("name", "id")
+>>>>>>> origin/merge-read/recalib-wip
+>>>>>>> Stashed changes
     serializer_class = TopicAdminSerializer
     permission_classes = [AllowAny]
     http_method_names = ["get", "post", "put", "patch", "delete", "head", "options"]
@@ -19,9 +36,22 @@ class TopicAdminViewSet(ModelViewSet):
     ordering_fields = ["name", "slug", "id"]
     ordering = ["name", "id"]
 
+<<<<<<< Updated upstream
 class SubtopicAdminViewSet(ModelViewSet):
     queryset = (
         Subtopic.objects.select_related("topic")
+=======
+<<<<<<< HEAD
+
+class SubtopicAdminViewSet(ModelViewSet):
+    queryset = (
+        CISubtopic.objects.select_related("topic")
+=======
+class SubtopicAdminViewSet(ModelViewSet):
+    queryset = (
+        Subtopic.objects.select_related("topic")
+>>>>>>> origin/merge-read/recalib-wip
+>>>>>>> Stashed changes
         .all()
         .order_by("topic__name", "order_in_topic", "name", "id")
     )
@@ -33,6 +63,13 @@ class SubtopicAdminViewSet(ModelViewSet):
     ordering_fields = ["name", "slug", "order_in_topic", "id", "topic__name"]
     ordering = ["topic__name", "order_in_topic", "name", "id"]
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+
+=======
+>>>>>>> origin/merge-read/recalib-wip
+>>>>>>> Stashed changes
 class AdminReadingMaterialViewSet(ModelViewSet):
     queryset = (
         ReadingMaterial.objects
@@ -44,6 +81,24 @@ class AdminReadingMaterialViewSet(ModelViewSet):
     permission_classes = [AllowAny]
     http_method_names = ["get", "post", "put", "patch", "delete", "head", "options"]
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+<<<<<<< Updated upstream
     search_fields = ["title", "content", "topic_ref__name", "subtopic_ref__name", "topic_ref__slug", "subtopic_ref__slug"]
     ordering_fields = ["title", "order_in_topic", "id", "topic_ref__name", "subtopic_ref__order_in_topic", "created_at", "updated_at"]
+=======
+<<<<<<< HEAD
+    search_fields = [
+        "title", "content",
+        "topic_ref__name", "subtopic_ref__name",
+        "topic_ref__slug", "subtopic_ref__slug",
+    ]
+    ordering_fields = [
+        "title", "order_in_topic", "id",
+        "topic_ref__name", "subtopic_ref__order_in_topic",
+        "created_at", "updated_at",
+    ]
+=======
+    search_fields = ["title", "content", "topic_ref__name", "subtopic_ref__name", "topic_ref__slug", "subtopic_ref__slug"]
+    ordering_fields = ["title", "order_in_topic", "id", "topic_ref__name", "subtopic_ref__order_in_topic", "created_at", "updated_at"]
+>>>>>>> origin/merge-read/recalib-wip
+>>>>>>> Stashed changes
     ordering = ["topic_ref__name", "subtopic_ref__order_in_topic", "order_in_topic", "title", "id"]

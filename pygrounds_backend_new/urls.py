@@ -14,6 +14,14 @@ urlpatterns = [
     path("api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("api/token/verify/", TokenVerifyView.as_view(), name="token_verify"),
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+    # reading + users 
+    path("api/", include("reading.urls")),
+    path("api/user/", include("users.urls")),
+=======
+>>>>>>> Stashed changes
    
     path("api/", include("content_ingestion.urls")),
     path("api/", include("question_generation.urls")),
@@ -25,6 +33,10 @@ urlpatterns = [
     path("api/user/", include("users.urls")),
     
  
+<<<<<<< Updated upstream
+=======
+>>>>>>> origin/merge-read/recalib-wip
+>>>>>>> Stashed changes
 
     # OpenAPI (optional)
     path(

@@ -202,7 +202,7 @@ class Topic(models.Model):
 
     zone = models.ForeignKey(GameZone, on_delete=models.CASCADE, related_name='topics')
     name = models.CharField(max_length=100)
-    slug = models.SlugField(max_length=100, unique=True, blank=True)
+    slug = models.SlugField(blank=True, null=True, unique=True)
     description = models.TextField()
 
     class Meta:

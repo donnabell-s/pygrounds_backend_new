@@ -81,11 +81,23 @@ INSTALLED_APPS = [
     'django_filters',
     'users',
     'content_ingestion',
+<<<<<<< Updated upstream
     'question_generation',
     'user_learning',
     'minigames',
     'reading',
   
+=======
+    #'question_generation',
+    #'user_learning',
+    #'minigames',
+    'reading',
+<<<<<<< HEAD
+    #'minigames',
+=======
+  
+>>>>>>> origin/merge-read/recalib-wip
+>>>>>>> Stashed changes
     
 ]
 
