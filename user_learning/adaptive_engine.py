@@ -4,12 +4,15 @@ from dataclasses import dataclass
 from typing import Dict, List, Optional, Tuple
 import math
 
+from django.db import transaction
 from django.db.models import Avg
 from question_generation.models import PreAssessmentQuestion
 from user_learning.models import (
     UserZoneProgress,
     UserTopicProficiency,
     UserSubtopicMastery,
+    # add this model via the snippet below
+    UserSubtopicLearningRate,
 )
 from content_ingestion.models import Topic, Subtopic, GameZone
 
@@ -92,7 +95,6 @@ def _time_multiplier(entry: dict, is_correct: bool) -> float:
 # -----------------------------------------------------------------------------
 # Difficulty helpers
 # -----------------------------------------------------------------------------
-
 def _norm_diff(d: Optional[str]) -> str:
     if not d:
         return "intermediate"
@@ -108,6 +110,7 @@ def _norm_diff(d: Optional[str]) -> str:
     if d.startswith("mast"):
         return "master"
     return "intermediate"
+
 
 DIFF_ONEHOT = {
     "beginner": (1, 0, 0, 0),
@@ -147,15 +150,39 @@ def bkt_update_once(p_know: float, correct: bool, p: BKTParams) -> float:
     return max(p.min_floor, min(p.max_ceiling, p_next))
 
 
-def bkt_update_weighted(p_know: float, correct: bool, p: BKTParams, weight: float) -> float:
-    rounds = max(1, int(round(max(0.1, weight))))
+# ---- New: fractional-impact update (smooth) ---------------------------------
+def bkt_update_fractional(p_know: float, correct: bool, p: BKTParams, impact: float) -> float:
+    """
+    Apply BKT update 'impact' times, allowing fractional impact via a softened final pass.
+    Keeps semantics of repeated updates but avoids integer rounding artifacts.
+    """
+    import math as _math
+
+    # integer passes
+    rounds = int(max(0, _math.floor(impact)))
     for _ in range(rounds):
         p_know = bkt_update_once(p_know, correct, p)
+
+    # leftover fraction
+    frac = max(0.0, impact - rounds)
+    if frac > 1e-6:
+        # soften learning + forgetting proportionally to frac
+        p_soft = BKTParams(
+            p_L0=p.p_L0,
+            p_T=max(1e-6, min(0.95, p.p_T * frac)),          # scale learning by fraction
+            p_S=p.p_S,
+            p_G=p.p_G,
+            decay_wrong=1.0 - (1.0 - p.decay_wrong) * frac,  # interpolate toward 1.0
+            min_floor=p.min_floor,
+            max_ceiling=p.max_ceiling,
+        )
+        p_know = bkt_update_once(p_know, correct, p_soft)
+
     return p_know
 
 
 # -----------------------------------------------------------------------------
-# PFA-lite
+# PFA-lite (used only for seeding/tuning, not blended to final)
 # -----------------------------------------------------------------------------
 @dataclass
 class PFACoeffs:
@@ -183,22 +210,8 @@ def pfa_prob(wins: float, fails: float, difficulty: str, c: PFACoeffs) -> float:
 
 
 # -----------------------------------------------------------------------------
-# Blending
-# -----------------------------------------------------------------------------
-
-def blend_alpha(num_attempts: float) -> float:
-    return max(0.20, min(0.80, 0.20 + 0.06 * num_attempts))
-
-
-def hybrid_mastery(p_bkt: float, p_pfa: float, n: float) -> float:
-    a = blend_alpha(n)
-    return a * p_bkt + (1.0 - a) * p_pfa
-
-
-# -----------------------------------------------------------------------------
 # Utilities
 # -----------------------------------------------------------------------------
-
 def _mistakes_from_entry(entry: dict) -> int:
     for key in ("mistakes", "mistake_count", "num_mistakes", "attempts_before_correct", "attempts"):
         if key in entry and entry[key] is not None:
@@ -227,20 +240,88 @@ def _get_mapping_from_question(entry: dict) -> Tuple[List[int], List[int]]:
 
 
 # -----------------------------------------------------------------------------
-# Recalibration (time-aware via session elapsed only)
+# Individualization helpers (PFA -> BKT seeding/tuning) + EMA persistence
 # -----------------------------------------------------------------------------
+def _pfa_seed_prior_or_default(
+    existing_mastery_pct: Optional[float],
+    wins: float,
+    fails: float,
+    difficulty: str,
+    pfa: PFACoeffs,
+    base_prior: float,
+) -> float:
+    """
+    Choose an initial p(L0) for BKT:
+      1) If we already have an existing mastery percent for this subtopic, use it (scaled 0..1).
+      2) Else, if there is any practice signal in this batch (wins/fails), use PFA as a prior.
+      3) Else, fall back to the base prior.
+    """
+    if existing_mastery_pct is not None:
+        return max(0.0, min(1.0, float(existing_mastery_pct) / 100.0))
+    if (wins + fails) > 0.0:
+        return pfa_prob(wins, fails, difficulty, pfa)
+    return float(base_prior)
 
+
+def _lr_mult_from_practice(wins: float, fails: float) -> float:
+    """
+    Bounded per-learner learning-rate multiplier in [0.5, 1.5] from practice balance.
+    - perf in [-1..+1] where +1 means all wins, -1 all fails.
+    """
+    n = max(1.0, wins + fails)
+    perf = (wins - fails) / n  # [-1..+1]
+    alpha = 0.5  # scale
+    m = 1.0 + alpha * perf     # [0.5..1.5]
+    return max(0.5, min(1.5, m))
+
+
+def _ema_update(old: float, new: float, alpha: float) -> float:
+    # classic EMA: newer value has weight alpha
+    return (1.0 - alpha) * old + alpha * new
+
+
+def _load_pT_scale(user, subtopic_obj: Subtopic, default=1.0) -> float:
+    rec = UserSubtopicLearningRate.objects.filter(user=user, subtopic=subtopic_obj).only('pT_scale').first()
+    return float(rec.pT_scale) if rec else float(default)
+
+
+@transaction.atomic
+def _save_pT_scale(user, subtopic_obj: Subtopic, new_scale: float, alpha: float = 0.2):
+    rec, _ = UserSubtopicLearningRate.objects.select_for_update().get_or_create(
+        user=user, subtopic=subtopic_obj, defaults={'pT_scale': 1.0, 'count': 0}
+    )
+    # bound and EMA
+    new_scale = max(0.5, min(1.5, new_scale))
+    if rec.count == 0:
+        rec.pT_scale = new_scale
+        rec.count = 1
+    else:
+        rec.pT_scale = _ema_update(rec.pT_scale, new_scale, alpha)
+        rec.count += 1
+    rec.save()
+
+
+# -----------------------------------------------------------------------------
+# Recalibration (Individualized BKT core, time-aware)
+# -----------------------------------------------------------------------------
 def recalibrate_topic_proficiency(user, results: list):
-    """Time effect is session-level only; no model changes required."""
-    per_subtopic_state: Dict[int, Dict[str, float]] = {}
+    """
+    Individualized-BKT core:
+      - PFA-like signals seed p(L0) and modulate p(T) per student.
+      - Final mastery is BKT-only (no blending with PFA output).
+      - Time/game weights remain in effect (session-level time multiplier).
+      - Persist per-user×subtopic learning rate with EMA for stability across sessions.
+    """
+    per_subtopic_state: Dict[int, Dict[str, object]] = {}
 
+    # Load existing mastery (used to seed priors when available)
     existing_mastery: Dict[int, float] = {
-        m.subtopic_id: (m.mastery_level or 0.0) / 100.0
+        m.subtopic_id: (m.mastery_level or 0.0)  # store as 0..100
         for m in UserSubtopicMastery.objects.filter(user=user).only("subtopic_id", "mastery_level")
     }
 
-    bkt = BKTParams()
-    pfa = PFACoeffs()
+    base_bkt = BKTParams()   # global baselines
+    pfa = PFACoeffs()        # used only for seeding/tuning, not for final blending
 
     for entry in results or []:
         is_correct = bool(entry.get("is_correct", False))
@@ -259,37 +340,79 @@ def recalibrate_topic_proficiency(user, results: list):
         for s_id in subtopic_ids:
             st = per_subtopic_state.get(s_id)
             if st is None:
-                seed = existing_mastery.get(s_id, bkt.p_L0)
+                subtopic_obj = Subtopic.objects.filter(id=s_id).first()
+                if not subtopic_obj:
+                    continue
+                # Build the state once per subtopic for this batch
                 st = per_subtopic_state[s_id] = {
                     "wins": 0.0,
                     "fails": 0.0,
                     "attempts": 0.0,
-                    "p_bkt": float(seed),
+                    "p_bkt": None,            # initialized after we have (wins/fails) seed
+                    "p_L0_seeded": False,     # whether we've seeded p(L0) explicitly
+                    "subtopic_obj": subtopic_obj,
+                    # persisted long-term scale loaded once per batch
+                    "pT_scale_persisted": _load_pT_scale(user, subtopic_obj),
                 }
 
-            st["p_bkt"] = bkt_update_weighted(st["p_bkt"], is_correct, bkt, impact)
-            st["attempts"] += impact
+            # Update PFA-like counters first (so seeding/tuning can see prior practice)
+            st["attempts"] = float(st["attempts"]) + impact
             if is_correct:
-                st["wins"] += impact
-                st["fails"] += impact * extra_fails
+                st["wins"] = float(st["wins"]) + impact
+                st["fails"] = float(st["fails"]) + impact * extra_fails
             else:
-                st["fails"] += impact * (1 + extra_fails)
+                st["fails"] = float(st["fails"]) + impact * (1 + extra_fails)
 
-    for s_id, st in per_subtopic_state.items():
-        p_pfa = pfa_prob(st["wins"], st["fails"], "intermediate", pfa)
-        p_bkt = float(st["p_bkt"])
-        attempts = float(st["attempts"])
-        p_mastery = hybrid_mastery(p_bkt, p_pfa, attempts)
-        pct = max(0.0, min(100.0, 100.0 * p_mastery))
+            # Seed p(L0) once: prefer existing mastery, else PFA signal, else base prior
+            if not st["p_L0_seeded"]:
+                seeded = _pfa_seed_prior_or_default(
+                    existing_mastery_pct=existing_mastery.get(s_id),
+                    wins=float(st["wins"]),
+                    fails=float(st["fails"]),
+                    difficulty=difficulty,
+                    pfa=pfa,
+                    base_prior=base_bkt.p_L0,
+                )
+                st["p_bkt"] = float(seeded)
+                st["p_L0_seeded"] = True
 
-        subtopic = Subtopic.objects.filter(id=s_id).first()
-        if subtopic:
-            UserSubtopicMastery.objects.update_or_create(
-                user=user,
-                subtopic=subtopic,
-                defaults={"mastery_level": pct},
+            # Build individualized BKT params for this learner & subtopic step
+            # - combine persisted pT scale with within-batch multiplier (geometric mean)
+            lr_mult_batch = _lr_mult_from_practice(float(st["wins"]), float(st["fails"]))
+            lr_mult_persisted = max(0.5, min(1.5, float(st["pT_scale_persisted"])))
+            lr_mult_combined = math.sqrt(lr_mult_persisted * lr_mult_batch)
+
+            p_step = BKTParams(
+                p_L0=float(st["p_bkt"]),   # doc only; running value used below
+                p_T=max(1e-4, min(0.95, base_bkt.p_T * lr_mult_combined)),
+                p_S=base_bkt.p_S,
+                p_G=base_bkt.p_G,
+                decay_wrong=base_bkt.decay_wrong,
+                min_floor=base_bkt.min_floor,
+                max_ceiling=base_bkt.max_ceiling,
             )
 
+            # Smooth BKT update (fractional impact)
+            st["p_bkt"] = bkt_update_fractional(float(st["p_bkt"]), is_correct, p_step, impact)
+
+    # Persist subtopic masteries (BKT only) + update EMA of pT_scale
+    for s_id, st in per_subtopic_state.items():
+        p_mastery = float(st["p_bkt"]) if st["p_bkt"] is not None else base_bkt.p_L0
+        pct = max(0.0, min(100.0, 100.0 * p_mastery))
+
+        subtopic_obj: Subtopic = st["subtopic_obj"]  # already fetched
+        # session-level recommended scale from observed batch
+        session_scale = _lr_mult_from_practice(float(st["wins"]), float(st["fails"]))
+        combined = math.sqrt(max(0.5, min(1.5, float(st["pT_scale_persisted"]))) * session_scale)
+        _save_pT_scale(user, subtopic_obj, combined, alpha=0.2)
+
+        UserSubtopicMastery.objects.update_or_create(
+            user=user,
+            subtopic=subtopic_obj,
+            defaults={"mastery_level": pct},
+        )
+
+    # Roll up to topics
     for topic in Topic.objects.all():
         topic_subtopics = Subtopic.objects.filter(topic=topic)
         avg_mastery = (
@@ -303,6 +426,7 @@ def recalibrate_topic_proficiency(user, results: list):
             defaults={"proficiency_percent": avg_mastery},
         )
 
+    # Roll up to zones
     for zone in GameZone.objects.all().order_by("order"):
         zone_topics = Topic.objects.filter(zone=zone)
         avg_proficiency = (
