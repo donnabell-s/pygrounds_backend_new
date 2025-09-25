@@ -9,10 +9,6 @@ Usage: python populate_zones.py
 import os
 import sys
 import django
-from dotenv import load_dotenv
-
-# Load environment variables from .env for cross-platform compatibility
-load_dotenv()
 
 # Add the parent directory to the Python path so we can import pygrounds_backend_new
 current_dir = os.path.dirname(os.path.abspath(__file__))

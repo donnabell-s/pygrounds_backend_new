@@ -2,6 +2,7 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import AllowAny  # swap to IsAdminUser for prod
 from rest_framework import filters
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 from reading.models import Topic, Subtopic, ReadingMaterial
@@ -18,6 +19,9 @@ from reading.models import Topic, Subtopic, ReadingMaterial
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+from reading.models import Topic, Subtopic, ReadingMaterial
+>>>>>>> f82fa88 (Revert "reading based on content ingestion with admin crud")
 from .serializers import (
     TopicAdminSerializer,
     SubtopicAdminSerializer,
@@ -25,6 +29,7 @@ from .serializers import (
 )
 
 class TopicAdminViewSet(ModelViewSet):
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
     queryset = Topic.objects.all().order_by("name", "id")
@@ -40,6 +45,9 @@ class TopicAdminViewSet(ModelViewSet):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+    queryset = Topic.objects.all().order_by("name", "id")
+>>>>>>> f82fa88 (Revert "reading based on content ingestion with admin crud")
     serializer_class = TopicAdminSerializer
     permission_classes = [AllowAny]
     http_method_names = ["get", "post", "put", "patch", "delete", "head", "options"]
@@ -48,6 +56,7 @@ class TopicAdminViewSet(ModelViewSet):
     ordering_fields = ["name", "slug", "id"]
     ordering = ["name", "id"]
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 class SubtopicAdminViewSet(ModelViewSet):
@@ -70,6 +79,11 @@ class SubtopicAdminViewSet(ModelViewSet):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+class SubtopicAdminViewSet(ModelViewSet):
+    queryset = (
+        Subtopic.objects.select_related("topic")
+>>>>>>> f82fa88 (Revert "reading based on content ingestion with admin crud")
         .all()
         .order_by("topic__name", "order_in_topic", "name", "id")
     )
@@ -81,6 +95,7 @@ class SubtopicAdminViewSet(ModelViewSet):
     ordering_fields = ["name", "slug", "order_in_topic", "id", "topic__name"]
     ordering = ["topic__name", "order_in_topic", "name", "id"]
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
@@ -94,6 +109,8 @@ class SubtopicAdminViewSet(ModelViewSet):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> f82fa88 (Revert "reading based on content ingestion with admin crud")
 class AdminReadingMaterialViewSet(ModelViewSet):
     queryset = (
         ReadingMaterial.objects
@@ -105,6 +122,7 @@ class AdminReadingMaterialViewSet(ModelViewSet):
     permission_classes = [AllowAny]
     http_method_names = ["get", "post", "put", "patch", "delete", "head", "options"]
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
     search_fields = ["title", "content", "topic_ref__name", "subtopic_ref__name", "topic_ref__slug", "subtopic_ref__slug"]
@@ -131,4 +149,8 @@ class AdminReadingMaterialViewSet(ModelViewSet):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+    search_fields = ["title", "content", "topic_ref__name", "subtopic_ref__name", "topic_ref__slug", "subtopic_ref__slug"]
+    ordering_fields = ["title", "order_in_topic", "id", "topic_ref__name", "subtopic_ref__order_in_topic", "created_at", "updated_at"]
+>>>>>>> f82fa88 (Revert "reading based on content ingestion with admin crud")
     ordering = ["topic_ref__name", "subtopic_ref__order_in_topic", "order_in_topic", "title", "id"]

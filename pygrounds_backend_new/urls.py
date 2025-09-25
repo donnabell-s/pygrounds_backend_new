@@ -14,6 +14,7 @@ urlpatterns = [
     path("api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("api/token/verify/", TokenVerifyView.as_view(), name="token_verify"),
 
+<<<<<<< HEAD
 
     # App APIs
     path("api/", include("reading.urls")),
@@ -23,6 +24,9 @@ urlpatterns = [
     path("api/", include("reading.urls")),
     path("api/user/", include("users.urls")),
 
+=======
+   
+>>>>>>> f82fa88 (Revert "reading based on content ingestion with admin crud")
     path("api/", include("content_ingestion.urls")),
     path("api/", include("question_generation.urls")),
     path("api/", include("user_learning.urls")),
@@ -36,6 +40,10 @@ urlpatterns = [
     path("api/user/", include("users.urls")),
     
  
+<<<<<<< HEAD
+=======
+
+>>>>>>> f82fa88 (Revert "reading based on content ingestion with admin crud")
     # OpenAPI (optional)
     path(
         "api/schema/",

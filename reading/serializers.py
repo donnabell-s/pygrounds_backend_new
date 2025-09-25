@@ -1,5 +1,6 @@
 from django.utils.text import slugify
 from rest_framework import serializers
+<<<<<<< HEAD
 
 from content_ingestion.models import Topic as CITopic, Subtopic as CISubtopic
 from reading.models import ReadingMaterial
@@ -28,6 +29,9 @@ class SubtopicSerializer(serializers.ModelSerializer):
         model = Subtopic
         fields = ["id", "name", "slug", "order_in_topic"]
 <<<<<<< Updated upstream
+=======
+from reading.models import Topic, Subtopic, ReadingMaterial
+>>>>>>> f82fa88 (Revert "reading based on content ingestion with admin crud")
 
 class TopicSerializer(serializers.ModelSerializer):
     class Meta:
@@ -99,6 +103,7 @@ class IdOnlySerializer(serializers.Serializer):
 class TopicAdminSerializer(serializers.ModelSerializer):
     slug = serializers.CharField(required=False, allow_blank=True, default="")
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
@@ -116,14 +121,17 @@ class TopicAdminSerializer(serializers.ModelSerializer):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> f82fa88 (Revert "reading based on content ingestion with admin crud")
     class Meta:
-        model = CITopic
+        model = Topic
         fields = ["id", "name", "slug"]
 
     def validate(self, attrs):
         name = (attrs.get("name") or getattr(self.instance, "name", "") or "").strip()
         if not name:
             raise serializers.ValidationError({"name": "Name is required."})
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
@@ -142,11 +150,14 @@ class TopicAdminSerializer(serializers.ModelSerializer):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> f82fa88 (Revert "reading based on content ingestion with admin crud")
         s = slugify(attrs.get("slug") or name)
 
         qs = Topic.objects.all()
         if self.instance:
             qs = qs.exclude(pk=self.instance.pk)
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
@@ -155,6 +166,8 @@ class TopicAdminSerializer(serializers.ModelSerializer):
 =======
 >>>>>>> origin/merge-read/recalib-wip
 >>>>>>> Stashed changes
+=======
+>>>>>>> f82fa88 (Revert "reading based on content ingestion with admin crud")
         if qs.filter(name__iexact=name).exists():
             raise serializers.ValidationError({"name": "A topic with this name already exists."})
         if qs.filter(slug__iexact=s).exists():
@@ -166,6 +179,7 @@ class TopicAdminSerializer(serializers.ModelSerializer):
 
 
 class SubtopicAdminSerializer(serializers.ModelSerializer):
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
@@ -184,6 +198,8 @@ class SubtopicAdminSerializer(serializers.ModelSerializer):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> f82fa88 (Revert "reading based on content ingestion with admin crud")
     topic = serializers.PrimaryKeyRelatedField(queryset=Topic.objects.all())
     slug = serializers.CharField(required=False, allow_blank=True, default="")
 
@@ -193,6 +209,7 @@ class SubtopicAdminSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             "slug": {"required": False, "allow_blank": True, "default": ""},
         }
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
@@ -201,6 +218,8 @@ class SubtopicAdminSerializer(serializers.ModelSerializer):
 =======
 >>>>>>> origin/merge-read/recalib-wip
 >>>>>>> Stashed changes
+=======
+>>>>>>> f82fa88 (Revert "reading based on content ingestion with admin crud")
 
     def validate(self, attrs):
         topic = attrs.get("topic") or getattr(self.instance, "topic", None)
@@ -212,6 +231,7 @@ class SubtopicAdminSerializer(serializers.ModelSerializer):
 
         s = slugify(attrs.get("slug") or name)
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
         qs = Subtopic.objects.filter(topic=topic, slug__iexact=s)
@@ -227,6 +247,9 @@ class SubtopicAdminSerializer(serializers.ModelSerializer):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+        qs = Subtopic.objects.filter(topic=topic, slug__iexact=s)
+>>>>>>> f82fa88 (Revert "reading based on content ingestion with admin crud")
         if self.instance:
             qs = qs.exclude(pk=self.instance.pk)
         if qs.exists():
