@@ -13,8 +13,7 @@ urlpatterns = [
     path("api/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("api/token/verify/", TokenVerifyView.as_view(), name="token_verify"),
-
-<<<<<<< HEAD
+    
 
     # App APIs
     path("api/", include("reading.urls")),
@@ -23,10 +22,7 @@ urlpatterns = [
     # reading + users 
     path("api/", include("reading.urls")),
     path("api/user/", include("users.urls")),
-
-=======
    
->>>>>>> f82fa88 (Revert "reading based on content ingestion with admin crud")
     path("api/", include("content_ingestion.urls")),
     path("api/", include("question_generation.urls")),
     path("api/", include("user_learning.urls")),
@@ -34,16 +30,21 @@ urlpatterns = [
 
 
     # OpenAPI Documentation
-
+    path(
+        "api/schema/",
+        get_schema_view(
+            title="PyGrounds API",
+            description="Reading + Admin CRUD",
+            version="1.0.0",
+            renderer_classes=[JSONOpenAPIRenderer],
+        ),
+        name="openapi-schema",
+    ),
     # reading + users 
     path("api/", include("reading.urls")),
     path("api/user/", include("users.urls")),
-    
- 
-<<<<<<< HEAD
-=======
 
->>>>>>> f82fa88 (Revert "reading based on content ingestion with admin crud")
+    
     # OpenAPI (optional)
     path(
         "api/schema/",

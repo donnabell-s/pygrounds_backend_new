@@ -1,5 +1,7 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
+from reading.admin_views import TopicAdminViewSet, SubtopicAdminViewSet, AdminReadingMaterialViewSet
+
 
 from .views import (
     ReadingMaterialViewSet,
@@ -9,11 +11,7 @@ from .views import (
     SubtopicListByTopicView,
     MaterialsByTopicSubtopicView,
 )
-from .admin_views import (
-    TopicAdminViewSet,
-    SubtopicAdminViewSet,
-    AdminReadingMaterialViewSet,
-)
+
 
 public_router = DefaultRouter()
 public_router.register(r"reading-materials", ReadingMaterialViewSet, basename="reading-material")
