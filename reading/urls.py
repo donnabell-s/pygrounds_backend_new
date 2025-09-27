@@ -8,9 +8,16 @@ from .views import (
     TopicViewSet,
     TopicTOC,
     TopicListView,
+    SubtopicViewSet,
     SubtopicListByTopicView,
     MaterialsByTopicSubtopicView,
 )
+
+
+public_router = DefaultRouter()
+public_router.register(r"reading-materials", ReadingMaterialViewSet, basename="reading-material")
+public_router.register(r"topics", TopicViewSet, basename="topic")
+public_router.register(r"subtopics", SubtopicViewSet, basename="subtopic")
 
 
 public_router = DefaultRouter()
