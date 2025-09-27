@@ -48,7 +48,7 @@ class TopicViewSet(viewsets.ReadOnlyModelViewSet):
     def get_queryset(self):
         return (
             Topic.objects
-            .annotate(subtopics_count=Count("subtopic_set"))
+            .annotate(subtopics_count=Count("subtopics"))
             .order_by("zone__order", "id")
         )
 
@@ -161,7 +161,7 @@ class TopicListView(APIView):
     def get(self, request):
         topics = (
             Topic.objects
-            .annotate(subtopics_count=Count("subtopic_set"))
+            .annotate(subtopics_count=Count("subtopics"))
             .order_by("name")
             .values("id", "name", "slug", "subtopics_count")
         )
