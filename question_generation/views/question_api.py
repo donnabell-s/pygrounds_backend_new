@@ -23,24 +23,112 @@ from ..helpers.generation_status import generation_status_tracker
 import logging
 logger = logging.getLogger(__name__)
 
+
+def run_subtopic_specific_generation(subtopic_ids, difficulty_levels, num_questions_per_subtopic, game_type, session_id):
+    """
+    Generate questions for specific subtopics across multiple difficulties.
+    """
+    from concurrent.futures import ThreadPoolExecutor
+    from itertools import combinations
+    
+    # Get the specific subtopics
+    subtopics = list(Subtopic.objects.filter(id__in=subtopic_ids).select_related('topic__zone'))
+    
+    if not subtopics:
+        raise ValueError("No subtopics found for the provided IDs")
+    
+    # Update session status
+    total_combinations = 0
+    for combination_size in range(1, min(4, len(subtopics) + 1)):  # Singles, pairs, trios
+        total_combinations += len(list(combinations(subtopics, combination_size)))
+    
+    total_tasks = total_combinations * len(difficulty_levels)
+    
+    generation_status_tracker.update_status(session_id, {
+        'status': 'processing',
+        'total_tasks': total_tasks,
+        'completed_tasks': 0
+    })
+    
+    # Process each combination of subtopics for each difficulty
+    completed_tasks = 0
+    successful_tasks = 0
+    total_questions = 0
+    
+    for difficulty in difficulty_levels:
+        for combination_size in range(1, min(4, len(subtopics) + 1)):
+            for subtopic_combination in combinations(subtopics, combination_size):
+                try:
+                    # Check for cancellation
+                    if generation_status_tracker.is_session_cancelled(session_id):
+                        break
+                        
+                    result = generate_questions_for_subtopic_combination(
+                        subtopic_combination=list(subtopic_combination),
+                        difficulty=difficulty,
+                        num_questions=num_questions_per_subtopic,
+                        game_type=game_type,
+                        zone=subtopic_combination[0].topic.zone,  # Use the zone from first subtopic
+                        session_id=session_id
+                    )
+                    
+                    if result['success']:
+                        successful_tasks += 1
+                        total_questions += result.get('questions_saved', 0)
+                    
+                    completed_tasks += 1
+                    
+                    # Update status
+                    generation_status_tracker.update_status(session_id, {
+                        'completed_tasks': completed_tasks,
+                        'successful_tasks': successful_tasks,
+                        'total_questions': total_questions
+                    })
+                    
+                except Exception as e:
+                    logger.error(f"Error processing subtopic combination: {str(e)}")
+                    completed_tasks += 1
+    
+    # Final status update
+    generation_status_tracker.update_status(session_id, {
+        'status': 'completed',
+        'completed_tasks': completed_tasks,
+        'successful_tasks': successful_tasks,
+        'total_questions': total_questions
+    })
+
+
 @api_view(['POST'])
 def generate_questions_bulk(request):
-    # Bulk question generation endpoint
-    # Parameters:
-    # - game_type: 'coding' or 'non_coding' (required)
-    # - difficulty_levels: ['beginner', 'intermediate', etc] (required)
-    # - num_questions_per_subtopic: int (required)
-    # - zone_ids: [int] or null (optional)
-    # - topic_ids: [int] or null (optional)
-    # - subtopic_ids: [int] or null (optional)
+    """
+    Generate coding or non-coding questions for specific subtopics.
+    
+    Expected JSON:
+    {
+        "game_type": "coding" | "non_coding",
+        "difficulty_levels": ["beginner", "intermediate", "advanced", "master"],
+        "num_questions_per_subtopic": 5,
+        "subtopic_ids": [7, 8, 9, 10, 11] | undefined
+    }
+    """
     try:
-        # Extract parameters
-        game_type = request.data.get('game_type', 'non_coding')
-        difficulty_levels = request.data.get('difficulty_levels', ['beginner', 'intermediate', 'advanced', 'master'])
-        num_questions_per_subtopic = int(request.data.get('num_questions_per_subtopic', 2))
-        zone_ids = request.data.get('zone_ids')
+        # Extract parameters matching frontend format
+        game_type = request.data.get('game_type')
+        difficulty_levels = request.data.get('difficulty_levels')
+        num_questions_per_subtopic = int(request.data.get('num_questions_per_subtopic', 5))
+        subtopic_ids = request.data.get('subtopic_ids')
         
-        # Validate parameters
+        # Validate required parameters
+        if not game_type:
+            return Response({
+                'error': 'game_type is required'
+            }, status=status.HTTP_400_BAD_REQUEST)
+            
+        if not difficulty_levels:
+            return Response({
+                'error': 'difficulty_levels is required'
+            }, status=status.HTTP_400_BAD_REQUEST)
+            
         valid_game_types = ['coding', 'non_coding']
         valid_difficulties = ['beginner', 'intermediate', 'advanced', 'master']
         
@@ -54,12 +142,19 @@ def generate_questions_bulk(request):
                 'error': f'Invalid difficulty levels. Must be from: {valid_difficulties}'
             }, status=status.HTTP_400_BAD_REQUEST)
         
-        # Get zones to process
-        if zone_ids:
-            zones = GameZone.objects.filter(id__in=zone_ids).order_by('order')
+        # Get subtopics and their zones
+        if subtopic_ids:
+            subtopics = Subtopic.objects.filter(id__in=subtopic_ids).select_related('topic__zone')
+            if not subtopics.exists():
+                return Response({
+                    'error': 'No subtopics found for the provided IDs'
+                }, status=status.HTTP_404_NOT_FOUND)
+            # Get unique zones from the selected subtopics
+            zones = GameZone.objects.filter(topics__subtopics__in=subtopics).distinct().order_by('order')
         else:
+            # If no subtopic_ids provided, process all zones
             zones = GameZone.objects.all().order_by('order')
-        
+            
         if not zones.exists():
             return Response({
                 'error': 'No zones found for processing'
@@ -84,13 +179,24 @@ def generate_questions_bulk(request):
         import threading
         def run_generation():
             try:
-                run_multithreaded_generation(
-                    zones=zones,
-                    difficulty_levels=difficulty_levels,
-                    num_questions_per_subtopic=num_questions_per_subtopic,
-                    game_type=game_type,
-                    session_id=session_id
-                )
+                if subtopic_ids:
+                    # Generate questions for specific subtopics
+                    run_subtopic_specific_generation(
+                        subtopic_ids=subtopic_ids,
+                        difficulty_levels=difficulty_levels,
+                        num_questions_per_subtopic=num_questions_per_subtopic,
+                        game_type=game_type,
+                        session_id=session_id
+                    )
+                else:
+                    # Generate questions for all zones (existing behavior)
+                    run_multithreaded_generation(
+                        zones=zones,
+                        difficulty_levels=difficulty_levels,
+                        num_questions_per_subtopic=num_questions_per_subtopic,
+                        game_type=game_type,
+                        session_id=session_id
+                    )
             except Exception as e:
                 logger.error(f"Generation failed for session {session_id}: {str(e)}")
                 generation_status_tracker.update_status(session_id, {
@@ -125,8 +231,9 @@ def generate_pre_assessment(request):
     """
     Generate pre-assessment questions covering multiple topics asynchronously.
     
-    POST {
-        "topic_ids": [1, 2, 3] (optional - if not provided, uses all topics),
+    Expected JSON:
+    {
+        "topic_ids": [1, 2, 3] | undefined,
         "total_questions": 20
     }
     
@@ -135,7 +242,15 @@ def generate_pre_assessment(request):
     try:
         # Get parameters
         topic_ids = request.data.get('topic_ids')
-        total_questions = int(request.data.get('total_questions', 20))
+        total_questions = request.data.get('total_questions')
+        
+        # Validate required parameters
+        if not total_questions:
+            return Response({
+                'error': 'total_questions is required'
+            }, status=status.HTTP_400_BAD_REQUEST)
+            
+        total_questions = int(total_questions)
         
         # Get topics
         if topic_ids:

@@ -125,6 +125,7 @@ def format_question_for_game_type(question_data: Dict[str, Any], game_type: str)
             'question_text': question_data.get('question_text', ''),
             'answer': question_data.get('answer', question_data.get('correct_answer', '')),
             'difficulty': question_data.get('difficulty', ''),
+            
         }
 
 
@@ -144,7 +145,8 @@ def validate_question_data(question_data: Dict[str, Any], game_type: str, seen_f
     
     if game_type == 'coding':
         required_fields.extend([
-            'function_name', 'sample_input', 'sample_output', 'buggy_code'
+            'function_name', 'sample_input', 'sample_output', 'buggy_code',
+            'explanation', 'buggy_explanation'
             # Temporarily removed: 'correct_code', 'buggy_correct_code'
         ])
         
@@ -156,7 +158,7 @@ def validate_question_data(question_data: Dict[str, Any], game_type: str, seen_f
                 return False
             seen_function_names.add(function_name)
     else:  # non-coding questions
-        required_fields.append('answer')  # answer is required for non-coding questions
+        required_fields.extend(['answer', 'explanation'])  # answer and explanation are required for non-coding questions
     
     # Check required fields
     for field in required_fields:

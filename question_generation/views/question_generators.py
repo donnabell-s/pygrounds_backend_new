@@ -1,8 +1,3 @@
-# Specialized endpoints for generating specific types of questions:
-# - Preassessment questions only
-# - Coding questions only
-# - Non-coding questions only
-
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
@@ -21,10 +16,10 @@ logger = logging.getLogger(__name__)
 
 @api_view(['POST'])
 def generate_preassessment_only(request):
-    # Generate preassessment questions for a topic
+    # Preassessment generation
     # Parameters:
-    # - topic_id (int, required): Topic to generate questions for
-    # - count (int, optional): Number of questions to generate (default: 5)
+    # - topic_id (int): array of topic ids ,set name REQ
+    # - count (int): num of questions to ratio according to list of topics
     try:
         topic_id = request.data.get('topic_id')
         count = request.data.get('count', 5)
@@ -52,10 +47,10 @@ def generate_preassessment_only(request):
 
 @api_view(['POST'])
 def generate_coding_questions_only(request):
-    # Generate coding questions for a subtopic
+    # Minigames coding questions
     # Parameters:
-    # - subtopic_id (int, required): Subtopic to generate questions for
-    # - count (int, optional): Number of questions to generate (default: 3)
+    # - subtopic_id (int): array of subtopici ids   
+    # - count (int): num of questions per subtopic: 
     try:
         subtopic_id = request.data.get('subtopic_id')
         count = request.data.get('count', 3)
@@ -89,10 +84,10 @@ def generate_coding_questions_only(request):
 
 @api_view(['POST'])
 def generate_noncoding_questions_only(request):
-    # Generate non-coding questions for a subtopic
+    # Minigames Non coding
     # Parameters:
-    # - subtopic_id (int, required): Subtopic to generate questions for
-    # - count (int, optional): Number of questions to generate (default: 3)
+    # - subtopic_id (int):array of subtopic ids
+    # - count (int): num of questions
     try:
         subtopic_id = request.data.get('subtopic_id')
         count = request.data.get('count', 3)
