@@ -26,7 +26,11 @@ from .views.question_generators import (
 from .views.question_api import (
     generate_questions_bulk,
     generate_pre_assessment,
-    get_rag_context,
+    get_generation_estimate,
+    get_rag_context
+)
+
+from .helpers.ui_processes import (
     get_generation_status,
     get_worker_details,
     cancel_generation
@@ -53,6 +57,7 @@ urlpatterns = [
     # ========== QUESTION GENERATION API ==========
     # Batch Generation
     path('generate/bulk/', generate_questions_bulk, name='generate-questions-bulk'),
+    path('generate/estimate/', get_generation_estimate, name='get-generation-estimate'),
     
     # Pre-assessment Generation
     path('generate/preassessment/', generate_pre_assessment, name='generate-preassessment'),

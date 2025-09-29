@@ -9,11 +9,92 @@ from datetime import datetime
 from django.db import transaction
 from typing import List, Dict, Any, Optional, Tuple
 
+# Cross-platform file locking
+try:
+    import fcntl
+    HAS_FCNTL = True
+except ImportError:
+    # Windows doesn't have fcntl, use alternative approach
+    import msvcrt
+    HAS_FCNTL = False
+
+def write_json_safely(filepath: str, data: list, question_type: str = "question"):
+    """
+    Cross-platform safe JSON file writing with immediate disk sync.
+    
+    Args:
+        filepath: Path to JSON file
+        data: List of data to write
+        question_type: Type of question for logging
+    """
+    try:
+        if HAS_FCNTL:
+            # Unix/Linux/Mac - use fcntl
+            with open(filepath, 'r+', encoding='utf-8') as f:
+                fcntl.flock(f.fileno(), fcntl.LOCK_EX)
+                
+                try:
+                    f.seek(0)
+                    existing_data = json.load(f)
+                except (json.JSONDecodeError, ValueError):
+                    existing_data = []
+                
+                existing_data.extend(data if isinstance(data, list) else [data])
+                
+                f.seek(0)
+                f.truncate()
+                json.dump(existing_data, f, indent=2, ensure_ascii=False)
+                f.flush()
+                os.fsync(f.fileno())
+                
+                return len(existing_data)
+        else:
+            # Windows - use simple file operations with retry
+            for attempt in range(3):
+                try:
+                    # Read existing data
+                    if os.path.exists(filepath):
+                        with open(filepath, 'r', encoding='utf-8') as f:
+                            try:
+                                existing_data = json.load(f)
+                            except (json.JSONDecodeError, ValueError):
+                                existing_data = []
+                    else:
+                        existing_data = []
+                    
+                    # Append new data
+                    existing_data.extend(data if isinstance(data, list) else [data])
+                    
+                    # Write atomically using temp file
+                    import tempfile
+                    temp_path = filepath + '.tmp'
+                    with open(temp_path, 'w', encoding='utf-8') as f:
+                        json.dump(existing_data, f, indent=2, ensure_ascii=False)
+                        f.flush()
+                        os.fsync(f.fileno())
+                    
+                    # Atomic move (Windows)
+                    if os.path.exists(filepath):
+                        os.remove(filepath)
+                    os.rename(temp_path, filepath)
+                    
+                    return len(existing_data)
+                    
+                except (IOError, OSError) as e:
+                    if attempt == 2:  # Last attempt
+                        raise
+                    import time
+                    time.sleep(0.1)  # Brief delay before retry
+                    
+    except Exception as e:
+        print(f"❌ Error in write_json_safely: {e}")
+        raise
+
 
 def export_question_to_json(question_obj, game_type: str):
     """
     Export a single question to the appropriate JSON file in question_outputs folder.
-    Uses a single file per game type with session timestamp.
+    Real-time appending with immediate file updates for live progress tracking.
     
     Args:
         question_obj: GeneratedQuestion instance
@@ -24,63 +105,108 @@ def export_question_to_json(question_obj, game_type: str):
         output_dir = os.path.join(os.path.dirname(__file__), '..', '..', 'question_outputs')
         os.makedirs(output_dir, exist_ok=True)
         
-        # Use a simple filename format - one file per game type per session
-        # We'll create/reuse files with today's date
-        date_str = datetime.now().strftime("%Y%m%d")
+        # Create session-based filename that persists during generation
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = f"{game_type}_{timestamp}.json"
+        filepath = os.path.join(output_dir, filename)
         
-        # Find the most recent file for this game type and date, or create a new one
-        pattern = f"{game_type}_{date_str}_*.json"
+        # For session continuity, check if there's a recent file (within last hour)
         import glob
+        import time
+        pattern = f"{game_type}_*.json"
         existing_files = glob.glob(os.path.join(output_dir, pattern))
         
-        if existing_files:
-            # Use the most recent file
-            filepath = max(existing_files, key=os.path.getctime)
+        # Find the most recent file that's less than 1 hour old
+        current_time = time.time()
+        recent_file = None
+        for existing_file in existing_files:
+            file_time = os.path.getctime(existing_file)
+            if (current_time - file_time) < 3600:  # 1 hour
+                if not recent_file or file_time > os.path.getctime(recent_file):
+                    recent_file = existing_file
+        
+        if recent_file:
+            filepath = recent_file
+        
+        # Prepare enhanced question data for JSON export with different structures for coding vs non-coding
+        if game_type == 'non_coding':
+            # For non-coding questions, only include essential game_data to reduce redundancy
+            minimal_game_data = {
+                'explanation': question_obj.game_data.get('explanation', '') if question_obj.game_data else '',
+                'generation_timestamp': question_obj.game_data.get('generation_timestamp', '') if question_obj.game_data else datetime.now().isoformat()
+            }
         else:
-            # Create a new file with current timestamp
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            filename = f"{game_type}_{timestamp}.json"
-            filepath = os.path.join(output_dir, filename)
+            # For coding questions, organize into grouped structure and remove redundant fields
+            game_data = question_obj.game_data if question_obj.game_data else {}
+            
+            # Group normal coding fields together
+            normal_version = {
+                'question_text': question_obj.question_text,
+                'function_name': game_data.get('function_name', ''),
+                'sample_input': game_data.get('sample_input', ''),
+                'sample_output': game_data.get('sample_output', ''),
+                'hidden_tests': game_data.get('hidden_tests', []),
+                'explanation': game_data.get('explanation', '')
+            }
+            
+            # Group buggy version fields together
+            buggy_version = {
+                'buggy_question_text': game_data.get('buggy_question_text', ''),
+                'buggy_code': game_data.get('buggy_code', ''),
+                'buggy_explanation': game_data.get('buggy_explanation', '')
+            }
+            
+            # Clean game_data with organized structure
+            minimal_game_data = {
+                'normal': normal_version,
+                'buggy': buggy_version,
+                'generation_timestamp': game_data.get('generation_timestamp', datetime.now().isoformat())
+            }
         
-        # Prepare question data for JSON export
-        question_data = {
-            'id': question_obj.id,
-            'question_text': question_obj.question_text,
-            'correct_answer': question_obj.correct_answer,
-            'game_type': question_obj.game_type,
-            'difficulty': question_obj.estimated_difficulty,
-            'topic': question_obj.topic.name if question_obj.topic else None,
-            'subtopic': question_obj.subtopic.name if question_obj.subtopic else None,
-            'game_data': question_obj.game_data,
-            'created_at': question_obj.created_at.isoformat() if hasattr(question_obj, 'created_at') else None
-        }
+        # Create different structures for coding vs non-coding questions
+        if game_type == 'coding':
+            # For coding questions, use organized structure without redundant fields
+            question_data = {
+                'game_type': question_obj.game_type,
+                'difficulty': question_obj.estimated_difficulty,
+                'subtopic': question_obj.subtopic.name if question_obj.subtopic else None,
+                'game_data': minimal_game_data,
+                'created_at': question_obj.created_at.isoformat() if hasattr(question_obj, 'created_at') and question_obj.created_at else datetime.now().isoformat(),
+                'exported_at': datetime.now().isoformat()
+            }
+        else:
+            # For non-coding questions, keep the simple structure
+            question_data = {
+                'question_text': question_obj.question_text,
+                'correct_answer': question_obj.correct_answer,
+                'game_type': question_obj.game_type,
+                'difficulty': question_obj.estimated_difficulty,
+                'subtopic': question_obj.subtopic.name if question_obj.subtopic else None,
+                'game_data': minimal_game_data,
+                'created_at': question_obj.created_at.isoformat() if hasattr(question_obj, 'created_at') and question_obj.created_at else datetime.now().isoformat(),
+                'exported_at': datetime.now().isoformat()
+            }
         
-        # Check if file exists, if not create with empty array
+        # Initialize file if it doesn't exist
         if not os.path.exists(filepath):
+            print(f"📝 Creating new {game_type} questions file: {os.path.basename(filepath)}")
             with open(filepath, 'w', encoding='utf-8') as f:
                 json.dump([], f, indent=2)
         
-        # Read existing data
-        try:
-            with open(filepath, 'r', encoding='utf-8') as f:
-                existing_data = json.load(f)
-        except (json.JSONDecodeError, FileNotFoundError):
-            existing_data = []
-        
-        # Append new question
-        existing_data.append(question_data)
-        
-        # Write back to file
-        with open(filepath, 'w', encoding='utf-8') as f:
-            json.dump(existing_data, f, indent=2, ensure_ascii=False)
+        # Use cross-platform safe JSON writing
+        total_questions = write_json_safely(filepath, question_data, game_type)
+        print(f"✅ {game_type.upper()} question exported (#{total_questions}): {question_obj.question_text[:50]}...")
             
     except Exception as e:
-        print(f"Failed to export question to JSON: {e}")
+        print(f"❌ Failed to export {game_type} question to JSON: {e}")
+        import traceback
+        print(traceback.format_exc())
 
 
 def export_preassessment_question_to_json(question_obj):
     """
     Export a single pre-assessment question to the JSON file in question_outputs folder.
+    Real-time appending for live progress tracking during generation.
     
     Args:
         question_obj: PreAssessmentQuestion instance
@@ -90,24 +216,33 @@ def export_preassessment_question_to_json(question_obj):
         output_dir = os.path.join(os.path.dirname(__file__), '..', '..', 'question_outputs')
         os.makedirs(output_dir, exist_ok=True)
         
-        # Use a simple filename format for pre-assessment questions
-        date_str = datetime.now().strftime("%Y%m%d")
+        # Create session-based filename
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = f"pre_assessment_{timestamp}.json"
+        filepath = os.path.join(output_dir, filename)
         
-        # Find the most recent pre-assessment file for this date, or create a new one
-        pattern = f"pre_assessment_{date_str}_*.json"
+        # For session continuity, check if there's a recent pre-assessment file (within last hour)
         import glob
+        import time
+        pattern = f"pre_assessment_*.json"
         existing_files = glob.glob(os.path.join(output_dir, pattern))
         
-        if existing_files:
-            # Use the most recent file
-            filepath = max(existing_files, key=os.path.getctime)
-        else:
-            # Create a new file with current timestamp
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            filename = f"pre_assessment_{timestamp}.json"
-            filepath = os.path.join(output_dir, filename)
+        # Find the most recent file that's less than 1 hour old
+        current_time = time.time()
+        recent_file = None
+        for existing_file in existing_files:
+            file_time = os.path.getctime(existing_file)
+            if (current_time - file_time) < 3600:  # 1 hour
+                if not recent_file or file_time > os.path.getctime(recent_file):
+                    recent_file = existing_file
         
-        # Prepare question data for JSON export
+        if recent_file:
+            filepath = recent_file
+            print(f"📝 Appending to existing pre-assessment file: {os.path.basename(filepath)}")
+        else:
+            print(f"📝 Creating new pre-assessment file: {os.path.basename(filepath)}")
+        
+        # Prepare enhanced question data for JSON export  
         question_data = {
             'id': question_obj.id,
             'question_text': question_obj.question_text,
@@ -117,30 +252,23 @@ def export_preassessment_question_to_json(question_obj):
             'topic_ids': question_obj.topic_ids,
             'subtopic_ids': question_obj.subtopic_ids,
             'order': question_obj.order,
-            'created_at': question_obj.created_at.isoformat() if hasattr(question_obj, 'created_at') else None
+            'created_at': question_obj.created_at.isoformat() if hasattr(question_obj, 'created_at') and question_obj.created_at else datetime.now().isoformat(),
+            'exported_at': datetime.now().isoformat()
         }
         
-        # Check if file exists, if not create with empty array
+        # Initialize file if it doesn't exist
         if not os.path.exists(filepath):
             with open(filepath, 'w', encoding='utf-8') as f:
                 json.dump([], f, indent=2)
         
-        # Read existing data
-        try:
-            with open(filepath, 'r', encoding='utf-8') as f:
-                existing_data = json.load(f)
-        except (json.JSONDecodeError, FileNotFoundError):
-            existing_data = []
-        
-        # Append new question
-        existing_data.append(question_data)
-        
-        # Write back to file
-        with open(filepath, 'w', encoding='utf-8') as f:
-            json.dump(existing_data, f, indent=2, ensure_ascii=False)
+        # Use cross-platform safe JSON writing
+        total_questions = write_json_safely(filepath, question_data, "pre-assessment")
+        print(f"✅ PRE-ASSESSMENT question exported (#{total_questions}): {question_obj.question_text[:50]}...")
             
     except Exception as e:
-        print(f"Failed to export pre-assessment question to JSON: {e}")
+        print(f"❌ Failed to export pre-assessment question to JSON: {e}")
+        import traceback
+        print(traceback.format_exc())
 
 
 def save_minigame_questions_to_db_enhanced(questions_json: List[Dict[str, Any]], 
@@ -171,6 +299,10 @@ def save_minigame_questions_to_db_enhanced(questions_json: List[Dict[str, Any]],
     saved_questions = []
     duplicate_questions = []
     primary_subtopic = subtopic_combination[0]  # Use first subtopic as primary for DB relations
+    
+    # Extract all subtopic IDs for dynamic combinations
+    subtopic_ids = [subtopic.id for subtopic in subtopic_combination]
+    subtopic_names = [subtopic.name for subtopic in subtopic_combination]
     
     with transaction.atomic():
         for q in questions_json:
@@ -208,27 +340,55 @@ def save_minigame_questions_to_db_enhanced(questions_json: List[Dict[str, Any]],
                     buggy_code = ''
                     buggy_question_text = ''  # Only for coding questions
                 
-                # Create GeneratedQuestion object
+                # TEMPORARY: Log the question data instead of saving to avoid DB migration issues
+                print(f"🔍 WOULD SAVE QUESTION:")
+                print(f"   Question text: {question_text[:100]}...")
+                print(f"   Game type: {game_type}")
+                print(f"   Difficulty: {difficulty}")
+                print(f"   Primary subtopic: {primary_subtopic.name}")
+                print(f"   Subtopic combination: {subtopic_names}")
+                print(f"   Subtopic IDs: {subtopic_ids}")
+                print(f"   Cross-subtopic: {len(subtopic_combination) > 1}")
+                print(f"   Explanation: {q.get('explanation', 'N/A')[:100]}...")
+                print(f"   Buggy explanation: {q.get('buggy_explanation', 'N/A')[:100]}...")
+                
+                # Create GeneratedQuestion object WITHOUT subtopic_ids field (temporary)
                 question_obj = GeneratedQuestion.objects.create(
                     question_text=question_text,
                     correct_answer=correct_answer,
                     subtopic=primary_subtopic,  # Primary subtopic for DB relation
+                    # subtopic_ids=subtopic_ids,  # TEMPORARILY COMMENTED OUT - missing DB column
                     topic=primary_subtopic.topic,  # Add topic field
                     estimated_difficulty=difficulty,  # Use correct field name
                     game_type=game_type,
                     game_data={
+                        # Core game data
                         'function_name': function_name,
                         'sample_input': sample_input,
                         'sample_output': sample_output,
                         'hidden_tests': hidden_tests,
                         'buggy_code': buggy_code,
                         'buggy_question_text': buggy_question_text,
-                        'subtopic_names': [s.name for s in subtopic_combination],
+                        
+                        # Enhanced explanation fields
+                        'explanation': q.get('explanation', ''),
+                        'buggy_explanation': q.get('buggy_explanation', ''),
+                        
+                        # Dynamic subtopic combination data (stored in game_data for now)
+                        'subtopic_ids': subtopic_ids,
+                        'subtopic_names': subtopic_names,
+                        'subtopic_count': len(subtopic_combination),
+                        'is_cross_subtopic': len(subtopic_combination) > 1,
+                        
+                        # Context and metadata
                         'zone_name': zone.name,
                         'zone_order': zone.order,
-                        'rag_context': rag_context[:2000] if rag_context else ''  # Store RAG context in game_data
+                        'rag_context': rag_context[:2000] if rag_context else '',
+                        'generation_timestamp': datetime.now().isoformat()
                     }
                 )
+                
+                print(f"✅ Question saved with ID: {question_obj.id} (subtopic_ids stored in game_data)")
                 
                 saved_questions.append(question_obj)
                 
@@ -345,3 +505,78 @@ def delete_questions_by_criteria(subtopic=None, game_type: str = None, difficult
     queryset.delete()
     
     return count
+
+
+def export_all_existing_questions_to_json():
+    """
+    Export all existing questions in the database to JSON files.
+    Useful for regenerating JSON outputs if they weren't created during generation.
+    """
+    try:
+        from question_generation.models import GeneratedQuestion, PreAssessmentQuestion
+        
+        print("🔄 Exporting all existing questions to JSON files...")
+        
+        # Export coding questions
+        coding_questions = GeneratedQuestion.objects.filter(game_type='coding').order_by('created_at')
+        print(f"📝 Found {coding_questions.count()} coding questions to export")
+        
+        for question in coding_questions:
+            try:
+                export_question_to_json(question, 'coding')
+            except Exception as e:
+                print(f"❌ Failed to export coding question {question.id}: {e}")
+        
+        # Export non-coding questions
+        non_coding_questions = GeneratedQuestion.objects.filter(game_type='non_coding').order_by('created_at')
+        print(f"📝 Found {non_coding_questions.count()} non-coding questions to export")
+        
+        for question in non_coding_questions:
+            try:
+                export_question_to_json(question, 'non_coding')
+            except Exception as e:
+                print(f"❌ Failed to export non-coding question {question.id}: {e}")
+        
+        # Export pre-assessment questions
+        pre_assessment_questions = PreAssessmentQuestion.objects.all().order_by('created_at')
+        print(f"📝 Found {pre_assessment_questions.count()} pre-assessment questions to export")
+        
+        for question in pre_assessment_questions:
+            try:
+                export_preassessment_question_to_json(question)
+            except Exception as e:
+                print(f"❌ Failed to export pre-assessment question {question.id}: {e}")
+        
+        print("✅ Finished exporting all existing questions to JSON files")
+        
+    except Exception as e:
+        print(f"❌ Error during bulk export: {e}")
+        import traceback
+        print(traceback.format_exc())
+
+
+def force_create_json_files():
+    """
+    Force create empty JSON files for coding, non-coding, and pre-assessment.
+    Useful for initializing the file structure.
+    """
+    try:
+        output_dir = os.path.join(os.path.dirname(__file__), '..', '..', 'question_outputs')
+        os.makedirs(output_dir, exist_ok=True)
+        
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        
+        # Create empty files
+        for file_type in ['coding', 'non_coding', 'pre_assessment']:
+            filename = f"{file_type}_{timestamp}.json"
+            filepath = os.path.join(output_dir, filename)
+            
+            with open(filepath, 'w', encoding='utf-8') as f:
+                json.dump([], f, indent=2)
+            
+            print(f"📁 Created empty {file_type} JSON file: {filename}")
+        
+        print("✅ All JSON files initialized")
+        
+    except Exception as e:
+        print(f"❌ Error creating JSON files: {e}")

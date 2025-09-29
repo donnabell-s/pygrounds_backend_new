@@ -1,12 +1,5 @@
 """
-Question management and CRUD oper        formatted = [{
-            'id': q.id,
-            'question_text': q.question_text,
-            'estimated_difficulty': q.estimated_difficulty,
-            'game_type': q.game_type,
-            'correct_answer': q.correct_answer,
-            'validation_status': q.validation_status,
-        } for q in questions]es retrieval, filtering, and statistics for generated questions.
+Question management and CRUD operations for retrieval, filtering, and statistics for generated questions.
 """
 
 from .imports import *
@@ -147,8 +140,10 @@ def get_topic_questions_summary(request, topic_id):
             'topic': {
                 'id': topic.id,
                 'name': topic.name,
-                'zone': topic.zone.name,
-                'total_subtopics': subtopics.count()
+                'zone': topic.zone.id,
+                'zone_name': topic.zone.name,  # Explicit zone_name field
+                'total_subtopics': subtopics.count(),
+                'subtopics_count': subtopics.count()  # Explicit subtopics_count field as int
             },
             'overall_statistics': overall_stats,
             'subtopic_summaries': subtopic_summaries

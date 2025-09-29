@@ -111,47 +111,51 @@ class DeepSeekPromptManager:
                         ).strip()
 
     def get_non_coding_prompt(self, context: Dict[str, Any]) -> str:
-        return (
-                  f"""OUTPUT ONLY VALID JSON ARRAY. NO prose, NO markdown, NO backticks.
+          return (
+            f"""OUTPUT ONLY VALID JSON ARRAY. NO prose, NO markdown, NO backticks.
 
-                  TASK: Create {context['num_questions']} Python concept questions for {context['subtopic_name']} ({context['difficulty']}).
+            TASK: Create {context['num_questions']} Python concept CLUES for {context['subtopic_name']} ({context['difficulty']}).
 
-                  RAG_CONTEXT:
-                  <<<
-                  {context['rag_context']}
-                  >>>
+            RAG_CONTEXT:
+            <<<
+            {context['rag_context']}
+            >>>
 
-                  STRICT RULES:
-                  - Answer MUST be ONE domain term, letters only (a–z), 4–13 chars, no spaces.
-                  - Question ≤ 18 words; letters/spaces only; varied styles.
-                  - Use domain-specific targets from context (e.g., generator, decorator, iterator, docstring, sentinel, ducktyping, mutability).
-                  - Avoid generic answers (code, variable, python, function).
-                  - Avoid trivial/broad advice ("write clean code", "use comments wisely").
-                  - No True/False (unless the target term is literally a boolean concept).
-                  - Prefer action verbs in stems: Identify/Select/Name/Spot/Predict/Choose.
+            STYLE (CROSSWORD / WORD-SEARCH CLUES):
+            - Write each question_text as a terse clue (glossary-style), natural and friendly.
+            - No question marks, no quotes, no colons, no punctuation; letters/spaces only.
+            - Avoid exam-y stems like Identify/Select/Name/Spot/Predict/Choose.
+            - Keep clues ≤ 18 words; concise, definitional, or hint-like.
+            - If a concept has multiple words, target the normalized single token (e.g., snakecase, shortcircuit).
 
-                  GOOD EXAMPLES (use these styles):
-                  - "What should inline comments avoid?" → "docstring"
-                  - "Best practice for function naming?" → "snakecase"
-                  - "Why is immutability important?" → "immutability"
+            STRICT RULES:
+            - Answer MUST be ONE domain term, lowercase letters only (a–z), 4–13 chars, no spaces/hyphens.
+            - Use domain-specific targets from context (e.g., generator, decorator, iterator, docstring, sentinel, ducktyping, mutability).
+            - Avoid generic answers (code, variable, python, function).
+            - No True/False (unless the answer term itself is boolean-related, e.g., truthiness).
 
-                  BAD EXAMPLES (too stiff, avoid these):
-                  - "Identifies lazily produced sequence objects" → "generator"
-                  - "Name the feature enabling with-block resource control" → "contextmanager"
-                  - "Select the term for metadata-preserving wrapper" → "decorator"
+            GOOD CLUE EXAMPLES (style guide):
+            - Inline comment should not duplicate this documentation block → docstring
+            - Preferred python naming for functions and variables → snakecase
+            - Benefit of data that cannot change after creation → immutability
 
-                  ITEM SCHEMA:
-                  {{
-                    "question_text": "<short, unambiguous question (≤18 words)>",
-                    "answer": "<single domain term, 4–13 letters>",
-                    "explanation": "<clear explanation of the concept being tested (20–40 words)>",
-                    "difficulty": "{context['difficulty']}"
-                  }}
+            AVOID (too stiff / exam-like):
+            - Identifies lazily produced sequence objects → generator
+            - Name the feature enabling with-block resource control → contextmanager
+            - Select the term for metadata-preserving wrapper → decorator
 
-                  VALIDATION HINTS:
-                  - If top candidate is generic, choose a more specific technical term present in RAG_CONTEXT.
-                  - Keep JSON compact. RETURN: JSON array ONLY."""
-                          ).strip()
+            ITEM SCHEMA:
+            {{
+              "question_text": "<terse clue (≤18 words, letters/spaces only, no punctuation)>",
+              "answer": "<single domain term, lowercase, 4–13 letters>",
+              "explanation": "<brief concept note, 20–40 words, friendly and clear>",
+              "difficulty": "{context['difficulty']}"
+            }}
+
+            VALIDATION HINTS:
+            - If the best candidate feels generic, choose a more specific technical term from RAG_CONTEXT.
+            - Keep JSON compact. RETURN: JSON array ONLY."""
+                ).strip()
 
     def get_pre_assessment_prompt(self, context: Dict[str, Any]) -> str:
         c = self._ctx(context)
