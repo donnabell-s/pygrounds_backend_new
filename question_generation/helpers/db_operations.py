@@ -146,6 +146,7 @@ def export_question_to_json(question_obj, game_type: str):
                 'sample_input': game_data.get('sample_input', ''),
                 'sample_output': game_data.get('sample_output', ''),
                 'hidden_tests': game_data.get('hidden_tests', []),
+                'correct_code': game_data.get('correct_code', ''),
                 'explanation': game_data.get('explanation', '')
             }
             
@@ -153,6 +154,7 @@ def export_question_to_json(question_obj, game_type: str):
             buggy_version = {
                 'buggy_question_text': game_data.get('buggy_question_text', ''),
                 'buggy_code': game_data.get('buggy_code', ''),
+                'buggy_correct_code': game_data.get('buggy_correct_code', ''),
                 'buggy_explanation': game_data.get('buggy_explanation', '')
             }
             
@@ -324,6 +326,8 @@ def save_minigame_questions_to_db_enhanced(questions_json: List[Dict[str, Any]],
                     sample_output = q.get('sample_output', '')
                     hidden_tests = q.get('hidden_tests', [])
                     buggy_code = q.get('buggy_code', '')
+                    correct_code = q.get('correct_code', '')
+                    buggy_correct_code = q.get('buggy_correct_code', '')
                     
                     # NEW: Extract buggy question text
                     buggy_question_text = q.get('buggy_question_text', '')
@@ -368,6 +372,8 @@ def save_minigame_questions_to_db_enhanced(questions_json: List[Dict[str, Any]],
                         'sample_output': sample_output,
                         'hidden_tests': hidden_tests,
                         'buggy_code': buggy_code,
+                        'correct_code': correct_code,
+                        'buggy_correct_code': buggy_correct_code,
                         'buggy_question_text': buggy_question_text,
                         
                         # Enhanced explanation fields
