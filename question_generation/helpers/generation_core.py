@@ -145,13 +145,20 @@ def create_system_prompt(subtopic_names: List[str],
         System prompt string
     """
     if game_type == 'coding':
+        keys = [
+            "question_text", "buggy_question_text",
+            "explanation", "buggy_explanation",
+            "function_name", "sample_input", "sample_output",
+            "hidden_tests", "buggy_code", "correct_code",
+            "buggy_correct_code", "difficulty"
+        ]
         return (
-            f"Generate {num_questions} coding challenges "
-            f"for {len(subtopic_names)} subtopics: {', '.join(subtopic_names)}. "
-            f"Zone: {zone.name} (Zone {zone.order}), Difficulty: {difficulty}. "
-            f"CRITICAL: ALL JSON objects MUST include these 10 fields: question_text, buggy_question_text, function_name, sample_input, sample_output, hidden_tests, buggy_code, correct_code, buggy_correct_code, difficulty. "
-            f"Each question MUST have 'correct_code' with working solution and 'buggy_correct_code' with fixed version of buggy code. "
-            f"IMPORTANT: If ANY field is missing in ANY question, the entire batch will be rejected."
+            f"Generate {num_questions} Python DEBUGGING questions for {len(subtopic_names)} subtopics: "
+            f"{', '.join(subtopic_names)}. Zone: {zone.name} (Zone {zone.order}), Difficulty: {difficulty}. "
+            f"CRITICAL: EVERY item MUST include EXACTLY these {len(keys)} keys (spelling exact): {', '.join(keys)}. "
+            f'"explanation" MUST state why correct_code solves the `question_text` (20–40 words). '
+            f'"buggy_explanation" MUST state the root cause in `buggy_code` and how buggy_correct_code fixes it (20–40 words). '
+            f"If any key is missing/empty in any item, REVISE internally and output ONLY a JSON array with exactly {num_questions} valid items."
         )
     else:  # non_coding
         return (

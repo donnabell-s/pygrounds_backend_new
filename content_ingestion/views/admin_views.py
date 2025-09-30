@@ -189,7 +189,7 @@ class TopicList(generics.ListCreateAPIView):
     serializer_class = TopicSerializer
 
     def get_queryset(self):
-        queryset = super().get_queryset()
+        queryset = super().get_queryset().select_related('zone')
         zone_id = self.request.query_params.get('zone_id')
         if zone_id:
             queryset = queryset.filter(zone_id=zone_id)
@@ -235,7 +235,7 @@ class TopicList(generics.ListCreateAPIView):
             )
 
 class TopicDetail(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Topic.objects.all()
+    queryset = Topic.objects.select_related('zone').all()
     serializer_class = TopicSerializer
 
     def update(self, request, *args, **kwargs):

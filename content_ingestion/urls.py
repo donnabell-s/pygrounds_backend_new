@@ -69,7 +69,7 @@ urlpatterns = [
     path('zones/<int:zone_id>/topics/', ZoneTopicsView, name='zone-topics'),
     
     # Topics
-    path('topics/', TopicList.as_view(), name='topics'),
+    path('admin/topics/', TopicList.as_view(), name='admin-topics'),
     path('topics/<int:pk>/', TopicDetail.as_view(), name='topic-detail'),
     path('topics/<int:topic_id>/subtopics/', TopicSubtopicsView, name='topic-subtopics'),
     
