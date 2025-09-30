@@ -16,6 +16,14 @@ class GeneratedQuestion(models.Model):
         default='beginner',
         blank=True,
     )
+    recalibrated_difficulty = models.CharField(
+        max_length=20,
+        choices=[('beginner','Beginner'), ('intermediate','Intermediate'),
+                 ('advanced','Advanced'), ('master','Master')],
+        null=True, blank=True,
+        help_text="Latest recalibrated difficulty (if any)"
+    )
+    
     
     game_type = models.CharField(max_length=20, choices=[('coding','Coding'), ('non_coding','Non-Coding')], default='non_coding')
 
@@ -28,6 +36,8 @@ class GeneratedQuestion(models.Model):
         choices=[('pending', 'Pending Validation'), ('processing', 'Processing')],
         default='pending'
     )
+    
+    updated_at = models.DateTimeField(auto_now=True)  
    
     class Meta:
         ordering = ['subtopic__name']

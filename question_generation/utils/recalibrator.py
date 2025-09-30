@@ -1,90 +1,134 @@
 from django.db.models import Avg
 from django.apps import apps
+from django.db import models
+from question_generation.models import GeneratedQuestion
+from analytics.models import QuestionResponse, QuestionRecalibration
 
 LEVELS = ["beginner", "intermediate", "advanced", "master"]
 
 
 def _get_question_model():
-    """
-    Resolve a Question-like model in this order:
-      1) question_generation.GeneratedQuestion
-      2) question_generation.Question
-      3) minigames.Question
-    """
-    candidates = [
-        ("question_generation", "GeneratedQuestion"),
-        ("question_generation", "Question"),
-        ("minigames", "Question"),
-    ]
-    for app_label, model_name in candidates:
-        try:
-            model = apps.get_model(app_label, model_name)
-            if model:
-                return model
-        except LookupError:
-            continue
-    raise LookupError(
-        "No suitable Question model found "
-        "(tried question_generation.GeneratedQuestion / Question / minigames.Question)."
-    )
+    return GeneratedQuestion
 
 
 def _get_question_response_model():
-    """
-    Try to load analytics.QuestionResponse (optional app).
-    Returns None if analytics is not installed.
-    """
     try:
         return apps.get_model("analytics", "QuestionResponse")
     except LookupError:
         return None
 
 
+# ------------------------------
+# Initial assignment (Algorithm 1)
+# ------------------------------
+def assign_initial_difficulty(question_text: str, author_tag: str = None) -> str:
+    if author_tag in LEVELS:
+        return author_tag
+
+    text = (question_text or "").lower()
+    word_count = len(text.split())
+
+    if word_count < 10:
+        return "beginner"
+    elif "recursion" in text or "nested" in text:
+        return "advanced"
+    elif "for" in text or "while" in text or "loop" in text:
+        return "intermediate"
+    else:
+        return "intermediate"
+
+
+# ------------------------------
+# Algorithm 2: Analytics-based recalibration
+# ------------------------------
+def recalibrate_difficulty_with_analytics(question_id: int):
+    try:
+        question = GeneratedQuestion.objects.get(id=question_id)
+    except GeneratedQuestion.DoesNotExist:
+        return f"Question {question_id} not found."
+
+    responses = QuestionResponse.objects.filter(question=question)
+
+    if responses.count() < 5:
+        return "Not enough responses to recalibrate (need ≥5)."
+
+    avg_score = responses.aggregate(avg=models.Avg("score"))["avg"]
+
+    if avg_score < 0.3:
+        new_difficulty = "beginner"
+    elif avg_score < 0.6:
+        new_difficulty = "intermediate"
+    elif avg_score < 0.85:
+        new_difficulty = "advanced"
+    else:
+        new_difficulty = "master"
+
+    # Dual storage + history logging
+    old_difficulty = question.recalibrated_difficulty or question.estimated_difficulty
+    if new_difficulty != old_difficulty:
+        QuestionRecalibration.objects.create(
+            question=question,
+            old_difficulty=old_difficulty,
+            new_difficulty=new_difficulty
+        )
+        question.recalibrated_difficulty = new_difficulty
+        question.save(update_fields=["recalibrated_difficulty"])
+        return f"Recalibrated to {new_difficulty}."
+    else:
+        return "No recalibration needed."
+
+
+# ------------------------------
+# Combined entrypoint (used by signals)
+# ------------------------------
+def get_or_recalibrate_difficulty(sender=None, instance=None, created=False, **kwargs):
+    if instance is None:
+        return "No instance provided."
+
+    question = getattr(instance, "question", None)
+    if question is None:
+        return "Invalid instance: no question attached."
+
+    responses = QuestionResponse.objects.filter(question=question)
+
+    if responses.count() < 5:
+        # Algorithm 1: Initial assignment
+        new_difficulty = assign_initial_difficulty(
+            getattr(question, "question_text", ""),
+            getattr(question, "estimated_difficulty", None)
+        )
+        if question.recalibrated_difficulty != new_difficulty:
+            old_difficulty = question.recalibrated_difficulty or question.estimated_difficulty
+            question.recalibrated_difficulty = new_difficulty
+            question.save(update_fields=["recalibrated_difficulty"])
+
+            QuestionRecalibration.objects.create(
+                question=question,
+                old_difficulty=old_difficulty,
+                new_difficulty=new_difficulty
+            )
+        return f"Assigned initial difficulty ({new_difficulty})."
+
+    # Algorithm 2
+    return recalibrate_difficulty_with_analytics(question.id)
+
+
+# ------------------------------
+# Manual trigger for a specific question
+# ------------------------------
 def recalibrate_difficulty_for_question(question_id: int) -> str:
-    """
-    Score-based recalibration (expects analytics.QuestionResponse.score in [0,1]):
-
-      avg_score < 0.30  -> 'master'
-      avg_score < 0.60  -> 'advanced'
-      avg_score < 0.80  -> 'intermediate'
-      else              -> 'beginner'
-
-    Requires at least 5 responses. If the analytics app is not present,
-    we skip recalibration gracefully.
-    """
     Question = _get_question_model()
-
     try:
         q = Question.objects.get(pk=question_id)
     except Question.DoesNotExist:
         return "Question not found."
+    return recalibrate_difficulty_with_analytics(q.id)
 
-    QuestionResponse = _get_question_response_model()
-    if QuestionResponse is None:
-        return "Analytics app not installed; cannot recalibrate."
 
-    qs = QuestionResponse.objects.filter(question=q)
-    total = qs.count()
-    if total < 5:
-        return "Not enough responses to recalibrate (need ≥5)."
-
-    avg_score = qs.aggregate(val=Avg("score"))["val"] or 0.0
-
-    if avg_score < 0.30:
-        new_diff = "master"
-    elif avg_score < 0.60:
-        new_diff = "advanced"
-    elif avg_score < 0.80:
-        new_diff = "intermediate"
-    else:
-        new_diff = "beginner"
-
-    prev = getattr(q, "difficulty", None)
-    if prev != new_diff:
-        q.difficulty = new_diff
-        try:
-            q.save(update_fields=["difficulty"])
-        except Exception:
-            q.save()
-        return f"Recalibrated to {new_diff.capitalize()}."
-    return "No recalibration needed."
+# ------------------------------
+# Stub: Recalibrate by type
+# ------------------------------
+def recalibrate_difficulty_by_type(question_type: str) -> str:
+    if question_type not in ["coding", "non_coding", "preassessment"]:
+        return f"Invalid question type: {question_type}"
+    return f"Recalibration triggered for all {question_type} questions."

@@ -85,6 +85,7 @@ INSTALLED_APPS = [
     'user_learning',
     'minigames',
     'reading',
+    'analytics',
     #'question_generation',
     #'user_learning',
     #'minigames',
