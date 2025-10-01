@@ -23,19 +23,6 @@ def upsert_topic(name: str, zone_order: int = 1) -> CITopic:
         defaults={"name": name, "zone": zone, "description": name},
     )
 
-    changed = False
-    if topic.name != name:
-        topic.name = name
-        changed = True
-    if topic.zone_id is None:
-        topic.zone = zone
-        changed = True
-    if not topic.description:
-        topic.description = name
-        changed = True
-    if changed:
-        topic.save(update_fields=["name", "zone", "description"])
-
     if created:
         print(f"Created Topic: {topic.name}")
     else:
@@ -58,22 +45,28 @@ def upsert_subtopic(topic: CITopic, name: str, order_in_topic: int = 0) -> CISub
         )
         print(f"Created Subtopic: {name} -> {topic.name}")
     else:
-        updates = []
-        if not sub.slug:
-            sub.slug = slug
-            updates.append("slug")
-        if sub.name != name:
-            sub.name = name
-            updates.append("name")
-        if order_in_topic is not None and sub.order_in_topic != order_in_topic:
-            sub.order_in_topic = order_in_topic
-            updates.append("order_in_topic")
-        if updates:
-            sub.save(update_fields=updates)
-            print(f"Updated Subtopic: {name} -> {topic.name}")
-        else:
-            print(f"Subtopic exists: {name} -> {topic.name}")
+        print(f"Subtopic exists: {name} -> {topic.name}")
+
     return sub
+
+
+def upsert_material(topic: CITopic, sub: CISubtopic, title: str, content: str, order_in_topic: int = 0):
+    obj, created = ReadingMaterial.objects.get_or_create(
+        topic_ref=topic,
+        subtopic_ref=sub,
+        title=title.strip(),
+        defaults={
+            "content": (content or "").strip(),
+            "order_in_topic": order_in_topic or 0,
+        },
+    )
+
+    if created:
+        print(f"Created ReadingMaterial: {title} -> {topic.name}/{sub.name}")
+    else:
+        print(f"Already exists: {title} -> {topic.name}/{sub.name}")
+
+    return obj
 
 
 def upsert_material(topic: CITopic, sub: CISubtopic, title: str, content: str, order_in_topic: int = 0):
