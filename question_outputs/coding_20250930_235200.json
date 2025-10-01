@@ -1,0 +1,102 @@
+[
+  {
+    "game_type": "coding",
+    "difficulty": "beginner",
+    "subtopic": "Avoiding Magic Numbers and Hardcoding",
+    "game_data": {
+      "normal": {
+        "question_text": "Calculate the area of a circle given its radius.",
+        "function_name": "calculate_circle_area",
+        "sample_input": "(3,)",
+        "sample_output": 28.26,
+        "hidden_tests": [
+          {
+            "input": "(1,)",
+            "expected_output": 3.14
+          },
+          {
+            "input": "(5,)",
+            "expected_output": 78.5
+          }
+        ],
+        "explanation": "This function should compute the area of a circle using the formula π × radius². Using a named constant for π improves readability and avoids hardcoding."
+      },
+      "buggy": {
+        "buggy_question_text": "The function always returns 28.26 regardless of the input radius.",
+        "buggy_code": "def calculate_circle_area(radius):\n    return 28.26",
+        "buggy_explanation": "The buggy code hardcodes the area as 28.26. The fix replaces the hardcoded value with the correct formula using π and radius."
+      },
+      "generation_timestamp": "2025-09-30T23:52:00.151108"
+    },
+    "created_at": "2025-09-30T23:52:00.157623",
+    "exported_at": "2025-09-30T23:52:00.157623"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "master",
+    "subtopic": "Best Practices for User-Friendly I/O",
+    "game_data": {
+      "normal": {
+        "question_text": "Read multi-line user input and print formatted output.",
+        "function_name": "read_and_format_lines",
+        "sample_input": "Hello\nWorld\n",
+        "sample_output": "Line 1: Hello\nLine 2: World",
+        "hidden_tests": [
+          {
+            "input": "Python\nDebugging\n\n",
+            "expected_output": "Line 1: Python\nLine 2: Debugging"
+          },
+          {
+            "input": "\n",
+            "expected_output": ""
+          }
+        ],
+        "correct_code": "def read_and_format_lines():\n    lines = []\n    while True:\n        line = input()\n        if line.strip() == '':\n            break\n        lines.append(line)\n    for i in range(len(lines)):\n        print(f'Line {i+1}: {lines[i]}')",
+        "explanation": "The function should read multiple lines of input until an empty line, then print each line with a prefix. It must handle empty input gracefully without errors."
+      },
+      "buggy": {
+        "buggy_question_text": "Program crashes when user enters empty lines or non-string input.",
+        "buggy_code": "def read_and_format_lines():\n    lines = []\n    while True:\n        line = input()\n        if line == '':\n            break\n        lines.append(line)\n    for i in range(len(lines)):\n        print(f'Line {i+1}: {lines[i]}')",
+        "buggy_correct_code": "def read_and_format_lines():\n    lines = []\n    while True:\n        line = input()\n        if line.strip() == '':\n            break\n        lines.append(line)\n    for i in range(len(lines)):\n        print(f'Line {i+1}: {lines[i]}')",
+        "buggy_explanation": "The buggy code fails to check for empty input before processing, causing a crash. The fix adds a condition to skip empty lines during input collection."
+      },
+      "generation_timestamp": "2025-09-30T23:57:00.822030"
+    },
+    "created_at": "2025-09-30T23:57:00.827027",
+    "exported_at": "2025-09-30T23:57:00.827027"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "master",
+    "subtopic": "Best Practices for User-Friendly I/O",
+    "game_data": {
+      "normal": {
+        "question_text": "Process multi-line input and output with numbered lines.",
+        "function_name": "process_numbered_lines",
+        "sample_input": "First\n\nThird\n",
+        "sample_output": "1: First\n2: Third",
+        "hidden_tests": [
+          {
+            "input": "A\nB\nC\n",
+            "expected_output": "1: A\n2: B\n3: C"
+          },
+          {
+            "input": "\nOnly\n",
+            "expected_output": "1: Only"
+          }
+        ],
+        "correct_code": "def process_numbered_lines():\n    lines = []\n    try:\n        while True:\n            line = input()\n            if line.strip() != '':\n                lines.append(line)\n    except EOFError:\n        pass\n    for i in range(len(lines)):\n        print(f'{i+1}: {lines[i]}')",
+        "explanation": "This function reads lines until EOF, numbers them excluding blanks, and prints. It ensures user-friendly output by ignoring empty lines in numbering."
+      },
+      "buggy": {
+        "buggy_question_text": "Output skips lines or shows incorrect numbering when input has blank lines.",
+        "buggy_code": "def process_numbered_lines():\n    lines = []\n    try:\n        while True:\n            line = input()\n            lines.append(line)\n    except EOFError:\n        pass\n    for i in range(len(lines)):\n        print(f'{i+1}: {lines[i]}')",
+        "buggy_correct_code": "def process_numbered_lines():\n    lines = []\n    try:\n        while True:\n            line = input()\n            if line.strip() != '':\n                lines.append(line)\n    except EOFError:\n        pass\n    for i in range(len(lines)):\n        print(f'{i+1}: {lines[i]}')",
+        "buggy_explanation": "The buggy code counts all lines including blanks, causing numbering gaps. The fix filters out empty lines before numbering to maintain correct sequence."
+      },
+      "generation_timestamp": "2025-09-30T23:57:00.830027"
+    },
+    "created_at": "2025-09-30T23:57:00.832026",
+    "exported_at": "2025-09-30T23:57:00.832026"
+  }
+]

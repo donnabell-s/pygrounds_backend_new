@@ -119,6 +119,8 @@ def format_question_for_game_type(question_data: Dict[str, Any], game_type: str)
             'correct_code': question_data.get('correct_code', ''),
             'buggy_correct_code': question_data.get('buggy_correct_code', ''),
             'difficulty': question_data.get('difficulty', ''),
+            'explanation': question_data.get('explanation', ''),
+            'buggy_explanation': question_data.get('buggy_explanation', ''),
         }
     else:  # non_coding
         return {
