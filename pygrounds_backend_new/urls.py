@@ -24,7 +24,8 @@ urlpatterns = [
     path("api/", include("reading.urls")),
     path("api/user/", include("users.urls")),
     
- 
+    # achievements
+    path("api/", include("achievements.urls")),
 
     # OpenAPI (optional)
     path(
