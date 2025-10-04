@@ -29,6 +29,30 @@ from .question_fetching import fetch_questions_for_game
 # Helpers
 # -----------------------------------------------------------------------------
 
+def extract_topic_subtopic_ids(question):
+    """
+    Extract topic and subtopic IDs from different question model types.
+    
+    Returns:
+        tuple: (topic_ids, subtopic_ids) as lists
+    """
+    if hasattr(question, 'topic_ids') and hasattr(question, 'subtopic_ids'):
+        # PreAssessmentQuestion: has topic_ids and subtopic_ids as JSONField arrays
+        topic_ids = list(question.topic_ids) if question.topic_ids else []
+        subtopic_ids = list(question.subtopic_ids) if question.subtopic_ids else []
+    elif hasattr(question, 'topic') and hasattr(question, 'subtopic'):
+        # GeneratedQuestion: has topic and subtopic as ForeignKey relationships
+        topic_ids = [question.topic.id] if question.topic else []
+        subtopic_ids = [question.subtopic.id] if question.subtopic else []
+    else:
+        # Fallback: try to extract from game_data (legacy)
+        gd = getattr(question, "game_data", {}) or {}
+        subtopic_ids = [s.get("id") for s in gd.get("subtopic_combination", []) if "id" in s]
+        from content_ingestion.models import Subtopic
+        topic_ids = list(Subtopic.objects.filter(id__in=subtopic_ids).values_list("topic_id", flat=True))
+    
+    return topic_ids, subtopic_ids
+
 def sanitize_word_for_grid(word: str) -> str:
     if not word:
         return ""
@@ -77,6 +101,10 @@ class SubmitAnswers(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, session_id):
+        print(f"🎮 SubmitAnswers called for session {session_id}")
+        print(f"User: {request.user}")
+        print(f"Request data: {request.data}")
+        
         def _san(s: str) -> str:
             return re.sub(r'[^A-Za-z]', '', (s or '')).upper()
 
@@ -159,10 +187,9 @@ class SubmitAnswers(APIView):
                 is_correct=ok,
             )
 
-            gd = getattr(q, "game_data", {}) or {}
-            subtopic_ids = [s.get("id") for s in gd.get("subtopic_combination", []) if "id" in s]
-            from content_ingestion.models import Subtopic
-            topic_ids = list(Subtopic.objects.filter(id__in=subtopic_ids).values_list("topic_id", flat=True))
+            # Extract topic and subtopic IDs
+            topic_ids, subtopic_ids = extract_topic_subtopic_ids(q)
+            print(f"🔍 Question {q.id}: topic_ids={topic_ids}, subtopic_ids={subtopic_ids}")
 
             results.append({
                 "question_id": q.id,
@@ -191,9 +218,19 @@ class SubmitAnswers(APIView):
             results[0]["time_limit"] = session.time_limit
 
         try:
+            print(f"🚀 Attempting to recalibrate topic proficiency for crossword...")
+            print(f"User: {request.user}")
+            print(f"Results data: {results}")
             recalibrate_topic_proficiency(request.user, results)
+            print("✅ Recalibration completed successfully!")
         except Exception as e:
-            print("Recalibration error:", e)
+            import traceback
+            print(f"❌ Recalibration error (crossword): {e}")
+            print(f"Error type: {type(e)}")
+            print(f"Traceback:")
+            traceback.print_exc()
+            print(f"User data: {request.user}")
+            print(f"Results data: {results}")
 
         return Response({
             "total": len(eligible_ids),
@@ -496,10 +533,9 @@ class SubmitHangmanCode(APIView):
                 .values('is_correct', 'user_answer')
             )
 
-            gd = getattr(question, "game_data", {}) or {}
-            subtopic_ids = [s.get("id") for s in gd.get("subtopic_combination", []) if "id" in s]
-            from content_ingestion.models import Subtopic
-            topic_ids = list(Subtopic.objects.filter(id__in=subtopic_ids).values_list("topic_id", flat=True))
+            # Extract topic and subtopic IDs
+            topic_ids, subtopic_ids = extract_topic_subtopic_ids(question)
+            print(f"🔍 Hangman Question {question.id}: topic_ids={topic_ids}, subtopic_ids={subtopic_ids}")
 
             results = []
             total_elapsed = 0.0
@@ -525,9 +561,19 @@ class SubmitHangmanCode(APIView):
                 results.append(entry)
 
             try:
+                print(f"🚀 Attempting to recalibrate topic proficiency for hangman...")
+                print(f"User: {request.user}")
+                print(f"Results data: {results}")
                 recalibrate_topic_proficiency(request.user, results)
+                print("✅ Recalibration completed successfully!")
             except Exception as e:
-                print("Recalibration error (hangman):", e)
+                import traceback
+                print(f"❌ Recalibration error (hangman): {e}")
+                print(f"Error type: {type(e)}")
+                print(f"Traceback:")
+                traceback.print_exc()
+                print(f"User data: {request.user}")
+                print(f"Results data: {results}")
 
         return Response({
             "success": passed,
@@ -627,10 +673,9 @@ class SubmitDebugGame(APIView):
                 .values('is_correct', 'user_answer')
             )
 
-            gd = getattr(question, "game_data", {}) or {}
-            subtopic_ids = [s.get("id") for s in gd.get("subtopic_combination", []) if "id" in s]
-            from content_ingestion.models import Subtopic
-            topic_ids = list(Subtopic.objects.filter(id__in=subtopic_ids).values_list("topic_id", flat=True))
+            # Extract topic and subtopic IDs
+            topic_ids, subtopic_ids = extract_topic_subtopic_ids(question)
+            print(f"🔍 Debug Question {question.id}: topic_ids={topic_ids}, subtopic_ids={subtopic_ids}")
 
             results = []
             total_elapsed = 0.0
@@ -656,9 +701,19 @@ class SubmitDebugGame(APIView):
                 results.append(entry)
 
             try:
+                print(f"🚀 Attempting to recalibrate topic proficiency for debugging...")
+                print(f"User: {request.user}")
+                print(f"Results data: {results}")
                 recalibrate_topic_proficiency(request.user, results)
+                print("✅ Recalibration completed successfully!")
             except Exception as e:
-                print("Recalibration error (debugging):", e)
+                import traceback
+                print(f"❌ Recalibration error (debugging): {e}")
+                print(f"Error type: {type(e)}")
+                print(f"Traceback:")
+                traceback.print_exc()
+                print(f"User data: {request.user}")
+                print(f"Results data: {results}")
 
         return Response({
             "success": passed,
@@ -700,7 +755,20 @@ class SubmitPreAssessmentAnswers(APIView):
                 continue
 
         if request.user.is_authenticated:
-            recalibrate_topic_proficiency(request.user, results)
+            try:
+                print(f"🚀 Attempting to recalibrate topic proficiency for wordsearch...")
+                print(f"User: {request.user}")
+                print(f"Results data: {results}")
+                recalibrate_topic_proficiency(request.user, results)
+                print("✅ Recalibration completed successfully!")
+            except Exception as e:
+                import traceback
+                print(f"❌ Recalibration error (wordsearch): {e}")
+                print(f"Error type: {type(e)}")
+                print(f"Traceback:")
+                traceback.print_exc()
+                print(f"User data: {request.user}")
+                print(f"Results data: {results}")
 
         return Response({
             "total": len(answers),
