@@ -5,6 +5,7 @@ import logging
 import re
 from typing import List, Dict, Any, Optional, Tuple
 from datetime import datetime
+from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
@@ -372,7 +373,7 @@ def extract_object_names(objects: List[Any], name_attribute: str = 'name') -> Li
 def batch_process(items: List[Any], 
                  process_func: Any,
                  batch_size: int = DEFAULT_BATCH_SIZE,
-                 max_workers: int = 4) -> List[Any]:
+                 max_workers: int = None) -> List[Any]:
     """
     Process items in batches with optional parallelization.
     
@@ -386,6 +387,10 @@ def batch_process(items: List[Any],
         List of processing results
     """
     from concurrent.futures import ThreadPoolExecutor, as_completed
+    
+    # Set default max_workers if not provided
+    if max_workers is None:
+        max_workers = getattr(settings, 'DEFAULT_MAX_WORKERS', 4)
     
     if not items:
         return []

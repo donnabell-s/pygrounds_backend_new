@@ -41,13 +41,20 @@ def process_document_task(task_data):
         
         if step == 'cleanup' and reprocess:
             try:
-                # Delete existing TOC entries and chunks
-                document.toc_entry_set.all().delete()
-                document.documentchunk_set.all().delete()
+                # Delete existing TOC entries, chunks, and embeddings
+                toc_count = document.tocentry_set.count()
+                chunk_count = document.chunks.count()
+                
+                document.tocentry_set.all().delete()
+                document.chunks.all().delete()
+                
+                # Also clean up any orphaned embeddings
+                from content_ingestion.models import Embedding
+                embedding_count = Embedding.objects.filter(document_chunk__document=document).delete()[0]
                 
                 return ('cleanup', {
                     'status': 'success',
-                    'message': 'Previous processing artifacts cleaned up successfully'
+                    'message': f'Cleaned up {toc_count} TOC entries, {chunk_count} chunks, {embedding_count} embeddings'
                 })
             except Exception as e:
                 return ('cleanup', {

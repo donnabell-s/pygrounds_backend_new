@@ -1,0 +1,568 @@
+[
+  {
+    "game_type": "coding",
+    "difficulty": "advanced",
+    "subtopic": "Logical Operators (and, or, not)",
+    "game_data": {
+      "normal": {
+        "question_text": "Check if a number is not zero and not negative.",
+        "function_name": "is_positive_nonzero",
+        "sample_input": "(5,)",
+        "sample_output": "True",
+        "hidden_tests": [
+          {
+            "input": "(0,)",
+            "expected_output": "False"
+          },
+          {
+            "input": "(-3,)",
+            "expected_output": "False"
+          },
+          {
+            "input": "(10,)",
+            "expected_output": "True"
+          }
+        ],
+        "correct_code": "def is_positive_nonzero(n):\n    return n > 0",
+        "explanation": "The function should return True if the number is positive (not zero and not negative), using logical operators to express this."
+      },
+      "buggy": {
+        "buggy_question_text": "Function returns False for positive numbers.",
+        "buggy_code": "def is_positive_nonzero(n):\n    return not n <= 0",
+        "buggy_correct_code": "def is_positive_nonzero(n):\n    return n > 0",
+        "buggy_explanation": "The buggy code uses 'not' incorrectly, causing it to return False for positives. Use 'n > 0' directly to check for positive numbers."
+      },
+      "generation_timestamp": "2025-10-03T22:31:01.464010"
+    },
+    "created_at": "2025-10-03T22:31:01.467010",
+    "exported_at": "2025-10-03T22:31:01.467010"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "advanced",
+    "subtopic": "Logical Operators (and, or, not)",
+    "game_data": {
+      "normal": {
+        "question_text": "Verify if a user is an admin or moderator.",
+        "function_name": "is_privileged_user",
+        "sample_input": "('moderator',)",
+        "sample_output": "True",
+        "hidden_tests": [
+          {
+            "input": "('admin',)",
+            "expected_output": "True"
+          },
+          {
+            "input": "('user',)",
+            "expected_output": "False"
+          },
+          {
+            "input": "('moderator',)",
+            "expected_output": "True"
+          }
+        ],
+        "correct_code": "def is_privileged_user(role):\n    return role == 'admin' or role == 'moderator'",
+        "explanation": "The function should return True if the user role is 'admin' or 'moderator'. Use logical operators to check for either role."
+      },
+      "buggy": {
+        "buggy_question_text": "Function returns False for moderators.",
+        "buggy_code": "def is_privileged_user(role):\n    return role == 'admin' and role == 'moderator'",
+        "buggy_correct_code": "def is_privileged_user(role):\n    return role == 'admin' or role == 'moderator'",
+        "buggy_explanation": "The buggy code uses 'and' instead of 'or', so both roles must match. Change to 'or' to allow either role to return True."
+      },
+      "generation_timestamp": "2025-10-03T22:31:01.500907"
+    },
+    "created_at": "2025-10-03T22:31:01.505451",
+    "exported_at": "2025-10-03T22:31:01.505451"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "advanced",
+    "subtopic": "Logical Operators (and, or, not)",
+    "game_data": {
+      "normal": {
+        "question_text": "Check if a password meets length and complexity.",
+        "function_name": "is_valid_password",
+        "sample_input": "('pass1234',)",
+        "sample_output": "True",
+        "hidden_tests": [
+          {
+            "input": "('short',)",
+            "expected_output": "False"
+          },
+          {
+            "input": "('longpassword',)",
+            "expected_output": "False"
+          },
+          {
+            "input": "('pass1word',)",
+            "expected_output": "True"
+          }
+        ],
+        "correct_code": "def is_valid_password(pwd):\n    return len(pwd) >= 8 and any(c.isdigit() for c in pwd)",
+        "explanation": "A valid password must be at least 8 characters and contain a digit. Use logical operators to ensure both conditions are met."
+      },
+      "buggy": {
+        "buggy_question_text": "Function accepts passwords without digits.",
+        "buggy_code": "def is_valid_password(pwd):\n    return len(pwd) >= 8 or any(c.isdigit() for c in pwd)",
+        "buggy_correct_code": "def is_valid_password(pwd):\n    return len(pwd) >= 8 and any(c.isdigit() for c in pwd)",
+        "buggy_explanation": "The buggy code uses 'or' instead of 'and', so it returns True if either condition is true. Replace with 'and' to require both."
+      },
+      "generation_timestamp": "2025-10-03T22:31:01.550629"
+    },
+    "created_at": "2025-10-03T22:31:01.554274",
+    "exported_at": "2025-10-03T22:31:01.554274"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "advanced",
+    "subtopic": "Logical Operators (and, or, not)",
+    "game_data": {
+      "normal": {
+        "question_text": "Determine if a number is outside range 5 to 15.",
+        "function_name": "is_outside_range",
+        "sample_input": "(20,)",
+        "sample_output": "True",
+        "hidden_tests": [
+          {
+            "input": "(10,)",
+            "expected_output": "False"
+          },
+          {
+            "input": "(3,)",
+            "expected_output": "True"
+          },
+          {
+            "input": "(15,)",
+            "expected_output": "False"
+          }
+        ],
+        "correct_code": "def is_outside_range(n):\n    return n < 5 or n > 15",
+        "explanation": "The function should return True if the number is less than 5 or greater than 15, using logical operators to define the outside range."
+      },
+      "buggy": {
+        "buggy_question_text": "Function returns True for numbers inside range.",
+        "buggy_code": "def is_outside_range(n):\n    return n < 5 and n > 15",
+        "buggy_correct_code": "def is_outside_range(n):\n    return n < 5 or n > 15",
+        "buggy_explanation": "The buggy code uses 'and' instead of 'or', so it only returns True if both extremes are true. Change to 'or' to cover numbers outside the range."
+      },
+      "generation_timestamp": "2025-10-03T22:31:01.586352"
+    },
+    "created_at": "2025-10-03T22:31:01.588348",
+    "exported_at": "2025-10-03T22:31:01.588348"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "advanced",
+    "subtopic": "Managing Environment Variables and PATH",
+    "game_data": {
+      "normal": {
+        "question_text": "Add directory to PATH if not present.",
+        "function_name": "add_to_path",
+        "sample_input": "('/new/dir',)",
+        "sample_output": "/usr/bin:/bin:/new/dir",
+        "hidden_tests": [
+          {
+            "input": "('/usr/bin',)",
+            "expected_output": "/usr/bin:/bin"
+          },
+          {
+            "input": "('/another',)",
+            "expected_output": "/usr/bin:/bin:/another"
+          }
+        ],
+        "correct_code": "def add_to_path(new_dir):\n    path = os.environ.get('PATH', '')\n    if new_dir not in path.split(os.pathsep):\n        os.environ['PATH'] = path + os.pathsep + new_dir if path else new_dir",
+        "explanation": "This function adds a directory to the PATH environment variable only if it's not already present, avoiding duplicates."
+      },
+      "buggy": {
+        "buggy_question_text": "Function duplicates directory if already in PATH.",
+        "buggy_code": "def add_to_path(new_dir):\n    os.environ['PATH'] += ':' + new_dir",
+        "buggy_correct_code": "def add_to_path(new_dir):\n    path = os.environ.get('PATH', '')\n    if new_dir not in path.split(os.pathsep):\n        os.environ['PATH'] = path + os.pathsep + new_dir if path else new_dir",
+        "buggy_explanation": "Buggy code always appends the directory without checking. Fixed by checking existence first and using os.pathsep for joining."
+      },
+      "generation_timestamp": "2025-10-03T22:31:14.832723"
+    },
+    "created_at": "2025-10-03T22:31:14.835726",
+    "exported_at": "2025-10-03T22:31:14.835726"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "advanced",
+    "subtopic": "Managing Environment Variables and PATH",
+    "game_data": {
+      "normal": {
+        "question_text": "Get all directories in PATH as list.",
+        "function_name": "get_path_dirs",
+        "sample_input": "()",
+        "sample_output": [
+          "/usr/bin",
+          "/bin"
+        ],
+        "hidden_tests": [
+          {
+            "input": "()",
+            "expected_output": []
+          },
+          {
+            "input": "()",
+            "expected_output": [
+              "/usr/local/bin",
+              "/usr/bin"
+            ]
+          }
+        ],
+        "correct_code": "def get_path_dirs():\n    path = os.environ.get('PATH', '')\n    return path.split(os.pathsep) if path else []",
+        "explanation": "This function returns a list of all directories in the PATH environment variable, handling empty PATH correctly."
+      },
+      "buggy": {
+        "buggy_question_text": "Function returns empty list if PATH is empty.",
+        "buggy_code": "def get_path_dirs():\n    return os.environ.get('PATH', '').split(os.pathsep)",
+        "buggy_correct_code": "def get_path_dirs():\n    path = os.environ.get('PATH', '')\n    return path.split(os.pathsep) if path else []",
+        "buggy_explanation": "Buggy code splits empty PATH into [''] instead of empty list. Fixed by checking if PATH is empty before splitting."
+      },
+      "generation_timestamp": "2025-10-03T22:31:14.891257"
+    },
+    "created_at": "2025-10-03T22:31:14.893786",
+    "exported_at": "2025-10-03T22:31:14.893786"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "advanced",
+    "subtopic": "Managing Environment Variables and PATH",
+    "game_data": {
+      "normal": {
+        "question_text": "Get environment variable with default.",
+        "function_name": "get_env_with_default",
+        "sample_input": "('MISSING', 'default')",
+        "sample_output": "default",
+        "hidden_tests": [
+          {
+            "input": "('HOME', 'fallback')",
+            "expected_output": "/home/user"
+          },
+          {
+            "input": "('UNDEFINED', 'backup')",
+            "expected_output": "backup"
+          }
+        ],
+        "correct_code": "def get_env_with_default(key, default):\n    return os.getenv(key, default)",
+        "explanation": "This function retrieves an environment variable, returning a specified default value if the variable is not set."
+      },
+      "buggy": {
+        "buggy_question_text": "Function returns empty string instead of default.",
+        "buggy_code": "def get_env_with_default(key, default):\n    return os.environ.get(key, '') or default",
+        "buggy_correct_code": "def get_env_with_default(key, default):\n    return os.getenv(key, default)",
+        "buggy_explanation": "Buggy code returns empty string when variable missing. Fixed by using os.getenv with default parameter."
+      },
+      "generation_timestamp": "2025-10-03T22:31:14.945997"
+    },
+    "created_at": "2025-10-03T22:31:14.948992",
+    "exported_at": "2025-10-03T22:31:14.948992"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "advanced",
+    "subtopic": "Managing Environment Variables and PATH",
+    "game_data": {
+      "normal": {
+        "question_text": "Get PATH separator for current OS.",
+        "function_name": "get_path_separator",
+        "sample_input": "()",
+        "sample_output": ":",
+        "hidden_tests": [
+          {
+            "input": "()",
+            "expected_output": ";"
+          },
+          {
+            "input": "()",
+            "expected_output": ":"
+          }
+        ],
+        "correct_code": "def get_path_separator():\n    return os.pathsep",
+        "explanation": "This function returns the correct path separator for the current operating system (colon for Unix, semicolon for Windows)."
+      },
+      "buggy": {
+        "buggy_question_text": "Function always returns colon, fails on Windows.",
+        "buggy_code": "def get_path_separator():\n    return ':'",
+        "buggy_correct_code": "def get_path_separator():\n    return os.pathsep",
+        "buggy_explanation": "Buggy code hardcodes colon separator. Fixed by using os.pathsep which is platform-independent."
+      },
+      "generation_timestamp": "2025-10-03T22:31:15.000746"
+    },
+    "created_at": "2025-10-03T22:31:15.003578",
+    "exported_at": "2025-10-03T22:31:15.003578"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "advanced",
+    "subtopic": "Membership (in, not in) and Identity Operators (is, is not)",
+    "game_data": {
+      "normal": {
+        "question_text": "Check if two variables reference the same object.",
+        "function_name": "check_same_object",
+        "sample_input": "(5, 5)",
+        "sample_output": "False",
+        "hidden_tests": [
+          {
+            "input": "([1], [1])",
+            "expected_output": "False"
+          },
+          {
+            "input": "(None, None)",
+            "expected_output": "True"
+          }
+        ],
+        "correct_code": "def check_same_object(a, b):\n    return a is b",
+        "explanation": "The function should use identity operator 'is' to verify if two variables point to the same memory object, ensuring accurate reference comparison."
+      },
+      "buggy": {
+        "buggy_question_text": "Function returns True even when objects are different.",
+        "buggy_code": "def check_same_object(a, b):\n    return a == b",
+        "buggy_correct_code": "def check_same_object(a, b):\n    return a is b",
+        "buggy_explanation": "Buggy code uses '==' instead of 'is', comparing values not identities. Fix by replacing '==' with 'is' operator."
+      },
+      "generation_timestamp": "2025-10-03T22:31:24.481892"
+    },
+    "created_at": "2025-10-03T22:31:24.484339",
+    "exported_at": "2025-10-03T22:31:24.484339"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "advanced",
+    "subtopic": "Membership (in, not in) and Identity Operators (is, is not)",
+    "game_data": {
+      "normal": {
+        "question_text": "Find if element is not in list using membership.",
+        "function_name": "is_element_absent",
+        "sample_input": "(3, [1, 2, 4])",
+        "sample_output": "True",
+        "hidden_tests": [
+          {
+            "input": "('a', ['a', 'b'])",
+            "expected_output": "False"
+          },
+          {
+            "input": "(None, [1, None])",
+            "expected_output": "False"
+          }
+        ],
+        "correct_code": "def is_element_absent(element, lst):\n    return element not in lst",
+        "explanation": "This function should return True if the element is not present in the list, using 'not in' membership operator for accurate absence check."
+      },
+      "buggy": {
+        "buggy_question_text": "Function returns incorrect result when element is absent.",
+        "buggy_code": "def is_element_absent(element, lst):\n    return element in lst",
+        "buggy_correct_code": "def is_element_absent(element, lst):\n    return element not in lst",
+        "buggy_explanation": "Buggy code uses 'in' without negation, returning True for presence. Fix by changing 'in' to 'not in'."
+      },
+      "generation_timestamp": "2025-10-03T22:31:24.503021"
+    },
+    "created_at": "2025-10-03T22:31:24.506022",
+    "exported_at": "2025-10-03T22:31:24.506022"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "advanced",
+    "subtopic": "Membership (in, not in) and Identity Operators (is, is not)",
+    "game_data": {
+      "normal": {
+        "question_text": "Check if substring exists in string.",
+        "function_name": "contains_substring",
+        "sample_input": "('hello', 'ell')",
+        "sample_output": "True",
+        "hidden_tests": [
+          {
+            "input": "('python', 'th')",
+            "expected_output": "True"
+          },
+          {
+            "input": "('test', 'xyz')",
+            "expected_output": "False"
+          }
+        ],
+        "correct_code": "def contains_substring(main_str, sub_str):\n    return sub_str in main_str",
+        "explanation": "This function should return True if the substring is found anywhere in the string using 'in' membership operator for substring presence check."
+      },
+      "buggy": {
+        "buggy_question_text": "Function fails when substring is at start.",
+        "buggy_code": "def contains_substring(main_str, sub_str):\n    return sub_str is main_str",
+        "buggy_correct_code": "def contains_substring(main_str, sub_str):\n    return sub_str in main_str",
+        "buggy_explanation": "Buggy code incorrectly uses 'is' instead of 'in'. Change 'is' to 'in' to properly check substring membership in the string."
+      },
+      "generation_timestamp": "2025-10-03T22:31:24.562055"
+    },
+    "created_at": "2025-10-03T22:31:24.564063",
+    "exported_at": "2025-10-03T22:31:24.564063"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "advanced",
+    "subtopic": "Membership (in, not in) and Identity Operators (is, is not)",
+    "game_data": {
+      "normal": {
+        "question_text": "Determine if key is not in dictionary.",
+        "function_name": "is_key_missing",
+        "sample_input": "('age', {'name': 'Alice'})",
+        "sample_output": "True",
+        "hidden_tests": [
+          {
+            "input": "('x', {'x': 1})",
+            "expected_output": "False"
+          },
+          {
+            "input": "('', {1: 'a'})",
+            "expected_output": "True"
+          }
+        ],
+        "correct_code": "def is_key_missing(key, dct):\n    return key not in dct",
+        "explanation": "Function should return True if the key is absent from the dictionary using 'not in' membership operator for accurate key absence verification."
+      },
+      "buggy": {
+        "buggy_question_text": "Returns wrong result when key is missing.",
+        "buggy_code": "def is_key_missing(key, dct):\n    return key in dct",
+        "buggy_correct_code": "def is_key_missing(key, dct):\n    return key not in dct",
+        "buggy_explanation": "Buggy code uses 'in' without negation, returning True for key presence. Fix by changing 'in' to 'not in' operator."
+      },
+      "generation_timestamp": "2025-10-03T22:31:24.601187"
+    },
+    "created_at": "2025-10-03T22:31:24.603503",
+    "exported_at": "2025-10-03T22:31:24.603503"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "advanced",
+    "subtopic": "Membership (in, not in) and Identity Operators (is, is not)",
+    "game_data": {
+      "normal": {
+        "question_text": "Verify element is in tuple using membership.",
+        "function_name": "is_in_tuple",
+        "sample_input": "(2, (1, 2, 3))",
+        "sample_output": "True",
+        "hidden_tests": [
+          {
+            "input": "(0, (1, 2))",
+            "expected_output": "False"
+          },
+          {
+            "input": "('a', ('a', 'b'))",
+            "expected_output": "True"
+          }
+        ],
+        "correct_code": "def is_in_tuple(element, tup):\n    return element in tup",
+        "explanation": "Function should return True if the element exists in the tuple using 'in' membership operator for accurate presence detection in immutable sequences."
+      },
+      "buggy": {
+        "buggy_question_text": "Function returns False when element is present.",
+        "buggy_code": "def is_in_tuple(element, tup):\n    return element is tup",
+        "buggy_correct_code": "def is_in_tuple(element, tup):\n    return element in tup",
+        "buggy_explanation": "Buggy code uses 'is' instead of 'in', checking identity not membership. Change 'is' to 'in' to correctly search the tuple."
+      },
+      "generation_timestamp": "2025-10-03T22:31:24.659345"
+    },
+    "created_at": "2025-10-03T22:31:24.661858",
+    "exported_at": "2025-10-03T22:31:24.661858"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "advanced",
+    "subtopic": "Membership (in, not in) and Identity Operators (is, is not)",
+    "game_data": {
+      "normal": {
+        "question_text": "Check if variable is None using identity.",
+        "function_name": "is_none",
+        "sample_input": "(None,)",
+        "sample_output": "True",
+        "hidden_tests": [
+          {
+            "input": "(0,)",
+            "expected_output": "False"
+          },
+          {
+            "input": "('',)",
+            "expected_output": "False"
+          }
+        ],
+        "correct_code": "def is_none(var):\n    return var is None",
+        "explanation": "This function must use 'is' identity operator to accurately determine if the variable is exactly None, not just None-equivalent."
+      },
+      "buggy": {
+        "buggy_question_text": "Fails when variable equals None but is not None.",
+        "buggy_code": "def is_none(var):\n    return var == None",
+        "buggy_correct_code": "def is_none(var):\n    return var is None",
+        "buggy_explanation": "Buggy code uses '==' which can be True for non-None values. Replace with 'is' to ensure exact None identity check."
+      },
+      "generation_timestamp": "2025-10-03T22:31:24.712295"
+    },
+    "created_at": "2025-10-03T22:31:24.714307",
+    "exported_at": "2025-10-03T22:31:24.714307"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "advanced",
+    "subtopic": "Membership (in, not in) and Identity Operators (is, is not)",
+    "game_data": {
+      "normal": {
+        "question_text": "Find if character is not in string.",
+        "function_name": "is_char_absent",
+        "sample_input": "('x', 'hello')",
+        "sample_output": "True",
+        "hidden_tests": [
+          {
+            "input": "('e', 'hello')",
+            "expected_output": "False"
+          },
+          {
+            "input": "('', 'test')",
+            "expected_output": "True"
+          }
+        ],
+        "correct_code": "def is_char_absent(char, string):\n    return char not in string",
+        "explanation": "Function should return True if the character is not found in the string using 'not in' membership operator for accurate character absence verification."
+      },
+      "buggy": {
+        "buggy_question_text": "Returns incorrect result when character is absent.",
+        "buggy_code": "def is_char_absent(char, string):\n    return char in string",
+        "buggy_correct_code": "def is_char_absent(char, string):\n    return char not in string",
+        "buggy_explanation": "Buggy code uses 'in' without negation, returning True for presence. Fix by changing 'in' to 'not in' operator."
+      },
+      "generation_timestamp": "2025-10-03T22:31:24.750783"
+    },
+    "created_at": "2025-10-03T22:31:24.752301",
+    "exported_at": "2025-10-03T22:31:24.752301"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "advanced",
+    "subtopic": "Membership (in, not in) and Identity Operators (is, is not)",
+    "game_data": {
+      "normal": {
+        "question_text": "Verify two sets are not the same object.",
+        "function_name": "are_different_sets",
+        "sample_input": "({1, 2}, {1, 2})",
+        "sample_output": "True",
+        "hidden_tests": [
+          {
+            "input": "(a, a) where a = {3}",
+            "expected_output": "False"
+          },
+          {
+            "input": "(set(), set())",
+            "expected_output": "True"
+          }
+        ],
+        "correct_code": "def are_different_sets(set1, set2):\n    return set1 is not set2",
+        "explanation": "Function must use 'is not' identity operator to confirm two set variables do not reference the same set object, regardless of element equality."
+      },
+      "buggy": {
+        "buggy_question_text": "Returns False for different sets with same elements.",
+        "buggy_code": "def are_different_sets(set1, set2):\n    return set1 != set2",
+        "buggy_correct_code": "def are_different_sets(set1, set2):\n    return set1 is not set2",
+        "buggy_explanation": "Buggy code uses '!=' which checks set content difference, not identity. Replace with 'is not' for correct object identity comparison."
+      },
+      "generation_timestamp": "2025-10-03T22:31:24.806996"
+    },
+    "created_at": "2025-10-03T22:31:24.810004",
+    "exported_at": "2025-10-03T22:31:24.810004"
+  }
+]

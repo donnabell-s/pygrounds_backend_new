@@ -1,0 +1,668 @@
+[
+  {
+    "id": 1,
+    "question_text": "You want to display the text 'Hello, World!' on the screen. Which function do you use?",
+    "answer_options": [
+      "print()",
+      "input()",
+      "type()",
+      "def()"
+    ],
+    "correct_answer": "print()",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      1,
+      3
+    ],
+    "subtopic_ids": [
+      7,
+      17
+    ],
+    "order": 0,
+    "created_at": "2025-10-03T14:05:47.590429",
+    "exported_at": "2025-10-03T14:05:47.590429"
+  },
+  {
+    "id": 2,
+    "question_text": "Which of these is a correct way to store the number 10 in a variable?",
+    "answer_options": [
+      "my_number = 10",
+      "10 = my_number",
+      "var my_number = 10",
+      "int my_number = 10"
+    ],
+    "correct_answer": "my_number = 10",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      2,
+      4
+    ],
+    "subtopic_ids": [
+      9,
+      26
+    ],
+    "order": 1,
+    "created_at": "2025-10-03T14:05:47.606437",
+    "exported_at": "2025-10-03T14:05:47.606437"
+  },
+  {
+    "id": 3,
+    "question_text": "You want to ask the user for their name and store it. Which function should you use?",
+    "answer_options": [
+      "print()",
+      "input()",
+      "type()",
+      "def()"
+    ],
+    "correct_answer": "input()",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      3
+    ],
+    "subtopic_ids": [
+      16,
+      19
+    ],
+    "order": 2,
+    "created_at": "2025-10-03T14:05:47.637429",
+    "exported_at": "2025-10-03T14:05:47.637429"
+  },
+  {
+    "id": 4,
+    "question_text": "What will this code output: print(5 + 3 * 2)?",
+    "answer_options": [
+      "16",
+      "11",
+      "13",
+      "Error"
+    ],
+    "correct_answer": "11",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      4
+    ],
+    "subtopic_ids": [
+      23,
+      27
+    ],
+    "order": 3,
+    "created_at": "2025-10-03T14:05:47.669959",
+    "exported_at": "2025-10-03T14:05:47.669959"
+  },
+  {
+    "id": 5,
+    "question_text": "Which operator checks if two values are equal?",
+    "answer_options": [
+      "=",
+      "==",
+      "!=",
+      ">="
+    ],
+    "correct_answer": "==",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      4
+    ],
+    "subtopic_ids": [
+      24
+    ],
+    "order": 4,
+    "created_at": "2025-10-03T14:05:47.696961",
+    "exported_at": "2025-10-03T14:05:47.696961"
+  },
+  {
+    "id": 6,
+    "question_text": "How do you write a single-line comment in Python?",
+    "answer_options": [
+      "// This is a comment",
+      "# This is a comment",
+      "/* This is a comment */",
+      "-- This is a comment"
+    ],
+    "correct_answer": "# This is a comment",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      5
+    ],
+    "subtopic_ids": [
+      30
+    ],
+    "order": 5,
+    "created_at": "2025-10-03T14:05:47.722959",
+    "exported_at": "2025-10-03T14:05:47.722959"
+  },
+  {
+    "id": 7,
+    "question_text": "What keyword starts an 'if' statement in Python?",
+    "answer_options": [
+      "when",
+      "if",
+      "check",
+      "condition"
+    ],
+    "correct_answer": "if",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      6
+    ],
+    "subtopic_ids": [
+      37
+    ],
+    "order": 6,
+    "created_at": "2025-10-03T14:05:47.744957",
+    "exported_at": "2025-10-03T14:05:47.744957"
+  },
+  {
+    "id": 8,
+    "question_text": "If a user enters '25' with input(), what type is it by default?",
+    "answer_options": [
+      "integer",
+      "float",
+      "string",
+      "boolean"
+    ],
+    "correct_answer": "string",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      3,
+      2
+    ],
+    "subtopic_ids": [
+      19,
+      14
+    ],
+    "order": 7,
+    "created_at": "2025-10-03T14:05:47.767485",
+    "exported_at": "2025-10-03T14:05:47.767485"
+  },
+  {
+    "id": 9,
+    "question_text": "Which of these correctly converts a string '123' to an integer?",
+    "answer_options": [
+      "int('123')",
+      "str(123)",
+      "float('123')",
+      "convert('123')"
+    ],
+    "correct_answer": "int('123')",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      2,
+      3
+    ],
+    "subtopic_ids": [
+      13,
+      19
+    ],
+    "order": 8,
+    "created_at": "2025-10-03T14:05:47.790489",
+    "exported_at": "2025-10-03T14:05:47.790489"
+  },
+  {
+    "id": 10,
+    "question_text": "What is the result of: True and False?",
+    "answer_options": [
+      "True",
+      "False",
+      "None",
+      "Error"
+    ],
+    "correct_answer": "False",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      2,
+      4
+    ],
+    "subtopic_ids": [
+      12,
+      25
+    ],
+    "order": 9,
+    "created_at": "2025-10-03T14:05:47.817634",
+    "exported_at": "2025-10-03T14:05:47.817634"
+  },
+  {
+    "id": 11,
+    "question_text": "Which loop runs as long as a condition is True?",
+    "answer_options": [
+      "for loop",
+      "while loop",
+      "if loop",
+      "repeat loop"
+    ],
+    "correct_answer": "while loop",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      8
+    ],
+    "subtopic_ids": [
+      53,
+      57
+    ],
+    "order": 10,
+    "created_at": "2025-10-03T14:05:47.851651",
+    "exported_at": "2025-10-03T14:05:47.851651"
+  },
+  {
+    "id": 12,
+    "question_text": "How do you get the length of a string like 'hello'?",
+    "answer_options": [
+      "length('hello')",
+      "len('hello')",
+      "count('hello')",
+      "size('hello')"
+    ],
+    "correct_answer": "len('hello')",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      2,
+      10
+    ],
+    "subtopic_ids": [
+      11,
+      65
+    ],
+    "order": 11,
+    "created_at": "2025-10-03T14:05:47.882153",
+    "exported_at": "2025-10-03T14:05:47.882153"
+  },
+  {
+    "id": 13,
+    "question_text": "Which data type is ordered and changeable, like a shopping list?",
+    "answer_options": [
+      "tuple",
+      "list",
+      "set",
+      "dictionary"
+    ],
+    "correct_answer": "list",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      11
+    ],
+    "subtopic_ids": [
+      72,
+      78
+    ],
+    "order": 12,
+    "created_at": "2025-10-03T14:05:47.925153",
+    "exported_at": "2025-10-03T14:05:47.925153"
+  },
+  {
+    "id": 14,
+    "question_text": "What keyword do you use to define a new function?",
+    "answer_options": [
+      "function",
+      "def",
+      "define",
+      "func"
+    ],
+    "correct_answer": "def",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      13
+    ],
+    "subtopic_ids": [
+      86,
+      87
+    ],
+    "order": 13,
+    "created_at": "2025-10-03T14:05:47.969547",
+    "exported_at": "2025-10-03T14:05:47.969547"
+  },
+  {
+    "id": 15,
+    "question_text": "If x = 10, what does x += 5 do?",
+    "answer_options": [
+      "Makes x equal 5",
+      "Makes x equal 15",
+      "Compares x and 5",
+      "Raises an error"
+    ],
+    "correct_answer": "Makes x equal 15",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      4
+    ],
+    "subtopic_ids": [
+      26,
+      23
+    ],
+    "order": 14,
+    "created_at": "2025-10-03T14:05:47.993547",
+    "exported_at": "2025-10-03T14:05:47.993547"
+  },
+  {
+    "id": 16,
+    "question_text": "How can you check if the letter 'a' is in the string 'banana'?",
+    "answer_options": [
+      "'a' in 'banana'",
+      "'a' == 'banana'",
+      "'banana'.find('a')",
+      "'banana'.contains('a')"
+    ],
+    "correct_answer": "'a' in 'banana'",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      4,
+      10
+    ],
+    "subtopic_ids": [
+      28,
+      68
+    ],
+    "order": 15,
+    "created_at": "2025-10-03T14:05:48.028549",
+    "exported_at": "2025-10-03T14:05:48.028549"
+  },
+  {
+    "id": 17,
+    "question_text": "Which of these creates a tuple with elements 1, 2, 3?",
+    "answer_options": [
+      "[1, 2, 3]",
+      "(1, 2, 3)",
+      "{1, 2, 3}",
+      "<1, 2, 3>"
+    ],
+    "correct_answer": "(1, 2, 3)",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      11
+    ],
+    "subtopic_ids": [
+      75,
+      78
+    ],
+    "order": 16,
+    "created_at": "2025-10-03T14:05:48.070701",
+    "exported_at": "2025-10-03T14:05:48.070701"
+  },
+  {
+    "id": 18,
+    "question_text": "What does this code do: for i in range(3): print(i)?",
+    "answer_options": [
+      "Prints 0, 1, 2",
+      "Prints 1, 2, 3",
+      "Prints 3 three times",
+      "Raises an error"
+    ],
+    "correct_answer": "Prints 0, 1, 2",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      8
+    ],
+    "subtopic_ids": [
+      51,
+      52
+    ],
+    "order": 17,
+    "created_at": "2025-10-03T14:05:48.111701",
+    "exported_at": "2025-10-03T14:05:48.111701"
+  },
+  {
+    "id": 19,
+    "question_text": "How do you handle an error so the program doesn't crash?",
+    "answer_options": [
+      "Use if-else",
+      "Use try-except",
+      "Use for loop",
+      "Use comments"
+    ],
+    "correct_answer": "Use try-except",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      7
+    ],
+    "subtopic_ids": [
+      45,
+      44
+    ],
+    "order": 18,
+    "created_at": "2025-10-03T14:05:48.142701",
+    "exported_at": "2025-10-03T14:05:48.142701"
+  },
+  {
+    "id": 20,
+    "question_text": "Which method adds an item to the end of a list?",
+    "answer_options": [
+      ".add()",
+      ".append()",
+      ".insert()",
+      ".push()"
+    ],
+    "correct_answer": ".append()",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      11
+    ],
+    "subtopic_ids": [
+      73,
+      72
+    ],
+    "order": 19,
+    "created_at": "2025-10-03T14:05:48.185889",
+    "exported_at": "2025-10-03T14:05:48.185889"
+  },
+  {
+    "id": 21,
+    "question_text": "What will 'hello'.upper() return?",
+    "answer_options": [
+      "'hello'",
+      "'HELLO'",
+      "'Hello'",
+      "Error"
+    ],
+    "correct_answer": "'HELLO'",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      10
+    ],
+    "subtopic_ids": [
+      67,
+      66
+    ],
+    "order": 20,
+    "created_at": "2025-10-03T14:05:48.225889",
+    "exported_at": "2025-10-03T14:05:48.225889"
+  },
+  {
+    "id": 22,
+    "question_text": "If you have two loops, one inside the other, what is that called?",
+    "answer_options": [
+      "Double loop",
+      "Nested loop",
+      "Mixed loop",
+      "Parallel loop"
+    ],
+    "correct_answer": "Nested loop",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      9
+    ],
+    "subtopic_ids": [
+      59,
+      58
+    ],
+    "order": 21,
+    "created_at": "2025-10-03T14:05:48.260899",
+    "exported_at": "2025-10-03T14:05:48.260899"
+  },
+  {
+    "id": 23,
+    "question_text": "Which data structure uses keys and values, like a dictionary?",
+    "answer_options": [
+      "list",
+      "tuple",
+      "set",
+      "dictionary"
+    ],
+    "correct_answer": "dictionary",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      14
+    ],
+    "subtopic_ids": [
+      93,
+      98
+    ],
+    "order": 22,
+    "created_at": "2025-10-03T14:05:48.308407",
+    "exported_at": "2025-10-03T14:05:48.308407"
+  },
+  {
+    "id": 24,
+    "question_text": "What does the 'else' clause do in a try-except block?",
+    "answer_options": [
+      "Runs if an error occurs",
+      "Runs if no error occurs",
+      "Always runs",
+      "Never runs"
+    ],
+    "correct_answer": "Runs if no error occurs",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      7
+    ],
+    "subtopic_ids": [
+      47,
+      45
+    ],
+    "order": 23,
+    "created_at": "2025-10-03T14:05:48.340407",
+    "exported_at": "2025-10-03T14:05:48.340407"
+  },
+  {
+    "id": 25,
+    "question_text": "How do you create a set that cannot be changed?",
+    "answer_options": [
+      "Using tuple()",
+      "Using frozenset()",
+      "Using constset()",
+      "Using fixedset()"
+    ],
+    "correct_answer": "Using frozenset()",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      12
+    ],
+    "subtopic_ids": [
+      83,
+      79
+    ],
+    "order": 24,
+    "created_at": "2025-10-03T14:05:48.386922",
+    "exported_at": "2025-10-03T14:05:48.386922"
+  },
+  {
+    "id": 26,
+    "question_text": "What is the output of: print(f\"Two plus two is {2+2}\")?",
+    "answer_options": [
+      "Two plus two is {2+2}",
+      "Two plus two is 4",
+      "Error",
+      "Two plus two is 2+2"
+    ],
+    "correct_answer": "Two plus two is 4",
+    "estimated_difficulty": "advanced",
+    "topic_ids": [
+      3,
+      1
+    ],
+    "subtopic_ids": [
+      18,
+      7
+    ],
+    "order": 25,
+    "created_at": "2025-10-03T14:05:48.406922",
+    "exported_at": "2025-10-03T14:05:48.406922"
+  },
+  {
+    "id": 27,
+    "question_text": "Which operator checks if two variables point to the same object?",
+    "answer_options": [
+      "==",
+      "is",
+      "in",
+      "="
+    ],
+    "correct_answer": "is",
+    "estimated_difficulty": "advanced",
+    "topic_ids": [
+      4,
+      6
+    ],
+    "subtopic_ids": [
+      28,
+      40
+    ],
+    "order": 26,
+    "created_at": "2025-10-03T14:05:48.435092",
+    "exported_at": "2025-10-03T14:05:48.435092"
+  },
+  {
+    "id": 28,
+    "question_text": "If you want to exit a loop early, which statement do you use?",
+    "answer_options": [
+      "stop",
+      "exit",
+      "break",
+      "return"
+    ],
+    "correct_answer": "break",
+    "estimated_difficulty": "advanced",
+    "topic_ids": [
+      8
+    ],
+    "subtopic_ids": [
+      54,
+      56
+    ],
+    "order": 27,
+    "created_at": "2025-10-03T14:05:48.470514",
+    "exported_at": "2025-10-03T14:05:48.470514"
+  },
+  {
+    "id": 29,
+    "question_text": "What does a lambda function allow you to do?",
+    "answer_options": [
+      "Create a function without a name",
+      "Handle errors",
+      "Loop through items",
+      "Define a class"
+    ],
+    "correct_answer": "Create a function without a name",
+    "estimated_difficulty": "advanced",
+    "topic_ids": [
+      13
+    ],
+    "subtopic_ids": [
+      91,
+      92
+    ],
+    "order": 28,
+    "created_at": "2025-10-03T14:05:48.520513",
+    "exported_at": "2025-10-03T14:05:48.520513"
+  },
+  {
+    "id": 30,
+    "question_text": "You want to process a 2D grid (like a chessboard) with loops. Which concept is most relevant?",
+    "answer_options": [
+      "List comprehension",
+      "Nested loops",
+      "Function recursion",
+      "Set operations"
+    ],
+    "correct_answer": "Nested loops",
+    "estimated_difficulty": "master",
+    "topic_ids": [
+      9
+    ],
+    "subtopic_ids": [
+      61,
+      62
+    ],
+    "order": 29,
+    "created_at": "2025-10-03T14:05:48.574035",
+    "exported_at": "2025-10-03T14:05:48.574035"
+  }
+]

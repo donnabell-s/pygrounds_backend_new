@@ -15,7 +15,7 @@ from .tocParserView import (
 from .chunkPagesView import (
     process_document_pipeline, cancel_document_pipeline, chunk_document_pages, generate_document_embeddings,
     get_document_chunks, get_single_chunk, get_document_chunks_full,
-    get_chunks_by_type, get_coding_chunks_for_minigames
+    get_chunks_by_type, get_coding_chunks_for_minigames, get_processing_queue_status
 )
 
 # Embedding views

@@ -8,10 +8,18 @@ logger = logging.getLogger(__name__)
 
 DEEPSEEK_API_KEY = os.environ.get("DEEPSEEK_API_KEY")
 DEEPSEEK_BASE_URL = os.environ.get("DEEPSEEK_API_URL")
+"""
+USE CASE	TEMPERATURE
 
-# Temperature settings for different question types
-CODING_TEMPERATURE = 0.5    # Very deterministic for coding questions
-NON_CODING_TEMPERATURE = 1  # More creative for non-coding questions
+Coding / Math   	            0.0
+Data Cleaning / Data Analysis	1.0
+General Conversation	        1.3
+Translation	                    1.3
+Creative Writing / Poetry	    1.5
+"""
+
+CODING_TEMPERATURE = 0.5    
+NON_CODING_TEMPERATURE = 1.3 
 
 
 client = OpenAI(
@@ -19,7 +27,7 @@ client = OpenAI(
     base_url=DEEPSEEK_BASE_URL,
 )
 
-def send_llm_messages(messages, tools=None, model="deepseek-reasoner", **kwargs):
+def send_llm_messages(messages, tools=None, model="deepseek-chat", **kwargs):
     # Send messages to DeepSeek LLM
     # Parameters:
     # - messages: Chat message list in OpenAI format

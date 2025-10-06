@@ -24,6 +24,50 @@ def generate_question_hash(question_text, subtopic_combination, game_type):
     return hashlib.md5(hash_input.encode()).hexdigest()[:12]
 
 
+def check_question_similarity(question_text1: str, question_text2: str, threshold: float = 0.8) -> bool:
+    """
+    Check if two questions are similar based on text analysis.
+    
+    Args:
+        question_text1: First question text
+        question_text2: Second question text  
+        threshold: Similarity threshold (0.0 to 1.0)
+        
+    Returns:
+        True if questions are similar enough to be considered duplicates
+    """
+    if not question_text1 or not question_text2:
+        return False
+        
+    # Normalize texts
+    text1 = question_text1.lower().strip()
+    text2 = question_text2.lower().strip()
+    
+    # Exact match
+    if text1 == text2:
+        return True
+    
+    # Length similarity check
+    len1, len2 = len(text1), len(text2)
+    if min(len1, len2) / max(len1, len2) < 0.7:  # Length difference too big
+        return False
+    
+    # Word-based similarity
+    words1 = set(text1.split())
+    words2 = set(text2.split())
+    
+    # Jaccard similarity of word sets
+    intersection = len(words1 & words2)
+    union = len(words1 | words2)
+    
+    if union == 0:
+        return False
+        
+    jaccard_similarity = intersection / union
+    
+    return jaccard_similarity >= threshold
+
+
 def parse_llm_json_response(llm_response: str, game_type: str = 'coding') -> Optional[List[Dict[str, Any]]]:
     # Extract and parse JSON array of questions from LLM response
     # Returns None if parsing fails
