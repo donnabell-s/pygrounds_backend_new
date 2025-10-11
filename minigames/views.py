@@ -23,6 +23,8 @@ from .models import (
 )
 from .serializers import GameSessionSerializer, QuestionResponseSerializer, LightweightQuestionSerializer
 from .question_fetching import fetch_questions_for_game
+from .serializers import LeaderboardEntrySerializer
+from django.db.models import F, Min, Max, Count, Avg, Sum, Q
 
 
 # -----------------------------------------------------------------------------
@@ -775,3 +777,62 @@ class SubmitPreAssessmentAnswers(APIView):
             "correct": correct_count,
             "results": results
         })
+
+
+class GameLeaderboardView(APIView):
+    """
+    Returns leaderboard entries for a given game_type.
+
+    Behavior:
+    - Considers completed GameSession rows (status='completed') filtered by game_type.
+    - For each user, picks the session with the highest total_score. If there are multiple
+      sessions with the same score, picks the one with the shortest elapsed time (end_time - start_time).
+    - Returns a list sorted by score desc, time asc.
+    """
+    permission_classes = [AllowAny]
+
+    def get(self, request, game_type):
+        # Filter completed sessions for the game
+        qs = GameSession.objects.filter(game_type=game_type, status='completed').exclude(user__isnull=True)
+
+        # Compute elapsed seconds per session (guard missing end_time)
+        sessions = []
+        for s in qs.select_related('user'):
+            if not s.end_time or not s.start_time:
+                elapsed = None
+            else:
+                elapsed = (s.end_time - s.start_time).total_seconds()
+            sessions.append((s, elapsed or 0.0))
+
+        # For each user, select best session according to score desc, elapsed asc
+        best_by_user = {}
+        for s, elapsed in sessions:
+            uid = s.user.id
+            cur = best_by_user.get(uid)
+            if not cur:
+                best_by_user[uid] = (s, elapsed)
+                continue
+            best_s, best_elapsed = cur
+            if s.total_score > best_s.total_score:
+                best_by_user[uid] = (s, elapsed)
+            elif s.total_score == best_s.total_score and elapsed < best_elapsed:
+                best_by_user[uid] = (s, elapsed)
+
+        entries = []
+        for uid, (s, elapsed) in best_by_user.items():
+            entries.append({
+                'user_id': s.user.id,
+                'username': s.user.username,
+                'first_name': getattr(s.user, 'first_name', '') or '',
+                'last_name': getattr(s.user, 'last_name', '') or '',
+                'score': s.total_score,
+                'time_seconds': float(elapsed),
+                'session_id': s.session_id,
+                'played_at': s.end_time or s.start_time,
+            })
+
+        # sort by score desc, time asc
+        entries.sort(key=lambda e: (-e['score'], e['time_seconds']))
+
+        serializer = LeaderboardEntrySerializer(entries, many=True)
+        return Response(serializer.data)
