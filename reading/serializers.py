@@ -10,6 +10,7 @@ class TopicAdminSerializer(serializers.ModelSerializer):
 
 
 class SubtopicAdminSerializer(serializers.ModelSerializer):
+    topic_ref = serializers.PrimaryKeyRelatedField(source="topic", read_only=True)
     topic_name = serializers.CharField(source="topic.name", read_only=True)
 
     class Meta:
@@ -19,7 +20,7 @@ class SubtopicAdminSerializer(serializers.ModelSerializer):
             "name",
             "slug",
             "order_in_topic",
-            "topic_ref",
+            "topic_ref",        
             "topic_name",
             "concept_intent",
             "code_intent",
@@ -53,10 +54,9 @@ class AdminReadingMaterialSerializer(serializers.ModelSerializer):
         }
 
 
-
 class ReadingMaterialSerializer(serializers.ModelSerializer):
-    topic_name = serializers.CharField(source="topic.name", read_only=True)
-    subtopic_name = serializers.CharField(source="subtopic.name", read_only=True)
+    topic_name = serializers.CharField(source="topic_ref.name", read_only=True)
+    subtopic_name = serializers.CharField(source="subtopic_ref.name", read_only=True)
 
     class Meta:
         model = ReadingMaterial
