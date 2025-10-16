@@ -553,25 +553,26 @@ def clean_game_data_for_frontend(game_data):
     """
     if not game_data:
         return game_data
-    
+
     # Create a copy to avoid modifying the original
     cleaned_data = game_data.copy()
-    
+
     # Remove deprecated/unused fields from game_data
-    fields_to_remove = ['used', 'context', 'auto_generated', 'pipeline_version', 'is_cross_subtopic']
+    # Keep CRUD-essential fields like is_cross_subtopic for frontend editing
+    fields_to_remove = ['used', 'context', 'auto_generated', 'pipeline_version']
     for field in fields_to_remove:
         cleaned_data.pop(field, None)
-    
+
     # Remove deprecated fields from nested rag_context if it exists
     if 'rag_context' in cleaned_data and isinstance(cleaned_data['rag_context'], dict):
         rag_context_fields_to_remove = ['used', 'context']
         for field in rag_context_fields_to_remove:
             cleaned_data['rag_context'].pop(field, None)
-        
+
         # Remove rag_context entirely if it's empty
         if not cleaned_data['rag_context']:
             cleaned_data.pop('rag_context', None)
-    
+
     return cleaned_data
 
 
@@ -580,8 +581,8 @@ def format_question_response(question, include_full_game_data=False):
     Format a question object for API response with optional game_data cleaning.
     """
     game_data = question.game_data if include_full_game_data else clean_game_data_for_frontend(question.game_data)
-    
-    return {
+
+    response = {
         'id': question.id,
         'question_text': question.question_text,
         'correct_answer': question.correct_answer,
@@ -597,6 +598,25 @@ def format_question_response(question, include_full_game_data=False):
         },
         'created_at': question.created_at.isoformat() if hasattr(question, 'created_at') else None
     }
+
+    # Add coding-specific fields at top level for CRUD operations
+    if question.game_type == 'coding' and game_data:
+        response.update({
+            'correct_code': game_data.get('correct_code', ''),
+            'hidden_tests': game_data.get('hidden_tests', []),
+            'sample_input': game_data.get('sample_input', ''),
+            'function_name': game_data.get('function_name', ''),
+            'sample_output': game_data.get('sample_output', ''),
+            'buggy_explanation': game_data.get('buggy_explanation', ''),
+            'buggy_correct_code': game_data.get('buggy_correct_code', ''),
+            'buggy_question_text': game_data.get('buggy_question_text', ''),
+            'subtopic_ids': game_data.get('subtopic_ids', []),
+            'subtopic_names': game_data.get('subtopic_names', []),
+            'subtopic_count': game_data.get('subtopic_count', 1),
+            'is_cross_subtopic': game_data.get('is_cross_subtopic', False)
+        })
+
+    return response
 
 
 @api_view(['GET'])

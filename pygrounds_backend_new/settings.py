@@ -14,7 +14,95 @@ import os
 from pathlib import Path
 from datetime import timedelta
 from dotenv import load_dotenv
+import multiprocessing
+
 load_dotenv()
+
+# Dynamic worker configuration based on CPU cores and generation hierarchy
+def get_layered_worker_count(difficulty_workers: int = 4, topic_workers: int = 8, subtopic_workers: int = 16) -> int:
+    """
+    Calculate optimal worker count using layered scaling approach.
+
+    Layered scaling considers the natural hierarchy of question generation:
+    1. Difficulty level (easy, intermediate, advanced, master) - base layer
+    2. Topic level (different topics within zones) - medium layer
+    3. Subtopic level (individual subtopics) - high layer
+
+    Args:
+        difficulty_workers: Workers for difficulty-level parallelism
+        topic_workers: Workers for topic-level parallelism
+        subtopic_workers: Workers for subtopic-level parallelism
+
+    Returns:
+        Optimal worker count based on CPU cores and generation hierarchy
+    """
+    cpu_count = multiprocessing.cpu_count()
+
+    # Layered scaling based on CPU cores
+    if cpu_count <= 4:
+        # Low-end systems: stick to difficulty-level parallelism
+        return min(difficulty_workers, cpu_count)
+    elif cpu_count <= 8:
+        # Medium systems: add topic-level parallelism
+        return min(topic_workers, cpu_count)
+    else:
+        # High-end systems: add subtopic-level parallelism (conservative to prevent DB connection exhaustion)
+        return min(subtopic_workers, cpu_count)
+
+
+# Dynamic worker configuration based on question type and database load
+# Different question types have different database query patterns:
+# - Non-coding: Efficient queries, can use full CPU scaling (up to 16)
+# - Pre-assessment: Similar to non-coding, can use full CPU scaling (up to 16)
+# - Coding: Multiple queries + fallbacks, fixed at 4 to prevent connection exhaustion
+
+def get_workers_for_game_type(game_type: str) -> int:
+    """
+    Get optimal worker count based on question type to prevent database connection exhaustion.
+    
+    Args:
+        game_type: 'coding', 'non_coding', or 'pre_assessment'
+    
+    Returns:
+        Optimal worker count for the given game type
+    """
+    cpu_count = multiprocessing.cpu_count()
+    
+    if game_type == 'coding':
+        # Coding questions do more DB queries (initial + fallback), so use fixed conservative count
+        return 4  # Fixed at 4 to prevent "too many clients" errors
+    elif game_type in ['non_coding', 'pre_assessment']:
+        # Non-coding and pre-assessment are efficient, use full dynamic scaling like before
+        return get_layered_worker_count(difficulty_workers=4, topic_workers=8, subtopic_workers=16)
+    else:
+        # Default fallback
+        return 4
+
+# Question generation worker configuration
+# Base configuration - can be overridden per game type
+QUESTION_GENERATION_WORKERS = 4
+CODING_QUESTION_WORKERS = get_workers_for_game_type('coding')          # Fixed at 4
+NON_CODING_QUESTION_WORKERS = get_workers_for_game_type('non_coding')  # Dynamic up to 16
+PRE_ASSESSMENT_WORKERS = get_workers_for_game_type('pre_assessment')   # Dynamic up to 16
+
+def get_optimal_worker_count(base_workers: int = 4, max_workers: int = 16) -> int:
+    """
+    Legacy function for backward compatibility.
+    Use get_layered_worker_count() for new implementations.
+    """
+    return get_layered_worker_count(difficulty_workers=base_workers, subtopic_workers=max_workers)
+
+# Worker configuration constants - layered scaling approach
+# QUESTION_GENERATION_WORKERS: Subtopic-level parallelism (highest granularity)
+# EMBEDDING_WORKERS: Topic-level parallelism (medium granularity)
+# DOCUMENT_PROCESSING_WORKERS: Difficulty-level parallelism (lowest granularity)
+
+QUESTION_GENERATION_WORKERS = 4
+EMBEDDING_WORKERS = 2
+DOCUMENT_PROCESSING_WORKERS = 2
+
+# Legacy constants for backward compatibility
+DEFAULT_MAX_WORKERS = QUESTION_GENERATION_WORKERS
 
 # Suppress TensorFlow warnings and logs
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # Suppress all TF logs except errors
@@ -63,7 +151,15 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0', '*']
+
+# CSRF trusted origins for development (fixes origin checking errors)
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:5173',
+    'http://127.0.0.1:5173',
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
+]
 
 
 # Application definition
@@ -86,12 +182,7 @@ INSTALLED_APPS = [
     'minigames',
     'reading',
     'analytics',
-    #'question_generation',
-    #'user_learning',
-    #'minigames',
-    #'minigames',
 
-    
 ]
 
 MIDDLEWARE = [
@@ -197,6 +288,10 @@ DATABASES = {
         'PASSWORD': config('DB_PASSWORD'),
         'HOST': config('DB_HOST'),
         'PORT': config('DB_PORT', default='5432'),
+        'CONN_MAX_AGE': 60,  # Keep connections alive for 60 seconds
+        'OPTIONS': {
+            'connect_timeout': 10,
+        }
     }
 }
 

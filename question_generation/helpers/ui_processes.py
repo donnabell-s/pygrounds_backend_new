@@ -8,6 +8,7 @@ from django.utils import timezone
 from datetime import timedelta
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from django.conf import settings
 from rest_framework import status
 
 from ..helpers.generation_status import generation_status_tracker
@@ -28,7 +29,34 @@ def get_generation_status(request, session_id):
         session_status = generation_status_tracker.get_session_status(session_id)
         
         if not session_status:
+            # Return default status information for testing/API discovery
             return Response({
+                'session_id': session_id,
+                'status': 'not_found',
+                'start_time': None,
+                'last_updated': None,
+                'overall_progress': {},
+                'worker_summary': {
+                    'total_tasks': 0,
+                    'active_tasks': 0,
+                    'completed_tasks': 0,
+                    'failed_tasks': 0,
+                    'calculated_pending_tasks': 0
+                },
+                'zones': [],
+                'difficulties': [],
+                'total_tasks': 0,
+                'completed_tasks': 0,
+                'successful_tasks': 0,
+                'total_questions': 0,
+                'current_combination': [],
+                'current_difficulty': '',
+                'progress_percentage': 0,
+                'success_rate': 0,
+                'thread_pool_info': {
+                    'max_threads': settings.QUESTION_GENERATION_WORKERS,
+                    'thread_scaling_type': 'subtopic-level (high parallelism)'
+                },
                 'error': 'Session not found'
             }, status=status.HTTP_404_NOT_FOUND)
         
@@ -54,29 +82,59 @@ def get_generation_status(request, session_id):
             })
         
         # Handle bulk generation sessions (original structure)
+        total_tasks = session_status.get('total_tasks', 0)
+        completed_tasks = session_status.get('completed_tasks', 0)
+        successful_tasks = session_status.get('successful_tasks', 0)
+        
+        worker_summary = {
+            'total_tasks': total_tasks,  # Renamed from total_workers for clarity
+            'active_tasks': len([w for w in session_status.get('workers', {}).values() if w['status'] == 'processing']),
+            'completed_tasks': completed_tasks,  # Use consistent value
+            'failed_tasks': len([w for w in session_status.get('workers', {}).values() if w['status'] in ['error', 'failed']]),
+            'calculated_pending_tasks': total_tasks - completed_tasks - len([w for w in session_status.get('workers', {}).values() if w['status'] in ['error', 'failed']])
+        }
+        
+        # Debug logging to see what the backend is actually returning
+        print('🔍 DEBUG: Full status response:', {
+            'session_id': session_id,
+            'status': session_status['status'],
+            'overall_progress': session_status.get('overall_progress', {}),
+            'worker_summary': worker_summary,
+            'total_tasks': total_tasks,
+            'completed_tasks': completed_tasks,
+        })
+        print('🔍 DEBUG: Task/Thread breakdown:', {
+            'total_tasks': total_tasks,
+            'active_tasks': worker_summary['active_tasks'],
+            'completed_tasks': completed_tasks,
+            'failed_tasks': worker_summary['failed_tasks'],
+            'thread_pool_size': f'{settings.QUESTION_GENERATION_WORKERS} (from QUESTION_GENERATION_WORKERS setting)',
+            'calculated_pending_tasks': worker_summary['calculated_pending_tasks']
+        })
+        
         return Response({
             'session_id': session_id,
             'status': session_status['status'],
             'start_time': session_status['start_time'],
             'last_updated': session_status['last_updated'],
             'overall_progress': session_status.get('overall_progress', {}),
-            'worker_summary': {
-                'total_workers': session_status.get('total_workers', 0),
-                'active_workers': len([w for w in session_status.get('workers', {}).values() if w['status'] == 'processing']),
-                'completed_workers': len([w for w in session_status.get('workers', {}).values() if w['status'] == 'completed']),
-                'failed_workers': len([w for w in session_status.get('workers', {}).values() if w['status'] in ['error', 'failed']])
-            },
+            'worker_summary': worker_summary,  # Now uses task terminology
             'zones': session_status.get('zones', []),
             'difficulties': session_status.get('difficulties', []),
-            # Add subtopic-specific generation fields
-            'total_tasks': session_status.get('total_tasks', 0),
-            'completed_tasks': session_status.get('completed_tasks', 0),
-            'successful_tasks': session_status.get('successful_tasks', 0),
+            # Add subtopic-specific generation fields (now consistent)
+            'total_tasks': total_tasks,
+            'completed_tasks': completed_tasks,
+            'successful_tasks': successful_tasks,
             'total_questions': session_status.get('total_questions', 0),
             'current_combination': session_status.get('current_combination', []),
             'current_difficulty': session_status.get('current_difficulty', ''),
             'progress_percentage': session_status.get('progress_percentage', 0),
-            'success_rate': session_status.get('success_rate', 0)
+            'success_rate': session_status.get('success_rate', 0),
+            # Add thread pool information for clarity
+            'thread_pool_info': {
+                'max_threads': settings.QUESTION_GENERATION_WORKERS,
+                'thread_scaling_type': 'subtopic-level (high parallelism)'
+            }
         })
         
     except Exception as e:

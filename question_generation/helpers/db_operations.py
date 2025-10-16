@@ -8,6 +8,7 @@ import os
 from datetime import datetime
 from django.db import transaction
 from typing import List, Dict, Any, Optional, Tuple
+from .question_processing import generate_question_hash, check_question_similarity
 
 # Cross-platform file locking
 try:
@@ -312,49 +313,90 @@ def save_minigame_questions_to_db_enhanced(questions_json: List[Dict[str, Any]],
                 # Extract core question data
                 question_text = q.get('question_text') or q.get('question', '')
                 
-                # Skip deduplication for now since we removed the threading manager
-                # TODO: Implement simple deduplication if needed
+                # Generate question hash for deduplication
+                question_hash = generate_question_hash(question_text, subtopic_combination, game_type)
                 
-                # Prepare data based on game type
-                if game_type == 'coding':
-                    # For coding questions, extract the correct answer and coding-specific fields
-                    correct_answer = q.get('correct_answer', '')  # The working code solution
-                    
-                    # Extract coding-specific fields for game_data
-                    function_name = q.get('function_name', '')
-                    sample_input = q.get('sample_input', '')
-                    sample_output = q.get('sample_output', '')
-                    hidden_tests = q.get('hidden_tests', [])
-                    buggy_code = q.get('buggy_code', '')
-                    correct_code = q.get('correct_code', '')
-                    buggy_correct_code = q.get('buggy_correct_code', '')
-                    
-                    # NEW: Extract buggy question text
-                    buggy_question_text = q.get('buggy_question_text', '')
-                    
-                else:  # non_coding
-                    # For non-coding, use simple answer format
-                    correct_answer = q.get('answer', '')
-                    
-                    # Set empty coding fields for consistency
-                    function_name = ''
-                    sample_input = ''
-                    sample_output = ''
-                    hidden_tests = []
-                    buggy_code = ''
-                    buggy_question_text = ''  # Only for coding questions
+                # Check for existing question with same hash
+                existing_question = GeneratedQuestion.objects.filter(
+                    game_data__question_hash=question_hash
+                ).first()
                 
-                # TEMPORARY: Log the question data instead of saving to avoid DB migration issues
-                print(f"🔍 WOULD SAVE QUESTION:")
-                print(f"   Question text: {question_text[:100]}...")
-                print(f"   Game type: {game_type}")
-                print(f"   Difficulty: {difficulty}")
-                print(f"   Primary subtopic: {primary_subtopic.name}")
-                print(f"   Subtopic combination: {subtopic_names}")
-                print(f"   Subtopic IDs: {subtopic_ids}")
-                print(f"   Cross-subtopic: {len(subtopic_combination) > 1}")
-                print(f"   Explanation: {q.get('explanation', 'N/A')[:100]}...")
-                print(f"   Buggy explanation: {q.get('buggy_explanation', 'N/A')[:100]}...")
+                if existing_question:
+                    print(f"⚠️ Duplicate question detected (hash: {question_hash[:8]}...), skipping")
+                    duplicate_questions.append({
+                        'question_text': question_text[:100] + "...",
+                        'hash': question_hash,
+                        'existing_id': existing_question.id,
+                        'subtopic_combination': subtopic_names,
+                        'difficulty': difficulty,
+                        'reason': 'duplicate_hash'
+                    })
+                    continue
+                
+                # Additional similarity check: look for very similar questions in the same subtopic/difficulty
+                # This catches questions that are nearly identical but not exact hash matches
+                similar_questions = GeneratedQuestion.objects.filter(
+                    subtopic__in=subtopic_combination,
+                    estimated_difficulty=difficulty,
+                    game_type=game_type
+                ).exclude(id__in=[q.id for q in saved_questions])  # Don't check against questions we just saved
+                
+                for similar_q in similar_questions:
+                    # Simple similarity check: if question texts are 80% similar in length and contain same key words
+                    if check_question_similarity(question_text, similar_q.question_text):
+                        print(f"⚠️ Similar question detected, skipping (similar to ID: {similar_q.id})")
+                        duplicate_questions.append({
+                            'question_text': question_text[:100] + "...",
+                            'similar_to_id': similar_q.id,
+                            'similar_to_text': similar_q.question_text[:100] + "...",
+                            'subtopic_combination': subtopic_names,
+                            'difficulty': difficulty,
+                            'reason': 'similar_question'
+                        })
+                        break
+                else:  # Only save if no similar questions found
+                    # Prepare data based on game type
+                    if game_type == 'coding':
+                        # For coding questions, extract the correct answer and coding-specific fields
+                        correct_answer = q.get('correct_answer', '')  # The working code solution
+                        
+                        # Extract coding-specific fields for game_data
+                        function_name = q.get('function_name', '')
+                        sample_input = q.get('sample_input', '')
+                        sample_output = q.get('sample_output', '')
+                        hidden_tests = q.get('hidden_tests', [])
+                        buggy_code = q.get('buggy_code', '')
+                        correct_code = q.get('correct_code', '')
+                        buggy_correct_code = q.get('buggy_correct_code', '')
+                        
+                        # NEW: Extract buggy question text
+                        buggy_question_text = q.get('buggy_question_text', '')
+                        
+                    else:  # non_coding
+                        # For non-coding, use simple answer format
+                        correct_answer = q.get('answer', '')
+                        
+                        # Set empty coding fields for consistency
+                        function_name = ''
+                        sample_input = ''
+                        sample_output = ''
+                        hidden_tests = []
+                        buggy_code = ''
+                        correct_code = ''  
+                        buggy_correct_code = '' 
+                        buggy_question_text = '' 
+                    
+                    # TEMPORARY: Log the question data instead of saving to avoid DB migration issues
+                    print(f"🔍 WOULD SAVE QUESTION:")
+                    print(f"   Question text: {question_text[:100]}...")
+                    print(f"   Game type: {game_type}")
+                    print(f"   Difficulty: {difficulty}")
+                    print(f"   Primary subtopic: {primary_subtopic.name}")
+                    print(f"   Subtopic combination: {subtopic_names}")
+                    print(f"   Subtopic IDs: {subtopic_ids}")
+                    print(f"   Cross-subtopic: {len(subtopic_combination) > 1}")
+                    print(f"   Explanation: {q.get('explanation', 'N/A')[:100]}...")
+                    print(f"   Buggy explanation: {q.get('buggy_explanation', 'N/A')[:100]}...")
                 
                 # Create GeneratedQuestion object WITHOUT subtopic_ids field (temporary)
                 question_obj = GeneratedQuestion.objects.create(
@@ -367,6 +409,7 @@ def save_minigame_questions_to_db_enhanced(questions_json: List[Dict[str, Any]],
                     game_type=game_type,
                     game_data={
                         # Core game data
+                        'question_hash': question_hash,  # Add hash for deduplication
                         'function_name': function_name,
                         'sample_input': sample_input,
                         'sample_output': sample_output,

@@ -12,6 +12,7 @@ import time
 import logging
 from itertools import combinations
 from typing import List, Dict, Any, Tuple
+from django.conf import settings
 
 from .common_utils import (
     validate_positive_integer, 
@@ -150,28 +151,34 @@ def create_trio_combinations(topic_groups: Dict[str, List[Subtopic]],
 
 def create_smart_subtopic_combinations(subtopics: List, max_combinations: int = None, difficulty: str = None) -> List[List]:
     """
-    Create smart subtopic combinations for more dynamic question generation.
-    Adjusts combination complexity based on difficulty level.
+    Create smart subtopic combinations focused on 1-2 subtopics like preassessment.
+    Prioritizes individual subtopics and pairs for comprehensive coverage.
     
     Args:
         subtopics: List of subtopics to combine
         max_combinations: Maximum number of combinations to generate
-        difficulty: Difficulty level ('easy', 'intermediate', 'advanced', 'master')
+        difficulty: Difficulty level (used for logging only)
         
     Returns:
-        List of subtopic combinations optimized for diversity and difficulty
+        List of subtopic combinations (1-2 subtopics each)
     """
-    # Get difficulty-based combination rules
-    difficulty_rules = get_difficulty_rules(difficulty)
+    logger.debug(f"🔍 DEBUG: Creating 1-2 subtopic combinations for {len(subtopics)} subtopics, difficulty: {difficulty}")
     
     all_combinations = []
     
-    # 1. Individual subtopics (always include these for easy, optional for higher)
-    if difficulty_rules['include_individuals']:
-        for subtopic in subtopics:
-            all_combinations.append([subtopic])
+    # Special case: If only 1 subtopic is selected, use it
+    if len(subtopics) == 1:
+        logger.info(f"🔄 Single subtopic selected: {subtopics[0].name}")
+        all_combinations.append([subtopics[0]])
+        return all_combinations
     
-    # 2. Group subtopics by topic
+    # 1. Always include all individual subtopics (like preassessment comprehensive coverage)
+    logger.info(f"📚 Adding {len(subtopics)} individual subtopics")
+    for subtopic in subtopics:
+        all_combinations.append([subtopic])
+    
+    # 2. Add strategic pairs for integrated understanding (like preassessment)
+    # Group by topic to create meaningful pairs
     topic_groups = {}
     for subtopic in subtopics:
         topic_name = subtopic.topic.name
@@ -179,66 +186,53 @@ def create_smart_subtopic_combinations(subtopics: List, max_combinations: int = 
             topic_groups[topic_name] = []
         topic_groups[topic_name].append(subtopic)
     
-    # 3. Same-topic pairs (based on difficulty rules)
-    same_topic_pairs_added = 0
-    max_same_topic_pairs = difficulty_rules['max_same_topic_pairs']
-    
+    # Add same-topic pairs (complementary subtopics within same topic)
+    same_topic_pairs = []
     for topic_subtopics in topic_groups.values():
-        if len(topic_subtopics) >= 2 and same_topic_pairs_added < max_same_topic_pairs:
-            # For higher difficulties, limit pairs per topic
-            pairs_from_topic = list(combinations(topic_subtopics, 2))
-            pairs_to_add = min(len(pairs_from_topic), max_same_topic_pairs - same_topic_pairs_added)
-            
-            for pair in pairs_from_topic[:pairs_to_add]:
-                all_combinations.append(list(pair))
-                same_topic_pairs_added += 1
-                
-                if same_topic_pairs_added >= max_same_topic_pairs:
-                    break
+        if len(topic_subtopics) >= 2:
+            # Add all possible pairs within the same topic
+            for pair in combinations(topic_subtopics, 2):
+                same_topic_pairs.append(list(pair))
     
-    # 4. Cross-topic pairs (based on difficulty rules)
-    cross_topic_pairs_added = 0
-    max_cross_topic_pairs = difficulty_rules['max_cross_topic_pairs']
+    # Add cross-topic pairs (connecting different topics)
+    cross_topic_pairs = []
+    if len(topic_groups) >= 2:
+        # Get one representative from each topic
+        topic_representatives = [group[0] for group in topic_groups.values()]
+        # Create pairs between different topics
+        for pair in combinations(topic_representatives, 2):
+            cross_topic_pairs.append(list(pair))
     
-    if len(topic_groups) > 1 and max_cross_topic_pairs > 0:
-        # For intermediate+, create strategic cross-topic pairs
-        topic_representatives = []
-        for topic_subtopics in topic_groups.values():
-            # Take first subtopic from each topic as representative
-            topic_representatives.append(topic_subtopics[0])
-        
-        # Create cross-topic pairs up to the limit
-        cross_topic_pair_combinations = list(combinations(topic_representatives, 2))
-        pairs_to_add = min(len(cross_topic_pair_combinations), max_cross_topic_pairs)
-        
-        for pair in cross_topic_pair_combinations[:pairs_to_add]:
-            all_combinations.append(list(pair))
-            cross_topic_pairs_added += 1
+    # Combine and prioritize: individuals first, then pairs
+    all_pairs = same_topic_pairs + cross_topic_pairs
     
-    # 5. Strategic trios (advanced+ only)
-    if difficulty_rules['include_trios'] and len(subtopics) >= 3:
-        trios_added = 0
-        max_trios = difficulty_rules['max_trios']
-        
-        # Add some trios from same topic (for advanced)
-        if difficulty_rules['include_same_topic_trios']:
-            for topic_subtopics in topic_groups.values():
-                if len(topic_subtopics) >= 3 and trios_added < max_trios:
-                    trio = list(combinations(topic_subtopics, 3))[0]  # Just one trio per topic
-                    all_combinations.append(trio)
-                    trios_added += 1
-        
-        # Add cross-topic trios (for master level)
-        if difficulty_rules['include_cross_topic_trios'] and len(topic_groups) >= 3 and trios_added < max_trios:
-            topic_representatives = [group[0] for group in topic_groups.values()]
-            if len(topic_representatives) >= 3:
-                trio = list(combinations(topic_representatives, 3))[0]
-                all_combinations.append(trio)
-                trios_added += 1
+    # Limit pairs to prevent explosion (max 50% of individuals)
+    max_pairs = len(subtopics) // 2
+    selected_pairs = all_pairs[:max_pairs]
+    
+    logger.info(f"🔗 Adding {len(selected_pairs)} subtopic pairs ({len(same_topic_pairs)} same-topic, {len(cross_topic_pairs)} cross-topic)")
+    all_combinations.extend(selected_pairs)
     
     # Remove duplicates while preserving order
     unique_combinations = []
     seen = set()
+    for combo in all_combinations:
+        combo_ids = tuple(sorted([s.id for s in combo]))
+        if combo_ids not in seen:
+            unique_combinations.append(combo)
+            seen.add(combo_ids)
+    
+    # Apply max_combinations limit if specified
+    if max_combinations and len(unique_combinations) > max_combinations:
+        unique_combinations = unique_combinations[:max_combinations]
+    
+    # Log final combination breakdown
+    individuals = len([c for c in unique_combinations if len(c) == 1])
+    pairs = len([c for c in unique_combinations if len(c) == 2])
+    
+    logger.info(f"📊 Final combinations: {len(unique_combinations)} total ({individuals} individuals, {pairs} pairs)")
+    
+    return unique_combinations
     for combo in all_combinations:
         combo_key = tuple(sorted([s.id for s in combo]))
         if combo_key not in seen:
@@ -266,6 +260,12 @@ def create_smart_subtopic_combinations(subtopics: List, max_combinations: int = 
         
         unique_combinations = priority_combinations[:max_combinations]
     
+    # Fallback: If no combinations were generated, include individual subtopics
+    # (This should rarely happen now with the single subtopic logic above)
+    if not unique_combinations:
+        logger.warning(f"⚠️ No combinations generated for {difficulty} difficulty with {len(subtopics)} subtopics, falling back to individual subtopics")
+        unique_combinations = [[subtopic] for subtopic in subtopics]
+    
     # Log difficulty-based summary using common utilities
     individuals = len([c for c in unique_combinations if len(c) == 1])
     pairs = len([c for c in unique_combinations if len(c) == 2])
@@ -280,6 +280,7 @@ def create_smart_subtopic_combinations(subtopics: List, max_combinations: int = 
             combo_type = f"{len(combo)}-subtopic" if len(combo) > 1 else "individual"
             logger.debug(f"  {i+1}. {combo_names} ({combo_type})")
     
+    logger.debug(f"🔍 DEBUG: Returning {len(unique_combinations)} combinations")
     return unique_combinations
 
 
@@ -306,11 +307,77 @@ def calculate_questions_per_combination(num_subtopics: int,
     total_budget_per_difficulty = num_subtopics * num_questions_per_subtopic
     
     # Distribute evenly among all combinations for this difficulty
+    if num_combinations == 0:
+        logger.warning(f"⚠️ No combinations generated for {difficulty} difficulty with {num_subtopics} subtopics")
+        return 0
+    
     questions_per_combination = max(1, total_budget_per_difficulty // num_combinations)
     
     logger.debug(f"📊 {difficulty.upper()} distribution: {total_budget_per_difficulty} budget ÷ {num_combinations} combinations = {questions_per_combination} questions per combination")
     
     return questions_per_combination
+
+
+def generate_questions_for_single_subtopic_batch(subtopic, difficulty_levels: List[str], 
+                                                total_questions_needed: int, game_type: str, 
+                                                session_id: str) -> Dict[str, Any]:
+    """
+    Generate questions for a single subtopic across multiple difficulties.
+    Distributes questions evenly across difficulties.
+    
+    Args:
+        subtopic: Single subtopic to generate questions for
+        difficulty_levels: List of difficulty levels
+        total_questions_needed: Total questions to generate
+        game_type: 'coding' or 'non_coding'
+        session_id: Session ID for tracking
+        
+    Returns:
+        Dict with success status and questions_saved count
+    """
+    try:
+        # Distribute questions across difficulties
+        questions_per_difficulty = total_questions_needed // len(difficulty_levels)
+        extra_questions = total_questions_needed % len(difficulty_levels)
+        
+        total_saved = 0
+        
+        for i, difficulty in enumerate(difficulty_levels):
+            # Add extra question to first difficulties if needed
+            questions_for_this_difficulty = questions_per_difficulty + (1 if i < extra_questions else 0)
+            
+            if questions_for_this_difficulty > 0:
+                logger.debug(f"🎯 Generating {questions_for_this_difficulty} {difficulty} questions for {subtopic.name}")
+                
+                result = generate_questions_for_subtopic_combination(
+                    subtopic_combination=[subtopic],
+                    difficulty=difficulty,
+                    num_questions=questions_for_this_difficulty,
+                    game_type=game_type,
+                    zone=subtopic.topic.zone,
+                    session_id=session_id
+                )
+                
+                if result['success']:
+                    questions_saved = result.get('questions_saved', 0)
+                    total_saved += questions_saved
+                    logger.debug(f"✅ Generated {questions_saved} {difficulty} questions for {subtopic.name}")
+                else:
+                    logger.warning(f"❌ Failed to generate {difficulty} questions for {subtopic.name}: {result.get('error', 'Unknown error')}")
+        
+        return {
+            'success': total_saved > 0,
+            'questions_saved': total_saved,
+            'error': None if total_saved > 0 else 'No questions generated'
+        }
+        
+    except Exception as e:
+        logger.error(f"❌ Error in single subtopic batch generation: {str(e)}")
+        return {
+            'success': False,
+            'questions_saved': 0,
+            'error': str(e)
+        }
 
 
 def run_subtopic_specific_generation(subtopic_ids: List[int], 
@@ -332,23 +399,142 @@ def run_subtopic_specific_generation(subtopic_ids: List[int],
         # Get the specific subtopics
         subtopics = list(Subtopic.objects.filter(id__in=subtopic_ids).select_related('topic__zone'))
         
+        logger.info(f"🔍 DEBUG: Processing {len(subtopics)} subtopics: {[s.name for s in subtopics]}")
+        
         if not subtopics:
             raise ValueError("No subtopics found for the provided IDs")
         
         logger.info(f"🚀 Starting subtopic-specific generation for {len(subtopics)} subtopics, {len(difficulty_levels)} difficulties")
+        logger.info(f"🔍 DEBUG: Difficulty levels: {difficulty_levels}")
         
-        # Generate difficulty-specific combinations and calculate question distribution
+        # Special handling for single subtopic: use question-based workers instead of difficulty-based
+        if len(subtopics) == 1:
+            single_subtopic = subtopics[0]
+            logger.info(f"🔄 Single subtopic detected: {single_subtopic.name} - switching to question-based worker allocation")
+            
+            # Calculate total questions needed across all difficulties
+            total_questions_needed = len(difficulty_levels) * num_questions_per_subtopic
+            questions_per_worker = max(1, total_questions_needed // settings.QUESTION_GENERATION_WORKERS)
+            actual_workers = min(settings.QUESTION_GENERATION_WORKERS, total_questions_needed)
+            
+            logger.info(f"📊 Single subtopic mode: {total_questions_needed} total questions, {actual_workers} workers, {questions_per_worker} questions per worker")
+            
+            # Create question batches for workers
+            question_batches = []
+            questions_assigned = 0
+            
+            for worker_id in range(actual_workers):
+                remaining_questions = total_questions_needed - questions_assigned
+                worker_questions = min(questions_per_worker, remaining_questions)
+                
+                if worker_questions > 0:
+                    batch = {
+                        'worker_id': worker_id,
+                        'subtopic': single_subtopic,
+                        'difficulty_levels': difficulty_levels,
+                        'questions_needed': worker_questions,
+                        'game_type': game_type,
+                        'session_id': session_id
+                    }
+                    question_batches.append(batch)
+                    questions_assigned += worker_questions
+            
+            # Update session status
+            generation_status_tracker.update_status(session_id, {
+                'status': 'processing',
+                'total_tasks': len(question_batches),  # Correct total tasks for single subtopic
+                'completed_tasks': 0,
+                'successful_tasks': 0,
+                'total_questions': 0
+            })
+            
+            # Process question batches with workers
+            completed_tasks = 0
+            successful_tasks = 0
+            total_questions = 0
+            
+            for batch in question_batches:
+                try:
+                    # Check for cancellation
+                    if generation_status_tracker.is_session_cancelled(session_id):
+                        logger.info(f"📝 Session {session_id} cancelled during batch processing")
+                        break
+                    
+                    worker_id = batch['worker_id']
+                    questions_needed = batch['questions_needed']
+                    
+                    logger.info(f"🎯 Worker {worker_id}: Generating {questions_needed} questions for {single_subtopic.name}")
+                    
+                    # Generate questions for this batch across all difficulties
+                    batch_result = generate_questions_for_single_subtopic_batch(
+                        subtopic=single_subtopic,
+                        difficulty_levels=difficulty_levels,
+                        total_questions_needed=questions_needed,
+                        game_type=game_type,
+                        session_id=session_id
+                    )
+                    
+                    if batch_result['success']:
+                        successful_tasks += 1
+                        questions_generated = batch_result.get('questions_saved', 0)
+                        total_questions += questions_generated
+                        logger.info(f"✅ Worker {worker_id}: Generated {questions_generated} questions")
+                    else:
+                        logger.warning(f"❌ Worker {worker_id}: Failed to generate questions: {batch_result.get('error', 'Unknown error')}")
+                    
+                    completed_tasks += 1
+                    
+                    # Update status
+                    generation_status_tracker.update_status(session_id, {
+                        'completed_tasks': completed_tasks,
+                        'successful_tasks': successful_tasks,
+                        'total_questions': total_questions,
+                        'current_batch': f"Worker {worker_id}",
+                        'progress_percentage': (completed_tasks / len(question_batches)) * 100
+                    })
+                    
+                except Exception as e:
+                    logger.error(f"❌ Error in worker {batch['worker_id']}: {str(e)}")
+                    completed_tasks += 1
+            
+            # Final status update
+            final_status = {
+                'status': 'completed' if successful_tasks > 0 else 'error',
+                'total_questions': total_questions,
+                'completed_tasks': completed_tasks,
+                'successful_tasks': successful_tasks
+            }
+            generation_status_tracker.update_status(session_id, final_status)
+            
+            logger.info(f"🏁 Single subtopic generation completed: {total_questions} questions generated by {successful_tasks}/{len(question_batches)} workers")
+            return
+        
+        # Original multi-subtopic logic continues below...
         all_difficulty_combinations = {}
         all_difficulty_questions_per_combo = {}
         total_tasks = 0
         
         for difficulty in difficulty_levels:
+            logger.info(f"🔧 Preparing combinations for difficulty: {difficulty.upper()}")
+            logger.info(f"   ├── Input subtopics: {len(subtopics)} total")
+            logger.info(f"   ├── Subtopic IDs: {[s.id for s in subtopics]}")
+            
             max_combinations_per_difficulty = 50  # Reasonable limit per difficulty
             difficulty_combinations = create_smart_subtopic_combinations(
                 subtopics, 
                 max_combinations=max_combinations_per_difficulty,
                 difficulty=difficulty
             )
+            
+            logger.info(f"🔍 DEBUG: {difficulty.upper()} - {len(subtopics)} subtopics generated {len(difficulty_combinations)} combinations")
+            if len(difficulty_combinations) == 0:
+                logger.warning(f"⚠️ No combinations generated for {difficulty} with {len(subtopics)} subtopics")
+                continue  # Skip this difficulty if no combinations
+            
+            # Log combination types
+            individuals = len([c for c in difficulty_combinations if len(c) == 1])
+            pairs = len([c for c in difficulty_combinations if len(c) == 2])
+            logger.info(f"   └── Combination breakdown: {individuals} individuals, {pairs} pairs")
             
             # Calculate questions per combination for this difficulty level
             questions_per_combo = calculate_questions_per_combination(
@@ -371,10 +557,10 @@ def run_subtopic_specific_generation(subtopic_ids: List[int],
         
         logger.info(f"📊 Total tasks across all difficulties: {total_tasks}")
         
-        # Update session status
+        # Update session status with correct total_tasks
         generation_status_tracker.update_status(session_id, {
+            'total_tasks': total_tasks,  # Override the placeholder
             'status': 'processing',
-            'total_tasks': total_tasks,
             'completed_tasks': 0,
             'successful_tasks': 0,
             'total_questions': 0
@@ -385,7 +571,21 @@ def run_subtopic_specific_generation(subtopic_ids: List[int],
         successful_tasks = 0
         total_questions = 0
         
-        for difficulty in difficulty_levels:
+        logger.info(f"🎯 STARTING PARALLEL PROCESSING OF {len(difficulty_levels)} DIFFICULTY LEVELS: {difficulty_levels}")
+        logger.info(f"📋 Each difficulty uses parallel workers, then moves to next difficulty")
+        logger.info(f"⚡ ThreadPoolExecutor: {settings.QUESTION_GENERATION_WORKERS} concurrent workers per difficulty")
+        
+        for difficulty_idx, difficulty in enumerate(difficulty_levels):
+            logger.info(f"")
+            logger.info(f"🎯 DIFFICULTY {difficulty_idx + 1}/{len(difficulty_levels)}: STARTING {difficulty.upper()}")
+            logger.info(f"🔄 Processing difficulty {difficulty_idx + 1}/{len(difficulty_levels)}: {difficulty.upper()}")
+            
+            difficulty_start_questions = total_questions  # Track questions at start of difficulty
+            
+            # Check for cancellation before processing each difficulty
+            if generation_status_tracker.is_session_cancelled(session_id):
+                logger.info(f"📝 Session {session_id} cancelled during difficulty {difficulty}")
+                break
             # Check for cancellation before processing each difficulty
             if generation_status_tracker.is_session_cancelled(session_id):
                 logger.info(f"📝 Session {session_id} cancelled during difficulty {difficulty}")
@@ -406,63 +606,135 @@ def run_subtopic_specific_generation(subtopic_ids: List[int],
             logger.info(f"   └── {len(subtopic_combinations)} combinations ({individuals} individuals, {pairs} pairs, {trios} trios)")
             logger.info(f"   └── {questions_per_combo} questions per combination = {total_questions_for_difficulty} total questions")
             logger.info(f"   └── Budget: {len(subtopics)} subtopics × {num_questions_per_subtopic} = {len(subtopics) * num_questions_per_subtopic} questions")
+            logger.info(f"⚡ Using ThreadPoolExecutor with {settings.QUESTION_GENERATION_WORKERS} workers for parallel processing")
                 
-            for subtopic_combination in subtopic_combinations:
+            # Process combinations in parallel using ThreadPoolExecutor
+            import concurrent.futures
+            difficulty_completed_tasks = 0
+            difficulty_successful_tasks = 0
+            difficulty_questions = 0
+            
+            def process_single_combination(combination_idx, subtopic_combination):
+                """Process a single subtopic combination and return results."""
                 try:
-                    # Check for cancellation before each combination
+                    # Check for cancellation
                     if generation_status_tracker.is_session_cancelled(session_id):
-                        logger.info(f"📝 Session {session_id} cancelled during combination processing")
-                        break
+                        return {
+                            'success': False,
+                            'error': 'cancelled',
+                            'combination_idx': combination_idx,
+                            'questions_saved': 0
+                        }
                         
                     subtopic_names = [sub.name for sub in subtopic_combination]
                     combination_type = "individual" if len(subtopic_combination) == 1 else f"{len(subtopic_combination)}-subtopic combo"
                     
-                    logger.debug(f"🎯 Worker Goal: Generate {questions_per_combo} {difficulty} {game_type} questions")
-                    logger.debug(f"   └── Combination: {subtopic_names} ({combination_type})")
-                    logger.debug(f"   └── Expected output: {questions_per_combo} questions with explanations")
+                    logger.debug(f"🎯 Worker processing: {questions_per_combo} {difficulty} {game_type} questions for {combination_type}: {subtopic_names}")
                     
                     result = generate_questions_for_subtopic_combination(
                         subtopic_combination=subtopic_combination,
                         difficulty=difficulty,
                         num_questions=questions_per_combo,
                         game_type=game_type,
-                        zone=subtopic_combination[0].topic.zone,  # Use the zone from first subtopic
+                        zone=subtopic_combination[0].topic.zone,
                         session_id=session_id
                     )
                     
                     if result['success']:
-                        successful_tasks += 1
                         questions_saved = result.get('questions_saved', 0)
-                        total_questions += questions_saved
-                        logger.info(f"✅ Generated {questions_saved} questions for {combination_type}: {subtopic_names} - {difficulty}")
+                        logger.debug(f"✅ Worker completed: {questions_saved} questions for {combination_type}: {subtopic_names} - {difficulty}")
+                        return {
+                            'success': True,
+                            'combination_idx': combination_idx,
+                            'questions_saved': questions_saved,
+                            'subtopic_names': subtopic_names,
+                            'combination_type': combination_type
+                        }
                     else:
-                        logger.warning(f"❌ Failed to generate questions for {combination_type}: {subtopic_names} - {difficulty}: {result.get('error', 'Unknown error')}")
-                    
-                    completed_tasks += 1
-                    
-                    # Update status with progress
-                    generation_status_tracker.update_status(session_id, {
-                        'completed_tasks': completed_tasks,
-                        'successful_tasks': successful_tasks,
-                        'total_questions': total_questions,
-                        'current_combination': subtopic_names,
-                        'current_combination_type': combination_type,
-                        'current_difficulty': difficulty,
-                        'progress_percentage': round((completed_tasks / total_tasks) * 100, 1)
-                    })
-                    
+                        logger.warning(f"❌ Worker failed: {combination_type}: {subtopic_names} - {difficulty}: {result.get('error', 'Unknown error')}")
+                        return {
+                            'success': False,
+                            'combination_idx': combination_idx,
+                            'questions_saved': 0,
+                            'error': result.get('error', 'Unknown error'),
+                            'subtopic_names': subtopic_names,
+                            'combination_type': combination_type
+                        }
+                        
                 except Exception as e:
-                    logger.error(f"❌ Error processing subtopic combination {[sub.name for sub in subtopic_combination]} - {difficulty}: {str(e)}")
-                    completed_tasks += 1
-                    
-                    # Update status even on error
-                    generation_status_tracker.update_status(session_id, {
-                        'completed_tasks': completed_tasks,
-                        'failed_combinations': generation_status_tracker.get_session_status(session_id).get('failed_combinations', 0) + 1
-                    })
+                    logger.error(f"❌ Worker error processing combination {combination_idx}: {str(e)}")
+                    return {
+                        'success': False,
+                        'combination_idx': combination_idx,
+                        'questions_saved': 0,
+                        'error': str(e)
+                    }
+            
+            # Submit all combinations for this difficulty to the thread pool
+            with concurrent.futures.ThreadPoolExecutor(max_workers=settings.QUESTION_GENERATION_WORKERS) as executor:
+                # Submit all tasks
+                future_to_idx = {
+                    executor.submit(process_single_combination, idx, combination): idx 
+                    for idx, combination in enumerate(subtopic_combinations)
+                }
+                
+                # Process results as they complete
+                for future in concurrent.futures.as_completed(future_to_idx):
+                    try:
+                        result = future.result()
+                        combination_idx = result['combination_idx']
+                        
+                        if result['success']:
+                            difficulty_successful_tasks += 1
+                            difficulty_questions += result['questions_saved']
+                            logger.info(f"✅ Completed combination {combination_idx + 1}/{len(subtopic_combinations)}: {result['questions_saved']} questions")
+                        else:
+                            if result.get('error') != 'cancelled':
+                                logger.warning(f"❌ Failed combination {combination_idx + 1}/{len(subtopic_combinations)}: {result.get('error', 'Unknown error')}")
+                        
+                        difficulty_completed_tasks += 1
+                        
+                        # Update global counters
+                        completed_tasks += 1
+                        successful_tasks += 1 if result['success'] else successful_tasks
+                        total_questions += result['questions_saved']
+                        
+                        # Update status with current progress
+                        current_combination = result.get('subtopic_names', [])
+                        current_type = result.get('combination_type', '')
+                        
+                        generation_status_tracker.update_status(session_id, {
+                            'completed_tasks': completed_tasks,
+                            'successful_tasks': successful_tasks,
+                            'total_questions': total_questions,
+                            'current_combination': current_combination,
+                            'current_combination_type': current_type,
+                            'current_difficulty': difficulty,
+                            'progress_percentage': round((completed_tasks / total_tasks) * 100, 1)
+                        })
+                        
+                    except Exception as e:
+                        logger.error(f"❌ Error processing future result: {str(e)}")
+                        completed_tasks += 1
+            
+            # Log completion of this difficulty
+            logger.info(f"✅ DIFFICULTY {difficulty.upper()} COMPLETED:")
+            logger.info(f"   └── Processed {len(subtopic_combinations)} combinations")
+            logger.info(f"   └── Successful: {difficulty_successful_tasks}/{difficulty_completed_tasks}")
+            logger.info(f"   └── Questions generated: {difficulty_questions}")
+            logger.info(f"   └── Cumulative total: {total_questions} questions")
+            logger.info(f"🎯 DIFFICULTY {difficulty_idx + 1}/{len(difficulty_levels)}: COMPLETED {difficulty.upper()}")
+            logger.info(f"")
         
         # Final status update
         final_status = 'cancelled' if generation_status_tracker.is_session_cancelled(session_id) else 'completed'
+        
+        logger.info(f"🎉 ALL DIFFICULTIES PROCESSED!")
+        logger.info(f"📊 Final Summary:")
+        logger.info(f"   ├── Difficulties processed: {len(difficulty_levels)} ({', '.join(difficulty_levels)})")
+        logger.info(f"   ├── Total combinations: {total_tasks}")
+        logger.info(f"   ├── Successful tasks: {successful_tasks}/{completed_tasks}")
+        logger.info(f"   └── Total questions generated: {total_questions}")
         
         generation_status_tracker.update_status(session_id, {
             'status': final_status,

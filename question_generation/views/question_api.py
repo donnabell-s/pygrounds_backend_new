@@ -7,6 +7,7 @@ from rest_framework import status
 from django.shortcuts import get_object_or_404
 from django.db import transaction
 from django.db import models
+from django.conf import settings
 import uuid
 import time
 
@@ -94,7 +95,13 @@ def generate_questions_bulk(request):
         
         # Create a unique session ID for tracking
         session_id = str(uuid.uuid4())
-        total_workers = len(zones) * len(difficulty_levels)
+        
+        # For subtopic-specific generation, we'll calculate total_tasks dynamically
+        # For zone-based generation, use zone×difficulty combinations
+        if subtopic_ids:
+            total_workers = len(difficulty_levels)  # Placeholder, will be updated in background thread
+        else:
+            total_workers = len(zones) * len(difficulty_levels)
         
         # Initialize status tracking
         generation_status_tracker.create_session(
@@ -105,7 +112,9 @@ def generate_questions_bulk(request):
         )
         
         print(f"🚀 Starting bulk generation: {game_type}, {len(zones)} zones, {len(difficulty_levels)} difficulties")
-        print(f"📊 Session ID: {session_id}, Total workers: {total_workers}")
+        print(f"📊 Session ID: {session_id}, Total TASKS: {total_workers} (zone×difficulty combinations)")
+        print(f"⚙️ ThreadPoolExecutor will use: {settings.QUESTION_GENERATION_WORKERS} threads")
+        print(f"⚙️ Layered Worker scaling: QuestionGen={settings.QUESTION_GENERATION_WORKERS} (subtopic-level), Embedding={settings.EMBEDDING_WORKERS} (topic-level), Document={settings.DOCUMENT_PROCESSING_WORKERS} (difficulty-level)")
         
         # Start generation in background thread
         import threading
@@ -127,7 +136,8 @@ def generate_questions_bulk(request):
                         difficulty_levels=difficulty_levels,
                         num_questions_per_subtopic=num_questions_per_subtopic,
                         game_type=game_type,
-                        session_id=session_id
+                        session_id=session_id,
+                        max_workers=settings.QUESTION_GENERATION_WORKERS  # Dynamic based on CPU cores
                     )
             except Exception as e:
                 logger.error(f"Generation failed for session {session_id}: {str(e)}")
