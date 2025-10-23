@@ -75,7 +75,7 @@ class SubtopicViewSet(viewsets.ReadOnlyModelViewSet):
 class ReadingMaterialViewSet(viewsets.ReadOnlyModelViewSet):
     """Public read-only endpoint for Reading Materials."""
     permission_classes = [AllowAny]
-    pagination_class = StandardResultsSetPagination
+    pagination_class = None
 
     queryset = (
         ReadingMaterial.objects
