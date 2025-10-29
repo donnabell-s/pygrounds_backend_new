@@ -1,4 +1,3 @@
-# File: user_learning/adaptive_engine.py
 from __future__ import annotations
 from dataclasses import dataclass
 from typing import Dict, List, Optional, Tuple
@@ -21,8 +20,8 @@ from content_ingestion.models import Topic, Subtopic, GameZone
 # Config (aligned with thesis draft)
 # -----------------------------------------------------------------------------
 GAME_TYPE_WEIGHTS = {
-    # coding tasks have higher impact on mastery vs. non-coding (heuristic)
-    "coding": 3.0,
+    # ↓ Slightly reduce dominance of coding items to improve calibration
+    "coding": 2.0,
     "non_coding": 1.0,
 }
 
@@ -87,13 +86,15 @@ def _expected_time(entry: dict) -> float:
 def _observed_time(entry: dict) -> float:
     # Only session-level time is considered
     t = _safe_float(entry.get("minigame_time_taken"), 0.0)
-    return max(0.0, t)
+    # Clamp pathological pauses to 2× budget (prevents extreme multipliers)
+    T = _expected_time(entry)
+    return max(0.0, min(t, 2.0 * T))
 
 
 def _time_multiplier(entry: dict, is_correct: bool) -> float:
     """
-    Smooth, bounded effect of pace vs. budget. Faster correct gets a gentle boost;
-    slower incorrect gets a gentle penalty. Clamped to avoid instability.
+    Smooth, bounded effect of pace vs. budget. Tighter clamp to reduce variance:
+    faster-correct gets a gentle boost; slower-incorrect a gentle penalty.
     """
     t = _observed_time(entry)
     if t <= 0:
@@ -101,13 +102,13 @@ def _time_multiplier(entry: dict, is_correct: bool) -> float:
     T = max(1e-6, _expected_time(entry))
 
     r = min(2.0, max(0.0, t / T))  # observed/budget, clipped
-    r0 = 0.6
+    r0 = 0.8
     beta = 2.0
-    alpha = 0.25
+    alpha = 0.20
 
     signed = 1.0 if is_correct else -1.0
     mult = 1.0 + signed * alpha * math.tanh(beta * (r0 - r))
-    return max(0.75, min(1.25, mult))
+    return max(0.90, min(1.10, mult))
 
 
 # -----------------------------------------------------------------------------
@@ -167,12 +168,14 @@ def _observe_params_with_difficulty(base: "BKTParams", level: int) -> Tuple[floa
     Adjust slip, guess, and decay_wrong by difficulty (small, bounded).
     Harder → a bit higher slip, a bit lower guess, and softer forgetting on wrongs.
     Easier → a bit lower slip, a bit higher guess, and harsher forgetting on wrongs.
+    Also tighten the overall bands to reduce variance.
     """
     c = _diff_centered(level)              # [-1..+1]
     s_k, g_k, d_k = 0.04, 0.04, 0.07       # gentle nudges
 
-    p_S_eff = max(0.02, min(0.30, base.p_S + s_k * c))
-    p_G_eff = max(0.05, min(0.35, base.p_G - g_k * c))
+    # Tighter bands (helps log-loss stability)
+    p_S_eff = max(0.06, min(0.14, base.p_S + s_k * c))
+    p_G_eff = max(0.12, min(0.28, base.p_G - g_k * c))
 
     # Move decay_wrong toward 1.0 on hard items (less punishment), toward 0.80 on easy items
     target_easy, target_hard = 0.80, 0.98
@@ -181,7 +184,7 @@ def _observe_params_with_difficulty(base: "BKTParams", level: int) -> Tuple[floa
     decay_eff = base.decay_wrong + d_k * (target - base.decay_wrong)
     # also add a small signed tilt with c
     decay_eff = decay_eff + 0.05 * c
-    decay_eff = max(0.75, min(0.98, decay_eff))
+    decay_eff = max(0.80, min(0.98, decay_eff))
 
     return p_S_eff, p_G_eff, decay_eff
 
@@ -194,14 +197,15 @@ def _observe_params_with_difficulty(base: "BKTParams", level: int) -> Tuple[floa
 class BKTParams:
     p_L0: float = 0.20
     p_T: float = 0.10          # learning gain after any observation
-    p_T_wrong: float = 0.00    # learning gain after WRONG (set 0.00 to disable)
+    p_T_wrong: float = 0.02    # ← allow a bit of learning from mistakes
     p_S: float = 0.10
     p_G: float = 0.20
-    decay_wrong: float = 0.85
+    decay_wrong: float = 0.90  # ← lighter forgetting baseline
     min_floor: float = 0.001
     max_ceiling: float = 0.999
 
 # 2) Use p_T_wrong on incorrect in bkt_update_once
+
 def bkt_update_once(p_know: float, correct: bool, p: BKTParams) -> float:
     if correct:
         num = p_know * (1.0 - p.p_S)
@@ -288,7 +292,8 @@ def _mistakes_from_entry(entry: dict) -> int:
     for key in ("mistakes", "mistake_count", "num_mistakes", "attempts_before_correct", "attempts"):
         if key in entry and entry[key] is not None:
             try:
-                return max(0, int(entry[key]))
+                # Cap mistake amplification to avoid outlier dominance
+                return min(3, max(0, int(entry[key])))
             except (TypeError, ValueError):
                 continue
     return 0
@@ -424,7 +429,11 @@ def recalibrate_topic_proficiency(user, results: list) -> Dict[int, Dict[str, fl
         if not subtopic_ids:
             continue
 
-        extra_fails = max(0, mistakes)
+        # If an item maps to multiple subtopics, distribute impact to avoid over-updating
+        k = max(1, len(subtopic_ids))
+        impact_each = impact / k
+
+        extra_fails = mistakes  # already capped in _mistakes_from_entry
 
         for s_id in subtopic_ids:
             st = per_subtopic_state.get(s_id)
@@ -447,12 +456,12 @@ def recalibrate_topic_proficiency(user, results: list) -> Dict[int, Dict[str, fl
                 }
 
             # Update PFA-like counters first (so seeding/tuning can see prior practice)
-            st["attempts"] = float(st["attempts"]) + impact
+            st["attempts"] = float(st["attempts"]) + impact_each
             if is_correct:
-                st["wins"] = float(st["wins"]) + impact
-                st["fails"] = float(st["fails"]) + impact * extra_fails
+                st["wins"] = float(st["wins"]) + impact_each
+                st["fails"] = float(st["fails"]) + impact_each * extra_fails
             else:
-                st["fails"] = float(st["fails"]) + impact * (1 + extra_fails)
+                st["fails"] = float(st["fails"]) + impact_each * (1 + extra_fails)
 
             # Seed p(L0) once: prefer existing mastery, else PFA signal, else base prior
             if not st["p_L0_seeded"]:
@@ -480,6 +489,7 @@ def recalibrate_topic_proficiency(user, results: list) -> Dict[int, Dict[str, fl
             p_step = BKTParams(
                 p_L0=float(st["p_bkt"]),   # doc only; running value used below
                 p_T=max(1e-4, min(0.95, base_bkt.p_T * lr_mult_combined)),
+                p_T_wrong=base_bkt.p_T_wrong,
                 p_S=p_S_eff,
                 p_G=p_G_eff,
                 decay_wrong=decay_eff,
@@ -488,7 +498,7 @@ def recalibrate_topic_proficiency(user, results: list) -> Dict[int, Dict[str, fl
             )
 
             # Smooth BKT update (fractional impact) + delta tracking
-            new_p = bkt_update_fractional(float(st["p_bkt"]), is_correct, p_step, impact)
+            new_p = bkt_update_fractional(float(st["p_bkt"]), is_correct, p_step, impact_each)
             if st["p_prev"] is not None:
                 st["last_deltas"].append(abs(new_p - float(st["p_prev"])) )
                 # keep only last K deltas for convergence check
@@ -507,7 +517,7 @@ def recalibrate_topic_proficiency(user, results: list) -> Dict[int, Dict[str, fl
         subtopic_obj: Subtopic = st["subtopic_obj"]  # already fetched
         # session-level recommended scale from observed batch
         session_scale = _lr_mult_from_practice(float(st["wins"]), float(st["fails"]))
-        combined = math.sqrt(max(0.5, min(1.5, float(st["pT_scale_persisted"]))) * session_scale)
+        combined = math.sqrt(max(0.5, min(1.5, float(st["pT_scale_persisted"])) ) * session_scale)
         _save_pT_scale(user, subtopic_obj, combined, alpha=0.2)
 
         UserSubtopicMastery.objects.update_or_create(
