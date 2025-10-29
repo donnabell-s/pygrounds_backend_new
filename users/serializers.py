@@ -2,7 +2,7 @@ from rest_framework import serializers
 from .models import User, LearnerProfile, AdminProfile
 from django.contrib.auth.password_validation import validate_password
 from user_learning.models import UserZoneProgress, UserTopicProficiency
-from content_ingestion.models import GameZone, Topic
+from user_learning.serializers import ZoneSerializer, TopicSerializer
 from django.db import models
 
 class LearnerProfileSerializer(serializers.ModelSerializer):
@@ -41,17 +41,46 @@ class RegisterSerializer(serializers.ModelSerializer):
         user = User.objects.create_user(**validated_data)
         return user
 
-
-class ZoneSerializer(serializers.ModelSerializer):
+class AdminUserSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True, required=False)
+    
     class Meta:
-        model = GameZone
-        fields = ['id', 'name', 'description', 'order']
+        model = User
+        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'role', 'is_staff', 'is_superuser', 'is_active', 'date_joined', 'password']
+        read_only_fields = ['id', 'date_joined']
 
+    def create(self, validated_data):
+        password = validated_data.pop('password', None)
+        user = User(**validated_data)
+        
+        # Set admin privileges based on role
+        if validated_data.get('role') == 'admin':
+            user.is_staff = True
+            user.is_superuser = True
+        
+        if password:
+            user.set_password(password)
+        user.save()
+        return user
 
-class TopicSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Topic
-        fields = ['id', 'name', 'description', 'zone']
+    def update(self, instance, validated_data):
+        password = validated_data.pop('password', None)
+        
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        
+        # Set admin privileges based on role
+        if validated_data.get('role') == 'admin':
+            instance.is_staff = True
+            instance.is_superuser = True
+        elif validated_data.get('role') == 'learner':
+            instance.is_staff = False
+            instance.is_superuser = False
+        
+        if password:
+            instance.set_password(password)
+        instance.save()
+        return instance
 
 
 class UserZoneProgressSerializer(serializers.ModelSerializer):
