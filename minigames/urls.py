@@ -42,5 +42,10 @@ urlpatterns = [
     path("debugging/<str:session_id>/submit-code/", SubmitDebugGame.as_view(), name="submit-debug"),
 
     path('preassessment/submit/', SubmitPreAssessmentAnswers.as_view(), name='submit-preassessment'),
+    # Leaderboard per game type
+    path('leaderboard/<str:game_type>/', 
+         # import here to avoid circular at module import time
+         __import__('minigames.views', fromlist=['GameLeaderboardView']).GameLeaderboardView.as_view(),
+         name='game-leaderboard'),
  
 ]

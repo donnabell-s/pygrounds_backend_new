@@ -7,6 +7,6 @@ from ..serializers import PreAssessmentQuestionSerializer
 
 class PreAssessmentQuestionListView(APIView):
     def get(self, request):
-        questions = PreAssessmentQuestion.objects.all().order_by('order')  # Sort by order smallest to largest
+        questions = PreAssessmentQuestion.objects.all()
         serializer = PreAssessmentQuestionSerializer(questions, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)

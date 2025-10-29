@@ -40,3 +40,14 @@ class UserSubtopicMastery(models.Model):
 
     def __str__(self):
         return f"{self.user.username} → {self.subtopic.name}: {self.mastery_level:.2f}%"
+
+
+class UserSubtopicLearningRate(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    subtopic = models.ForeignKey(Subtopic, on_delete=models.CASCADE)  # <- use the imported class
+    pT_scale = models.FloatField(default=1.0)
+    count = models.PositiveIntegerField(default=0)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ('user', 'subtopic')

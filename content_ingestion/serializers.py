@@ -41,12 +41,8 @@ class DocumentChunkSerializer(serializers.ModelSerializer):
         model = DocumentChunk
         fields = [
             'id', 'chunk_type', 'text', 'page_number', 'order_in_doc',
-            'token_count', 'book_title'
+            'token_count'
         ]
-    
-    def get_book_title(self, obj):
-        """Return the title of the document this chunk belongs to"""
-        return obj.document.title
 
 class DocumentChunkSummarySerializer(serializers.ModelSerializer):
     # Lightweight serializer for chunk summaries (without full text)
@@ -57,16 +53,12 @@ class DocumentChunkSummarySerializer(serializers.ModelSerializer):
         model = DocumentChunk
         fields = [
             'id', 'chunk_type', 'page_number', 'order_in_doc',
-            'token_count', 'text_preview', 'book_title'
+            'token_count', 'text_preview'
         ]
     
     def get_text_preview(self, obj):
         """Return first 100 characters of text"""
         return obj.text[:100] + "..." if len(obj.text) > 100 else obj.text
-    
-    def get_book_title(self, obj):
-        """Return the title of the document this chunk belongs to"""
-        return obj.document.title
 
 class GameZoneSerializer(serializers.ModelSerializer):
     topics_count = serializers.SerializerMethodField()
