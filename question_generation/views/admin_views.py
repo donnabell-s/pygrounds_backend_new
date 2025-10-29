@@ -37,7 +37,7 @@ class AdminGeneratedQuestionListView(generics.ListAPIView):
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['question_text', 'subtopic__name', 'topic__name']
     ordering_fields = ['id', 'estimated_difficulty', 'order']
-    ordering = ['-updated_at']  # Sort by newest first
+    ordering = ['-id']
 
     def get_queryset(self):
         # Get questions with related entities to minimize DB queries

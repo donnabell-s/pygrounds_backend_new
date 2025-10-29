@@ -6,10 +6,6 @@ from content_ingestion.models import Topic, Subtopic, DocumentChunk
 class GeneratedQuestion(models.Model):
     topic = models.ForeignKey(Topic, on_delete=models.CASCADE, related_name='generated_questions')
     subtopic = models.ForeignKey(Subtopic, on_delete=models.CASCADE, related_name='generated_questions')
-    
-    # Store multiple subtopic IDs for dynamic subtopic combinations
-    # TEMPORARILY COMMENTED OUT - migration pending
-    # subtopic_ids = JSONField(default=list, blank=True, help_text="List of subtopic IDs this question covers")
 
     question_text = models.TextField(blank=True)  # Could be clue, prompt, description, etc.
     correct_answer = models.TextField(blank=True)
@@ -20,14 +16,6 @@ class GeneratedQuestion(models.Model):
         default='beginner',
         blank=True,
     )
-    recalibrated_difficulty = models.CharField(
-        max_length=20,
-        choices=[('beginner','Beginner'), ('intermediate','Intermediate'),
-                 ('advanced','Advanced'), ('master','Master')],
-        null=True, blank=True,
-        help_text="Latest recalibrated difficulty (if any)"
-    )
-    
     
     game_type = models.CharField(max_length=20, choices=[('coding','Coding'), ('non_coding','Non-Coding')], default='non_coding')
 
@@ -40,8 +28,6 @@ class GeneratedQuestion(models.Model):
         choices=[('pending', 'Pending Validation'), ('processing', 'Processing')],
         default='pending'
     )
-    
-    updated_at = models.DateTimeField(auto_now=True)  
    
     class Meta:
         ordering = ['subtopic__name']
@@ -49,7 +35,6 @@ class GeneratedQuestion(models.Model):
             models.Index(fields=['subtopic', 'estimated_difficulty']),
             models.Index(fields=['validation_status']),
             models.Index(fields=['topic']),
-            models.Index(fields=['game_type', 'estimated_difficulty']),
         ]
 
     def __str__(self):

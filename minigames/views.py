@@ -23,11 +23,37 @@ from .models import (
 )
 from .serializers import GameSessionSerializer, QuestionResponseSerializer, LightweightQuestionSerializer
 from .question_fetching import fetch_questions_for_game
+from .serializers import LeaderboardEntrySerializer
+from django.db.models import F, Min, Max, Count, Avg, Sum, Q
 
 
 # -----------------------------------------------------------------------------
 # Helpers
 # -----------------------------------------------------------------------------
+
+def extract_topic_subtopic_ids(question):
+    """
+    Extract topic and subtopic IDs from different question model types.
+    
+    Returns:
+        tuple: (topic_ids, subtopic_ids) as lists
+    """
+    if hasattr(question, 'topic_ids') and hasattr(question, 'subtopic_ids'):
+        # PreAssessmentQuestion: has topic_ids and subtopic_ids as JSONField arrays
+        topic_ids = list(question.topic_ids) if question.topic_ids else []
+        subtopic_ids = list(question.subtopic_ids) if question.subtopic_ids else []
+    elif hasattr(question, 'topic') and hasattr(question, 'subtopic'):
+        # GeneratedQuestion: has topic and subtopic as ForeignKey relationships
+        topic_ids = [question.topic.id] if question.topic else []
+        subtopic_ids = [question.subtopic.id] if question.subtopic else []
+    else:
+        # Fallback: try to extract from game_data (legacy)
+        gd = getattr(question, "game_data", {}) or {}
+        subtopic_ids = [s.get("id") for s in gd.get("subtopic_combination", []) if "id" in s]
+        from content_ingestion.models import Subtopic
+        topic_ids = list(Subtopic.objects.filter(id__in=subtopic_ids).values_list("topic_id", flat=True))
+    
+    return topic_ids, subtopic_ids
 
 def sanitize_word_for_grid(word: str) -> str:
     if not word:
@@ -56,7 +82,7 @@ class StartGameSession(APIView):
 
         questions = fetch_questions_for_game(user, game_type, limit=question_count)
         GameQuestion.objects.bulk_create([
-            GameQuestion(session=session, question_id=q.id)
+            GameQuestion(session=session, question=q)
             for q in questions
         ])
 
@@ -77,6 +103,10 @@ class SubmitAnswers(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, session_id):
+        print(f"🎮 SubmitAnswers called for session {session_id}")
+        print(f"User: {request.user}")
+        print(f"Request data: {request.data}")
+        
         def _san(s: str) -> str:
             return re.sub(r'[^A-Za-z]', '', (s or '')).upper()
 
@@ -159,10 +189,9 @@ class SubmitAnswers(APIView):
                 is_correct=ok,
             )
 
-            gd = getattr(q, "game_data", {}) or {}
-            subtopic_ids = [s.get("id") for s in gd.get("subtopic_combination", []) if "id" in s]
-            from content_ingestion.models import Subtopic
-            topic_ids = list(Subtopic.objects.filter(id__in=subtopic_ids).values_list("topic_id", flat=True))
+            # Extract topic and subtopic IDs
+            topic_ids, subtopic_ids = extract_topic_subtopic_ids(q)
+            print(f"🔍 Question {q.id}: topic_ids={topic_ids}, subtopic_ids={subtopic_ids}")
 
             results.append({
                 "question_id": q.id,
@@ -191,9 +220,19 @@ class SubmitAnswers(APIView):
             results[0]["time_limit"] = session.time_limit
 
         try:
+            print(f"🚀 Attempting to recalibrate topic proficiency for crossword...")
+            print(f"User: {request.user}")
+            print(f"Results data: {results}")
             recalibrate_topic_proficiency(request.user, results)
+            print("✅ Recalibration completed successfully!")
         except Exception as e:
-            print("Recalibration error:", e)
+            import traceback
+            print(f"❌ Recalibration error (crossword): {e}")
+            print(f"Error type: {type(e)}")
+            print(f"Traceback:")
+            traceback.print_exc()
+            print(f"User data: {request.user}")
+            print(f"Results data: {results}")
 
         return Response({
             "total": len(eligible_ids),
@@ -261,7 +300,7 @@ class StartCrosswordGame(APIView):
         placed_questions = [q for q in questions if sanitized_map[q.id] in placed_words]
 
         GameQuestion.objects.bulk_create([
-            GameQuestion(session=session, question_id=q.id) for q in placed_questions
+            GameQuestion(session=session, question=q) for q in placed_questions
         ])
 
         word_to_gqid = {}
@@ -350,7 +389,7 @@ class StartWordSearchGame(APIView):
         placed_questions = [q for q in questions if sanitized_map[q.id] in placed_words]
 
         GameQuestion.objects.bulk_create([
-            GameQuestion(session=session, question_id=q.id) for q in placed_questions
+            GameQuestion(session=session, question=q) for q in placed_questions
         ])
 
         WordSearchData.objects.create(
@@ -496,10 +535,9 @@ class SubmitHangmanCode(APIView):
                 .values('is_correct', 'user_answer')
             )
 
-            gd = getattr(question, "game_data", {}) or {}
-            subtopic_ids = [s.get("id") for s in gd.get("subtopic_combination", []) if "id" in s]
-            from content_ingestion.models import Subtopic
-            topic_ids = list(Subtopic.objects.filter(id__in=subtopic_ids).values_list("topic_id", flat=True))
+            # Extract topic and subtopic IDs
+            topic_ids, subtopic_ids = extract_topic_subtopic_ids(question)
+            print(f"🔍 Hangman Question {question.id}: topic_ids={topic_ids}, subtopic_ids={subtopic_ids}")
 
             results = []
             total_elapsed = 0.0
@@ -525,9 +563,19 @@ class SubmitHangmanCode(APIView):
                 results.append(entry)
 
             try:
+                print(f"🚀 Attempting to recalibrate topic proficiency for hangman...")
+                print(f"User: {request.user}")
+                print(f"Results data: {results}")
                 recalibrate_topic_proficiency(request.user, results)
+                print("✅ Recalibration completed successfully!")
             except Exception as e:
-                print("Recalibration error (hangman):", e)
+                import traceback
+                print(f"❌ Recalibration error (hangman): {e}")
+                print(f"Error type: {type(e)}")
+                print(f"Traceback:")
+                traceback.print_exc()
+                print(f"User data: {request.user}")
+                print(f"Results data: {results}")
 
         return Response({
             "success": passed,
@@ -627,10 +675,9 @@ class SubmitDebugGame(APIView):
                 .values('is_correct', 'user_answer')
             )
 
-            gd = getattr(question, "game_data", {}) or {}
-            subtopic_ids = [s.get("id") for s in gd.get("subtopic_combination", []) if "id" in s]
-            from content_ingestion.models import Subtopic
-            topic_ids = list(Subtopic.objects.filter(id__in=subtopic_ids).values_list("topic_id", flat=True))
+            # Extract topic and subtopic IDs
+            topic_ids, subtopic_ids = extract_topic_subtopic_ids(question)
+            print(f"🔍 Debug Question {question.id}: topic_ids={topic_ids}, subtopic_ids={subtopic_ids}")
 
             results = []
             total_elapsed = 0.0
@@ -656,9 +703,19 @@ class SubmitDebugGame(APIView):
                 results.append(entry)
 
             try:
+                print(f"🚀 Attempting to recalibrate topic proficiency for debugging...")
+                print(f"User: {request.user}")
+                print(f"Results data: {results}")
                 recalibrate_topic_proficiency(request.user, results)
+                print("✅ Recalibration completed successfully!")
             except Exception as e:
-                print("Recalibration error (debugging):", e)
+                import traceback
+                print(f"❌ Recalibration error (debugging): {e}")
+                print(f"Error type: {type(e)}")
+                print(f"Traceback:")
+                traceback.print_exc()
+                print(f"User data: {request.user}")
+                print(f"Results data: {results}")
 
         return Response({
             "success": passed,
@@ -700,10 +757,82 @@ class SubmitPreAssessmentAnswers(APIView):
                 continue
 
         if request.user.is_authenticated:
-            recalibrate_topic_proficiency(request.user, results)
+            try:
+                print(f"🚀 Attempting to recalibrate topic proficiency for wordsearch...")
+                print(f"User: {request.user}")
+                print(f"Results data: {results}")
+                recalibrate_topic_proficiency(request.user, results)
+                print("✅ Recalibration completed successfully!")
+            except Exception as e:
+                import traceback
+                print(f"❌ Recalibration error (wordsearch): {e}")
+                print(f"Error type: {type(e)}")
+                print(f"Traceback:")
+                traceback.print_exc()
+                print(f"User data: {request.user}")
+                print(f"Results data: {results}")
 
         return Response({
             "total": len(answers),
             "correct": correct_count,
             "results": results
         })
+
+
+class GameLeaderboardView(APIView):
+    """
+    Returns leaderboard entries for a given game_type.
+
+    Behavior:
+    - Considers completed GameSession rows (status='completed') filtered by game_type.
+    - For each user, picks the session with the highest total_score. If there are multiple
+      sessions with the same score, picks the one with the shortest elapsed time (end_time - start_time).
+    - Returns a list sorted by score desc, time asc.
+    """
+    permission_classes = [AllowAny]
+
+    def get(self, request, game_type):
+        # Filter completed sessions for the game
+        qs = GameSession.objects.filter(game_type=game_type, status='completed').exclude(user__isnull=True)
+
+        # Compute elapsed seconds per session (guard missing end_time)
+        sessions = []
+        for s in qs.select_related('user'):
+            if not s.end_time or not s.start_time:
+                elapsed = None
+            else:
+                elapsed = (s.end_time - s.start_time).total_seconds()
+            sessions.append((s, elapsed or 0.0))
+
+        # For each user, select best session according to score desc, elapsed asc
+        best_by_user = {}
+        for s, elapsed in sessions:
+            uid = s.user.id
+            cur = best_by_user.get(uid)
+            if not cur:
+                best_by_user[uid] = (s, elapsed)
+                continue
+            best_s, best_elapsed = cur
+            if s.total_score > best_s.total_score:
+                best_by_user[uid] = (s, elapsed)
+            elif s.total_score == best_s.total_score and elapsed < best_elapsed:
+                best_by_user[uid] = (s, elapsed)
+
+        entries = []
+        for uid, (s, elapsed) in best_by_user.items():
+            entries.append({
+                'user_id': s.user.id,
+                'username': s.user.username,
+                'first_name': getattr(s.user, 'first_name', '') or '',
+                'last_name': getattr(s.user, 'last_name', '') or '',
+                'score': s.total_score,
+                'time_seconds': float(elapsed),
+                'session_id': s.session_id,
+                'played_at': s.end_time or s.start_time,
+            })
+
+        # sort by score desc, time asc
+        entries.sort(key=lambda e: (-e['score'], e['time_seconds']))
+
+        serializer = LeaderboardEntrySerializer(entries, many=True)
+        return Response(serializer.data)

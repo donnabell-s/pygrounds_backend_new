@@ -19,7 +19,6 @@ class GranularChunkProcessor:
     """
     
     def __init__(self, enable_embeddings: bool = True):
-        # Initialize processor with embedding support and batch settings
         self.batch_size = 50
         self.enable_embeddings = enable_embeddings
         self.embedding_generator = EmbeddingGenerator() if enable_embeddings else None
@@ -31,18 +30,203 @@ class GranularChunkProcessor:
             "With the full version of the book you get",
             "purchase a full version",
             "If you enjoyed the sample chapters",
-            "Python Basics: A Practical Introduction to Python 3",
-            # TOC-specific patterns
-            "table of contents",
-            "contents",
-            "chapter",
-            "section",
+            "Python Basics: A Practical Introduction to Python 3"
         ]
+    
+    def _get_toc_titles_for_page(self, document: UploadedDocument, page_number: int) -> tuple[str, str]:
+        """
+        Get the topic and subtopic titles for a given page based on TOC entries.
+        
+        Args:
+            document: The UploadedDocument instance
+            page_number: Page number (1-based)
+            
+        Returns:
+            Tuple of (topic_title, subtopic_title)
+        """
+        try:
+            # Get all TOC entries for this document, ordered by start_page
+            toc_entries = TOCEntry.objects.filter(document=document).order_by('start_page')
+            
+            # Find the TOC entry that contains this page
+            current_entry = None
+            for entry in toc_entries:
+                if entry.start_page <= page_number <= (entry.end_page or entry.start_page):
+                    current_entry = entry
+                    break
+            
+            if not current_entry:
+                # If no exact match, find the entry that starts before or at this page
+                for entry in toc_entries.reverse():
+                    if entry.start_page <= page_number:
+                        current_entry = entry
+                        break
+            
+            if not current_entry:
+                return "", ""
+            
+            # Determine if this is a chapter (level 0) or section (level 1+)
+            if current_entry.level == 0:
+                # This is a chapter title
+                topic_title = self._clean_toc_title(current_entry.title)
+                subtopic_title = ""
+            else:
+                # This is a section, find the parent chapter
+                topic_title = ""
+                subtopic_title = self._clean_toc_title(current_entry.title)
+                
+                # Find the parent chapter (level 0 entry that comes before this one)
+                parent_entries = toc_entries.filter(
+                    level=0, 
+                    start_page__lte=current_entry.start_page
+                ).order_by('-start_page')
+                
+                if parent_entries.exists():
+                    topic_title = self._clean_toc_title(parent_entries.first().title)
+            
+            return topic_title, subtopic_title
+            
+        except Exception as e:
+            print(f"   ⚠️ Error getting TOC titles for page {page_number}: {e}")
+            return "", ""
+    
+    def _clean_toc_title(self, title: str) -> str:
+        """
+        Clean TOC title by removing dots, page numbers, and formatting artifacts.
+        
+        Args:
+            title: Raw TOC title
+            
+        Returns:
+            Cleaned title string
+        """
+        if not title:
+            return ""
+        
+        # Remove leading numbers (e.g., "1.1", "2.3")
+        title = re.sub(r'^\d+\.?\d*\s*', '', title)
+        
+        # Remove trailing dots and page references
+        title = re.sub(r'\s*\.+\s*\d*\s*$', '', title)
+        title = re.sub(r'\s*\.+\s*$', '', title)
+        
+        # Clean up extra whitespace
+        title = re.sub(r'\s+', ' ', title).strip()
+        
+        return title
 
-    # ==================== MAIN ENTRY POINT ====================
+    def _analyze_token_distribution(self, document: UploadedDocument) -> Dict[str, Any]:
+        """
+        Analyze token distribution across all chunks for the document.
+        
+        Args:
+            document: The UploadedDocument instance
+            
+        Returns:
+            Dict with token analysis statistics
+        """
+        chunks = DocumentChunk.objects.filter(document=document)
+        
+        if not chunks.exists():
+            return {"error": "No chunks found for analysis"}
+        
+        token_counts = []
+        total_characters = 0
+        chunk_types = {}
+        
+        for chunk in chunks:
+            token_count = chunk.token_count or 0
+            token_counts.append(token_count)
+            total_characters += len(chunk.text)
+            
+            # Track tokens by chunk type
+            chunk_type = chunk.chunk_type
+            if chunk_type not in chunk_types:
+                chunk_types[chunk_type] = {'count': 0, 'tokens': 0}
+            chunk_types[chunk_type]['count'] += 1
+            chunk_types[chunk_type]['tokens'] += token_count
+        
+        if not token_counts:
+            return {"error": "No token data available"}
+        
+        # Calculate statistics
+        total_tokens = sum(token_counts)
+        avg_tokens = total_tokens / len(token_counts) if token_counts else 0
+        
+        # Cost estimation for common models
+        gpt4_cost = self.token_counter.estimate_cost(total_tokens, "gpt-4")
+        gpt35_cost = self.token_counter.estimate_cost(total_tokens, "gpt-3.5-turbo")
+        
+        return {
+            "total_chunks": len(token_counts),
+            "total_tokens": total_tokens,
+            "total_characters": total_characters,
+            "avg_tokens_per_chunk": round(avg_tokens, 2),
+            "min_tokens": min(token_counts) if token_counts else 0,
+            "max_tokens": max(token_counts) if token_counts else 0,
+            "encoding_used": self.token_counter.encoding_name,
+            "chunks_over_1k_tokens": len([c for c in token_counts if c > 1000]),
+            "chunks_over_2k_tokens": len([c for c in token_counts if c > 2000]),
+            "chunks_over_4k_tokens": len([c for c in token_counts if c > 4000]),
+            "chunk_types_token_distribution": chunk_types,
+            "estimated_costs": {
+                "gpt_4": gpt4_cost,
+                "gpt_3_5_turbo": gpt35_cost
+            }
+        }
+
+    def _get_toc_content_boundaries(self, document: UploadedDocument) -> tuple[int, int]:
+        """
+        Determine content boundaries based on existing TOC entries to avoid processing
+        copyright pages, title pages, and other non-educational content.
+        
+        Args:
+            document: The UploadedDocument instance
+            
+        Returns:
+            Tuple of (first_content_page, last_content_page) (0-based)
+        """
+        toc_entries = TOCEntry.objects.filter(document=document).order_by('start_page')
+        
+        if not toc_entries.exists():
+            raise ValueError("No TOC entries found for document")
+        
+        # Get the first and last page from TOC entries
+        first_toc_page = toc_entries.first().start_page - 1  # Convert to 0-based
+        last_toc_page = toc_entries.last().end_page - 1 if toc_entries.last().end_page else toc_entries.last().start_page - 1
+        
+        # Filter out any preliminary pages (usually contain non-educational content)
+        # Educational content typically starts with chapter/section numbers
+        educational_entries = toc_entries.filter(
+            title__iregex=r'^\d+\.?\d*\s+'  # Starts with numbers like "1.1", "2.", etc.
+        )
+        
+        if educational_entries.exists():
+            first_educational_page = educational_entries.first().start_page - 1  # Convert to 0-based
+            print(f"📚 Found educational content starting at page {first_educational_page + 1}: '{educational_entries.first().title}'")
+            first_content_page = first_educational_page
+        else:
+            # Fallback to first TOC entry if no numbered sections found
+            first_content_page = first_toc_page
+            print(f"📚 No numbered sections found, using first TOC entry at page {first_content_page + 1}")
+        
+        # For the end, use the last TOC entry's end_page
+        last_content_page = last_toc_page
+        
+        print(f"📖 TOC-based content boundaries: pages {first_content_page + 1}-{last_content_page + 1}")
+        return first_content_page, last_content_page
 
     def process_entire_document(self, document: UploadedDocument) -> Dict[str, Any]:
-        # Process the entire document content area with granular chunking
+        """
+        Process the entire document content area with granular chunking,
+        avoiding non-informational pages like covers, prefaces, etc.
+        
+        Args:
+            document: The UploadedDocument instance
+        
+        Returns:
+            Dictionary with processing results and statistics
+        """
         results = {
             'total_chunks_created': 0,
             'total_pages_processed': 0,
@@ -120,44 +304,86 @@ class GranularChunkProcessor:
         
         return results
 
-    # ==================== CONTENT BOUNDARY DETERMINATION ====================
-
-    def _get_toc_content_boundaries(self, document: UploadedDocument) -> tuple[int, int]:
-        # Determine content boundaries based on existing TOC entries
-        toc_entries = TOCEntry.objects.filter(document=document).order_by('start_page')
+    def _generate_embeddings_for_document(self, document: UploadedDocument) -> Dict[str, Any]:
+        """
+        Generate embeddings for all chunks in the document.
         
-        if not toc_entries.exists():
-            raise ValueError("No TOC entries found for document")
+        Args:
+            document: The UploadedDocument instance
+            
+        Returns:
+            Dictionary with embedding statistics
+        """
+        if not self.enable_embeddings or not self.embedding_generator:
+            return {'success': 0, 'failed': 0, 'total': 0, 'status': 'disabled'}
         
-        # Get the first and last page from TOC entries
-        first_toc_page = toc_entries.first().start_page - 1  # Convert to 0-based
-        last_toc_page = toc_entries.last().end_page - 1 if toc_entries.last().end_page else toc_entries.last().start_page - 1
+        print(f"\n🔮 GENERATING EMBEDDINGS")
+        print(f"{'─'*40}")
         
-        # Filter out any preliminary pages (usually contain non-educational content)
-        # Educational content typically starts with chapter/section numbers
-        educational_entries = toc_entries.filter(
-            title__iregex=r'^\d+\.?\d*\s+'  # Starts with numbers like "1.1", "2.", etc.
+        # Get all chunks for this document that don't have embeddings
+        chunks_to_embed = DocumentChunk.objects.filter(
+            document=document,
+            embeddings__isnull=True
         )
         
-        if educational_entries.exists():
-            first_educational_page = educational_entries.first().start_page - 1  # Convert to 0-based
-            print(f"📚 Found educational content starting at page {first_educational_page + 1}: '{educational_entries.first().title}'")
-            first_content_page = first_educational_page
-        else:
-            # Fallback to first TOC entry if no numbered sections found
-            first_content_page = first_toc_page
-            print(f"📚 No numbered sections found, using first TOC entry at page {first_content_page + 1}")
+        if not chunks_to_embed.exists():
+            print(f"✅ All chunks already have embeddings")
+            return {'success': 0, 'failed': 0, 'total': 0, 'status': 'already_embedded'}
         
-        # For the end, use the last TOC entry's end_page
-        last_content_page = last_toc_page
+        print(f"📝 Found {chunks_to_embed.count()} chunks to embed")
         
-        print(f"📖 TOC-based content boundaries: pages {first_content_page + 1}-{last_content_page + 1}")
-        return first_content_page, last_content_page
-
-    # ==================== GRANULAR CHUNK EXTRACTION ====================
+        # Generate embeddings in batch
+        embedding_results = self.embedding_generator.embed_and_save_batch(chunks_to_embed)
+        
+        total_processed = embedding_results.get('success', 0) + embedding_results.get('failed', 0)
+        print(f"✅ Embedding complete: {embedding_results.get('success', 0)}/{total_processed} successful")
+        
+        return embedding_results
+    
+    def _is_sample_placeholder_content(self, text: str) -> bool:
+        """
+        Check if the content is just a sample placeholder (not actual book content).
+        
+        Args:
+            text: The text content to check
+            
+        Returns:
+            True if this appears to be sample placeholder content
+        """
+        if not text or len(text.strip()) < 50:
+            return False
+            
+        # Check for multiple sample indicators
+        indicator_count = 0
+        text_lower = text.lower()
+        
+        for indicator in self.sample_content_indicators:
+            if indicator.lower() in text_lower:
+                indicator_count += 1
+        
+        # If we find 2+ indicators, it's likely a sample placeholder
+        if indicator_count >= 2:
+            return True
+            
+        # Additional heuristic: if the content is very short and contains sample text
+        if len(text.strip()) < 800 and any(indicator.lower() in text_lower for indicator in self.sample_content_indicators[:3]):
+            return True
+            
+        return False
 
     def _extract_granular_chunks_from_range(self, document: UploadedDocument, start_page: int, end_page: int) -> List[Dict[str, Any]]:
-        # Extract granular chunks from a page range of the document
+        """
+        Extract granular chunks from a page range of the document.
+        Creates smaller, type-classified chunks instead of full-page chunks.
+        
+        Args:
+            document: The UploadedDocument instance
+            start_page: Starting page (0-based)
+            end_page: Ending page (0-based)
+            
+        Returns:
+            List of enhanced chunk dictionaries with granular content
+        """
         doc = None
         temp_pdf = None
         temp_path = None
@@ -243,54 +469,18 @@ class GranularChunkProcessor:
                 temp_pdf.close()
             if doc:
                 doc.close()
-
-    def _is_sample_placeholder_content(self, text: str) -> bool:
-        # Check if the content is just a sample placeholder (not actual book content)
-        if not text or len(text.strip()) < 50:
-            return False
-            
-        # Check for multiple sample indicators
-        indicator_count = 0
-        text_lower = text.lower()
-        
-        for indicator in self.sample_content_indicators:
-            if indicator.lower() in text_lower:
-                indicator_count += 1
-        
-        # If we find 2+ indicators, it's likely a sample placeholder or TOC
-        if indicator_count >= 2:
-            return True
-            
-        # Additional heuristic: if the content is very short and contains sample text
-        if len(text.strip()) < 800 and any(indicator.lower() in text_lower for indicator in self.sample_content_indicators[:3]):
-            return True
-            
-        # TOC-specific detection: repetitive dots and page numbers
-        dot_patterns = re.findall(r'\.\s*\.\s*\.\s*', text)
-        page_number_lines = re.findall(r'.*\.\s*\d+\s*$', text, re.MULTILINE)
-        
-        # If we have many dot patterns and page numbers, it's likely a TOC
-        if len(dot_patterns) > 3 and len(page_number_lines) > 3:
-            return True
-            
-        # Check for TOC-like formatting (short lines ending with dots and numbers)
-        lines = text.split('\n')
-        toc_like_lines = 0
-        for line in lines:
-            line = line.strip()
-            if len(line) > 10 and re.match(r'.*\.\s*\d+$', line):
-                toc_like_lines += 1
-                
-        # If more than 40% of lines look like TOC entries, filter it out
-        if len(lines) > 5 and toc_like_lines / len(lines) > 0.4:
-            return True
-            
-        return False
-
-    # ==================== DATABASE OPERATIONS ====================
-
+    
     def _save_granular_chunks(self, document: UploadedDocument, chunks: List[Dict[str, Any]]) -> int:
-        # Save granular chunks to the database
+        """
+        Save granular chunks to the database.
+        
+        Args:
+            document: The UploadedDocument instance
+            chunks: List of chunk dictionaries to save
+            
+        Returns:
+            Number of chunks saved
+        """
         saved_count = 0
         
         with transaction.atomic():
@@ -313,154 +503,3 @@ class GranularChunkProcessor:
                     continue
         
         return saved_count
-
-    # ==================== EMBEDDING GENERATION ====================
-
-    def _generate_embeddings_for_document(self, document: UploadedDocument) -> Dict[str, Any]:
-        # Generate embeddings for all chunks in the document
-        if not self.enable_embeddings or not self.embedding_generator:
-            return {'success': 0, 'failed': 0, 'total': 0, 'status': 'disabled'}
-        
-        print(f"\n🔮 GENERATING EMBEDDINGS")
-        print(f"{'─'*40}")
-        
-        # Get all chunks for this document that don't have embeddings
-        chunks_to_embed = DocumentChunk.objects.filter(
-            document=document,
-            embeddings__isnull=True
-        )
-        
-        if not chunks_to_embed.exists():
-            print(f"✅ All chunks already have embeddings")
-            return {'success': 0, 'failed': 0, 'total': 0, 'status': 'already_embedded'}
-        
-        print(f"📝 Found {chunks_to_embed.count()} chunks to embed")
-        
-        # Generate embeddings in batch
-        embedding_results = self.embedding_generator.embed_and_save_batch(chunks_to_embed)
-        
-        total_processed = embedding_results.get('success', 0) + embedding_results.get('failed', 0)
-        print(f"✅ Embedding complete: {embedding_results.get('success', 0)}/{total_processed} successful")
-        
-        return embedding_results
-
-    # ==================== ANALYSIS & REPORTING ====================
-
-    def _analyze_token_distribution(self, document: UploadedDocument) -> Dict[str, Any]:
-        # Analyze token distribution across all chunks for the document
-        chunks = DocumentChunk.objects.filter(document=document)
-        
-        if not chunks.exists():
-            return {"error": "No chunks found for analysis"}
-        
-        token_counts = []
-        total_characters = 0
-        chunk_types = {}
-        
-        for chunk in chunks:
-            token_count = chunk.token_count or 0
-            token_counts.append(token_count)
-            total_characters += len(chunk.text)
-            
-            # Track tokens by chunk type
-            chunk_type = chunk.chunk_type
-            if chunk_type not in chunk_types:
-                chunk_types[chunk_type] = {'count': 0, 'tokens': 0}
-            chunk_types[chunk_type]['count'] += 1
-            chunk_types[chunk_type]['tokens'] += token_count
-        
-        if not token_counts:
-            return {"error": "No token data available"}
-        
-        # Calculate statistics
-        total_tokens = sum(token_counts)
-        avg_tokens = total_tokens / len(token_counts) if token_counts else 0
-        
-        # Cost estimation for common models
-        gpt4_cost = self.token_counter.estimate_cost(total_tokens, "gpt-4")
-        gpt35_cost = self.token_counter.estimate_cost(total_tokens, "gpt-3.5-turbo")
-        
-        return {
-            "total_chunks": len(token_counts),
-            "total_tokens": total_tokens,
-            "total_characters": total_characters,
-            "avg_tokens_per_chunk": round(avg_tokens, 2),
-            "min_tokens": min(token_counts) if token_counts else 0,
-            "max_tokens": max(token_counts) if token_counts else 0,
-            "encoding_used": self.token_counter.encoding_name,
-            "chunks_over_1k_tokens": len([c for c in token_counts if c > 1000]),
-            "chunks_over_2k_tokens": len([c for c in token_counts if c > 2000]),
-            "chunks_over_4k_tokens": len([c for c in token_counts if c > 4000]),
-            "chunk_types_token_distribution": chunk_types,
-            "estimated_costs": {
-                "gpt_4": gpt4_cost,
-                "gpt_3_5_turbo": gpt35_cost
-            }
-        }
-
-    # ==================== TOC HELPERS ====================
-
-    def _get_toc_titles_for_page(self, document: UploadedDocument, page_number: int) -> tuple[str, str]:
-        # Get the topic and subtopic titles for a given page based on TOC entries
-        try:
-            # Get all TOC entries for this document, ordered by start_page
-            toc_entries = TOCEntry.objects.filter(document=document).order_by('start_page')
-            
-            # Find the TOC entry that contains this page
-            current_entry = None
-            for entry in toc_entries:
-                if entry.start_page <= page_number <= (entry.end_page or entry.start_page):
-                    current_entry = entry
-                    break
-            
-            if not current_entry:
-                # If no exact match, find the entry that starts before or at this page
-                for entry in toc_entries.reverse():
-                    if entry.start_page <= page_number:
-                        current_entry = entry
-                        break
-            
-            if not current_entry:
-                return "", ""
-            
-            # Determine if this is a chapter (level 0) or section (level 1+)
-            if current_entry.level == 0:
-                # This is a chapter title
-                topic_title = self._clean_toc_title(current_entry.title)
-                subtopic_title = ""
-            else:
-                # This is a section, find the parent chapter
-                topic_title = ""
-                subtopic_title = self._clean_toc_title(current_entry.title)
-                
-                # Find the parent chapter (level 0 entry that comes before this one)
-                parent_entries = toc_entries.filter(
-                    level=0, 
-                    start_page__lte=current_entry.start_page
-                ).order_by('-start_page')
-                
-                if parent_entries.exists():
-                    topic_title = self._clean_toc_title(parent_entries.first().title)
-            
-            return topic_title, subtopic_title
-            
-        except Exception as e:
-            print(f"   ⚠️ Error getting TOC titles for page {page_number}: {e}")
-            return "", ""
-    
-    def _clean_toc_title(self, title: str) -> str:
-        # Clean TOC title by removing dots, page numbers, and formatting artifacts
-        if not title:
-            return ""
-        
-        # Remove leading numbers (e.g., "1.1", "2.3")
-        title = re.sub(r'^\d+\.?\d*\s*', '', title)
-        
-        # Remove trailing dots and page references
-        title = re.sub(r'\s*\.+\s*\d*\s*$', '', title)
-        title = re.sub(r'\s*\.+\s*$', '', title)
-        
-        # Clean up extra whitespace
-        title = re.sub(r'\s+', ' ', title).strip()
-        
-        return title

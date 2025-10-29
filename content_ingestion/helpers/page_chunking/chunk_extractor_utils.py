@@ -48,7 +48,7 @@ def extract_unstructured_chunks(file_path):
             if not text or len(text.strip()) < 10:  # Skip very short chunks
                 continue
             
-            # Clean the raw text first (this will filter out TOC pages)
+            # Clean the raw text first
             cleaned_text = clean_raw_text(text)
             
             if not cleaned_text or len(cleaned_text.strip()) < 10:

@@ -3,92 +3,6 @@ from ..helpers.helper_imports import *
 from content_ingestion.models import CHUNK_TYPE_CHOICES
 from multiprocessing import Pool
 import psutil
-import threading
-import queue
-import time
-from django.views.decorators.csrf import csrf_exempt
-from django.utils.decorators import method_decorator
-
-# Global processing queue management
-_processing_queue = queue.Queue()
-_active_processing = set()
-_max_concurrent_documents = None
-_queue_lock = threading.Lock()
-
-def _get_max_concurrent_documents():
-    """Determine maximum number of documents that can be processed concurrently."""
-    global _max_concurrent_documents
-    if _max_concurrent_documents is None:
-        cpu_count = psutil.cpu_count(logical=True)
-
-        # Balanced approach: consider that some processing steps use parallel workers
-        # Use 1 document per 3 CPU cores, minimum 2, maximum 6
-        # This accounts for parallel processing within documents (like 16 workers for question generation)
-        _max_concurrent_documents = max(2, min(6, cpu_count // 3))
-
-        logger.info(f"Setting max concurrent document processing to {_max_concurrent_documents} (CPU cores: {cpu_count})")
-        logger.info(f"This allows parallel processing within documents while preventing resource exhaustion")
-    return _max_concurrent_documents
-
-def _start_queued_processing():
-    """Start processing queued documents if slots are available."""
-    global _processing_queue, _active_processing, _queue_lock
-
-    with _queue_lock:
-        max_concurrent = _get_max_concurrent_documents()
-        available_slots = max_concurrent - len(_active_processing)
-
-        if available_slots > 0 and not _processing_queue.empty():
-            # Start processing queued documents
-            for _ in range(min(available_slots, _processing_queue.qsize())):
-                try:
-                    document_id, reprocess = _processing_queue.get_nowait()
-                    _active_processing.add(document_id)
-
-                    # Start processing in background thread
-                    thread = threading.Thread(
-                        target=_run_document_pipeline_background,
-                        args=(document_id, reprocess),
-                        daemon=True
-                    )
-                    thread.start()
-                    logger.info(f"Started queued processing for document {document_id}")
-
-                except queue.Empty:
-                    break
-
-def _queue_document_for_processing(document_id, reprocess=False):
-    """Queue a document for processing or start immediately if slots available."""
-    global _processing_queue, _active_processing, _queue_lock
-
-    with _queue_lock:
-        max_concurrent = _get_max_concurrent_documents()
-
-        if len(_active_processing) < max_concurrent:
-            # Start processing immediately
-            _active_processing.add(document_id)
-            thread = threading.Thread(
-                target=_run_document_pipeline_background,
-                args=(document_id, reprocess),
-                daemon=True
-            )
-            thread.start()
-            logger.info(f"Started immediate processing for document {document_id}")
-        else:
-            # Queue for later processing
-            _processing_queue.put((document_id, reprocess))
-            logger.info(f"Queued document {document_id} for processing (queue size: {_processing_queue.qsize()})")
-
-def _finish_document_processing(document_id):
-    """Mark document processing as complete and start next queued document."""
-    global _active_processing, _queue_lock
-
-    with _queue_lock:
-        _active_processing.discard(document_id)
-        logger.info(f"Finished processing document {document_id}, active processing: {len(_active_processing)}")
-
-        # Start next queued document if available
-        _start_queued_processing()
 
 def _run_document_pipeline_background(document_id, reprocess=False):
     """
@@ -97,21 +11,22 @@ def _run_document_pipeline_background(document_id, reprocess=False):
     """
     try:
         document = UploadedDocument.objects.get(id=document_id)
-
-        # Status already set by the main view, just update the message
+        
+        # Set processing status
+        document.processing_status = 'PROCESSING'
         document.processing_message = 'Starting document processing pipeline...'
         document.save()
-
+        
         # Determine optimal number of processes (use fewer since each step is sequential)
         cpu_count = psutil.cpu_count(logical=True)
         max_workers = min(2, max(1, cpu_count - 2))  # Use up to 2 processes for document pipeline
-
+        
         # Prepare processing tasks in order
         processing_steps = []
-
+        
         if reprocess:
             processing_steps.append((document_id, reprocess, 'cleanup'))
-
+        
         # Add the main processing steps
         processing_steps.extend([
             (document_id, reprocess, 'toc'),
@@ -119,27 +34,27 @@ def _run_document_pipeline_background(document_id, reprocess=False):
             (document_id, reprocess, 'embedding'),
             (document_id, reprocess, 'semantic')
         ])
-
+        
         pipeline_results = {
             'document_id': document_id,
             'document_title': document.title,
             'pipeline_steps': {}
         }
-
+        
         try:
             # Import the worker function from our separate module
             from content_ingestion.document_worker import process_document_task
-
+            
             # Process steps sequentially (since they depend on each other)
             for step_data in processing_steps:
                 step_name = step_data[2]
-
+                
                 # Check if processing was cancelled before each step
                 document.refresh_from_db()
                 if document.processing_status == 'PENDING':
                     logger.info(f"Processing cancelled for document {document_id} before step {step_name}")
                     return  # Exit early if cancelled
-
+                
                 # Update status message
                 status_messages = {
                     'cleanup': 'Cleaning up previous processing artifacts...',
@@ -148,22 +63,22 @@ def _run_document_pipeline_background(document_id, reprocess=False):
                     'embedding': 'Generating embeddings for content chunks...',
                     'semantic': 'Computing semantic similarities between content chunks...'
                 }
-
+                
                 document.processing_message = status_messages.get(step_name, f'Processing {step_name}...')
                 document.save()
-
+                
                 # Execute single step in process pool
                 with Pool(processes=1) as pool:  # Use single process for sequential steps
                     result = pool.apply(process_document_task, (step_data,))
-
+                
                 step_result_name, step_result = result
                 pipeline_results['pipeline_steps'][step_result_name] = step_result
-
+                
                 # Stop if any step fails critically
                 if step_result['status'] == 'error' and step_name in ['toc', 'chunking']:
                     logger.error(f"Critical step {step_name} failed for document {document_id}: {step_result['message']}")
                     break
-
+        
         except Exception as e:
             logger.error(f"ProcessPool error for document {document_id}: {str(e)}")
             pipeline_results['pipeline_steps']['process_error'] = {
@@ -171,11 +86,11 @@ def _run_document_pipeline_background(document_id, reprocess=False):
                 'message': f'Process pool error: {str(e)}',
                 'error': str(e)
             }
-
+        
         # Update final status based on pipeline results
-        failed_steps = [step for step, result in pipeline_results['pipeline_steps'].items()
+        failed_steps = [step for step, result in pipeline_results['pipeline_steps'].items() 
                        if result.get('status') == 'error']
-
+        
         if failed_steps:
             document.processing_status = 'FAILED'
             document.processing_message = f'Processing failed at steps: {", ".join(failed_steps)}'
@@ -183,44 +98,55 @@ def _run_document_pipeline_background(document_id, reprocess=False):
             # Check critical steps completed successfully and produced results
             toc_result = pipeline_results['pipeline_steps'].get('toc', {})
             chunking_result = pipeline_results['pipeline_steps'].get('chunking', {})
-
-            if (toc_result.get('status') == 'success' and toc_result.get('entries_count', 0) > 0 and
-                chunking_result.get('status') == 'success' and chunking_result.get('chunks_created', 0) > 0):
+            
+            # Verify TOC was generated successfully
+            toc_success = (toc_result.get('status') == 'success' and 
+                          toc_result.get('entries_count', 0) > 0)
+            
+            # Verify chunks were created successfully  
+            chunking_success = (chunking_result.get('status') == 'success' and 
+                              chunking_result.get('chunks_created', 0) > 0)
+            
+            if toc_success and chunking_success:
                 document.processing_status = 'COMPLETED'
                 document.processing_message = 'Document processing completed successfully'
+            elif not toc_success:
+                document.processing_status = 'FAILED'
+                document.processing_message = 'Failed to generate table of contents or no TOC entries found'
+            elif not chunking_success:
+                document.processing_status = 'FAILED'
+                document.processing_message = 'Failed to create document chunks or no chunks generated'
             else:
-                document.processing_status = 'COMPLETED_WITH_WARNINGS'
-                document.processing_message = 'Document processing completed but with potential issues'
-
+                document.processing_status = 'FAILED'
+                document.processing_message = 'Critical processing steps did not complete successfully'
+        
         document.save()
-        logger.info(f"Document {document_id} processing completed with status: {document.processing_status}")
-
+        
+        logger.info(f"Background ProcessPool processing completed for document {document_id}: {document.title} - Status: {document.processing_status}")
+        
+    except UploadedDocument.DoesNotExist:
+        logger.error(f"Document {document_id} not found in background processing")
     except Exception as e:
-        logger.error(f"Critical error in document pipeline for {document_id}: {str(e)}")
         try:
             document = UploadedDocument.objects.get(id=document_id)
             document.processing_status = 'FAILED'
-            document.processing_message = f'Critical processing error: {str(e)}'
+            document.processing_message = f'Processing failed: {str(e)}'
             document.save()
-        except Exception:
+        except:
             pass
-    finally:
-        # Always mark processing as finished to free up the slot
-        _finish_document_processing(document_id)
+        logger.error(f"Background pipeline error for document {document_id}: {str(e)}")
 
-@csrf_exempt
 @api_view(['POST'])
 def process_document_pipeline(request, document_id):
     """
     Start processing an uploaded document through the full pipeline using ProcessPool.
-
-    This endpoint queues the document for processing and returns immediately.
-    Processing is managed globally to prevent resource contention.
-    Use GET /docs/<document_id>/ to check the processing status.
+    
+    This endpoint starts the processing in a background thread that manages ProcessPool 
+    and returns immediately. Use GET /docs/<document_id>/ to check the processing status.
     """
     try:
         document = get_object_or_404(UploadedDocument, id=document_id)
-
+        
         if document.processing_status == 'PROCESSING':
             return Response({
                 'status': 'error',
@@ -229,58 +155,33 @@ def process_document_pipeline(request, document_id):
                 'current_status': document.processing_status,
                 'current_message': document.processing_message
             }, status=status.HTTP_400_BAD_REQUEST)
-
+        
         # Get reprocess flag from request
         reprocess = request.data.get('reprocess', False)
-
-        # Auto-detect if reprocessing is needed based on existing data
-        if not reprocess:
-            # Check if document already has chunks or TOC entries
-            has_chunks = document.chunks.exists()
-            has_toc = document.tocentry_set.exists()
-            if has_chunks or has_toc:
-                logger.info(f"Document {document_id} has existing data (chunks: {has_chunks}, toc: {has_toc}), enabling reprocess mode")
-                reprocess = True
-
-        # Queue document for processing (will start immediately if slots available)
-        _queue_document_for_processing(document_id, reprocess)
-
-        # Check if processing started immediately or is queued
-        max_concurrent = _get_max_concurrent_documents()
-        queue_size = _processing_queue.qsize()
-
-        # Update document status immediately based on queue state
-        if queue_size == 0:
-            document.processing_status = 'PROCESSING'
-            document.processing_message = f'Starting document processing pipeline...'
-        else:
-            document.processing_status = 'QUEUED'
-            document.processing_message = f'Document queued for processing (position {queue_size} in queue)'
-        document.save()
-
-        if queue_size == 0:
-            message = f'Document processing started immediately for "{document.title}"'
-            processing_status = 'PROCESSING'
-        else:
-            message = f'Document queued for processing (position {queue_size} in queue) for "{document.title}"'
-            processing_status = 'QUEUED'
-
+        
+        # Start background processing with ProcessPool
+        import threading
+        thread = threading.Thread(
+            target=_run_document_pipeline_background,
+            args=(document_id, reprocess),
+            daemon=True
+        )
+        thread.start()
+        
         # Return immediately while processing continues in background
         return Response({
             'status': 'success',
-            'message': message,
+            'message': f'Document processing started in background using ProcessPool for "{document.title}"',
             'document_id': document_id,
-            'processing_status': processing_status,
-            'max_concurrent_documents': max_concurrent,
-            'queue_position': queue_size if queue_size > 0 else 0,
+            'processing_status': 'PROCESSING',
             'note': 'Use GET /api/content_ingestion/docs/{document_id}/ to check processing status'
         }, status=status.HTTP_202_ACCEPTED)
-
+        
     except Exception as e:
-        logger.error(f"Error queuing document {document_id} for processing: {str(e)}")
+        logger.error(f"Error starting ProcessPool pipeline for document {document_id}: {str(e)}")
         return Response({
             'status': 'error',
-            'message': f'Failed to queue processing: {str(e)}'
+            'message': f'Failed to start processing: {str(e)}'
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
@@ -349,7 +250,7 @@ def _cleanup_document_objects(document):
             logger.info(f"Deleted {chunk_count} document chunks")
         
         # Delete TOC entries
-        toc_entries = document.tocentry_set.all()
+        toc_entries = document.toc_entries.all()
         toc_count = toc_entries.count()
         if toc_count > 0:
             toc_entries.delete()
@@ -838,52 +739,3 @@ def upload_and_process_pipeline(request):
             'status': 'error',
             'message': f'Pipeline processing failed: {str(e)}'
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-@api_view(['GET'])
-def get_processing_queue_status(request):
-    """
-    Get the current status of the document processing queue.
-
-    Returns information about:
-    - Currently active processing documents
-    - Queue size and waiting documents
-    - Maximum concurrent processing limit
-    """
-    with _queue_lock:
-        active_count = len(_active_processing)
-        queue_size = _processing_queue.qsize()
-        max_concurrent = _get_max_concurrent_documents()
-
-        # Get active document details
-        active_documents = []
-        for doc_id in _active_processing:
-            try:
-                doc = UploadedDocument.objects.get(id=doc_id)
-                active_documents.append({
-                    'id': doc.id,
-                    'title': doc.title,
-                    'status': doc.processing_status,
-                    'message': doc.processing_message
-                })
-            except UploadedDocument.DoesNotExist:
-                active_documents.append({
-                    'id': doc_id,
-                    'title': f'Unknown Document {doc_id}',
-                    'status': 'UNKNOWN',
-                    'message': 'Document not found'
-                })
-
-        return Response({
-            'status': 'success',
-            'queue_status': {
-                'active_processing': active_count,
-                'queued_documents': queue_size,
-                'max_concurrent': max_concurrent,
-                'available_slots': max(0, max_concurrent - active_count)
-            },
-            'active_documents': active_documents,
-            'system_info': {
-                'cpu_cores': psutil.cpu_count(logical=True),
-                'cpu_physical': psutil.cpu_count(logical=False)
-            }
-        })

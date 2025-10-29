@@ -3,7 +3,7 @@ from .views import (
     # Document management
     upload_pdf, list_documents, get_document_detail, delete_document,
     # Functional processing steps  
-    process_document_pipeline, cancel_document_pipeline, chunk_document_pages, generate_document_embeddings, get_processing_queue_status,
+    process_document_pipeline, cancel_document_pipeline, chunk_document_pages, generate_document_embeddings,
     # Core steps
     generate_document_toc, get_section_content, get_document_toc,
     get_chunk_embeddings,
@@ -35,7 +35,6 @@ urlpatterns = [
     # Pipeline processing endpoints
     path('pipeline/<int:document_id>/', process_document_pipeline, name='process-document'),
     path('pipeline/<int:document_id>/cancel/', cancel_document_pipeline, name='cancel-document'),
-    path('pipeline/queue/status/', get_processing_queue_status, name='pipeline-queue-status'),
     path('pipeline/<int:document_id>/chunks/', chunk_document_pages, name='chunk-document'),
     path('pipeline/<int:document_id>/embeddings/', generate_document_embeddings, name='embed-document'),
 
@@ -70,7 +69,7 @@ urlpatterns = [
     path('zones/<int:zone_id>/topics/', ZoneTopicsView, name='zone-topics'),
     
     # Topics
-    path('admin/topics/', TopicList.as_view(), name='admin-topics'),
+    path('topics/', TopicList.as_view(), name='topics'),
     path('topics/<int:pk>/', TopicDetail.as_view(), name='topic-detail'),
     path('topics/<int:topic_id>/subtopics/', TopicSubtopicsView, name='topic-subtopics'),
     
