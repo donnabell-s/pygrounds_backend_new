@@ -45,6 +45,9 @@ urlpatterns = [
     path("api/user/", include("users.urls")),
 
     
+    # achievements
+    path("api/", include("achievements.urls")),
+
     # OpenAPI (optional)
     path(
         "api/schema/",
