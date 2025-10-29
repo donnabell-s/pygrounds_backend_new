@@ -2,8 +2,10 @@
 # Handles generating questions for topics/subtopics with RAG context and LLM integration
 
 import time
+import multiprocessing
 from concurrent.futures import ThreadPoolExecutor, TimeoutError
 from typing import List, Dict, Any, Tuple, Optional
+from django.conf import settings
 
 from ..helpers.deepseek_prompts import deepseek_prompt_manager
 from ..helpers.llm_utils import invoke_deepseek, CODING_TEMPERATURE, NON_CODING_TEMPERATURE
@@ -24,7 +26,8 @@ def generate_questions_for_subtopic_combination(subtopic_combination,
                                               game_type: str, 
                                               zone, 
                                               thread_manager=None,
-                                              session_id=None) -> Dict[str, Any]:
+                                              session_id=None,
+                                              rag_context=None) -> Dict[str, Any]:
     # Generate questions for given subtopics using RAG context
     # Parameters:
     # - subtopic_combination: List of subtopics to combine content from
@@ -34,6 +37,7 @@ def generate_questions_for_subtopic_combination(subtopic_combination,
     # - zone: The zone these subtopics belong to
     # - thread_manager: Optional manager for parallel processing
     # - session_id: Optional session ID for cancellation checking
+    # - rag_context: Optional pre-fetched RAG context (for batch processing)
     
     # Check for cancellation if session_id provided
     if session_id:
@@ -50,11 +54,12 @@ def generate_questions_for_subtopic_combination(subtopic_combination,
     try:
         subtopic_names = extract_subtopic_names(subtopic_combination)
         
-        # Get RAG context
-        if len(subtopic_combination) == 1:
-            rag_context = get_rag_context_for_subtopic(subtopic_combination[0], difficulty)
-        else:
-            rag_context = get_combined_rag_context(subtopic_combination, difficulty)
+        # Get RAG context (use provided context or fetch if not provided)
+        if rag_context is None:
+            if len(subtopic_combination) == 1:
+                rag_context = get_rag_context_for_subtopic(subtopic_combination[0], difficulty, game_type)
+            else:
+                rag_context = get_combined_rag_context(subtopic_combination, difficulty, game_type)
         
         # Create context for prompt generation
         context = create_generation_context(subtopic_combination, difficulty, num_questions, rag_context)
@@ -145,13 +150,20 @@ def create_system_prompt(subtopic_names: List[str],
         System prompt string
     """
     if game_type == 'coding':
+        keys = [
+            "question_text", "buggy_question_text",
+            "explanation", "buggy_explanation",
+            "function_name", "sample_input", "sample_output",
+            "hidden_tests", "buggy_code", "correct_code",
+            "buggy_correct_code", "difficulty"
+        ]
         return (
-            f"Generate {num_questions} coding challenges "
-            f"for {len(subtopic_names)} subtopics: {', '.join(subtopic_names)}. "
-            f"Zone: {zone.name} (Zone {zone.order}), Difficulty: {difficulty}. "
-            f"CRITICAL: ALL JSON objects MUST include these 10 fields: question_text, buggy_question_text, function_name, sample_input, sample_output, hidden_tests, buggy_code, correct_code, buggy_correct_code, difficulty. "
-            f"Each question MUST have 'correct_code' with working solution and 'buggy_correct_code' with fixed version of buggy code. "
-            f"IMPORTANT: If ANY field is missing in ANY question, the entire batch will be rejected."
+            f"Generate {num_questions} Python DEBUGGING questions for {len(subtopic_names)} subtopics: "
+            f"{', '.join(subtopic_names)}. Zone: {zone.name} (Zone {zone.order}), Difficulty: {difficulty}. "
+            f"CRITICAL: EVERY item MUST include EXACTLY these {len(keys)} keys (spelling exact): {', '.join(keys)}. "
+            f'"explanation" MUST state why correct_code solves the `question_text` (20–40 words). '
+            f'"buggy_explanation" MUST state the root cause in `buggy_code` and how buggy_correct_code fixes it (20–40 words). '
+            f"If any key is missing/empty in any item, REVISE internally and output ONLY a JSON array with exactly {num_questions} valid items."
         )
     else:  # non_coding
         return (
@@ -201,12 +213,30 @@ def process_zone_difficulty_combination(args) -> Dict[str, Any]:
         # Generate combinations (singles, pairs, and trios only)
         max_combination_size = min(3, len(zone_subtopics))
         
+        # Collect all combinations first for batch RAG context retrieval
+        all_combinations = []
         for combination_size in range(1, max_combination_size + 1):
             for subtopic_combination in combinations(zone_subtopics, combination_size):
+                all_combinations.append(subtopic_combination)
+        
+        # Batch fetch RAG contexts for all combinations to reduce database connections
+        if all_combinations:
+            from ..helpers.rag_context import get_batched_rag_contexts
+            print(f"📚 Thread {thread_id}: Batch fetching RAG contexts for {len(all_combinations)} combinations")
+            rag_contexts = get_batched_rag_contexts(all_combinations, difficulty, game_type)
+            print(f"✅ Thread {thread_id}: Retrieved {len(rag_contexts)} RAG contexts")
+        
+        # Process each combination using pre-fetched RAG contexts
+        for subtopic_combination in all_combinations:
                 try:
+                    # Get pre-fetched RAG context for this combination
+                    combination_key = tuple(subtopic_combination) if isinstance(subtopic_combination, (list, tuple)) else (subtopic_combination,)
+                    pre_fetched_rag_context = rag_contexts.get(combination_key)
+                    
                     generation_result = generate_questions_for_subtopic_combination(
                         subtopic_combination, difficulty, num_questions_per_subtopic, 
-                        game_type, zone, thread_manager=None, session_id=session_id
+                        game_type, zone, thread_manager=None, session_id=session_id,
+                        rag_context=pre_fetched_rag_context
                     )
                     
                     if generation_result['success']:
@@ -218,14 +248,19 @@ def process_zone_difficulty_combination(args) -> Dict[str, Any]:
                         print(f"❌ Thread {thread_id}: Failed combination: {subtopic_names}")
                         
                         # Only try fallback for combinations of size > 1
-                        if combination_size > 1 and 'error' in generation_result:
+                        if len(subtopic_combination) > 1 and 'error' in generation_result:
                             print(f"🔄 Thread {thread_id}: Attempting fallback to individual subtopics")
                             # Try each subtopic individually as a fallback
                             for individual_subtopic in subtopic_combination:
                                 try:
+                                    # Get pre-fetched RAG context for individual subtopic
+                                    individual_key = (individual_subtopic,)
+                                    individual_rag_context = rag_contexts.get(individual_key)
+                                    
                                     fallback_result = generate_questions_for_subtopic_combination(
                                         [individual_subtopic], difficulty, num_questions_per_subtopic,
-                                        game_type, zone, thread_manager=None, session_id=session_id
+                                        game_type, zone, thread_manager=None, session_id=session_id,
+                                        rag_context=individual_rag_context
                                     )
                                     
                                     if fallback_result['success']:
@@ -254,7 +289,7 @@ def run_multithreaded_generation(zones,
                                 num_questions_per_subtopic: int, 
                                 game_type: str, 
                                 session_id: str = None,
-                                max_workers: int = 4) -> Dict[str, Any]:
+                                max_workers: int = None) -> Dict[str, Any]:
     """
     Run multithreaded question generation across zones and difficulties.
     
@@ -271,6 +306,23 @@ def run_multithreaded_generation(zones,
     """
     import threading
     from concurrent.futures import ThreadPoolExecutor
+    from django.conf import settings
+    
+    # Set default max_workers if not provided - use game-type-specific optimization
+    if max_workers is None:
+        # Import here to avoid circular imports
+        from django.conf import settings
+        
+        # Use game-type-specific worker counts to optimize database usage
+        if game_type == 'coding':
+            max_workers = getattr(settings, 'CODING_QUESTION_WORKERS', 3)
+        elif game_type == 'non_coding':
+            max_workers = getattr(settings, 'NON_CODING_QUESTION_WORKERS', 6)
+        elif game_type == 'pre_assessment':
+            max_workers = getattr(settings, 'PRE_ASSESSMENT_WORKERS', 6)
+        else:
+            # Fallback to default
+            max_workers = getattr(settings, 'QUESTION_GENERATION_WORKERS', 4)
     
     # Track session progress if session_id provided
     if session_id:
@@ -283,7 +335,8 @@ def run_multithreaded_generation(zones,
             difficulties=difficulty_levels
         )
     
-    print(f"🎯 Starting multithreaded generation with {max_workers} workers")
+    print(f"🎯 Starting {game_type} question generation with {max_workers} workers (optimized for {game_type} database patterns)")
+    print(f"⚙️ Worker scaling: Coding={getattr(settings, 'CODING_QUESTION_WORKERS', 3)}, Non-coding={getattr(settings, 'NON_CODING_QUESTION_WORKERS', 6)}, Pre-assessment={getattr(settings, 'PRE_ASSESSMENT_WORKERS', 6)}")
     
     # Prepare tasks: each task is a (zone, difficulty) combination
     tasks = []
@@ -300,6 +353,8 @@ def run_multithreaded_generation(zones,
     failed_results = []
     cancelled = False
     start_time = time.time()
+    
+    print(f"🚀 ThreadPoolExecutor starting with {max_workers} workers for {len(tasks)} tasks")
     
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
         try:

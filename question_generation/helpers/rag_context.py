@@ -17,10 +17,14 @@ def get_rag_context_for_subtopic(subtopic, difficulty: str, game_type: str = 'no
     try:
         from content_ingestion.models import SemanticSubtopic  # Moved to content_ingestion
         from content_ingestion.models import DocumentChunk
+        from django.db import connection, transaction
+        
+        # Force database connection cleanup before starting
+        connection.close_if_unneeded_or_obsolete()
         
         # Try to get pre-computed semantic analysis for this subtopic
         try:
-            semantic_subtopic = SemanticSubtopic.objects.get(subtopic=subtopic)
+            semantic_subtopic = SemanticSubtopic.objects.select_related('subtopic__topic').get(subtopic=subtopic)
         except SemanticSubtopic.DoesNotExist:
             # Fallback: Generate basic context from subtopic metadata
             return f"""
@@ -67,46 +71,61 @@ Focus on {game_type}-appropriate content related to {subtopic.name}.
         
         if not chunk_ids:
             return f"""
-Topic: {subtopic.topic.name}
-Subtopic: {subtopic.name}
-Game Type: {game_type}
+                Topic: {subtopic.topic.name}
+                Subtopic: {subtopic.name}
+                Game Type: {game_type}
 
-No relevant {game_type} chunks found above similarity threshold (50%).
-Please generate {game_type} questions based on the subtopic name.
-Focus on {game_type}-appropriate content related to {subtopic.name}.
-"""
+                No relevant {game_type} chunks found above similarity threshold (50%).
+                Please generate {game_type} questions based on the subtopic name.
+                Focus on {game_type}-appropriate content related to {subtopic.name}.
+                """
         
         # Fetch actual chunks from database
         chunks = DocumentChunk.objects.filter(id__in=chunk_ids).order_by(
             models.Case(*[models.When(id=chunk_id, then=idx) for idx, chunk_id in enumerate(chunk_ids)])
         )
         
-        # Build context from chunks
+        # Build context from chunks - format each chunk clearly for LLM
         context_parts = []
         chunk_types_found = set()
         
-        for chunk in chunks:
+        for i, chunk in enumerate(chunks, 1):
             chunk_types_found.add(chunk.chunk_type or 'Unknown')
             
-            # Format chunk with metadata
+            # Format each chunk as a clearly separated, numbered section
             chunk_context = f"""
---- {chunk.chunk_type or 'Content'} ---
+[CHUNK {i}/{len(chunks)} - {chunk.chunk_type or 'Content'}]
+Source: {chunk.document.title}
+Page: {chunk.page_number}
+
+CONTENT:
 {chunk.text.strip()}
 
-Document: {chunk.document.title}
+[END CHUNK {i}]
 """
             context_parts.append(chunk_context.strip())
         
-        # Create final context with metadata
+        # Create final context with clear chunk separation for LLM
         context = f"""
-Topic: {subtopic.topic.name}
-Subtopic: {subtopic.name}
-Game Type: {game_type}
-Content Types Found: {', '.join(sorted(chunk_types_found))}
-Retrieved Chunks: {len(context_parts)}
+TOPIC: {subtopic.topic.name}
+SUBTOPIC: {subtopic.name}
+GAME TYPE: {game_type}
+CONTENT TYPES FOUND: {', '.join(sorted(chunk_types_found))}
+TOTAL CHUNKS RETRIEVED: {len(context_parts)}
 
-LEARNING CONTENT:
+IMPORTANT: Each [CHUNK X/Y] section below contains separate, independent content.
+Use these chunks individually or in combination to generate {game_type} questions.
+Do not treat them as continuous text - they are distinct learning materials.
+
+{'='*80}
+RETRIEVED LEARNING CHUNKS:
+{'='*80}
+
 {chr(10).join(context_parts)}
+
+{'='*80}
+END OF RETRIEVED CHUNKS
+{'='*80}
 """
         return context.strip()
         
@@ -142,9 +161,9 @@ def get_combined_rag_context(subtopic_combination, difficulty: str, game_type: s
             subtopic_names.append(subtopic.name)
             context = get_rag_context_for_subtopic(subtopic, difficulty, game_type)
             
-            # Extract just the learning content part
-            if "LEARNING CONTENT:" in context:
-                content_part = context.split("LEARNING CONTENT:")[1].strip()
+            # Extract just the learning content part (chunks)
+            if "RETRIEVED LEARNING CHUNKS:" in context:
+                content_part = context.split("RETRIEVED LEARNING CHUNKS:")[1].split("END OF RETRIEVED CHUNKS")[0].strip()
                 combined_contexts.append(f"=== {subtopic.name} ===\n{content_part}")
             else:
                 combined_contexts.append(f"=== {subtopic.name} ===\n{context}")
@@ -165,7 +184,20 @@ GAME TYPE: {game_type.upper()}
 DIFFICULTY LEVEL: {difficulty.upper()}
 SUBTOPIC COMBINATION: {' + '.join(subtopic_names)}
 
-""" + "\n\n".join(combined_contexts)
+IMPORTANT: Each section below contains separate chunks from different subtopics.
+Use these chunks individually or in combination to generate {game_type} questions.
+Do not treat them as continuous text - they are distinct learning materials from different topics.
+
+{'='*100}
+COMBINED LEARNING CHUNKS FROM MULTIPLE SUBTOPICS:
+{'='*100}
+
+""" + "\n\n".join(combined_contexts) + f"""
+
+{'='*100}
+END OF COMBINED CHUNKS
+{'='*100}
+"""
         
         return combined_context
         
@@ -203,3 +235,55 @@ Create {game_type} questions that would be appropriate for learners.
 """
     
     return rag_context
+
+
+def get_batched_rag_contexts(subtopic_combinations: list, difficulty: str, game_type: str = 'non_coding') -> dict:
+    """
+    Batch fetch RAG contexts for multiple subtopic combinations to reduce database connections.
+    
+    Args:
+        subtopic_combinations: List of tuples/lists of Subtopic objects
+        difficulty: Difficulty level
+        game_type: 'coding' or 'non_coding'
+        
+    Returns:
+        dict: Mapping of subtopic combination tuples to their RAG contexts
+    """
+    from content_ingestion.models import SemanticSubtopic, DocumentChunk
+    from django.db import connection, transaction
+    import itertools
+    
+    # Force database connection cleanup
+    connection.close_if_unneeded_or_obsolete()
+    
+    results = {}
+    
+    # Flatten all unique subtopics from combinations
+    all_subtopics = set()
+    for combo in subtopic_combinations:
+        if isinstance(combo, (list, tuple)):
+            all_subtopics.update(combo)
+        else:
+            all_subtopics.add(combo)
+    
+    # Batch fetch all semantic subtopics in one query
+    subtopic_ids = [s.id for s in all_subtopics]
+    semantic_subtopics = {
+        ss.subtopic_id: ss 
+        for ss in SemanticSubtopic.objects.select_related('subtopic__topic').filter(subtopic_id__in=subtopic_ids)
+    }
+    
+    # For each combination, get RAG context
+    for combo in subtopic_combinations:
+        if isinstance(combo, (list, tuple)) and len(combo) == 1:
+            # Single subtopic
+            subtopic = combo[0]
+            results[combo] = get_rag_context_for_subtopic(subtopic, difficulty, game_type)
+        elif isinstance(combo, (list, tuple)) and len(combo) > 1:
+            # Multiple subtopics - use combined context
+            results[combo] = get_combined_rag_context(combo, difficulty, game_type)
+        else:
+            # Single subtopic (not in tuple)
+            results[(combo,)] = get_rag_context_for_subtopic(combo, difficulty, game_type)
+    
+    return results

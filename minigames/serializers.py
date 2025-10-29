@@ -79,14 +79,3 @@ class PreAssessmentQuestionSerializer(serializers.ModelSerializer):
     class Meta:
         model = PreAssessmentQuestion
         fields = '__all__'
-
-
-class LeaderboardEntrySerializer(serializers.Serializer):
-    user_id = serializers.IntegerField()
-    username = serializers.CharField()
-    first_name = serializers.CharField(allow_blank=True, required=False)
-    last_name = serializers.CharField(allow_blank=True, required=False)
-    score = serializers.IntegerField()
-    time_seconds = serializers.FloatField()
-    session_id = serializers.CharField()
-    played_at = serializers.DateTimeField()

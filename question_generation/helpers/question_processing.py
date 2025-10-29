@@ -24,6 +24,50 @@ def generate_question_hash(question_text, subtopic_combination, game_type):
     return hashlib.md5(hash_input.encode()).hexdigest()[:12]
 
 
+def check_question_similarity(question_text1: str, question_text2: str, threshold: float = 0.8) -> bool:
+    """
+    Check if two questions are similar based on text analysis.
+    
+    Args:
+        question_text1: First question text
+        question_text2: Second question text  
+        threshold: Similarity threshold (0.0 to 1.0)
+        
+    Returns:
+        True if questions are similar enough to be considered duplicates
+    """
+    if not question_text1 or not question_text2:
+        return False
+        
+    # Normalize texts
+    text1 = question_text1.lower().strip()
+    text2 = question_text2.lower().strip()
+    
+    # Exact match
+    if text1 == text2:
+        return True
+    
+    # Length similarity check
+    len1, len2 = len(text1), len(text2)
+    if min(len1, len2) / max(len1, len2) < 0.7:  # Length difference too big
+        return False
+    
+    # Word-based similarity
+    words1 = set(text1.split())
+    words2 = set(text2.split())
+    
+    # Jaccard similarity of word sets
+    intersection = len(words1 & words2)
+    union = len(words1 | words2)
+    
+    if union == 0:
+        return False
+        
+    jaccard_similarity = intersection / union
+    
+    return jaccard_similarity >= threshold
+
+
 def parse_llm_json_response(llm_response: str, game_type: str = 'coding') -> Optional[List[Dict[str, Any]]]:
     # Extract and parse JSON array of questions from LLM response
     # Returns None if parsing fails
@@ -119,12 +163,15 @@ def format_question_for_game_type(question_data: Dict[str, Any], game_type: str)
             'correct_code': question_data.get('correct_code', ''),
             'buggy_correct_code': question_data.get('buggy_correct_code', ''),
             'difficulty': question_data.get('difficulty', ''),
+            'explanation': question_data.get('explanation', ''),
+            'buggy_explanation': question_data.get('buggy_explanation', ''),
         }
     else:  # non_coding
         return {
             'question_text': question_data.get('question_text', ''),
             'answer': question_data.get('answer', question_data.get('correct_answer', '')),
             'difficulty': question_data.get('difficulty', ''),
+            
         }
 
 
@@ -144,7 +191,8 @@ def validate_question_data(question_data: Dict[str, Any], game_type: str, seen_f
     
     if game_type == 'coding':
         required_fields.extend([
-            'function_name', 'sample_input', 'sample_output', 'buggy_code'
+            'function_name', 'sample_input', 'sample_output', 'buggy_code',
+            'explanation', 'buggy_explanation'
             # Temporarily removed: 'correct_code', 'buggy_correct_code'
         ])
         
@@ -156,7 +204,7 @@ def validate_question_data(question_data: Dict[str, Any], game_type: str, seen_f
                 return False
             seen_function_names.add(function_name)
     else:  # non-coding questions
-        required_fields.append('answer')  # answer is required for non-coding questions
+        required_fields.extend(['answer', 'explanation'])  # answer and explanation are required for non-coding questions
     
     # Check required fields
     for field in required_fields:

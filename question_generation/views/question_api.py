@@ -6,6 +6,8 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import get_object_or_404
 from django.db import transaction
+from django.db import models
+from django.conf import settings
 import uuid
 import time
 
@@ -19,28 +21,47 @@ from ..helpers.question_processing import parse_llm_json_response
 from ..helpers.llm_utils import invoke_deepseek, CODING_TEMPERATURE, NON_CODING_TEMPERATURE
 from ..helpers.deepseek_prompts import deepseek_prompt_manager
 from ..helpers.generation_status import generation_status_tracker
+from ..helpers.parallel_workers import (
+    run_subtopic_specific_generation,
+    get_subtopic_generation_summary
+)
 
 import logging
 logger = logging.getLogger(__name__)
 
+
+
 @api_view(['POST'])
 def generate_questions_bulk(request):
-    # Bulk question generation endpoint
-    # Parameters:
-    # - game_type: 'coding' or 'non_coding' (required)
-    # - difficulty_levels: ['beginner', 'intermediate', etc] (required)
-    # - num_questions_per_subtopic: int (required)
-    # - zone_ids: [int] or null (optional)
-    # - topic_ids: [int] or null (optional)
-    # - subtopic_ids: [int] or null (optional)
+    """
+    Generate coding or non-coding questions for specific subtopics.
+    
+    Expected JSON:
+    {
+        "game_type": "coding" | "non_coding",
+        "difficulty_levels": ["beginner", "intermediate", "advanced", "master"],
+        "num_questions_per_subtopic": 5,
+        "subtopic_ids": [7, 8, 9, 10, 11] | undefined
+    }
+    """
     try:
-        # Extract parameters
-        game_type = request.data.get('game_type', 'non_coding')
-        difficulty_levels = request.data.get('difficulty_levels', ['beginner', 'intermediate', 'advanced', 'master'])
-        num_questions_per_subtopic = int(request.data.get('num_questions_per_subtopic', 2))
-        zone_ids = request.data.get('zone_ids')
+        # Extract parameters matching frontend format
+        game_type = request.data.get('game_type')
+        difficulty_levels = request.data.get('difficulty_levels')
+        num_questions_per_subtopic = int(request.data.get('num_questions_per_subtopic', 5))
+        subtopic_ids = request.data.get('subtopic_ids')
         
-        # Validate parameters
+        # Validate required parameters
+        if not game_type:
+            return Response({
+                'error': 'game_type is required'
+            }, status=status.HTTP_400_BAD_REQUEST)
+            
+        if not difficulty_levels:
+            return Response({
+                'error': 'difficulty_levels is required'
+            }, status=status.HTTP_400_BAD_REQUEST)
+            
         valid_game_types = ['coding', 'non_coding']
         valid_difficulties = ['beginner', 'intermediate', 'advanced', 'master']
         
@@ -54,12 +75,19 @@ def generate_questions_bulk(request):
                 'error': f'Invalid difficulty levels. Must be from: {valid_difficulties}'
             }, status=status.HTTP_400_BAD_REQUEST)
         
-        # Get zones to process
-        if zone_ids:
-            zones = GameZone.objects.filter(id__in=zone_ids).order_by('order')
+        # Get subtopics and their zones
+        if subtopic_ids:
+            subtopics = Subtopic.objects.filter(id__in=subtopic_ids).select_related('topic__zone')
+            if not subtopics.exists():
+                return Response({
+                    'error': 'No subtopics found for the provided IDs'
+                }, status=status.HTTP_404_NOT_FOUND)
+            # Get unique zones from the selected subtopics
+            zones = GameZone.objects.filter(topics__subtopics__in=subtopics).distinct().order_by('order')
         else:
+            # If no subtopic_ids provided, process all zones
             zones = GameZone.objects.all().order_by('order')
-        
+            
         if not zones.exists():
             return Response({
                 'error': 'No zones found for processing'
@@ -67,7 +95,13 @@ def generate_questions_bulk(request):
         
         # Create a unique session ID for tracking
         session_id = str(uuid.uuid4())
-        total_workers = len(zones) * len(difficulty_levels)
+        
+        # For subtopic-specific generation, we'll calculate total_tasks dynamically
+        # For zone-based generation, use zone×difficulty combinations
+        if subtopic_ids:
+            total_workers = len(difficulty_levels)  # Placeholder, will be updated in background thread
+        else:
+            total_workers = len(zones) * len(difficulty_levels)
         
         # Initialize status tracking
         generation_status_tracker.create_session(
@@ -78,19 +112,33 @@ def generate_questions_bulk(request):
         )
         
         print(f"🚀 Starting bulk generation: {game_type}, {len(zones)} zones, {len(difficulty_levels)} difficulties")
-        print(f"📊 Session ID: {session_id}, Total workers: {total_workers}")
+        print(f"📊 Session ID: {session_id}, Total TASKS: {total_workers} (zone×difficulty combinations)")
+        print(f"⚙️ ThreadPoolExecutor will use: {settings.QUESTION_GENERATION_WORKERS} threads")
+        print(f"⚙️ Layered Worker scaling: QuestionGen={settings.QUESTION_GENERATION_WORKERS} (subtopic-level), Embedding={settings.EMBEDDING_WORKERS} (topic-level), Document={settings.DOCUMENT_PROCESSING_WORKERS} (difficulty-level)")
         
         # Start generation in background thread
         import threading
         def run_generation():
             try:
-                run_multithreaded_generation(
-                    zones=zones,
-                    difficulty_levels=difficulty_levels,
-                    num_questions_per_subtopic=num_questions_per_subtopic,
-                    game_type=game_type,
-                    session_id=session_id
-                )
+                if subtopic_ids:
+                    # Generate questions for specific subtopics
+                    run_subtopic_specific_generation(
+                        subtopic_ids=subtopic_ids,
+                        difficulty_levels=difficulty_levels,
+                        num_questions_per_subtopic=num_questions_per_subtopic,
+                        game_type=game_type,
+                        session_id=session_id
+                    )
+                else:
+                    # Generate questions for all zones (existing behavior)
+                    run_multithreaded_generation(
+                        zones=zones,
+                        difficulty_levels=difficulty_levels,
+                        num_questions_per_subtopic=num_questions_per_subtopic,
+                        game_type=game_type,
+                        session_id=session_id,
+                        max_workers=settings.QUESTION_GENERATION_WORKERS  # Dynamic based on CPU cores
+                    )
             except Exception as e:
                 logger.error(f"Generation failed for session {session_id}: {str(e)}")
                 generation_status_tracker.update_status(session_id, {
@@ -121,12 +169,89 @@ def generate_questions_bulk(request):
 
 
 @api_view(['POST'])
+def get_generation_estimate(request):
+    """
+    Get estimates and summary for question generation without starting the process.
+    
+    Expected JSON:
+    {
+        "game_type": "coding" | "non_coding",
+        "difficulty_levels": ["beginner", "intermediate", "advanced", "master"],
+        "num_questions_per_subtopic": 5,
+        "subtopic_ids": [7, 8, 9, 10, 11] | undefined
+    }
+    """
+    try:
+        # Extract parameters (same as bulk generation)
+        game_type = request.data.get('game_type')
+        difficulty_levels = request.data.get('difficulty_levels')
+        num_questions_per_subtopic = int(request.data.get('num_questions_per_subtopic', 5))
+        subtopic_ids = request.data.get('subtopic_ids')
+        
+        # Validate required parameters
+        if not game_type:
+            return Response({
+                'error': 'game_type is required'
+            }, status=status.HTTP_400_BAD_REQUEST)
+            
+        if not difficulty_levels:
+            return Response({
+                'error': 'difficulty_levels is required'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Get generation summary
+        if subtopic_ids:
+            summary = get_subtopic_generation_summary(
+                subtopic_ids=subtopic_ids,
+                difficulty_levels=difficulty_levels,
+                num_questions_per_subtopic=num_questions_per_subtopic
+            )
+            
+            if 'error' in summary:
+                return Response({
+                    'error': summary['error']
+                }, status=status.HTTP_404_NOT_FOUND)
+                
+            return Response({
+                'game_type': game_type,
+                'scope': 'specific_subtopics',
+                'generation_summary': summary,
+                'recommendation': 'Ready to generate questions for the selected subtopics'
+            })
+        else:
+            # For all zones, provide a different summary
+            zones = GameZone.objects.all().order_by('order')
+            total_subtopics = sum(zone.topics.aggregate(
+                subtopic_count=models.Count('subtopics')
+            )['subtopic_count'] for zone in zones)
+            
+            return Response({
+                'game_type': game_type,
+                'scope': 'all_zones',
+                'generation_summary': {
+                    'total_zones': len(zones),
+                    'total_subtopics': total_subtopics,
+                    'difficulty_levels': difficulty_levels,
+                    'zones': [zone.name for zone in zones],
+                    'warning': 'This will generate questions for ALL subtopics across ALL zones'
+                },
+                'recommendation': 'Consider specifying subtopic_ids for more focused generation'
+            })
+            
+    except Exception as e:
+        return Response({
+            'error': f'Failed to get generation estimate: {str(e)}'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['POST'])
 def generate_pre_assessment(request):
     """
     Generate pre-assessment questions covering multiple topics asynchronously.
     
-    POST {
-        "topic_ids": [1, 2, 3] (optional - if not provided, uses all topics),
+    Expected JSON:
+    {
+        "topic_ids": [1, 2, 3] | undefined,
         "total_questions": 20
     }
     
@@ -135,7 +260,15 @@ def generate_pre_assessment(request):
     try:
         # Get parameters
         topic_ids = request.data.get('topic_ids')
-        total_questions = int(request.data.get('total_questions', 20))
+        total_questions = request.data.get('total_questions')
+        
+        # Validate required parameters
+        if not total_questions:
+            return Response({
+                'error': 'total_questions is required'
+            }, status=status.HTTP_400_BAD_REQUEST)
+            
+        total_questions = int(total_questions)
         
         # Get topics
         if topic_ids:
@@ -393,238 +526,4 @@ def get_rag_context(request, subtopic_id):
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-@api_view(['GET'])
-def get_generation_status(request, session_id):
-    """
-    Get real-time status for a generation session (bulk or pre-assessment).
-    
-    GET /api/generate/status/{session_id}/
-    """
-    try:
-        session_status = generation_status_tracker.get_session_status(session_id)
-        
-        if not session_status:
-            return Response({
-                'error': 'Session not found'
-            }, status=status.HTTP_404_NOT_FOUND)
-        
-        # Handle pre-assessment sessions (simpler structure)
-        if session_status.get('type') == 'pre_assessment':
-            return Response({
-                'session_id': session_id,
-                'status': session_status['status'],
-                'start_time': session_status['start_time'],
-                'last_updated': session_status['last_updated'],
-                'type': session_status['type'],
-                'step': session_status.get('step', ''),
-                'total_questions': session_status.get('total_questions', 0),
-                'questions_generated': session_status.get('questions_generated', 0),
-                'total_questions_requested': session_status.get('total_questions_requested', 0),
-                'questions_preview': session_status.get('questions_preview', []),
-                'topic_count': session_status.get('topic_count', 0),
-                'topics': session_status.get('topics', []),
-                'assessment_info': session_status.get('assessment_info', {}),
-                'questions': session_status.get('questions', []),
-                'topics_covered': session_status.get('topics_covered', []),
-                'message': session_status.get('message', '')
-            })
-        
-        # Handle bulk generation sessions (original structure)
-        return Response({
-            'session_id': session_id,
-            'status': session_status['status'],
-            'start_time': session_status['start_time'],
-            'last_updated': session_status['last_updated'],
-            'overall_progress': session_status.get('overall_progress', {}),
-            'worker_summary': {
-                'total_workers': session_status.get('total_workers', 0),
-                'active_workers': len([w for w in session_status.get('workers', {}).values() if w['status'] == 'processing']),
-                'completed_workers': len([w for w in session_status.get('workers', {}).values() if w['status'] == 'completed']),
-                'failed_workers': len([w for w in session_status.get('workers', {}).values() if w['status'] in ['error', 'failed']])
-            },
-            'zones': session_status.get('zones', []),
-            'difficulties': session_status.get('difficulties', [])
-        })
-        
-    except Exception as e:
-        return Response({
-            'error': f'Failed to get generation status: {str(e)}'
-        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-
-@api_view(['GET'])
-def get_worker_details(request, session_id):
-    """
-    Get detailed worker information for a generation session.
-    
-    GET /api/generate/workers/{session_id}/
-    """
-    try:
-        session_status = generation_status_tracker.get_session_status(session_id)
-        
-        if not session_status:
-            return Response({
-                'error': 'Session not found'
-            }, status=status.HTTP_404_NOT_FOUND)
-        
-        # Format worker details for frontend consumption
-        worker_details = []
-        for worker_id, worker in session_status['workers'].items():
-            worker_detail = {
-                'worker_id': worker_id,
-                'status': worker['status'],
-                'zone_name': worker['zone_name'],
-                'difficulty': worker['difficulty'],
-                'current_step': worker['current_step'],
-                'progress': worker['progress'],
-                'start_time': worker['start_time'],
-                'last_activity': worker['last_activity'],
-                'estimated_completion': worker.get('estimated_completion'),
-                'duration': (time.time() - worker['start_time']) if worker['start_time'] else 0
-            }
-            worker_details.append(worker_detail)
-        
-        # Sort by worker_id for consistent ordering
-        worker_details.sort(key=lambda x: x['worker_id'])
-        
-        return Response({
-            'session_id': session_id,
-            'workers': worker_details,
-            'summary': {
-                'total_workers': len(worker_details),
-                'active_workers': len([w for w in worker_details if w['status'] == 'processing']),
-                'completed_workers': len([w for w in worker_details if w['status'] == 'completed']),
-                'failed_workers': len([w for w in worker_details if w['status'] in ['error', 'failed']]),
-                'pending_workers': len([w for w in worker_details if w['status'] == 'pending'])
-            }
-        })
-        
-    except Exception as e:
-        return Response({
-            'error': f'Failed to get worker details: {str(e)}'
-        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
-@api_view(['POST'])
-def cancel_generation(request, session_id):
-    """
-    Cancel an active question generation session.
-    
-    This endpoint:
-    1. Marks the session as cancelled in the status tracker
-    2. Keeps successfully saved questions intact
-    3. Cleans up incomplete/malformed questions from the current session
-    4. Returns cancellation statistics
-    """
-    try:
-        from ..models import GeneratedQuestion
-        from django.utils import timezone
-        from datetime import timedelta
-        
-        logger.info(f"Cancelling generation session: {session_id}")
-        
-        # Check if session exists and can be cancelled
-        session_status = generation_status_tracker.get_session_status(session_id)
-        if not session_status:
-            return Response({
-                'error': f'Session {session_id} not found'
-            }, status=status.HTTP_404_NOT_FOUND)
-        
-        # Check if session can be cancelled
-        if session_status['status'] in ['completed', 'failed', 'cancelled']:
-            return Response({
-                'error': f'Cannot cancel session with status: {session_status["status"]}',
-                'current_status': session_status['status']
-            }, status=status.HTTP_400_BAD_REQUEST)
-        
-        # Cancel the session in the status tracker
-        cancel_reason = 'Cancelled by user'
-        cancelled = generation_status_tracker.cancel_session(session_id, cancel_reason)
-        
-        if not cancelled:
-            return Response({
-                'error': 'Failed to cancel session'
-            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        
-        # Clean up incomplete/malformed questions from this session
-        # We'll identify questions created in the last few minutes that might be from this session
-        session_start_time = session_status.get('start_time', time.time())
-        session_start_datetime = timezone.now() - timedelta(seconds=(time.time() - session_start_time + 300))  # Add 5 minute buffer
-        
-        cleanup_stats = {
-            'questions_before_cleanup': 0,
-            'incomplete_questions_removed': 0,
-            'malformed_questions_removed': 0,
-            'valid_questions_kept': 0
-        }
-        
-        # Find potentially related questions (created since session started)
-        latest_question = GeneratedQuestion.objects.filter(
-            id__isnull=False
-        ).order_by('-id').first()
-        
-        if latest_question:
-            # Look at recent questions (last 1000 max)
-            recent_questions = GeneratedQuestion.objects.filter(
-                id__gte=latest_question.id - 1000
-            ).select_related('topic', 'subtopic')
-        else:
-            # No questions exist, nothing to clean up
-            recent_questions = GeneratedQuestion.objects.none()
-        
-        cleanup_stats['questions_before_cleanup'] = recent_questions.count()
-        
-        # Identify incomplete or malformed questions
-        questions_to_remove = []
-        
-        for question in recent_questions:
-            is_malformed = False
-            
-            # Check for malformed/incomplete questions
-            if not question.question_text or len(question.question_text.strip()) < 10:
-                is_malformed = True
-                cleanup_stats['malformed_questions_removed'] += 1
-            elif not question.correct_answer or len(question.correct_answer.strip()) < 1:
-                is_malformed = True
-                cleanup_stats['malformed_questions_removed'] += 1
-            elif not question.topic or not question.subtopic:
-                is_malformed = True
-                cleanup_stats['incomplete_questions_removed'] += 1
-            elif question.validation_status == 'processing':
-                is_malformed = True
-                cleanup_stats['incomplete_questions_removed'] += 1
-            
-            if is_malformed:
-                questions_to_remove.append(question.id)
-            else:
-                cleanup_stats['valid_questions_kept'] += 1
-        
-        # Remove malformed questions
-        if questions_to_remove:
-            with transaction.atomic():
-                removed_count = GeneratedQuestion.objects.filter(id__in=questions_to_remove).delete()[0]
-                logger.info(f"Removed {removed_count} incomplete/malformed questions for session {session_id}")
-        
-        # Get final session status
-        final_session_status = generation_status_tracker.get_session_status(session_id)
-        
-        logger.info(f"Successfully cancelled session {session_id}. Cleaned up {len(questions_to_remove)} questions.")
-        
-        return Response({
-            'success': True,
-            'session_id': session_id,
-            'message': f'Generation session cancelled successfully',
-            'cancellation_stats': {
-                'cancel_time': time.time(),
-                'cancel_reason': cancel_reason,
-                'session_duration': time.time() - session_start_time,
-                'cleanup_stats': cleanup_stats
-            },
-            'session_status': final_session_status
-        })
-        
-    except Exception as e:
-        logger.error(f"Error cancelling generation session {session_id}: {str(e)}")
-        return Response({
-            'error': f'Failed to cancel generation: {str(e)}'
-        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

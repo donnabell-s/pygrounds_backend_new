@@ -1,0 +1,561 @@
+[
+  {
+    "question_text": "True division operator returning float results",
+    "correct_answer": "truediv",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Arithmetic Operators (+, -, *, /, %, //, **)",
+    "game_data": {
+      "explanation": "",
+      "generation_timestamp": "2025-10-03T14:13:02.718322"
+    },
+    "created_at": "2025-10-03T14:13:02.719320",
+    "exported_at": "2025-10-03T14:13:02.719320"
+  },
+  {
+    "question_text": "Special method name for addition operator",
+    "correct_answer": "add",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Arithmetic Operators (+, -, *, /, %, //, **)",
+    "game_data": {
+      "explanation": "",
+      "generation_timestamp": "2025-10-03T14:13:02.752503"
+    },
+    "created_at": "2025-10-03T14:13:02.754502",
+    "exported_at": "2025-10-03T14:13:02.754502"
+  },
+  {
+    "question_text": "Special method for multiplication operator implementation",
+    "correct_answer": "add",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Arithmetic Operators (+, -, *, /, %, //, **)",
+    "game_data": {
+      "explanation": "",
+      "generation_timestamp": "2025-10-03T14:13:02.788471"
+    },
+    "created_at": "2025-10-03T14:13:02.792559",
+    "exported_at": "2025-10-03T14:13:02.792559"
+  },
+  {
+    "question_text": "Mapping that searches multiple dictionaries",
+    "correct_answer": "chainmap",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Assignment Operators (=, +=, -=, etc. )",
+    "game_data": {
+      "explanation": "",
+      "generation_timestamp": "2025-10-03T14:13:02.824979"
+    },
+    "created_at": "2025-10-03T14:13:02.826980",
+    "exported_at": "2025-10-03T14:13:02.826980"
+  },
+  {
+    "question_text": "Operator that subtracts and assigns value",
+    "correct_answer": "decrement",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Assignment Operators (=, +=, -=, etc. )",
+    "game_data": {
+      "explanation": "",
+      "generation_timestamp": "2025-10-03T14:13:02.866001"
+    },
+    "created_at": "2025-10-03T14:13:02.867999",
+    "exported_at": "2025-10-03T14:13:02.867999"
+  },
+  {
+    "question_text": "Python creator who designed operator overloading",
+    "correct_answer": "decrement",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Assignment Operators (=, +=, -=, etc. )",
+    "game_data": {
+      "explanation": "",
+      "generation_timestamp": "2025-10-03T14:13:02.908139"
+    },
+    "created_at": "2025-10-03T14:13:02.910641",
+    "exported_at": "2025-10-03T14:13:02.910641"
+  },
+  {
+    "question_text": "Python operator that modifies a mutable object in place without creating a new one",
+    "correct_answer": "augmented",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Assignment Operators (=, +=, -=, etc. )",
+    "game_data": {
+      "explanation": "",
+      "generation_timestamp": "2025-10-03T14:13:02.937603"
+    },
+    "created_at": "2025-10-03T14:13:02.941123",
+    "exported_at": "2025-10-03T14:13:02.941123"
+  },
+  {
+    "question_text": "Assignment that does not create copies of objects in Python",
+    "correct_answer": "simple",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Assignment Operators (=, +=, -=, etc. )",
+    "game_data": {
+      "explanation": "",
+      "generation_timestamp": "2025-10-03T14:13:02.987270"
+    },
+    "created_at": "2025-10-03T14:13:02.990784",
+    "exported_at": "2025-10-03T14:13:02.990784"
+  },
+  {
+    "question_text": "Python feature that prevents creation of arbitrary new operators",
+    "correct_answer": "overloading",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Assignment Operators (=, +=, -=, etc. )",
+    "game_data": {
+      "explanation": "",
+      "generation_timestamp": "2025-10-03T14:13:03.040555"
+    },
+    "created_at": "2025-10-03T14:13:03.043968",
+    "exported_at": "2025-10-03T14:13:03.043968"
+  },
+  {
+    "question_text": "Python variables hold these rather than objects themselves",
+    "correct_answer": "references",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Assignment Operators (=, +=, -=, etc. )",
+    "game_data": {
+      "explanation": "",
+      "generation_timestamp": "2025-10-03T14:13:03.116038"
+    },
+    "created_at": "2025-10-03T14:13:03.119040",
+    "exported_at": "2025-10-03T14:13:03.119040"
+  },
+  {
+    "question_text": "Assignment operator that adds to a variable and reassigns the result",
+    "correct_answer": "addition",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Assignment Operators (=, +=, -=, etc. )",
+    "game_data": {
+      "explanation": "",
+      "generation_timestamp": "2025-10-03T14:13:03.163558"
+    },
+    "created_at": "2025-10-03T14:13:03.165558",
+    "exported_at": "2025-10-03T14:13:03.165558"
+  },
+  {
+    "question_text": "Powerful decorator for generic function implementation in Python",
+    "correct_answer": "singledispatch",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Assignment Operators (=, +=, -=, etc. )",
+    "game_data": {
+      "explanation": "",
+      "generation_timestamp": "2025-10-03T14:13:03.196115"
+    },
+    "created_at": "2025-10-03T14:13:03.198119",
+    "exported_at": "2025-10-03T14:13:03.198119"
+  },
+  {
+    "question_text": "Assignment with multiplication operator that may create new objects",
+    "correct_answer": "multiplication",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Assignment Operators (=, +=, -=, etc. )",
+    "game_data": {
+      "explanation": "",
+      "generation_timestamp": "2025-10-03T14:13:03.229586"
+    },
+    "created_at": "2025-10-03T14:13:03.231914",
+    "exported_at": "2025-10-03T14:13:03.231914"
+  },
+  {
+    "question_text": "Python creator who limited operator overloading possibilities",
+    "correct_answer": "guido",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Assignment Operators (=, +=, -=, etc. )",
+    "game_data": {
+      "explanation": "",
+      "generation_timestamp": "2025-10-03T14:13:06.665228"
+    },
+    "created_at": "2025-10-03T14:13:06.669241",
+    "exported_at": "2025-10-03T14:13:06.669241"
+  },
+  {
+    "question_text": "Programming language that prevents arbitrary operator creation",
+    "correct_answer": "python",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Assignment Operators (=, +=, -=, etc. )",
+    "game_data": {
+      "explanation": "",
+      "generation_timestamp": "2025-10-03T14:13:06.709316"
+    },
+    "created_at": "2025-10-03T14:13:06.712061",
+    "exported_at": "2025-10-03T14:13:06.712061"
+  },
+  {
+    "question_text": "Feature that allows custom behavior for builtin operators",
+    "correct_answer": "overloading",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Assignment Operators (=, +=, -=, etc. )",
+    "game_data": {
+      "explanation": "",
+      "generation_timestamp": "2025-10-03T14:13:06.754832"
+    },
+    "created_at": "2025-10-03T14:13:06.756838",
+    "exported_at": "2025-10-03T14:13:06.756838"
+  },
+  {
+    "question_text": "Approach that balances flexibility with control in language design",
+    "correct_answer": "middleway",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Assignment Operators (=, +=, -=, etc. )",
+    "game_data": {
+      "explanation": "",
+      "generation_timestamp": "2025-10-03T14:13:06.798201"
+    },
+    "created_at": "2025-10-03T14:13:06.799201",
+    "exported_at": "2025-10-03T14:13:06.799201"
+  },
+  {
+    "question_text": "Language designer who made deliberate operator overloading choices",
+    "correct_answer": "rossum",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Assignment Operators (=, +=, -=, etc. )",
+    "game_data": {
+      "explanation": "",
+      "generation_timestamp": "2025-10-03T14:13:06.847580"
+    },
+    "created_at": "2025-10-03T14:13:06.849572",
+    "exported_at": "2025-10-03T14:13:06.849572"
+  },
+  {
+    "question_text": "Operators that cannot be created by Python users",
+    "correct_answer": "arbitrary",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Assignment Operators (=, +=, -=, etc. )",
+    "game_data": {
+      "explanation": "",
+      "generation_timestamp": "2025-10-03T14:13:06.882631"
+    },
+    "created_at": "2025-10-03T14:13:06.884631",
+    "exported_at": "2025-10-03T14:13:06.884631"
+  },
+  {
+    "question_text": "Programming paradigm that Python supports with operator customization",
+    "correct_answer": "overload",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Assignment Operators (=, +=, -=, etc. )",
+    "game_data": {
+      "explanation": "",
+      "generation_timestamp": "2025-10-03T14:13:06.921906"
+    },
+    "created_at": "2025-10-03T14:13:06.926420",
+    "exported_at": "2025-10-03T14:13:06.926420"
+  },
+  {
+    "question_text": "Design philosophy balancing freedom and restriction in operators",
+    "correct_answer": "balanced",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Assignment Operators (=, +=, -=, etc. )",
+    "game_data": {
+      "explanation": "",
+      "generation_timestamp": "2025-10-03T14:13:06.963894"
+    },
+    "created_at": "2025-10-03T14:13:06.966896",
+    "exported_at": "2025-10-03T14:13:06.966896"
+  },
+  {
+    "question_text": "Language feature that Python implemented with careful constraints",
+    "correct_answer": "operators",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Assignment Operators (=, +=, -=, etc. )",
+    "game_data": {
+      "explanation": "",
+      "generation_timestamp": "2025-10-03T14:13:07.015657"
+    },
+    "created_at": "2025-10-03T14:13:07.019657",
+    "exported_at": "2025-10-03T14:13:07.019657"
+  },
+  {
+    "question_text": "Creator who prevented new operator symbols in the language",
+    "correct_answer": "guido",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Assignment Operators (=, +=, -=, etc. )",
+    "game_data": {
+      "explanation": "",
+      "generation_timestamp": "2025-10-03T14:13:07.067864"
+    },
+    "created_at": "2025-10-03T14:13:07.069864",
+    "exported_at": "2025-10-03T14:13:07.069864"
+  },
+  {
+    "question_text": "Decorator that stores function results for reuse with size limit parameter",
+    "correct_answer": "lrucache",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Bitwise Operators and Binary Representation (Advanced)",
+    "game_data": {
+      "explanation": "",
+      "generation_timestamp": "2025-10-03T14:13:09.078322"
+    },
+    "created_at": "2025-10-03T14:13:09.082852",
+    "exported_at": "2025-10-03T14:13:09.082852"
+  },
+  {
+    "question_text": "Protocol marking class as implementing required methods for runtime checking",
+    "correct_answer": "runtimecheckable",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Bitwise Operators and Binary Representation (Advanced)",
+    "game_data": {
+      "explanation": "",
+      "generation_timestamp": "2025-10-03T14:13:09.144867"
+    },
+    "created_at": "2025-10-03T14:13:09.146864",
+    "exported_at": "2025-10-03T14:13:09.146864"
+  },
+  {
+    "question_text": "Behavior where augmented assignment may modify objects in place for mutable types",
+    "correct_answer": "mutability",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Bitwise Operators and Binary Representation (Advanced)",
+    "game_data": {
+      "explanation": "",
+      "generation_timestamp": "2025-10-03T14:13:09.188297"
+    },
+    "created_at": "2025-10-03T14:13:09.192975",
+    "exported_at": "2025-10-03T14:13:09.192975"
+  },
+  {
+    "question_text": "Programming style where object compatibility is determined by methods not inheritance",
+    "correct_answer": "ducktyping",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Bitwise Operators and Binary Representation (Advanced)",
+    "game_data": {
+      "explanation": "",
+      "generation_timestamp": "2025-10-03T14:13:09.248422"
+    },
+    "created_at": "2025-10-03T14:13:09.249451",
+    "exported_at": "2025-10-03T14:13:09.249451"
+  },
+  {
+    "question_text": "Special method that enables objects to work with reduce function for cumulative operations",
+    "correct_answer": "mul",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Bitwise Operators and Binary Representation (Advanced)",
+    "game_data": {
+      "explanation": "",
+      "generation_timestamp": "2025-10-03T14:13:09.281930"
+    },
+    "created_at": "2025-10-03T14:13:09.284940",
+    "exported_at": "2025-10-03T14:13:09.284940"
+  },
+  {
+    "question_text": "Decorator that enables single function to have multiple implementations based on type",
+    "correct_answer": "singledispatch",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Bitwise Operators and Binary Representation (Advanced)",
+    "game_data": {
+      "explanation": "",
+      "generation_timestamp": "2025-10-03T14:13:09.324930"
+    },
+    "created_at": "2025-10-03T14:13:09.327935",
+    "exported_at": "2025-10-03T14:13:09.327935"
+  },
+  {
+    "question_text": "Structural type annotation that defines interface without requiring inheritance",
+    "correct_answer": "protocol",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Bitwise Operators and Binary Representation (Advanced)",
+    "game_data": {
+      "explanation": "",
+      "generation_timestamp": "2025-10-03T14:13:09.360744"
+    },
+    "created_at": "2025-10-03T14:13:09.363756",
+    "exported_at": "2025-10-03T14:13:09.363756"
+  },
+  {
+    "question_text": "Assignment that may create new objects with immutable types",
+    "correct_answer": "augmented",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Bitwise Operators and Binary Representation (Advanced)",
+    "game_data": {
+      "explanation": "",
+      "generation_timestamp": "2025-10-03T14:13:21.579701"
+    },
+    "created_at": "2025-10-03T14:13:21.585214",
+    "exported_at": "2025-10-03T14:13:21.585214"
+  },
+  {
+    "question_text": "Function factory for building custom item selectors from sequences",
+    "correct_answer": "itemgetter",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Bitwise Operators and Binary Representation (Advanced)",
+    "game_data": {
+      "explanation": "",
+      "generation_timestamp": "2025-10-03T14:13:21.633766"
+    },
+    "created_at": "2025-10-03T14:13:21.635770",
+    "exported_at": "2025-10-03T14:13:21.635770"
+  },
+  {
+    "question_text": "Protocol checking that occurs during program execution",
+    "correct_answer": "runtimecheckable",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Bitwise Operators and Binary Representation (Advanced)",
+    "game_data": {
+      "explanation": "",
+      "generation_timestamp": "2025-10-03T14:13:21.678156"
+    },
+    "created_at": "2025-10-03T14:13:21.682683",
+    "exported_at": "2025-10-03T14:13:21.682683"
+  },
+  {
+    "question_text": "Optional parameter for custom comparison in min and max functions",
+    "correct_answer": "runtimecheckable",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Bitwise Operators and Binary Representation (Advanced)",
+    "game_data": {
+      "explanation": "",
+      "generation_timestamp": "2025-10-03T14:13:21.724657"
+    },
+    "created_at": "2025-10-03T14:13:21.726651",
+    "exported_at": "2025-10-03T14:13:21.726651"
+  },
+  {
+    "question_text": "Negated form of the membership testing operator",
+    "correct_answer": "notin",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Bitwise Operators and Binary Representation (Advanced)",
+    "game_data": {
+      "explanation": "",
+      "generation_timestamp": "2025-10-03T14:13:21.784696"
+    },
+    "created_at": "2025-10-03T14:13:21.786702",
+    "exported_at": "2025-10-03T14:13:21.786702"
+  },
+  {
+    "question_text": "Identity operator for verifying different object references",
+    "correct_answer": "isnot",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Bitwise Operators and Binary Representation (Advanced)",
+    "game_data": {
+      "explanation": "",
+      "generation_timestamp": "2025-10-03T14:13:21.833909"
+    },
+    "created_at": "2025-10-03T14:13:21.836909",
+    "exported_at": "2025-10-03T14:13:21.836909"
+  },
+  {
+    "question_text": "Property where assignment does not create duplicate data copies",
+    "correct_answer": "references",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Bitwise Operators and Binary Representation (Advanced)",
+    "game_data": {
+      "explanation": "",
+      "generation_timestamp": "2025-10-03T14:13:21.879178"
+    },
+    "created_at": "2025-10-03T14:13:21.881698",
+    "exported_at": "2025-10-03T14:13:21.881698"
+  },
+  {
+    "question_text": "Operator that returns the first truthy value or the last value if all are falsy",
+    "correct_answer": "or",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Bitwise Operators and Binary Representation (Advanced)",
+    "game_data": {
+      "explanation": "",
+      "generation_timestamp": "2025-10-03T14:13:23.795834"
+    },
+    "created_at": "2025-10-03T14:13:23.798835",
+    "exported_at": "2025-10-03T14:13:23.798835"
+  },
+  {
+    "question_text": "Unary operator that returns the opposite boolean value of its operand",
+    "correct_answer": "not",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Bitwise Operators and Binary Representation (Advanced)",
+    "game_data": {
+      "explanation": "",
+      "generation_timestamp": "2025-10-03T14:13:23.869350"
+    },
+    "created_at": "2025-10-03T14:13:23.872868",
+    "exported_at": "2025-10-03T14:13:23.872868"
+  },
+  {
+    "question_text": "Functional programming tool that applies a function cumulatively to sequence items",
+    "correct_answer": "reduce",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Bitwise Operators and Binary Representation (Advanced)",
+    "game_data": {
+      "explanation": "",
+      "generation_timestamp": "2025-10-03T14:13:23.910623"
+    },
+    "created_at": "2025-10-03T14:13:23.912735",
+    "exported_at": "2025-10-03T14:13:23.912735"
+  },
+  {
+    "question_text": "Runtime check for structural typing compatibility with protocols",
+    "correct_answer": "runtimecheckable",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Bitwise Operators and Binary Representation (Advanced)",
+    "game_data": {
+      "explanation": "",
+      "generation_timestamp": "2025-10-03T14:13:23.942876"
+    },
+    "created_at": "2025-10-03T14:13:23.944876",
+    "exported_at": "2025-10-03T14:13:23.944876"
+  },
+  {
+    "question_text": "Operator function that multiplies two numbers used in functional programming",
+    "correct_answer": "mul",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Bitwise Operators and Binary Representation (Advanced)",
+    "game_data": {
+      "explanation": "",
+      "generation_timestamp": "2025-10-03T14:13:23.980674"
+    },
+    "created_at": "2025-10-03T14:13:23.983224",
+    "exported_at": "2025-10-03T14:13:23.983224"
+  },
+  {
+    "question_text": "Programming paradigm where data cannot be changed after creation",
+    "correct_answer": "immutability",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Bitwise Operators and Binary Representation (Advanced)",
+    "game_data": {
+      "explanation": "",
+      "generation_timestamp": "2025-10-03T14:13:24.024270"
+    },
+    "created_at": "2025-10-03T14:13:24.027396",
+    "exported_at": "2025-10-03T14:13:24.027396"
+  }
+]
