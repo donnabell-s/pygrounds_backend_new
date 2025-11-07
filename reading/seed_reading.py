@@ -1,454 +1,482 @@
+from django.utils.text import slugify
+from django.db import transaction
+from content_ingestion.models import Topic as CITopic, Subtopic as CISubtopic, GameZone
 from reading.models import ReadingMaterial
+from content_ingestion.models import Topic, Subtopic
 
-## topic 1
-ReadingMaterial.objects.get_or_create(    
-    topic="Introduction to Python & IDE Setup",
-    subtopic="Installing Python",
-    title="Installing Python",
-    content="""
+
+def find_topic(name: str) -> CITopic:
+    try:
+        topic = CITopic.objects.get(name=name)
+        print(f"Found Topic: {topic.name}")
+        return topic
+    except CITopic.DoesNotExist:
+        raise Exception(
+            f"Topic '{name}' not found! Please run 'python scripts/populate_zones.py' first."
+        )
+
+
+def find_subtopic(topic: CITopic, name: str) -> CISubtopic:
+    try:
+        sub = CISubtopic.objects.get(topic=topic, name=name)
+        print(f"Found Subtopic: {name} -> {topic.name}")
+        return sub
+    except CISubtopic.DoesNotExist:
+        raise Exception(
+            f"Subtopic '{name}' in topic '{topic.name}' not found! "
+            f"Please run 'python scripts/populate_zones.py' first."
+        )
+
+
+def upsert_material(topic: CITopic, sub: CISubtopic, title: str, content: str, order_in_topic: int = 0):
+    obj, created = ReadingMaterial.objects.get_or_create(
+        topic_ref=topic,
+        subtopic_ref=sub,
+        title=title.strip(),
+        defaults={
+            "content": (content or "").strip(),
+            "order_in_topic": order_in_topic or 0,
+        },
+    )
+
+    if created:
+        print(f"Created ReadingMaterial: {title} -> {topic.name}/{sub.name}")
+    else:
+        print(f"Already exists: {title} -> {topic.name}/{sub.name}")
+
+    return obj
+
+
+def upsert_material(topic: CITopic, sub: CISubtopic, title: str, content: str, order_in_topic: int = 0):
+    obj, created = ReadingMaterial.objects.get_or_create(
+        topic_ref=topic,
+        subtopic_ref=sub,
+        title=title.strip(),
+        defaults={
+            "content": (content or "").strip(),
+            "order_in_topic": order_in_topic or 0,
+        },
+    )
+
+    if created:
+        print(f"Created ReadingMaterial: {title} -> {topic.name}/{sub.name}")
+    else:
+        changed = False
+        if obj.content != (content or "").strip():
+            obj.content = (content or "").strip()
+            changed = True
+        if obj.order_in_topic != (order_in_topic or 0):
+            obj.order_in_topic = order_in_topic or 0
+            changed = True
+        if changed:
+            obj.save(update_fields=["content", "order_in_topic"])
+            print(f"Updated ReadingMaterial: {title} -> {topic.name}/{sub.name}")
+        else:
+            print(f"Already up-to-date: {title} -> {topic.name}/{sub.name}")
+
+    return obj
+
+@transaction.atomic
+def run():
+    # Topic 1 
+    t1 = find_topic("Introduction to Python & IDE Setup")
+
+    # 1) Installing Python
+    st1_1 = find_subtopic(t1, "Installing Python (Windows, macOS, Linux)")
+    upsert_material(
+        t1, st1_1, "Installing Python (Windows, macOS, Linux)",
+"""
 ## Installing Python
 
 Before you can write Python code, you need to install Python on your machine.
 
----
+### Windows
+1. Go to https://www.python.org/downloads/
+2. Download the Windows installer.
+3. During installation, check **"Add Python to PATH"**.
+4. Click **Install Now**.
 
-### For Windows:
-1. Go to [python.org/downloads](https://www.python.org/downloads/)
-2. Download the installer for Windows.
-3. During installation, check **"Add Python to PATH"**
-4. Click **"Install Now"**
-
----
-
-### For macOS:
-1. Install Homebrew (if you haven't yet):
-
+### macOS
+1) Install Homebrew:
 ```bash
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)
-""",
-order_in_topic=1
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+Install Python:
+
+bash
+brew install python
+python3 --version
+""".strip(),
+order_in_topic=1,
 )
 
-ReadingMaterial.objects.get_or_create(   
-topic="Introduction to Python & IDE Setup",
-subtopic="Choosing and Setting Up an IDE",
-title="Choosing and Setting Up an IDE",
-content="""
 
-## Choosing and Setting Up an IDE
+# 2) Choosing and Setting Up an IDE
+    st1_2 = find_subtopic(t1, "Choosing and Setting Up an IDE (VS Code, PyCharm, etc.)")
+    upsert_material(
+    t1, st1_2, "Choosing and Setting Up an IDE (VS Code, PyCharm, etc.)",
+"""
+Choosing and Setting Up an IDE
 An Integrated Development Environment (IDE) makes it easier to write, test, and debug Python code.
 
-Popular Python IDEs:
-VS Code → Lightweight, fast, and highly customizable.
+Popular IDEs
 
-PyCharm → Feature-rich and great for large Python projects.
+VS Code — Lightweight, fast, and highly customizable.
 
-Thonny → Designed for beginners; simple and clean.
+PyCharm — Feature-rich and great for large projects.
 
-Jupyter Notebook → Ideal for data science and quick experiments.
+Thonny — Designed for beginners; simple and clean.
+
+Jupyter Notebook — Ideal for data science and quick experiments.
 
 Setting Up VS Code (Recommended)
-Download VS Code from code.visualstudio.com
+Download: https://code.visualstudio.com/
 
-Install the Python Extension:
+Install the Python Extension
 
-Open VS Code
+Open VS Code → Extensions (Ctrl/Cmd+Shift+X)
 
-Click the Extensions icon (Ctrl+Shift+X)
+Search Python
 
-Search for "Python"
+Install the extension by Microsoft
 
-Click Install on the extension by Microsoft
+(Optional) Code Runner
 
-(Optional) Install Code Runner:
+Search Code Runner in Extensions
 
-Still in Extensions tab, search for "Code Runner"
+Install (lets you run .py with one click)
 
-Click Install
+Try running a Python file
+Create hello.py:
 
-This lets you run .py files with one click
 
-Try running a Python file:
-
-Create a new file named hello.py and paste this code:
 print("Hello, Python!")
-""",
-order_in_topic=2
+""".strip(),
+order_in_topic=2,
 )
 
-ReadingMaterial.objects.get_or_create(   
-topic="Introduction to Python & IDE Setup",
-subtopic="Writing and Running Your First Python Script",
-title="Your First Python Program",
-content="""
-
+# 3) Writing and Running Your First Python Script
+    st1_3 = find_subtopic(t1, "Writing and Running Your First Python Script")
+    upsert_material(
+    t1, st1_3, "Your First Python Program",
+"""
 Your First Python Program
-Let’s write and run your very first Python program!
+Create hello.py:
 
-Create a Python File
-Open your IDE (like VS Code).
-
-Create a new file and name it hello.py.
-
-Write This Code
 
 print("Hello, world!")
-Run Your Program
-In VS Code:
+Run in VS Code
+Right-click the editor → Run Python File in Terminal
 
-Right-click the editor window → "Run Python File in Terminal"
+Or open the terminal and run:
 
-Or use the terminal:
+bash
 
-
-python hello.py
-""",
-order_in_topic=3
+python hello.py   # or: python3 hello.py
+""".strip(),
+order_in_topic=1,
 )
 
+# 4) Python Interpreter and File Structure
+    st1_4 = find_subtopic(t1, "Understanding the Python Interpreter and Shell")
+    upsert_material(
+    t1, st1_4, "Understanding the Python Interpreter and File Structure",
+"""
+Python Interpreter and File Structure
+The Python interpreter reads and executes your .py files line by line.
 
-ReadingMaterial.objects.get_or_create(   
-    topic="Introduction to Python & IDE Setup",
-    subtopic="Python Interpreter and File Structure",
-    title="Understanding the Python Interpreter and File Structure",
-    content="""
-## Python Interpreter and File Structure
-
-The Python interpreter is the program that reads and runs your Python code.
-
----
-
-### What is the Python Interpreter?
-
-- It executes `.py` files line by line.
-- Usually accessed using `python` or `python3` in the terminal.
-
----
-
-### Common Python File Structure
-
-A basic Python project may look like this:
+Common Project Layout
+css
 
 my_project/
 ├── main.py
 ├── helpers.py
 └── data/
-└── input.txt
+    └── input.txt
+main.py — your main program
 
-- `main.py` – your main program file
-- `helpers.py` – contains reusable functions
-- `data/` – a folder to store files
+helpers.py — reusable functions
 
----
+data/ — assets and inputs
 
-### Running the Interpreter
+Interactive Interpreter (REPL)
+Open in terminal:
 
-You can open the Python interpreter directly in your terminal by typing:
 
-```bash
-python
-Then type Python commands like:
+python    # or: python3
+Then type:
+
+
 print("Hello!")
-Type exit() or Ctrl+D to leave the interpreter.
-""",
-order_in_topic=4
+Exit with exit() or Ctrl+D.
+""".strip(),
+order_in_topic=1,
 )
 
-
-ReadingMaterial.objects.get_or_create(   
-topic="Introduction to Python & IDE Setup",
-subtopic="Running Python in Terminal",
-title="Running Python Programs in the Terminal",
-content="""
-
+# 5) Running Python in Terminal
+    st1_5 = find_subtopic(t1, "File Structure, Extensions, and Comments")
+    upsert_material(
+    t1, st1_5, "Running Python Programs in the Terminal",
+"""
 Running Python Programs in the Terminal
-You can run your .py files directly from the terminal using the Python interpreter.
+Open your terminal / command prompt.
 
-Steps to Run:
-1.Open your terminal or command prompt.
-2.Navigate to the folder where your .py file is saved:
+Go to your project folder:
+
+bash
 
 cd path/to/your/folder
+Run the script:
 
-3. Run the file using:
-python filename.py
-Example:
-python hello.py
-Common Errors
-python: command not found → You may need to use python3.
+bash
 
-Permission denied → Check file permissions or add execution rights.
+python filename.py    # or: python3 filename.py
+Common errors
 
-""",
-order_in_topic=5
+python: command not found → try python3
+
+Permission denied → check file permissions or path
+""".strip(),
+order_in_topic=1,
 )
 
-ReadingMaterial.objects.get_or_create(   
-topic="Introduction to Python & IDE Setup",
-subtopic="Using Online Python Interpreters",
-title="Trying Python Using Online Interpreters",
-content="""
+#6) Using Online Python Interpreters
+    st1_6 = find_subtopic(t1, "Managing Environment Variables and PATH")
+    upsert_material(
+    t1, st1_6, "Trying Python Using Online Interpreters",
+"""
+
 Trying Python Using Online Interpreters
-No installation? No problem! You can write and run Python code online.
+No installation? You can code online:
 
-Recommended Sites
--replit.com
--programiz.com/python-programming/online-compiler
--trinket.io
--pythonanywhere.com
+https://replit.com
 
-Pros:
+https://www.programiz.com/python-programming/online-compiler
+
+https://trinket.io
+
+https://www.pythonanywhere.com
+
+Pros
+
 Fast and accessible from any device
+
 No setup required
+
 Great for practice and small tests
 
-Cons:
-Limited file access
-May have internet dependency
-""",
-order_in_topic=6
+Cons
+
+Limited file/system access
+
+Requires internet
+""".strip(),
+order_in_topic=1,
 )
 
-ReadingMaterial.objects.get_or_create(   
-topic="Introduction to Python & IDE Setup",
-subtopic="Setting Up Environment Variables",
-title="Setting Up Environment Variables for Python",
-content="""
+#7) Setting Up Environment Variables
+    st1_7 = find_subtopic(t1, "Using the print() Function Effectively")
+    upsert_material(
+    t1, st1_7, "Setting Up Environment Variables for Python",
+"""
+
 Setting Up Environment Variables for Python
-Environment variables help your system locate Python and other tools.
+Environment variables (like PATH) help your system find Python and tools.
 
-Why It Matters?
-When you type python in the terminal, your system checks the PATH variable to find it.
-How to Set (Windows):
-1.Search for "Environment Variables" in Start Menu.
-2.Click "Edit system environment variables".
-3.Under System Properties, click Environment Variables.
-4.In the System Variables section, find Path, then click Edit.
-5.Add the path to your Python installation (e.g., C:\\Python39\
-    
-    How To Check 
-    echo $PATH  # macOS/Linux
-    echo %PATH% # Windows
-    """,
-order_in_topic=7
+Why important?
+When you type python in the terminal, your OS searches directories listed in PATH.
+
+Check PATH
+
+bash
+ƒ
+echo $PATH    # macOS/Linux
+On Windows (PowerShell)
+
+powershell
+
+echo $Env:Path
+Windows: add Python to PATH
+
+Search Environment Variables in the Start Menu.
+
+Click Edit the system environment variables → Environment Variables.
+
+Edit Path (System variables) → New → add your Python path (e.g. C:\\Python39\\).
+""".strip(),
+order_in_topic=1,
 )
 
-ReadingMaterial.objects.get_or_create(   
-topic="Introduction to Python & IDE Setup",
-subtopic="python vs python3 Commands",
-title="Difference Between python and python3 Commands",
-content="""
+#8) python vs python3 Commands
+    st1_8 = find_subtopic(t1, "Troubleshooting Common Setup Errors")
+    upsert_material(
+    t1, st1_8, "Difference Between python and python3 Commands",
+"""
 
 Difference Between python and python3
-You might see two commands: python and python3. Here's why.
+Windows
 
-On Windows:
-python usually refers to Python 3
+python usually points to Python 3.
 
-Only one version is installed by default
+macOS/Linux
 
-On macOS/Linux:
-python often points to Python 2 (legacy)
+python may point to legacy Python 2.
 
-python3 points to Python 3.x
+python3 points to Python 3.x.
 
-Best Practice
-Use python3 when you're unsure, especially on Mac or Linux:
+Best practice
+
+
+
 python3 hello.py
+Check versions
 
-To check versions:
 python --version
 python3 --version
-""",
-order_in_topic=8
+""".strip(),
+order_in_topic=1,
 )
 
-##topic 2
-ReadingMaterial.objects.get_or_create(   
-    topic="Variables and Data Types",
-    subtopic="Declaring Variables in Python",
-    title="Declaring Variables in Python",
-    content="""
-## Declaring Variables in Python
 
-In Python, variables are created when you assign a value to them — no need to declare the data type.
+# ===================== Topic 2 =====================
+t2 = find_topic("Variables & Data Types")
 
----
-
-### Example:
+# 1) Declaring Variables in Python
+st2_1 = find_subtopic(t2, "Declaring and Naming Variables")
+upsert_material(
+t2, st2_1, "Declaring and Naming Variables",
+"""
+Declaring Variables in Python
+In Python, variables are created when you assign a value — no need to declare the type.
 
 
 x = 5
 name = "Alice"
 price = 19.99
+You can reassign freely:
 
-You can assign any value to a variable, and Python automatically detects its type.
 
-Reassigning Variables: 
-
-x = 10        #Initially an integer
-x = "ten"     # Now it's a string
-
-Pyhton is dynamically typed, meaning variable types can change at runtime. """,
-
-order_in_topic =1
+x = 10        # initially an int
+x = "ten"     # now a string
+Python is dynamically typed (types can change at runtime).
+""".strip(),
+order_in_topic=1,
 )
 
-ReadingMaterial.objects.get_or_create(   
-topic="Variables and Data Types",
-subtopic="Data Types Overview",
-title="Understanding Python Data Types",
-content="""
 
+
+# 2) Data Types Overview
+st2_2 = find_subtopic(t2, "Integer and Floating-Point Numbers")
+upsert_material(
+t2, st2_2, "Understanding Python Data Types",
+"""
 Understanding Python Data Types
-Python has several built-in data types. Here are the most common:
+Basic Types
 
+int (e.g., 10)
 
-Basic Types: 
-int -> Whole numbers (example 10)
-float -> Decimal number (example: 3.14)
-str -> Text (example "Hello")
-bool -> Boolean values (True, False)
+float (e.g., 3.14)
 
-Collection Tyoes:
-list -> Ordered, changeable, allows duplicates
-Example: fruits = ["apple", "banana"]
-tuple -> Ordered, unchangeable, allows duplicates
-Example: coords = (10, 20)
+str (e.g., "Hello")
 
-set -> Unordered, no duplicates
-Example: unique_nums = {1, 2, 3}
+bool (True, False)
 
-dict -> Key-value pairs 
-Example: person = {"name": "John", "age": 30}
-""",
-order_in_topic=2
+Collection Types
+
+list — ordered, mutable (e.g., ["apple", "banana"])
+
+tuple — ordered, immutable (e.g., (10, 20))
+
+set — unordered, unique (e.g., {1, 2, 3})
+
+dict — key-value (e.g., {"name": "John", "age": 30})
+""".strip(),
+order_in_topic=1,
 )
 
-ReadingMaterial.objects.get_or_create(   
-topic="Variables and Data Types",
-subtopic="Type Conversion",
-title="Converting Between Data Types",
-content="""
-
+#3) Type Conversion
+st2_3 = find_subtopic(t2, "Strings and String Formatting")
+upsert_material(
+    t2, st2_3, "Converting Between Data Types",
+"""
 
 Converting Between Data Types
-You can convert from one data type to another using Python's built-in functions.
 
-Common Conversions:
 x = 5
-str_x = str(x)      # Converts int to string → "5"
-float_x = float(x)  # Converts int to float → 5.0
-int_str = int("10")  # Converts string to int → 10
+str_x = str(x)       # int → str  → "5"
+float_x = float(x)   # int → float → 5.0
+int_str = int("10")  # str → int   → 10
+Be careful
 
-Be Careful:
-Not all conversions are valid:
-int("abc")  # Error!
 
-""",
-order_in_topic=3
+int("abc")  # ValueError
+""".strip(),
+order_in_topic=1,
 )
 
-ReadingMaterial.objects.get_or_create(   
-topic="Variables and Data Types",
-subtopic="Constants and Naming Conventions",
-title="Using Constants and Variable Naming Rules",
-content="""
 
+# 4) Constants and Naming Conventions
+st2_4 = find_subtopic(t2, "Booleans and Logical Expressions")
+upsert_material(
+t2, st2_4, "Using Constants and Variable Naming Rules",
+"""
 Using Constants and Variable Naming Rules
-Python doesn't have built-in constant support, but by convention, uppercase variable names are treated as constants.
+Python doesn’t enforce constants, but by convention we use uppercase:
 
-Example:
+
 PI = 3.14159
 MAX_USERS = 100
+Naming
 
-Naming Conventions:  
--Use lowercase letters and underscores for variables: user_name
+variables: lower_snake_case (e.g., user_name)
 
--Constants should be in uppercase: TOTAL_SCORE
+constants: UPPER_SNAKE_CASE (e.g., TOTAL_SCORE)
 
--Variable names must:
- Start with a letter or underscore
-
-Not start with a number
-
-Not contain spaces
-""",
-order_in_topic=4
+must start with a letter or underscore, no spaces, not start with a number
+""".strip(),
+order_in_topic=1,
 )
 
-ReadingMaterial.objects.get_or_create(   
-topic="Variables and Data Types",
-subtopic="Using the type() Function",
-title="Checking Variable Types with type()",
-content="""
+#5) Using the type() Function
+st2_5 = find_subtopic(t2, "Type Conversion and Casting")
+upsert_material(
+    t2, st2_5, "Checking Variable Types with type()",
+"""
 
 Checking Variable Types with type()
-The type() function lets you check what data type a variable holds.
-
-Example:
 
 x = 42
 print(type(x))       # <class 'int'>
 
 name = "Alice"
 print(type(name))    # <class 'str'>
-
-This is useful for debugging and understanding your data.
-""",
-order_in_topic=5
+""".strip(),
+order_in_topic=1,
 )
 
-ReadingMaterial.objects.get_or_create(   
-    topic="Variables and Data Types",
-    subtopic="Booleans and Logical Expressions",
-    title="Understanding Booleans and Logical Expressions",
-    content="""
-## Understanding Booleans and Logical Expressions
 
-Booleans represent **True** or **False** values in Python.
+#6  Booleans and Logical Expressions
+st2_6 = find_subtopic(t2, "Type Checking with type() and isinstance()")
+upsert_material(
+    t2, st2_6, "Understanding Booleans and Logical Expressions",
+    """
+## Booleans and Logical Expressions
 
----
-
-### Boolean Values:
-
-
-is_student = True
-has_paid = False
-They are commonly used in conditions and logic.
-Logical Expressions:
-Logical expressions combine comparisons and return boolean results.
-
-Examples:
-age = 20
-print(age > 18)       # True
-print(age < 18)       # False
-
-You can also combine them using logical operators:
-
+```python
 x = 5
-print(x > 3 and x < 10)   # True
-print(not x == 5)         # False
-
-""",
-order_in_topic=6
+print(x > 3 and x < 10)  # True
+print(not x == 5)        # False
+""".strip(),
+order_in_topic=1,
 )
-ReadingMaterial.objects.get_or_create(   
-    topic="Variables and Data Types",
-    subtopic="Type Checking with isinstance()",
-    title="Using isinstance() for Type Checking",
-    content="""
-## Using isinstance() for Type Checking
-
-The `isinstance()` function checks if a variable is a specific type.
 
 
-Syntax:
+# 7) Type Checking with isinstance()
+st2_7 = find_subtopic(t2, "Constants and Immutability Concepts")
+upsert_material(
+    t2, st2_7, "Using isinstance() for Type Checking",
+"""
+Using isinstance() for Type Checking
 
-
-isinstance(variable, type)
-
-Examples:
 x = 10
 print(isinstance(x, int))      # True
 
@@ -457,165 +485,118 @@ print(isinstance(name, str))   # True
 
 data = [1, 2, 3]
 print(isinstance(data, list))  # True
-
-This is helpful when validating input or writing conditional logic based on types.
-""",
-order_in_topic=7
+""".strip(),
+order_in_topic=1,
 )
 
-##topic 3
-ReadingMaterial.objects.get_or_create(   
-    topic="Basic Input and Output",
-    subtopic="Using the input() Function",
-    title="Getting User Input with input()",
-    content="""
-## Getting User Input with `input()`
 
-The `input()` function allows you to get input from the user through the keyboard.
 
----
+# ===================== Topic 3 =====================
+t3 = find_topic("Basic Input and Output")
 
-### Basic Example:
+# 1) Using the input() Function
+st3_1 = find_subtopic(t3, "Using input() to Read User Data")
+upsert_material(
+    t3, st3_1, "Getting User Input with input()",
+    """
+Getting User Input with input()
+The input() function reads a line from the keyboard.
 
 
 name = input("What is your name? ")
 print("Hello,", name)
+Note: input() returns a string.
 
-
-The text inside input() is called a prompt — it shows up before the user types.
-
-
-
-Note:
-All input is treated as a string by default:
 
 age = input("Enter your age: ")
 print(type(age))  # <class 'str'>
-
-To convert to number:
-
-age = int(age)
-
-""",
-order_in_topic=1
+age = int(age)    # convert to number
+""".strip(),
+order_in_topic=1,
 )
-## Subtopic 2: Displaying Output with print()
 
-ReadingMaterial.objects.get_or_create(   
-topic="Basic Input and Output",
-subtopic="Displaying Output with print()",
-title="Displaying Output with print()",
-content="""
 
+# 2) Displaying Output with print()
+st3_2 = find_subtopic(t3, "Basic Text Output with print()")
+upsert_material(
+    t3, st3_2, "Basic Text Output with print()",
+    """
 Displaying Output with print()
-The print() function shows text or variable values in the output (usually the terminal).
 
-Basic Usage:
 
 print("Hello, world!")
-
-You can also print multiple items:
-
-name = "Alice"
-age = 20
+name = "Alice"; age = 20
 print("Name:", name, "Age:", age)
-
-Print with separator:
-
-print("A", "B", "C", sep="-") 
-
-Print with end:
-
-print("Hello", end=" ")
-print("World")  ##Output: Hello World
-
-""",
-order_in_topic=2
+print("A", "B", "C", sep="-")   # A-B-C
+print("Hello", end=" "); print("World")  # Hello World
+""".strip(),
+order_in_topic=1,
 )
 
-ReadingMaterial.objects.get_or_create(   
-topic="Basic Input and Output",
-subtopic="Using f-Strings for Formatting",
-title="Formatting Output with f-Strings",
-content="""
+
+# 3) Using f-Strings for Formatting
+st3_3 = find_subtopic(t3, "String Concatenation and Formatting (f-strings, .format())")
+upsert_material(
+    t3, st3_3, "Formatting Output with f-Strings",
+    """
 Formatting Output with f-Strings
-f-strings make it easy to include variables inside strings.
-Example:
+
 name = "John Doe"
 age = 21
-
 print(f"My name is {name} and I am {age} years old.")
-
-You can also do inline expressions:
 print(f"In 5 years, I’ll be {age + 5}")
-
-f-Strings require Python 3.6 or higher.
-""",
-order_in_topic=3
+Requires Python 3.6+
+""".strip(),
+order_in_topic=1,
 )
 
 
-ReadingMaterial.objects.get_or_create(   
-topic="Basic Input and Output",
-subtopic="Escape Characters in Strings",
-title="Using Escape Characters in Strings",
-content="""
-
+# 4) Escape Characters in Strings
+st3_4 = find_subtopic(t3, "Handling Input Types (Converting to int, float, etc.)")
+upsert_material(
+    t3, st3_4, "Using Escape Characters in Strings",
+    """
 Using Escape Characters in Strings
-Escape characters let you add special characters inside a string.
-Common Escape Characters:
+Code	Meaning
+\\n	New line
+\\t	Tab
+\\\"	Double quote
+\\\\	Backslash
 
-Code                        Meaning
-\\n                         New Line
-\\t                         Tab
-\\\"                        Double qoute
-\\\\                        Backslash
-
-Examples:
 
 print("Line 1\\nLine 2")
 print("She said: \\\"Hello!\\\"")
-print("C:\\\\Users\\\\John Doe)
-""",
-order_in_topic=4
+print("C:\\\\Users\\\\John Doe")
+""".strip(),
+order_in_topic=1,
 )
 
-ReadingMaterial.objects.get_or_create(   
-topic="Basic Input and Output",
-subtopic="Printing Multiple Lines",
-title="Printing Multiple Lines and Line Breaks",
-content="""
-
+# 5) Printing Multiple Lines
+st3_5 = find_subtopic(t3, "Printing Special Characters and Escape Sequences")
+upsert_material(
+    t3, st3_5, "Printing Multiple Lines and Line Breaks",
+    """
 Printing Multiple Lines and Line Breaks
-There are a few ways to print multiple lines in Python.
-Using \\n (newline):
-print("This is line one.\\nThis is line two.")
 
-Using triple quotes:
+print("This is line one.\\nThis is line two.")
 print(\"\"\"This is line one.
 This is line two.
 This is line three.\"\"\")
-
-Using multiple print() calls:
-print("Line one")
-print("Line two")
-print("Line three")
-
-""",
-order_in_topic=5
+print("Line one"); print("Line two"); print("Line three")
+""".strip(),
+order_in_topic=1,
 )
 
-ReadingMaterial.objects.get_or_create(
-    topic="Basic Input and Output",
-    subtopic="Multi-line Input and Output",
-    title="Working with Multi-line I/O",
-    content="""
-Sometimes, you may need to collect or display multiple lines of text.
 
-### Multi-line Input:
-You can use a loop or special characters to capture multiple lines.
+# 6) Multi-line Input and Output
+st3_6 = find_subtopic(t3, "Multi-line Input and Output")
+upsert_material(
+    t3, st3_6, "Working with Multi-line I/O",
+    """
+Working with Multi-line I/O
+Multi-line Input (loop)
 
-Example using a loop:
+
 lines = []
 for _ in range(3):
     lines.append(input("Enter a line: "))
@@ -623,415 +604,342 @@ for _ in range(3):
 print("You entered:")
 for line in lines:
     print(line)
+Multi-line Output
 
-### Multi-line Output:
-You can use triple quotes or multiple print statements.
 
-Example:
 print(\"\"\"This is
 a multi-line
 output.\"\"\")
-""", 
-order_in_topic=6
-
+""".strip(),
+order_in_topic=1,
 )
 
-ReadingMaterial.objects.get_or_create(
-    topic="Basic Input and Output",
-    subtopic="Best Practices for User-Friendly I/O",
-    title="Improving User Interaction",
-    content="""
-Writing input and output code that is friendly and clear enhances user experience.
 
-### Tips:
-- Always add prompts: `input("Enter your name: ")`
-- Use clear messages: `print("Processing...")`
-- Validate input and provide helpful feedback.
-- Format output cleanly using f-strings.
+# 7) Best Practices for User-Friendly I/O
+st3_7 = find_subtopic(t3, "Best Practices for User-Friendly I/O")
+upsert_material(
+    t3, st3_7, "Improving User Interaction",
+    """
+Improving User Interaction
+Always add prompts: input("Enter your name: ")
 
-Example:
+Use clear messages: print("Processing...")
+
+Validate input and provide helpful feedback.
+
+Format output cleanly using f-strings.
+
 name = input("What is your name? ")
 print(f"Hello, {name}! Welcome to PyGrounds.")
-""", 
-order_in_topic=7
+""".strip(),
+order_in_topic=1,
 )
 
-## topic 4
+# ===================== Topic 4 =====================
+t4 = find_topic("Operators")
 
-ReadingMaterial.objects.get_or_create(   
-    topic="Operators",
-    subtopic="Arithmetic Operators",
-    title="Using Arithmetic Operators in Python",
-    content="""
+    # 1) Arithmetic Operators
+st4_1 = find_subtopic(t4, "Arithmetic Operators (+, -, *, /, %, //, **)")
+upsert_material(
+        t4, st4_1, "Using Arithmetic Operators in Python",
+        """
 ## Using Arithmetic Operators in Python
 
-Arithmetic operators are used to perform basic math operations.
+Arithmetic operators perform basic math.
 
----
+| Operator | Description             | Example        |
+|---------:|-------------------------|----------------|
+| `+`      | Addition                | `3 + 2 == 5`   |
+| `-`      | Subtraction             | `5 - 1 == 4`   |
+| `*`      | Multiplication          | `4 * 2 == 8`   |
+| `/`      | Division (float)        | `6 / 2 == 3.0` |
+| `//`     | Floor division          | `7 // 2 == 3`  |
+| `%`      | Modulus (remainder)     | `7 % 3 == 1`   |
+| `**`     | Exponentiation          | `2 ** 3 == 8`  |
 
-### List of Arithmetic Operators:
-
-| Operator | Description     | Example       |
-|----------|-----------------|---------------|
-| `+`      | Addition         | `3 + 2 = 5`   |
-| `-`      | Subtraction      | `5 - 1 = 4`   |
-| `*`      | Multiplication   | `4 * 2 = 8`   |
-| `/`      | Division         | `6 / 2 = 3.0` |
-| `//`     | Floor Division   | `7 // 2 = 3`  |
-| `%`      | Modulus (remainder) | `7 % 3 = 1` |
-| `**`     | Exponentiation   | `2 ** 3 = 8`  |
-
----
-
-### Example:
-
-
+```python
 a = 10
 b = 3
-
-print(a + b)
-print(a % b)
-""",
-order_in_topic=1
+print(a + b)  # 13
+print(a % b)  # 1
+""".strip(),
+order_in_topic=1,
 )
- ##Subtopic 2: Comparison Operators
-ReadingMaterial.objects.get_or_create(   
-topic="Operators",
-subtopic="Comparison Operators",
-title="Using Comparison Operators in Python",
-content="""
 
+# 2) Comparison Operators
+st4_2 = find_subtopic(t4, "Comparison Operators (==, !=, >, <, >=, <=)")
+upsert_material(
+    t4, st4_2, "Using Comparison Operators in Python",
+    """
 Using Comparison Operators in Python
-Comparison operators are used to compare two values and return True or False.
+Return True/False when comparing values.
 
-List of Comparison Operators:
-
-| Operator | Description     | Example   |
-|----------|-----------------|-----------|
-|   ==     | Equal           | a == b    |
-|   !=     | Not equal       | a != b    |
-|   >      | Greater than    | a > b     |
-|   <      | Less than       | a < b     |
-|   >=     | Greater or equal| a >= b    |
-|   <=     | Less or equal   | a <= b    |
-
-
-Example:
+Operator	Meaning	Example
+==	equal	a == b
+!=	not equal	a != b
+>	greater than	a > b
+<	less than	a < b
+>=	greater or equal	a >= b
+<=	less or equal	a <= b
 
 x = 5
 y = 8
-
-print(x == y)   False
-print(x < y)    True
-
-""",
-order_in_topic=2
+print(x == y)  # False
+print(x < y)   # True
+""".strip(),
+order_in_topic=2,
 )
 
-
-ReadingMaterial.objects.get_or_create(   
-topic="Operators",
-subtopic="Assignment Operators",
-title="Understanding Assignment Operators",
-content="""
-
+# 3) Assignment Operators
+st4_3 = find_subtopic(t4, "Logical Operators (and, or, not)")
+upsert_material(
+    t4, st4_3, "Understanding Assignment Operators",
+    """
 Understanding Assignment Operators
-Assignment operators are used to assign values to variables.
-Some also perform operations before assigning.
+Assign and/or update a variable.
 
-List of Assignment Operators:
-
-| Operator | Description           | Example     |
-|----------|-----------------------|-------------|
-|   =      | Assign                | x = 5       |
-|   +=     | Add and assign        | x += 2      |
-|   -=     | Subtract and assign   | x -= 3      |
-|   *=     | Multiply and assign   | x *= 4      |
-|   /=     | Divide and assign     | x /= 2      |
-|   %=     | Modulo and assign     | x %= 3      |
-|   **=    | Exponent and assign   | x **= 2     |
-
-Example:
+Operator	Description	Example
+=	assign	x = 5
++=	add and assign	x += 2
+-=	subtract and assign	x -= 3
+*=	multiply and assign	x *= 4
+/=	divide and assign	x /= 2
+%=	modulo and assign	x %= 3
+**=	exponent and assign	x **= 2
 
 x = 10
 x += 5
-print(x)  # Output: 15
-
-""",
-order_in_topic=3
+print(x)  # 15
+""".strip(),
+order_in_topic=3,
 )
 
-
-ReadingMaterial.objects.get_or_create(   
-topic="Operators",
-subtopic="Logical Operators",
-title="Using Logical Operators in Python",
-content="""
-
+# 4) Logical Operators
+st4_4 = find_subtopic(t4, "Assignment Operators (=, +=, -=, etc. )")
+upsert_material(\
+    t4, st4_4, "Using Logical Operators in Python",
+    """
 Using Logical Operators in Python
-Logical operators combine conditional statements.
-
-Operators:
+Combine conditions.
 
 Operator	Description
-and	        Returns True if both are True
-or	        Returns True if at least one is True
-not     	Reverses the result
-
-Example:
+and	True if both are True
+or	True if at least one is True
+not	Inverts the boolean value
 
 x = 5
-print(x > 2 and x < 10)   # True
-print(x < 2 or x > 3)     # True
-print(not(x > 4))         # False
-""",
-order_in_topic=4
+print(x > 2 and x < 10)  # True
+print(x < 2 or x > 3)    # True
+print(not (x > 4))       # False
+""".strip(),
+order_in_topic=4,
 )
 
-ReadingMaterial.objects.get_or_create(   
-topic="Operators",
-subtopic="Operator Precedence",
-title="Understanding Operator Precedence",
-content="""
-
+# 5) Operator Precedence
+st4_5 = find_subtopic(t4, "Operator Precedence and Associativity")
+upsert_material(
+    t4, st4_5, "Understanding Operator Precedence",
+    """
 Understanding Operator Precedence
-When multiple operators are used in a single expression, Python follows operator precedence rules to evaluate the result.
+When multiple operators appear, Python follows precedence rules.
 
-Example:
 result = 3 + 2 * 5
-print(result)  # Output: 13 (not 25!)
-Multiplication happens before addition.
+print(result)  # 13  (multiplication before addition)
+High → Low (common ones)
 
-Order of Precedence (High to Low):
-1.() — Parentheses
-2.** — Exponent
-3.* / // % — Multiply, Divide, Modulus
-34.+ - — Add, Subtract
-5.== != > < >= <= — Comparisons
-6.not
-7.and
-8.or
-Use parentheses () to control the order explicitly:
+() parentheses
 
-result = (3 + 2) * 5  # Output: 25
+** exponent
 
-""",
-order_in_topic=5
+* / // %
+
++ -
+
+Comparisons == != > < >= <=
+
+not
+
+and
+
+or
+
+Use parentheses to be explicit:
+
+result = (3 + 2) * 5  # 25
+""".strip(),
+order_in_topic=5,
 )
 
-
-ReadingMaterial.objects.get_or_create(   
-    topic="Operators",
-    subtopic="Membership and Identity Operators",
-    title="Using Membership and Identity Operators in Python",
-    content="""
-## Membership and Identity Operators in Python
-
-These operators help check if a value exists in a sequence, or whether two variables refer to the same object.
-
----
-
-### Membership Operators:
-
-| Operator | Description                    | Example            |
-|----------|--------------------------------|--------------------|
-| `in`     | Returns True if value is found | `"a" in "apple"`   |
-| `not in` | Returns True if not found      | `"x" not in "box"` |
-
----
-
-### Examples:
-
+# 6) Membership and Identity Operators
+st4_6 = find_subtopic(t4, "Membership (in, not in) and Identity Operators (is, is not)")
+upsert_material(
+    t4, st4_6, "Using Membership and Identity Operators in Python",
+    """
+Membership and Identity Operators in Python
+Membership
+Operator	Description	Example
+in	True if value is found	"a" in "apple"
+not in	True if value not found	"x" not in "box"
 
 fruits = ["apple", "banana", "cherry"]
-print("apple" in fruits)      # True
+print("apple" in fruits)       # True
 print("orange" not in fruits)  # True
+Identity
+Operator	Description	Example
+is	same object in memory	x is y
+is not	not the same object	x is not y
 
-Identity Operators:
-
-Operator	Description	                                Example
-is	        True if both refer to the same object	    x is y
-is not	    True if they do NOT refer to same object	x is not y
-
-Example:
 a = [1, 2, 3]
 b = a
 c = [1, 2, 3]
-
-print(a is b)     # True (same object)
-print(a is c)     # False (same values, different objects)
-""",
-order_in_topic=6
+print(a is b)  # True  (same object)
+print(a is c)  # False (equal values, different objects)
+""".strip(),
+order_in_topic=6,
 )
 
+# 7) Bitwise Operators
+st4_7 = find_subtopic(t4, "Bitwise Operators and Binary Representation (Advanced)")
+upsert_material(
+    t4, st4_7, "Introduction to Bitwise Operators (Advanced)",
+    """
+Introduction to Bitwise Operators (Advanced)
+Operate on the bits of integers.
 
-ReadingMaterial.objects.get_or_create(   
-    topic="Operators",
-    subtopic="Bitwise Operators",
-    title="Introduction to Bitwise Operators (Advanced)",
-    content="""
-## Introduction to Bitwise Operators (Advanced)
+Op	Name	Example	Result
+&	AND	5 & 3	1
+`	`	OR	`5
+^	XOR	5 ^ 3	6
+~	NOT	~5	-6
+<<	Left shift	5 << 1	10
+>>	Right shift	5 >> 1	2
 
-Bitwise operators work on bits (0s and 1s) of integers.
-
-They are mostly used in low-level programming or advanced math operations.
-
----
-
-### Bitwise Operators:
-
-| Operator | Name         | Example    | Result |
-|----------|--------------|------------|--------|
-| `&`      | AND          | 5 & 3      | 1      |
-| `|`      | OR           | 5 \| 3     | 7      |
-| `^`      | XOR          | 5 ^ 3      | 6      |
-| `~`      | NOT          | ~5         | -6     |
-| `<<`     | Left Shift   | 5 << 1     | 10     |
-| `>>`     | Right Shift  | 5 >> 1     | 2      |
-
----
-
-### Example:
-
-
-a = 5      # 0101
-b = 3      # 0011
-
-print(a & b)   # 1 (0001)
-print(a | b)   # 7 (0111)
-print(a ^ b)   # 6 (0110)
-Bitwise operations are optional for beginners but useful in performance-sensitive code.
-""",
-order_in_topic=7
+a = 5  # 0101
+b = 3  # 0011
+print(a & b)  # 1 (0001)
+print(a | b)  # 7 (0111)
+print(a ^ b)  # 6 (0110)
+Optional for beginners; handy in performance/low-level tasks.
+""".strip(),
+order_in_topic=7,
 )
 
-# topic 5 Comments & Code Readability
+# ===================== Topic 5 =====================
+t5 = find_topic("Comments & Code Readability")
 
-ReadingMaterial.objects.get_or_create (
-    topic="Comments & Code Readability",
-    subtopic="Single-line vs Multi-line Comments",
-    title="Using Single-line and Multi-line Comments",
-    content="""
+# 1) Single-line vs Multi-line Comments
+st5_1 = find_subtopic(t5, "Single-line vs Multi-line Comments")
+upsert_material(
+    t5, st5_1, "Using Single-line and Multi-line Comments",
+    '''
 ## Using Single-line and Multi-line Comments
 
-Comments help explain what your code does. Python ignores comments during execution.
+Comments explain intent; Python ignores them at runtime.
 
-### Single-line Comment
+### Single-line
+```python
+# This is a comment
+print("Hello!")  # Inline comment
+Multi-line / Docstring-style
+Python has no true block-comment syntax; we often use triple-quoted strings as docstrings:
 
-Use `#` to start a single-line comment.
-
-# This is a single-line comment
-print("Hello!")  # This is also a comment
-
-Multi-line Comment
-Use triple quotes ''' or """ '''for multi-line comments (often used for docstrings).'''
-'''
-This is a
-multi-line comment
-''' 
-'''print("Multi-line done!")'''
-'''Best Practice: Use comments to clarify why something is done, not just what.'''
-"""""",
-order_in_topic=1
+def f():
+    """
+    Explain what the function does.
+    """
+    pass
+Best practice: comment why, not just what.
+'''.strip(),
+order_in_topic=1,
 )
 
-ReadingMaterial.objects.get_or_create(
-topic="Comments & Code Readability",
-subtopic="Docstrings and Inline Documentation",
-title="Writing Effective Docstrings and Inline Docs",
-content="""
-Writing Effective Docstrings and Inline Documentation
-Docstrings are special comments used to describe functions, classes, and modules.
 
-Function Docstring Example
+# 2) Docstrings and Inline Documentation
+st5_2 = find_subtopic(t5, "Docstrings and Inline Documentation")
+upsert_material(
+    t5, st5_2, "Writing Effective Docstrings and Inline Docs",
+    '''
+## Writing Effective Docstrings and Inline Documentation
+
+**Function docstring**
+```python
 def greet(name):
-    '''
-    Greets a user by name.
-    '''
+    """Greets a user by name."""
     return f"Hello, {name}!"
-Inline Docs
+Inline docs
+
+
 # Calculate the square of a number
 result = 5 ** 2
-
-Best Practice: Use docstrings for functions and classes; use inline docs for logic blocks.
-""",
-order_in_topic=2
+Use docstrings for APIs (functions/classes/modules) and concise inline comments for tricky logic.
+'''.strip(),
+order_in_topic=2,
 )
 
-ReadingMaterial.objects.get_or_create(
-topic="Comments & Code Readability",
-subtopic="Code Indentation and Block Structure",
-title="Maintaining Proper Indentation and Blocks",
-content="""
+# 3) Code Indentation and Block Structure
+st5_3 = find_subtopic(t5, "Code Indentation and Block Structure")
+upsert_material(
+    t5, st5_3, "Maintaining Proper Indentation and Blocks",
+    '''
+## Maintaining Proper Indentation and Blocks
 
-Maintaining Proper Indentation and Blocks
+Python uses indentation to define blocks (PEP8: 4 spaces).
 
-Python uses indentation to define blocks of code. Incorrect indentation will cause errors.
-
-Correct Indentation:
-
-
+**Correct**
+```python
 if True:
     print("Indented correctly")
 else:
     print("Also correctly indented")
+Incorrect
 
-Incorrect Indentation:
 
 if True:
 print("This will raise an IndentationError")
-
-Use 4 spaces per indentation level (recommended by PEP8).
-""",
-order_in_topic=3
+'''.strip(),
+order_in_topic=3,
 )
 
-ReadingMaterial.objects.get_or_create(
-topic="Comments & Code Readability",
-subtopic="Naming Conventions (PEP8 Guidelines)",
-title="Following Python Naming Conventions",
-content="""
 
+# 4) Naming Conventions (PEP8 Guidelines)
+st5_4 = find_subtopic(t5, "Naming Conventions (PEP8 Guidelines)")
+upsert_material(
+    t5, st5_4, "Following Python Naming Conventions",
+    """
 Following Python Naming Conventions (PEP8)
-Variable and Function Names
-Use lowercase_with_underscores:
+Variables/Functions
+lower_snake_case
 
 user_name = "Alex"
 get_user_input()
-
-
 Constants
-Use UPPERCASE letters:
+UPPER_SNAKE_CASE
+
 
 MAX_USERS = 100
-
 Classes
-Use CapitalizedWords:
+CapitalizedWords
+
 
 class UserProfile:
     pass
-
-Consistent naming improves code readability and professionalism.
-""",
-order_in_topic=4
+""".strip(),
+order_in_topic=4,
 )
 
-ReadingMaterial.objects.get_or_create(
-topic="Comments & Code Readability",
-subtopic="Structuring Code for Readability",
-title="Organizing Code for Better Readability",
-content="""
 
+# 5) Structuring Code for Readability
+st5_5 = find_subtopic(t5, "Structuring Code for Readability")
+upsert_material(
+    t5, st5_5, "Organizing Code for Better Readability",
+    """
 Organizing Code for Better Readability
-Readable code is easier to understand and maintain.
-
-Tips:
 Break code into functions
 
 Group related lines
 
-Add space between sections
-Example:
+Add whitespace between sections
+
 
 # Load data
 data = [1, 2, 3]
@@ -1041,91 +949,85 @@ squared = [x**2 for x in data]
 
 # Output result
 print(squared)
-
-Clean structure helps you and others understand the flow easily.
-""",
-order_in_topic=5
+""".strip(),
+order_in_topic=5,
 )
 
-ReadingMaterial.objects.get_or_create(
-topic="Comments & Code Readability",
-subtopic="Avoiding Magic Numbers and Hardcoding",
-title="Avoiding Magic Numbers and Hardcoded Values",
-content="""
 
-voiding Magic Numbers and Hardcoded Values
-Magic numbers are unexplained numbers used directly in code.
-
-Bad Practice:
+# 6) Avoiding Magic Numbers and Hardcoding
+st5_6 = find_subtopic(t5, "Avoiding Magic Numbers and Hardcoding")
+upsert_material(
+    t5, st5_6, "Avoiding Magic Numbers and Hardcoded Values",
+    """
+Avoiding Magic Numbers and Hardcoded Values
+Bad
 
 price = 100
 discount = price * 0.2  # What does 0.2 mean?
+Better
 
-Better:
 
 DISCOUNT_RATE = 0.2
 discount = price * DISCOUNT_RATE
-
-
-Always give names to important numbers or strings to make them meaningful.
-""",
-order_in_topic=6
+Name important numbers/strings to make intent clear.
+""".strip(),
+order_in_topic=6,
 )
 
-ReadingMaterial.objects.get_or_create(
-topic="Comments & Code Readability",
-subtopic="Writing Self-Documenting Code",
-title="Writing Clear and Self-Documenting Code",
-content="""
-
+# 7) Writing Self-Documenting Code
+st5_7 = find_subtopic(t5, "Writing Self-Documenting Code")
+upsert_material(
+    t5, st5_7, "Writing Clear and Self-Documenting Code",
+    """
 Writing Clear and Self-Documenting Code
-Code should explain itself without needing extra comments.
-Bad:
+Code should be understandable without extra comments.
+
+Bad
+
+
 a = 10
 b = a * 12.5
+Good
 
- Good:
- monthly_salary = 10
+
+monthly_salary = 10
 annual_salary = monthly_salary * 12.5
-
-Use descriptive variable names and function names that reflect their purpose.
-""",
-order_in_topic=7
+Use descriptive names for variables and functions.
+""".strip(),
+order_in_topic=7,
 )
 
-## topic 6 Conditional Statements 
-ReadingMaterial.objects.get_or_create(
-    topic="Conditional Statements",
-    subtopic="if Statement Syntax and Structure",
-    title="Using Basic if Statements",
-    content="""
-## Using Basic if Statements
 
-The `if` statement is used to execute code only if a certain condition is true.
+# ===================== Topic 6 =====================
+t6 = find_topic("Conditional Statements")
 
-### Syntax:
+# 1) if Statement Syntax and Structure
+st6_1 = find_subtopic(t6, "if Statement Syntax and Structure")
+upsert_material(
+    t6, st6_1, "Using Basic if Statements",
+    """
+Using Basic if Statements
 
 if condition:
     # code block
 Example:
+
+
 age = 18
 if age >= 18:
     print("You are an adult.")
-
-Indentation is critical. Python uses indentation (usually 4 spaces) to define the block of code inside the if.
-""",
-order_in_topic=1
+Indentation defines the code block.
+""".strip(),
+order_in_topic=1,
 )
-ReadingMaterial.objects.get_or_create(
-topic="Conditional Statements",
-subtopic="if-else and elif Ladder",
-title="Creating if-else and elif Chains",
-content="""
 
+# 2) if-else and elif Ladder
+st6_2 = find_subtopic(t6, "if-else and elif Ladder")
+upsert_material(
+    t6, st6_2, "Creating if-else and elif Chains",
+    """
 Creating if-else and elif Chains
-Use if-else when you want two possible outcomes. Use elif for multiple conditions.
 
-Example:
 score = 75
 
 if score >= 90:
@@ -1136,21 +1038,17 @@ elif score >= 70:
     print("Grade: C")
 else:
     print("Grade: D or below")
-The conditions are checked from top to bottom. The first True condition's block will run.
-""",
-order_in_topic=2
+Checked top-to-bottom; the first True branch runs.
+""".strip(),
+order_in_topic=2,
 )
 
-ReadingMaterial.objects.get_or_create(
-topic="Conditional Statements",
-subtopic="Nested Conditional Statements",
-title="Writing Nested Conditions",
-content="""
-
+# 3) Nested Conditional Statements
+st6_3 = find_subtopic(t6, "Nested Conditional Statements")
+upsert_material(
+    t6, st6_3, "Writing Nested Conditions",
+    """
 Writing Nested Conditions
-Nested if statements allow you to check a second condition only if the first is true.
-
-Example:
 
 x = 10
 y = 5
@@ -1158,183 +1056,159 @@ y = 5
 if x > 0:
     if y > 0:
         print("Both x and y are positive.")
-Be careful with indentation to avoid errors and confusion in nested logic.
-""",
-order_in_topic=3
+Keep indentation clear to avoid confusion.
+""".strip(),
+order_in_topic=3,
 )
 
-ReadingMaterial.objects.get_or_create(
-topic="Conditional Statements",
-subtopic="Boolean Logic in Conditions",
-title="Using Boolean Logic (and, or, not)",
-content="""
 
+# 4) Boolean Logic in Conditions
+st6_4 = find_subtopic(t6, "Boolean Logic in Conditions")
+upsert_material(
+    t6, st6_4, "Using Boolean Logic (and, or, not)",
+    """
 Using Boolean Logic (and, or, not)
-Combine multiple conditions using logical operators.
-
-Operators:
-and: All conditions must be true.
-
-or: At least one condition must be true.
-
-not: Inverts a boolean value.
-
-Example:
 
 age = 20
 has_id = True
 
 if age >= 18 and has_id:
     print("Allowed to enter.")
-Use parentheses to group complex expressions for clarity.
-""",
-order_in_topic=4
+Use parentheses to group complex expressions.
+""".strip(),
+order_in_topic=4,
 )
 
-ReadingMaterial.objects.get_or_create(
-topic="Conditional Statements",
-subtopic="Ternary Operators (One-liner conditionals)",
-title="Using Ternary Operators in Python",
-content="""
-
+# 5) Ternary Operators (One-liner conditionals)
+st6_5 = find_subtopic(t6, "Ternary Operators (One-liner conditionals)")
+upsert_material(
+    t6, st6_5, "Using Ternary Operators in Python",
+    """
 Using Ternary Operators in Python
-Ternary operators let you write a simple if-else in one line.
+Syntax
 
-Syntax:
+
 value_if_true if condition else value_if_false
 Example:
 
 age = 17
 status = "Adult" if age >= 18 else "Minor"
 print(status)
-Ternary expressions are useful for short conditions.
-""",
-order_in_topic=5
+""".strip(),
+order_in_topic=5,
 )
 
-ReadingMaterial.objects.get_or_create(
-topic="Conditional Statements",
-subtopic="Using Conditions with Input",
-title="Combining Conditions with User Input",
-content="""
 
+# 6) Using Conditions with Input
+st6_6 = find_subtopic(t6, "Using Conditions with Input")
+upsert_material(
+    t6, st6_6, "Combining Conditions with User Input",
+    """
 Combining Conditions with User Input
-You can use input values directly in conditions.
-
-Example:
 
 age = int(input("Enter your age: "))
-
 if age >= 18:
     print("Access granted.")
 else:
     print("Access denied.")
-Always convert the input to the correct type (e.g., int) before comparing.
-""",
-order_in_topic=6
+Always convert input to the correct type before comparing.
+""".strip(),
+order_in_topic=6,
 )
 
-ReadingMaterial.objects.get_or_create(
-topic="Conditional Statements",
-subtopic="Common Logic Pitfalls and Debugging",
-title="Common Mistakes in Conditional Logic",
-content="""
 
+# 7) Common Logic Pitfalls and Debugging
+st6_7 = find_subtopic(t6, "Common Logic Pitfalls and Debugging")
+upsert_material(
+    t6, st6_7, "Common Mistakes in Conditional Logic",
+    """
 Common Mistakes in Conditional Logic
-Even simple logic can go wrong. Let’s look at common mistakes and how to avoid them.
-
 Mistake 1: Using = instead of ==
 
-if x = 5:   # This is assignment, not comparison!
-Fix:
 
-
+# if x = 5:   # assignment! (SyntaxError)
 if x == 5:
-Mistake 2: Forgetting Indentation
+    ...
+Mistake 2: Forgetting indentation
+
 
 if x > 0:
-print("Positive")  #  Not indented
-Fix:
-
+print("Positive")  
+# Fix:
 if x > 0:
     print("Positive")
-Mistake 3: Complex Logic Without Parentheses
+Mistake 3: Complex logic without parentheses
 
-if x > 5 or x < 2 and y == 3:  # May behave unexpectedly
-Fix:
+# May behave unexpectedly:
+if x > 5 or x < 2 and y == 3:
+    ...
 
-
+# Clearer:
 if (x > 5 or x < 2) and y == 3:
-Always test your logic and use print() to debug if needed!
-""",
-order_in_topic=7
+    ...
+Test your logic and use print() to debug if needed.
+""".strip(),
+order_in_topic=7,
 )
 
+# ===================== Topic 7 =====================
+t7 = find_topic("Error Handling")
 
- ## topic 7 Error Handling
-ReadingMaterial.objects.get_or_create(
-    topic="Error Handling",
-    subtopic="Understanding Common Runtime Errors",
-    title="What Are Runtime Errors in Python?",
-    content="""
+# 1) Understanding Common Runtime Errors
+st7_1 = find_subtopic(t7, "Understanding Common Runtime Errors")
+upsert_material(
+    t7, st7_1, "What Are Runtime Errors in Python?",
+    '''
 ## What Are Runtime Errors in Python?
 
-Runtime errors are mistakes that occur while the program is running. These errors will cause your program to crash unless handled properly.
+Runtime errors happen **while the program is running** and will crash your app unless handled.
 
-### Common Runtime Errors:
-- `ZeroDivisionError`: Dividing by zero.
-- `NameError`: Using a variable that hasn't been defined.
-- `TypeError`: Mismatched data types.
-- `IndexError`: Accessing an invalid index in a list.
+**Common examples**
+- `ZeroDivisionError` — dividing by zero
+- `NameError` — using an undefined variable
+- `TypeError` — wrong data types mixed
+- `IndexError` — invalid list index
 
-### Example:
-
+**Example**
+```python
 number = 10
 print(number / 0)  # ZeroDivisionError
-
-
-To handle these, we use try-except blocks, which we'll explore next.
-""",
-order_in_topic=1
+We fix these with try/except, next.
+'''.strip(),
+order_in_topic=1,
 )
 
-ReadingMaterial.objects.get_or_create(
-topic="Error Handling",
-subtopic="Try-Except Block Structure",
-title="Using try-except to Handle Errors",
-content="""
+#2) Try-Except Block Structure
+st7_2 = find_subtopic(t7, "Try-Except Block Structure")
+upsert_material(
+t7, st7_2, "Using try-except to Handle Errors",
+'''
 
 Using try-except to Handle Errors
-Python provides a try-except block to catch and handle errors gracefully without crashing the program.
-
 Syntax:
 
 try:
-    # Code that may cause an error
+    # code that may fail
 except SomeError:
-    # What to do if that error occurs
-Example:
+    # how to handle it
+Example
 
 try:
     result = 10 / 0
 except ZeroDivisionError:
     print("You can't divide by zero!")
-
-Helps prevent unexpected crashes and allows fallback behavior.
-""",
-order_in_topic=2
+'''.strip(),
+order_in_topic=1,
 )
 
-ReadingMaterial.objects.get_or_create(
-topic="Error Handling",
-subtopic="Catching Multiple Exceptions",
-title="Handling Multiple Exceptions",
-content="""
+#3) Catching Multiple Exceptions
+st7_3 = find_subtopic(t7, "Catching Multiple Exceptions")
+upsert_material(
+t7, st7_3, "Handling Multiple Exceptions",
+'''
 
 Handling Multiple Exceptions
-You can handle different types of errors using multiple except blocks or combine them in one.
-
-Multiple excepts:
+Separate handlers:
 
 try:
     x = int("abc")
@@ -1342,31 +1216,28 @@ except ValueError:
     print("Invalid number!")
 except TypeError:
     print("Wrong type!")
-Catching multiple in one block:
+Group related ones:
 
 try:
-    # risky operation
+    risky()
 except (ValueError, TypeError):
     print("An error occurred.")
-Use this when multiple exceptions need the same handling.
-""",
-order_in_topic=3
+'''.strip(),
+order_in_topic=1,
 )
 
-ReadingMaterial.objects.get_or_create(
-topic="Error Handling",
-subtopic="else and finally Clauses in Error Handling",
-title="else and finally in try-except Blocks",
-content="""
+#4) else and finally Clauses in Error Handling
+st7_4 = find_subtopic(t7, "else and finally Clauses in Error Handling")
+upsert_material(
+t7, st7_4, "else and finally in try-except Blocks",
+'''
 
-else and finally in try-except Blocks
-You can extend error handling using else and finally.
+else and finally in try/except
+else: runs only if no exception occurred
 
-else: Runs if no exception was raised.
+finally: runs always (cleanup)
 
-finally: Runs no matter what (useful for cleanup).
 
-Example:
 try:
     x = 5
     print(x / 1)
@@ -1376,254 +1247,226 @@ else:
     print("Division successful.")
 finally:
     print("Finished!")
-Use finally to close files or release resources.
-""",
-order_in_topic=4
+Use finally to close files / release resources.
+'''.strip(),
+order_in_topic=1,
 )
 
-ReadingMaterial.objects.get_or_create(
-topic="Error Handling",
-subtopic="Raising Custom Exceptions",
-title="Raising Your Own Exceptions",
-content="""
+#5) Raising Custom Exceptions
+st7_5 = find_subtopic(t7, "Raising Custom Exceptions")
+upsert_material(
+t7, st7_5, "Raising Your Own Exceptions",
+'''
 
 Raising Your Own Exceptions
-You can trigger errors on purpose using the raise keyword.
-
-Example:
+Use raise to signal invalid states.
 
 def withdraw(amount):
     if amount < 0:
         raise ValueError("Amount must be positive.")
-
-withdraw(-100)
-This is useful for validating user input or enforcing constraints.
-
-You can also create your own exception classes by extending Exception.
-""",
-order_in_topic=5
+You can also define custom classes by subclassing Exception.
+'''.strip(),
+order_in_topic=1,
 )
 
-ReadingMaterial.objects.get_or_create(
-topic="Error Handling",
-subtopic="Using assert Statements",
-title="Using assert for Quick Checks",
-content="""
+#6) Using assert Statements
+st7_6 = find_subtopic(t7, "Using assert Statements")
+upsert_material(
+t7, st7_6, "Using assert for Quick Checks",
+'''
 
 Using assert for Quick Checks
-assert is a keyword that tests if a condition is True. If not, it raises an AssertionError.
-
-Example:
+assert condition, "message" raises AssertionError if the condition is false.
 
 age = 18
 assert age >= 0, "Age cannot be negative"
-Use assertions for internal checks during development, not for handling user errors.
-
-Good for debugging assumptions in your code.
-""",
-order_in_topic=6
+Great for internal invariants during development (not user input validation).
+'''.strip(),
+order_in_topic=1,
 )
 
-ReadingMaterial.objects.get_or_create(
-topic="Error Handling",
-subtopic="Error Messages and Debugging Tools",
-title="Reading Error Messages and Debugging",
-content="""
+#7) Error Messages and Debugging Tools
+st7_7 = find_subtopic(t7, "Error Messages and Debugging Tools")
+upsert_material(
+t7, st7_7, "Reading Error Messages and Debugging",
+'''
 
 Reading Error Messages and Debugging
-When Python shows an error, it gives a traceback. Understanding it is key to fixing issues.
+Understand the traceback to locate the exact failing line:
 
-Example:
 
 Traceback (most recent call last):
   File "main.py", line 2, in <module>
     print(10 / 0)
 ZeroDivisionError: division by zero
-Tools for Debugging:
-Use print() to trace values.
+Helpful tools
 
-Use IDE features like breakpoints and step-through.
+print() tracing
 
-Use the pdb module for interactive debugging.
+IDE breakpoints / step-through
 
-Learn to read tracebacks and isolate the line causing the issue.
-""",
-order_in_topic=7
+pdb module (interactive debugger)
+'''.strip(),
+order_in_topic=1,
 )
 
-##topic 8 loops 
+#===================== Topic 8 =====================
+t8 = find_topic("Loops")
 
+#1) for Loop with range()
+st8_1 = find_subtopic(t8, "for Loop with range()")
+upsert_material(
+t8, st8_1, "Using for Loops with range()",
+'''
 
+for with range()
+Repeat actions a set number of times.
 
-ReadingMaterial.objects.get_or_create(
-    topic="Loops",
-    subtopic="for Loop with range()",
-    title="Using for Loops with range()",
-    content="""
-The `for` loop is commonly used to repeat a block of code a specific number of times. Python’s `range()` function helps generate a sequence of numbers.
-
-Example:
 
 for i in range(5):
-    print(i)
-This prints numbers from 0 to 4.
-""",
-order_in_topic =1
+    print(i)    # 0..4
+'''.strip(),
+order_in_topic=1,
 )
 
-ReadingMaterial.objects.get_or_create(
-topic="Loops",
-subtopic="Iterating Over Lists, Tuples, and Strings",
-title="Looping Through Collections",
-content="""
-Python allows iteration over lists, tuples, and even strings using for.
+#2) Iterating Over Lists, Tuples, and Strings
+st8_2 = find_subtopic(t8, "Iterating Over Lists, Tuples, and Strings")
+upsert_material(
+t8, st8_2, "Looping Through Collections",
+'''
 
-Example:
-
+Looping Through Collections
 
 fruits = ['apple', 'banana', 'cherry']
 for fruit in fruits:
     print(fruit)
-You can also iterate over characters in a string:
 
-for char in "hello":
-    print(char)
-""",
-order_in_topic =2
+for ch in "hello":
+    print(ch)
+'''.strip(),
+order_in_topic=1,
 )
 
-ReadingMaterial.objects.get_or_create(
-topic="Loops",
-subtopic="while Loop and Loop Conditions",
-title="Using while Loops",
-content="""
-while loops continue to run as long as a condition remains True.
+#3) while Loop and Loop Conditions
+st8_3 = find_subtopic(t8, "while Loop and Loop Conditions")
+upsert_material(
+t8, st8_3, "Using while Loops",
+'''
 
-Example:
+while Loops
+Run while a condition stays true.
+
 
 i = 0
 while i < 3:
     print(i)
     i += 1
-Be careful to avoid infinite loops by ensuring your condition eventually becomes False.
-""", 
-order_in_topic =3
+Avoid infinite loops—ensure the condition eventually becomes False.
+'''.strip(),
+order_in_topic=1,
 )
 
-ReadingMaterial.objects.get_or_create(
-topic="Loops",
-subtopic="break, continue, and pass Statements",
-title="Controlling Loops",
-content="""
+#4) break, continue, and pass Statements
+st8_4 = find_subtopic(t8, "break, continue, and pass Statements")
+upsert_material(
+t8, st8_4, "Controlling Loops",
+'''
 
-break exits the loop early.
-
-continue skips the current iteration.
-
-pass is a placeholder and does nothing.
-
-Example:
-
+break, continue, and pass
 
 for i in range(5):
     if i == 3:
-        break
+        break      # stop loop
+    if i == 1:
+        continue   # skip this iteration
+    pass           # placeholder
     print(i)
-""",
-order_in_topic =4
+'''.strip(),
+order_in_topic=1,
 )
 
-ReadingMaterial.objects.get_or_create(
-topic="Loops",
-subtopic="Looping with enumerate() and zip()",
-title="Advanced Looping Tools",
-content="""
+#5) Looping with enumerate() and zip()
+st8_5 = find_subtopic(t8, "Looping with enumerate() and zip()")
+upsert_material(
+t8, st8_5, "Advanced Looping Tools",
+'''
 
-enumerate() gives index and value.
+enumerate() and zip()
 
-zip() allows parallel iteration.
-
-Example:
-
+for idx, val in enumerate(['a','b']):
+    print(idx, val)
 
 names = ['Ana', 'Bob']
-ages = [20, 25]
+ages  = [20, 25]
 for name, age in zip(names, ages):
     print(name, age)
-""",
-order_in_topic =5
+'''.strip(),
+order_in_topic=1,
 )
 
-ReadingMaterial.objects.get_or_create(
-topic="Loops",
-subtopic="Infinite Loops and Loop Safety",
-title="Avoiding Infinite Loops",
-content="""
-An infinite loop runs forever unless interrupted.
+#6) Infinite Loops and Loop Safety
+st8_6 = find_subtopic(t8, "Infinite Loops and Loop Safety")
+upsert_material(
+t8, st8_6, "Avoiding Infinite Loops",
+'''
 
-Example:
-
+Avoiding Infinite Loops
 
 while True:
-    print("This will run forever")
-Use keyboard interrupt (Ctrl+C) to stop in terminal or add conditions to break out safely.
-""",
-order_in_topic =6
+    # ...
+    break  # or condition to exit
+Stop with Ctrl+C in terminal or ensure a proper exit condition.
+'''.strip(),
+order_in_topic=1,
 )
 
-ReadingMaterial.objects.get_or_create(
-topic="Loops",
-subtopic="Comparing for and while Loops",
-title="Choosing Between for and while",
-content="""
+#7) Comparing for and while Loops
+st8_7 = find_subtopic(t8, "Comparing for and while Loops")
+upsert_material(
+t8, st8_7, "Choosing Between for and while",
+'''
 
-Use for when you know how many times to loop.
-
-Use while when the condition depends on runtime state.
-
-Example comparison:
+Choosing Between for and while
+Use for for a known count, while for state-based loops.
 
 
-# for loop
 for i in range(3):
     print(i)
 
-# while loop
 i = 0
 while i < 3:
     print(i)
     i += 1
-""", order_in_topic =7
+'''.strip(),
+order_in_topic=1,
 )
 
+# ===================== Topic 9 =====================
+t9 = find_topic("Nested Loops")
 
+st9_1 = find_subtopic(t9, "Syntax of Nested for Loops")
+upsert_material(
+    t9, st9_1, "Basic Nested for Loops",
+    '''
+## Basic Nested `for` Loops
 
-### topic 9 Nested Loops
+Run an inner loop for each iteration of the outer loop.
 
-ReadingMaterial.objects.get_or_create(
-    topic="Nested Loops",
-    subtopic="Syntax of Nested for Loops",
-    title="Basic Nested for Loops",
-    content="""
-Nested loops allow you to run an inner loop for every iteration of the outer loop.
-
-Example:
-
+```python
 for i in range(2):
     for j in range(3):
         print(i, j)
-""",
-order_in_topic =1
+'''.strip(),
+order_in_topic=1,
 )
 
-ReadingMaterial.objects.get_or_create(
-topic="Nested Loops",
-subtopic="Nested while and Mixed Loops",
-title="Mixing Nested Loops",
-content="""
-You can nest while inside for, or vice versa.
+st9_2 = find_subtopic(t9, "Nested while and Mixed Loops")
+upsert_material(
+t9, st9_2, "Mixing Nested Loops",
+'''
 
-Example:
+Mixing Nested Loops
+You can nest while inside for, or vice-versa.
 
 
 i = 0
@@ -1631,672 +1474,595 @@ while i < 2:
     for j in range(2):
         print(i, j)
     i += 1
-""",
-order_in_topic =2
+'''.strip(),
+order_in_topic=1,
 )
 
-ReadingMaterial.objects.get_or_create(
-topic="Nested Loops",
-subtopic="Printing Patterns (e.g., triangle, pyramid)",
-title="Pattern Printing with Nested Loops",
-content="""
-You can use nested loops to print patterns.
+st9_3 = find_subtopic(t9, "Printing Patterns (e.g., triangle, pyramid)")
+upsert_material(
+t9, st9_3, "Pattern Printing with Nested Loops",
+'''
 
-Example (triangle):
-
+Pattern Printing with Nested Loops
 
 for i in range(1, 6):
     print('*' * i)
-""",
-order_in_topic =3
+'''.strip(),
+order_in_topic=1,
 )
 
-ReadingMaterial.objects.get_or_create(
-topic="Nested Loops",
-subtopic="Matrix Traversal and Processing",
-title="Working with Matrices",
-content="""
-Nested loops are useful for accessing 2D lists (matrices).
+st9_4 = find_subtopic(t9, "Matrix Traversal and Processing")
+upsert_material(
+t9, st9_4, "Working with Matrices",
+'''
 
-Example:
+Working with Matrices
 
-
-matrix = [[1,2], [3,4]]
+matrix = [[1, 2], [3, 4]]
 for row in matrix:
     for val in row:
         print(val)
-""",
-order_in_topic =4
+'''.strip(),
+order_in_topic=1,
 )
 
-ReadingMaterial.objects.get_or_create(
-topic="Nested Loops",
-subtopic="Loop Depth and Performance Considerations",
-title="Performance of Deeply Nested Loops",
-content="""
-More nested loops = more time. A triple nested loop may become very slow for large inputs.
+st9_5 = find_subtopic(t9, "Loop Depth and Performance Considerations")
+upsert_material(
+t9, st9_5, "Performance of Deeply Nested Loops",
+'''
 
-Keep loops shallow when possible, and look for optimizations.
-""",
-order_in_topic =5
+Performance of Deeply Nested Loops
+More nesting → more time. Keep loops shallow when possible and look for algorithmic optimizations.
+'''.strip(),
+order_in_topic=1,
 )
 
-ReadingMaterial.objects.get_or_create(
-topic="Nested Loops",
-subtopic="Managing Inner vs Outer Loop Variables",
-title="Handling Variables in Nested Loops",
-content="""
-Use clear names to avoid confusion between outer and inner loop variables.
+st9_6 = find_subtopic(t9, "Managing Inner vs Outer Loop Variables")
+upsert_material(
+t9, st9_6, "Handling Variables in Nested Loops",
+'''
 
-Example:
-
+Handling Variables in Nested Loops
+Use clear names to avoid confusion.
 
 for row in range(3):
     for col in range(2):
         print(f"Row {row}, Col {col}")
-""",
-order_in_topic =6
+'''.strip(),
+order_in_topic=1,
 )
 
-ReadingMaterial.objects.get_or_create(
-topic="Nested Loops",
-subtopic="Avoiding Logical Errors in Nested Structures",
-title="Common Mistakes in Nested Loops",
-content="""
-Common mistakes:
+st9_7 = find_subtopic(t9, "Avoiding Logical Errors in Nested Structures")
+upsert_material(
+t9, st9_7, "Common Mistakes in Nested Loops",
+'''
 
-Resetting counters inside loops
+Common Mistakes in Nested Loops
+Resetting counters inside loops by accident
 
 Misplaced indentations
 
-Using wrong variable from the wrong loop
+Using the wrong loop variable
 
-Always test your nested loop logic carefully.
-""",
-order_in_topic =7
+Always test your nested logic carefully.
+'''.strip(),
+order_in_topic=1,
 )
 
-##topic 10 String and String Methods
+#===================== Topic 10 =====================
+t10 = find_topic("Strings & String Methods")
 
+st10_1 = find_subtopic(t10, "String Indexing and Slicing")
+upsert_material(
+t10, st10_1, "Accessing and Slicing Strings",
+'''
 
-
-ReadingMaterial.objects.get_or_create(
-    topic="Strings & String Methods",
-    subtopic="String Indexing and Slicing",
-    title="Accessing and Slicing Strings",
-    content="""
-Strings are sequences of characters, so you can access parts of them using indexing or slicing.
-
-Example:
+Accessing and Slicing Strings
 
 text = "Python"
 print(text[0])    # P
 print(text[1:4])  # yth
-Indexing starts at 0. Negative indexes start from the end.
-""",
-order_in_topic =1
+Indexing starts at 0. Negative indexes count from the end.
+'''.strip(),
+order_in_topic=1,
 )
 
-ReadingMaterial.objects.get_or_create(
-topic="Strings & String Methods",
-subtopic="String Immutability",
-title="Understanding String Immutability",
-content="""
-Strings in Python are immutable, meaning you cannot change them in place.
+st10_2 = find_subtopic(t10, "String Immutability")
+upsert_material(
+t10, st10_2, "Understanding String Immutability",
+'''
 
-Example:
-
+String Immutability
+Strings can’t be changed in place.
 
 text = "hello"
-text[0] = "H"  # This will cause an error
-Instead, create a new string:
-
-
-text = "hello"
-text = "H" + text[1:]  # 
-""",
-order_in_topic =2
+# text[0] = "H"  # error
+text = "H" + text[1:]
+'''.strip(),
+order_in_topic=1,
 )
 
-ReadingMaterial.objects.get_or_create(
-topic="Strings & String Methods",
-subtopic="Case Conversion Methods (lower(), upper(), etc.)",
-title="Changing String Case",
-content="""
-Use .lower() and .upper() to convert string case.
+st10_3 = find_subtopic(t10, "Case Conversion Methods (lower(), upper(), etc.)")
+upsert_material(
+t10, st10_3, "Changing String Case",
+'''
 
-Example:
-
+Changing String Case
 
 name = "Alice"
 print(name.upper())  # ALICE
 print(name.lower())  # alice
-""",
-order_in_topic =3
+'''.strip(),
+order_in_topic=1,
 )
 
-ReadingMaterial.objects.get_or_create(
-topic="Strings & String Methods",
-subtopic="Searching and Replacing Text",
-title="Find and Replace in Strings",
-content="""
-You can use .find() and .replace() to search and replace parts of a string.
+st10_4 = find_subtopic(t10, "Searching and Replacing Text")
+upsert_material(
+t10, st10_4, "Find and Replace in Strings",
+'''
 
-Example:
-
+Find and Replace in Strings
 
 msg = "hello world"
-print(msg.find("world"))     # 6
-print(msg.replace("world", "Python"))  # hello Python
-""",
-order_in_topic =4
+print(msg.find("world"))                 # 6
+print(msg.replace("world", "Python"))    # hello Python
+'''.strip(),
+order_in_topic=1,
 )
 
-ReadingMaterial.objects.get_or_create(
-topic="Strings & String Methods",
-subtopic="String Splitting and Joining",
-title="Split and Join Strings",
-content="""
-Use .split() to divide a string and .join() to combine.
+st10_5 = find_subtopic(t10, "String Splitting and Joining")
+upsert_material(
+t10, st10_5, "Split and Join Strings",
+'''
 
-Example:
-
+Split and Join Strings
 
 sentence = "a b c"
-parts = sentence.split(" ")  # ['a', 'b', 'c']
-print("-".join(parts))       # a-b-c
-""",
-order_in_topic =5
+parts = sentence.split(" ")    # ['a','b','c']
+print("-".join(parts))         # a-b-c
+'''.strip(),
+order_in_topic=1,
 )
 
-ReadingMaterial.objects.get_or_create(
-topic="Strings & String Methods",
-subtopic="Validating and Cleaning Input Strings",
-title="Input Validation with Strings",
-content="""
-Use methods like .strip(), .isdigit(), and .isalpha() for validation.
+st10_6 = find_subtopic(t10, "Validating and Cleaning Input Strings")
+upsert_material(
+t10, st10_6, "Input Validation with Strings",
+'''
 
-Example:
-
+Input Validation with Strings
 
 name = " Alice "
-print(name.strip())  # "Alice"
+print(name.strip())            # "Alice"
 print(name.strip().isalpha())  # True
-""",
-order_in_topic =6
+'''.strip(),
+order_in_topic=1,
 )
 
-ReadingMaterial.objects.get_or_create(
-topic="Strings & String Methods",
-subtopic="Escape Sequences and Raw Strings",
-title="Working with Escape Sequences",
-content="""
-Escape characters like \\n, \\t, and \\\" are used for formatting.
+st10_7 = find_subtopic(t10, "Escape Sequences and Raw Strings")
+upsert_material(
+t10, st10_7, "Working with Escape Sequences",
+'''
 
-Example:
-
+Escape Sequences and Raw Strings
 
 print("Hello\\nWorld")
-Use raw strings to ignore escape sequences:
-
-
 path = r"C:\\Users\\Name"
 print(path)
-""",
-order_in_topic =7
+'''.strip(),
+order_in_topic=1,
 )
 
-## Topic11 Lists & Tuples
-ReadingMaterial.objects.get_or_create(
-topic="Lists & Tuples",
-subtopic="Creating and Modifying Lists",
-title="Creating Lists in Python",
-content="""
-Lists are ordered collections of items.
+#===================== Topic 11 =====================
+t11 = find_topic("Lists & Tuples")
 
-Example:
+st11_1 = find_subtopic(t11, "Creating and Modifying Lists")
+upsert_material(
+t11, st11_1, "Creating Lists in Python",
+'''
 
+Creating Lists in Python
 
 fruits = ["apple", "banana"]
 fruits.append("cherry")
 print(fruits)  # ['apple', 'banana', 'cherry']
-""",
-order_in_topic =1
+'''.strip(),
+order_in_topic=1,
 )
 
-ReadingMaterial.objects.get_or_create(
-topic="Lists & Tuples",
-subtopic="List Methods (append(), remove(), sort(), etc.)",
-title="Common List Methods",
-content="""
-List methods include:
+st11_2 = find_subtopic(t11, "List Methods (append(), remove(), sort(), etc.)")
+upsert_material(
+t11, st11_2, "Common List Methods",
+'''
 
-.append() — add item
-
-.remove() — remove item
-
-.sort() — sort the list
-
-Example:
-
+Common List Methods
 
 nums = [3, 1, 2]
+nums.append(5)
+nums.remove(1)
 nums.sort()
-print(nums)  # [1, 2, 3]
-""",
-order_in_topic =2
+print(nums)  # [2, 3, 5]
+'''.strip(),
+order_in_topic=1,
 )
 
-ReadingMaterial.objects.get_or_create(
-topic="Lists & Tuples",
-subtopic="List Indexing, Slicing, and Comprehension",
-title="Advanced List Access",
-content="""
-You can access lists with indexing or slicing. Comprehensions are compact ways to create lists.
+st11_3 = find_subtopic(t11, "List Indexing, Slicing, and Comprehension")
+upsert_material(
+t11, st11_3, "Advanced List Access",
+'''
 
-Example:
+Advanced List Access
 
-print(numbers[1:3])  # [2, 3]
-
+numbers = [1,2,3,4]
+print(numbers[1:3])            # [2, 3]
 squares = [x*x for x in numbers]
-""",
-order_in_topic =3
+'''.strip(),
+order_in_topic=1,
 )
 
-ReadingMaterial.objects.get_or_create(
-topic="Lists & Tuples",
-subtopic="Tuples and Their Immutability",
-title="Working with Tuples",
-content="""
-Tuples are like lists, but immutable (can't be changed).
+st11_4 = find_subtopic(t11, "Tuples and Their Immutability")
+upsert_material(
+t11, st11_4, "Working with Tuples",
+'''
 
-Example:
-
+Working with Tuples
 
 point = (3, 4)
 print(point[0])  # 3
-""",
-order_in_topic =4
+Tuples are immutable (can’t be changed).
+'''.strip(),
+order_in_topic=1,
 )
 
-ReadingMaterial.objects.get_or_create(
-topic="Lists & Tuples",
-subtopic="Tuple Unpacking and Multiple Assignment",
-title="Unpacking Tuples",
-content="""
-Tuple unpacking allows assigning values at once.
+st11_5 = find_subtopic(t11, "Tuple Unpacking and Multiple Assignment")
+upsert_material(
+t11, st11_5, "Unpacking Tuples",
+'''
 
-Example:
+Unpacking Tuples
 
 x, y = (1, 2)
 print(x, y)  # 1 2
-""",
-order_in_topic =5
+'''.strip(),
+order_in_topic=1,
 )
 
-ReadingMaterial.objects.get_or_create(
-topic="Lists & Tuples",
-subtopic="Iterating Through Lists and Tuples",
-title="Looping Over Lists and Tuples",
-content="""
-Use for loops to iterate.
+st11_6 = find_subtopic(t11, "Iterating Through Lists and Tuples")
+upsert_material(
+t11, st11_6, "Looping Over Lists and Tuples",
+'''
 
-Example:
-
+Looping Over Lists and Tuples
 
 colors = ["red", "blue"]
 for color in colors:
     print(color)
-""",
-order_in_topic =6
+'''.strip(),
+order_in_topic=1,
 )
 
-ReadingMaterial.objects.get_or_create(
-topic="Lists & Tuples",
-subtopic="When to Use Lists vs Tuples",
-title="Choosing Between Lists and Tuples",
-content="""
+st11_7 = find_subtopic(t11, "When to Use Lists vs Tuples")
+upsert_material(
+t11, st11_7, "Choosing Between Lists and Tuples",
+'''
+
+Choosing Between Lists and Tuples
 Use lists when you need to modify data.
 
-Use tuples when data should not change (constants).
-""",
-order_in_topic =7
+Use tuples when data should be constant (read-only).
+'''.strip(),
+order_in_topic=1,
 )
 
-##Topic12 Sets
-ReadingMaterial.objects.get_or_create(
-topic="Sets",
-subtopic="Creating and Using Sets",
-title="Working with Sets",
-content="""
-Sets are unordered collections with no duplicates.
+#===================== Topic 12 =====================
+t12 = find_topic("Sets")
 
-Example:
+st12_1 = find_subtopic(t12, "Creating and Using Sets")
+upsert_material(
+t12, st12_1, "Working with Sets",
+'''
+
+Working with Sets
+Unordered collections with no duplicates.
 
 my_set = {1, 2, 3, 3}
 print(my_set)  # {1, 2, 3}
-""", 
-order_in_topic =1
+'''.strip(),
+order_in_topic=1,
 )
 
-ReadingMaterial.objects.get_or_create(
-topic="Sets",
-subtopic="Set Operations (union, intersection, difference, etc.)",
-title="Set Math Operations",
-content="""
-Common set operations:
+st12_2 = find_subtopic(t12, "Set Operations (union, intersection, difference, etc.)")
+upsert_material(
+t12, st12_2, "Set Math Operations",
+'''
 
-| union
-
-& intersection
-
-- difference
-
-Example:
+Set Operations
 
 a = {1, 2, 3}
 b = {2, 3, 4}
-print(a | b)  # {1, 2, 3, 4}
-""",
-order_in_topic =2
+print(a | b)   # union        -> {1,2,3,4}
+print(a & b)   # intersection -> {2,3}
+print(a - b)   # difference   -> {1}
+'''.strip(),
+order_in_topic=1,
 )
 
-ReadingMaterial.objects.get_or_create(
-topic="Sets",
-subtopic="Set Methods (add(), remove(), etc.)",
-title="Modifying Sets",
-content="""
-Use .add(), .remove() to change sets.
+st12_3 = find_subtopic(t12, "Set Methods (add(), remove(), etc.)")
+upsert_material(
+t12, st12_3, "Modifying Sets",
+'''
 
-Example:
-
+Modifying Sets
 
 s = set()
 s.add(5)
 s.remove(5)
-""",
-order_in_topic =3
+'''.strip(),
+order_in_topic=1,
 )
 
-ReadingMaterial.objects.get_or_create(
-topic="Sets",
-subtopic="Working with Duplicates and Membership",
-title="Membership and Uniqueness",
-content="""
-Sets automatically remove duplicates.
+st12_4 = find_subtopic(t12, "Working with Duplicates and Membership")
+upsert_material(
+t12, st12_4, "Membership and Uniqueness",
+'''
 
-Check for item using in:
+Membership and Uniqueness
 
 s = {1, 2, 3}
 print(2 in s)  # True
-""",
-order_in_topic =4
+'''.strip(),
+order_in_topic=1,
 )
 
-ReadingMaterial.objects.get_or_create(
-topic="Sets",
-subtopic="Frozen Sets and Hashing",
-title="Frozen Sets",
-content="""
-Frozen sets are immutable sets.
+st12_5 = find_subtopic(t12, "Frozen Sets and Hashing")
+upsert_material(
+t12, st12_5, "Frozen Sets",
+'''
 
-Example:
+Frozen Sets
+Immutable sets:
 
 fs = frozenset([1, 2, 3])
-Used as dictionary keys or in other sets.
-""",
-order_in_topic =5
+Useful as dict keys or set members.
+'''.strip(),
+order_in_topic=1,
 )
 
-ReadingMaterial.objects.get_or_create(
-topic="Sets",
-subtopic="Performance Benefits of Sets",
-title="Efficiency of Sets",
-content="""
-Set membership tests are fast (O(1)) compared to lists (O(n)).
+st12_6 = find_subtopic(t12, "Performance Benefits of Sets")
+upsert_material(
+t12, st12_6, "Efficiency of Sets",
+'''
 
-Useful for large data.
-""",
-order_in_topic =6
+Efficiency of Sets
+Membership tests in sets are typically O(1) (faster than lists’ O(n)).
+'''.strip(),
+order_in_topic=1,
 )
 
-ReadingMaterial.objects.get_or_create(
-topic="Sets",
-subtopic="Converting Between Sets and Other Types",
-title="Converting Sets",
-content="""
-Convert between list/set/tuple:
+st12_7 = find_subtopic(t12, "Converting Between Sets and Other Types")
+upsert_material(
+t12, st12_7, "Converting Sets",
+'''
 
+Converting Sets
 
 s = set([1, 2, 3])
 l = list(s)
-""",
-order_in_topic =7
+t = tuple(s)
+'''.strip(),
+order_in_topic=1,
 )
 
-##Topic13 Functions
-ReadingMaterial.objects.get_or_create(
-topic="Functions",
-subtopic="Defining Functions with def",
-title="Creating a Function",
-content="""
-Use def to define functions.
 
-Example:
+# ===================== Topic 13 =====================
+t13 = find_topic("Functions")
 
+st13_1 = find_subtopic(t13, "Defining Functions with def")
+upsert_material(
+    t13, st13_1, "Creating a Function",
+    '''
+## Creating a Function
+
+Use `def` to define functions.
+
+```python
 def greet():
     print("Hello")
-""",
-order_in_topic =1
+'''.strip(),
+order_in_topic=1,
 )
 
-ReadingMaterial.objects.get_or_create(
-topic="Functions",
-subtopic="Parameters, Arguments, and Return Values",
-title="Function Inputs and Outputs",
-content="""
+st13_2 = find_subtopic(t13, "Parameters, Arguments, and Return Values")
+upsert_material(
+t13, st13_2, "Function Inputs and Outputs",
+'''
+
+Function Inputs and Outputs
 Functions can take inputs (parameters) and return values.
-
-Example:
-
 
 def add(a, b):
     return a + b
-""",
-order_in_topic =2
+'''.strip(),
+order_in_topic=1,
 )
 
-ReadingMaterial.objects.get_or_create(
-topic="Functions",
-subtopic="Variable Scope and global/nonlocal",
-title="Understanding Scope",
-content="""
+st13_3 = find_subtopic(t13, "Variable Scope and global/nonlocal")
+upsert_material(
+t13, st13_3, "Understanding Scope",
+'''
+
+Understanding Scope
 Variables inside functions are local.
-
 Use global or nonlocal to modify outer variables.
-
-Example:
 
 x = 10
 def change():
     global x
     x = 5
-""",
-order_in_topic =3
+'''.strip(),
+order_in_topic=1,
 )
 
-ReadingMaterial.objects.get_or_create(
-topic="Functions",
-subtopic="Default and Keyword Arguments",
-title="Optional Parameters",
-content="""
-Functions can have default values.
+st13_4 = find_subtopic(t13, "Default and Keyword Arguments")
+upsert_material(
+t13, st13_4, "Optional Parameters",
+'''
 
-Example:
+Optional Parameters
+Functions can have default values and keyword arguments.
 
 def greet(name="Guest"):
     print(f"Hello, {name}")
-""",
-order_in_topic =4
+'''.strip(),
+order_in_topic=1,
 )
 
-ReadingMaterial.objects.get_or_create(
-topic="Functions",
-subtopic="Docstrings and Function Annotations",
-title="Documenting Functions",
-content="""
-Use docstrings to explain purpose:
+st13_5 = find_subtopic(t13, "Docstrings and Function Annotations")
+upsert_material(
+t13, st13_5, "Documenting Functions",
+'''
+
+Documenting Functions
+Use docstrings to explain purpose, and annotations for type hints.
 
 def greet():
-    \"\"\"This greets the user.\"\"\"
+    """This greets the user."""
     print("Hi")
-Annotations add type hints:
 
 def add(a: int, b: int) -> int:
     return a + b
-""",
-order_in_topic =5
+'''.strip(),
+order_in_topic=1,
 )
 
-ReadingMaterial.objects.get_or_create(
-topic="Functions",
-subtopic="Lambda Functions and Anonymous Functions",
-title="Using Lambda Functions",
-content="""
-Lambda functions are short, inline functions.
+st13_6 = find_subtopic(t13, "Lambda Functions and Anonymous Functions")
+upsert_material(
+t13, st13_6, "Using Lambda Functions",
+'''
 
-Example:
-
+Using Lambda Functions
+Short, inline functions.
 
 add = lambda x, y: x + y
 print(add(2, 3))
-""",
-order_in_topic =6
+'''.strip(),
+order_in_topic=1,
 )
 
-ReadingMaterial.objects.get_or_create(
-topic="Functions",
-subtopic="Higher-Order Functions and Functional Programming Basics",
-title="Advanced Functional Tools",
-content="""
-Functions like map(), filter(), reduce() use other functions.
+st13_7 = find_subtopic(t13, "Higher-Order Functions and Functional Programming Basics")
+upsert_material(
+t13, st13_7, "Advanced Functional Tools",
+'''
 
-Example:
+Advanced Functional Tools
+map(), filter(), reduce() consume functions.
 
 nums = [1, 2, 3]
 squares = list(map(lambda x: x**2, nums))
-""",
-order_in_topic =7
+'''.strip(),
+order_in_topic=1,
 )
 
-##Topic14 Dictionaries
-ReadingMaterial.objects.get_or_create(
-topic="Dictionaries",
-subtopic="Creating and Accessing Dictionary Items",
-title="Using Dictionaries",
-content="""
-Dictionaries store key-value pairs.
+#===================== Topic 14 =====================
+t14 = find_topic("Dictionaries")
 
-Example:
+st14_1 = find_subtopic(t14, "Creating and Accessing Dictionary Items")
+upsert_material(
+t14, st14_1, "Using Dictionaries",
+'''
+
+Using Dictionaries
+Key–value storage.
 
 person = {"name": "Alice", "age": 25}
 print(person["name"])
-""",
-order_in_topic =1
+'''.strip(),
+order_in_topic=1,
 )
 
-ReadingMaterial.objects.get_or_create(
-topic="Dictionaries",
-subtopic="Adding, Updating, and Deleting Keys",
-title="Modifying Dictionaries",
-content="""
-You can add, change, or delete key-value pairs.
+st14_2 = find_subtopic(t14, "Adding, Updating, and Deleting Keys")
+upsert_material(
+t14, st14_2, "Modifying Dictionaries",
+'''
 
-Example:
+Modifying Dictionaries
+Add, change, or delete key–value pairs.
 
+person = {"name": "Alice", "age": 25}
 person["city"] = "Cebu"
 del person["age"]
-""",
-order_in_topic =2
+'''.strip(),
+order_in_topic=1,
 )
 
-ReadingMaterial.objects.get_or_create(
-topic="Dictionaries",
-subtopic="Looping Through Keys, Values, and Items",
-title="Iterating Over Dictionaries",
-content="""
-Use .items(), .keys(), .values() to loop.
+st14_3 = find_subtopic(t14, "Looping Through Keys, Values, and Items")
+upsert_material(
+t14, st14_3, "Iterating Over Dictionaries",
+'''
 
-Example:
+Iterating Over Dictionaries
 
 for key, value in person.items():
     print(key, value)
-""",
-order_in_topic =3
+'''.strip(),
+order_in_topic=1,
 )
 
-ReadingMaterial.objects.get_or_create(
-topic="Dictionaries",
-subtopic="Dictionary Methods (get(), pop(), update(), etc.)",
-title="Common Dictionary Methods",
-content="""
-Examples:
+st14_4 = find_subtopic(t14, "Dictionary Methods (get(), pop(), update(), etc.)")
+upsert_material(
+t14, st14_4, "Common Dictionary Methods",
+'''
+
+Common Dictionary Methods
 
 person.get("name")
-person.pop("city")
+person.pop("city", None)
 person.update({"age": 30})
-""",
-order_in_topic =4
-
+'''.strip(),
+order_in_topic=1,
 )
 
-ReadingMaterial.objects.get_or_create(
-topic="Dictionaries",
-subtopic="Nesting Dictionaries",
-title="Nested Dictionaries",
-content="""
-Dictionaries can hold other dictionaries.
+st14_5 = find_subtopic(t14, "Nesting Dictionaries")
+upsert_material(
+t14, st14_5, "Nested Dictionaries",
+'''
 
-Example:
+Nested Dictionaries
 
 students = {
     "A": {"math": 90},
     "B": {"math": 85}
 }
-""",
-order_in_topic =5
+'''.strip(),
+order_in_topic=1,
 )
 
-ReadingMaterial.objects.get_or_create(
-topic="Dictionaries",
-subtopic="Using Dictionaries for Counting (e.g., frequency maps)",
-title="Dictionaries as Counters",
-content="""
-Use dictionaries to count values.
+st14_6 = find_subtopic(t14, "Using Dictionaries for Counting (e.g., frequency maps)")
+upsert_material(
+t14, st14_6, "Dictionaries as Counters",
+'''
 
-Example:
-
+Dictionaries as Counters
 
 text = "hello"
 freq = {}
 for char in text:
     freq[char] = freq.get(char, 0) + 1
-""",
-order_in_topic =6
+'''.strip(),
+order_in_topic=1,
 )
 
-ReadingMaterial.objects.get_or_create(
-topic="Dictionaries",
-subtopic="Dictionary Comprehensions",
-title="Comprehensions with Dictionaries",
-content="""
-You can create dictionaries with a single line.
+st14_7 = find_subtopic(t14, "Dictionary Comprehensions")
+upsert_material(
+t14, st14_7, "Comprehensions with Dictionaries",
+'''
 
-Example:
-
+Comprehensions with Dictionaries
 
 squares = {x: x**2 for x in range(5)}
-""",
-order_in_topic =7
+'''.strip(),
+order_in_topic=1,
 )
 
+if __name__ == "__main__":
+    run()
+ 
