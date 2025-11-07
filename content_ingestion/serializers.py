@@ -36,29 +36,39 @@ class DocumentSerializer(serializers.ModelSerializer):
 class DocumentChunkSerializer(serializers.ModelSerializer):
     # Serializer for document chunks with token information
     book_title = serializers.SerializerMethodField()
+    text_preview = serializers.SerializerMethodField()
     
     class Meta:
         model = DocumentChunk
         fields = [
             'id', 'chunk_type', 'text', 'page_number', 'order_in_doc',
-            'token_count'
+            'token_count', 'text_preview', 'book_title'
         ]
+    
+    def get_book_title(self, obj):
+        return obj.document.title if obj.document else None
+    
+    def get_text_preview(self, obj):
+        """Return first 100 characters of text"""
+        return obj.text[:100] + "..." if len(obj.text) > 100 else obj.text
 
 class DocumentChunkSummarySerializer(serializers.ModelSerializer):
     # Lightweight serializer for chunk summaries (without full text)
-    text_preview = serializers.SerializerMethodField()
     book_title = serializers.SerializerMethodField()
     
     class Meta:
         model = DocumentChunk
         fields = [
             'id', 'chunk_type', 'page_number', 'order_in_doc',
-            'token_count', 'text_preview'
+            'token_count', 'text_preview', 'book_title'
         ]
     
     def get_text_preview(self, obj):
         """Return first 100 characters of text"""
         return obj.text[:100] + "..." if len(obj.text) > 100 else obj.text
+    
+    def get_book_title(self, obj):
+        return obj.document.title if obj.document else None
 
 class GameZoneSerializer(serializers.ModelSerializer):
     topics_count = serializers.SerializerMethodField()
@@ -140,7 +150,6 @@ class SubtopicSerializer(serializers.ModelSerializer):
             return False
     
     def update(self, instance, validated_data):
-        # Custom update to regenerate embeddings when intent fields change
         # Check if intent fields are being updated
         concept_intent_changed = (
             'concept_intent' in validated_data and 
@@ -154,89 +163,8 @@ class SubtopicSerializer(serializers.ModelSerializer):
         # Update the instance
         instance = super().update(instance, validated_data)
         
-        # Regenerate embeddings if intent fields changed
-        if concept_intent_changed or code_intent_changed:
-            from django.core.cache import cache
-            from multiprocessing import Pool
-            import psutil
-            import logging
-            
-            logger = logging.getLogger(__name__)
-            cache_key = f'subtopic_embedding_status_{instance.id}'
-            cache.set(cache_key, 'pending', timeout=3600)
-            
-            # Determine optimal number of processes
-            cpu_count = psutil.cpu_count(logical=True)
-            max_workers = min(2, max(1, cpu_count - 1))
-            
-            def generate_embedding(args):
-                subtopic_id, model_type = args
-                from content_ingestion.models import Subtopic
-                from content_ingestion.helpers.embedding.generator import EmbeddingGenerator
-                
-                print(f"\n🔄 Generating {model_type} embedding for subtopic {subtopic_id}...")
-                
-                try:
-                    # Get fresh instance to avoid process sharing issues
-                    subtopic = Subtopic.objects.get(id=subtopic_id)
-                    generator = EmbeddingGenerator()
-                    
-                    if model_type == 'concept':
-                        text = f"{subtopic.topic.name} - {subtopic.name}: {subtopic.concept_intent}"
-                        print(f"   📝 Processing concept text: {text[:100]}...")
-                        result = generator.generate_embedding(text, chunk_type='Concept')
-                    else:  # code
-                        text = f"Python task: {subtopic.topic.name} - {subtopic.name}. Use: {subtopic.code_intent}"
-                        print(f"   💻 Processing code text: {text[:100]}...")
-                        result = generator.generate_embedding(text, chunk_type='Code')
-                    
-                    success = bool(result.get('vector'))
-                    print(f"{'✅' if success else '❌'} {model_type.title()} embedding {'generated' if success else 'failed'}")
-                    return model_type, result.get('vector')
-                except Exception as e:
-                    print(f"❌ Error generating {model_type} embedding: {str(e)}")
-                    logger.error(f"Error generating {model_type} embedding for subtopic {subtopic_id}: {e}")
-                    return model_type, None
-            
-            try:
-                print("\n🧹 Cleaning up old embeddings...")
-                # Clean up old embeddings
-                from content_ingestion.models import Embedding
-                Embedding.objects.filter(subtopic=instance).delete()
-                
-                # Prepare tasks for both embeddings
-                tasks = [
-                    (instance.id, 'concept'),
-                    (instance.id, 'code')
-                ]
-                
-                print("\n🚀 Starting parallel embedding generation...")
-                # Execute tasks in parallel using the separate worker module
-                from content_ingestion.embedding_worker import generate_embedding_task
-                with Pool(processes=max_workers) as pool:
-                    results = pool.map(generate_embedding_task, tasks)
-                    
-                print("\n📊 Processing embedding results...")
-                # Process results
-                vectors = dict(results)
-                
-                if any(vectors.values()):
-                    Embedding.objects.create(
-                        subtopic=instance,
-                        content_type='subtopic',
-                        model_type='dual',
-                        model_name='dual:minilm+codebert',
-                        dimension=384,
-                        minilm_vector=vectors.get('concept'),
-                        codebert_vector=vectors.get('code')
-                    )
-                    cache.set(cache_key, 'completed', timeout=3600)
-                else:
-                    cache.set(cache_key, 'failed: No embeddings generated', timeout=3600)
-                    
-            except Exception as e:
-                logger.error(f"Failed to generate dual embeddings for subtopic {instance.id}: {e}")
-                cache.set(cache_key, f'failed: {str(e)}', timeout=3600)
+        # The signal will handle embedding regeneration if intent fields changed
+        # No need to do it here to avoid duplication
         
         return instance
     

@@ -1,0 +1,1484 @@
+[
+  {
+    "question_text": "A function decorator that provides single-dispatch generic functions.",
+    "correct_answer": "singledispatch",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Comparing for and while Loops",
+    "game_data": {
+      "explanation": "The singledispatch decorator allows a function to have different implementations based on the type of the first argument, enabling polymorphic behavior.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:06:03.172521+00:00",
+    "exported_at": "2025-11-04T01:06:03.193091"
+  },
+  {
+    "question_text": "A concurrent execution unit similar to Thread but using separate processes.",
+    "correct_answer": "Process",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Comparing for and while Loops",
+    "game_data": {
+      "explanation": "The Process class in multiprocessing creates separate system processes for parallel execution, offering true parallelism unlike threads in Python.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:06:03.283976+00:00",
+    "exported_at": "2025-11-04T01:06:03.288513"
+  },
+  {
+    "question_text": "A sequence representing a byte value using hexadecimal notation.",
+    "correct_answer": "hexadecimal",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Escape Sequences and Raw Strings",
+    "game_data": {
+      "explanation": "Hexadecimal escape sequences like \\x00 represent byte values not in printable ASCII range.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:06:03.098461+00:00",
+    "exported_at": "2025-11-04T01:06:03.100468"
+  },
+  {
+    "question_text": "The process of delimiting strings when quotes appear inside.",
+    "correct_answer": "escaping",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Escape Sequences and Raw Strings",
+    "game_data": {
+      "explanation": "Escaping involves using backslashes to include quote characters inside string delimiters.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:06:03.463875+00:00",
+    "exported_at": "2025-11-04T01:06:03.465874"
+  },
+  {
+    "question_text": "A function that yields items and is a shortcut for Iterator.",
+    "correct_answer": "Generator",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "for Loop with range()",
+    "game_data": {
+      "explanation": "A generator is a function that produces a sequence of results, yielding one value at a time, and is annotated as Iterator[T] in type hints.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:06:05.078710+00:00",
+    "exported_at": "2025-11-04T01:06:05.082702"
+  },
+  {
+    "question_text": "The protocol that makes an object iterable in Python.",
+    "correct_answer": "Iterator",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "for Loop with range()",
+    "game_data": {
+      "explanation": "The iterator protocol defines how objects should return their elements one at a time, using __iter__ and __next__ methods.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:06:05.175945+00:00",
+    "exported_at": "2025-11-04T01:06:05.179467"
+  },
+  {
+    "question_text": "A property of objects that allows them to be used as dictionary keys.",
+    "correct_answer": "Hashable",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "for Loop with range()",
+    "game_data": {
+      "explanation": "Hashable objects have a fixed hash value and can be used in sets or as dictionary keys, like integers or strings.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:06:05.330130+00:00",
+    "exported_at": "2025-11-04T01:06:05.333130"
+  },
+  {
+    "question_text": "A function decorator that allows different implementations based on argument type.",
+    "correct_answer": "singledispatch",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "for Loop with range()",
+    "game_data": {
+      "explanation": "singledispatch is a decorator that enables function overloading by dispatching to different implementations depending on the type of the first argument.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:06:05.471550+00:00",
+    "exported_at": "2025-11-04T01:06:05.478065"
+  },
+  {
+    "question_text": "A decorator that enables generic function overloading.",
+    "correct_answer": "singledispatch",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Infinite Loops and Loop Safety",
+    "game_data": {
+      "explanation": "singledispatch allows different function implementations based on the type of the first argument.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:06:14.006525+00:00",
+    "exported_at": "2025-11-04T01:06:14.011043"
+  },
+  {
+    "question_text": "Property allowing an object to be used in sets or as dictionary keys.",
+    "correct_answer": "Hashable",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Infinite Loops and Loop Safety",
+    "game_data": {
+      "explanation": "Hashable objects have a constant hash value and can be compared for equality, enabling set and dict usage.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:06:14.096617+00:00",
+    "exported_at": "2025-11-04T01:06:14.101141"
+  },
+  {
+    "question_text": "A protocol method that makes an object iterable.",
+    "correct_answer": "iter",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Infinite Loops and Loop Safety",
+    "game_data": {
+      "explanation": "The __iter__ method returns an iterator object, enabling for-loops and other iteration contexts.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:06:14.192314+00:00",
+    "exported_at": "2025-11-04T01:06:14.195310"
+  },
+  {
+    "question_text": "A syntactic form for building sequences quickly and readably.",
+    "correct_answer": "listcomps",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Iterating Over Lists, Tuples, and Strings",
+    "game_data": {
+      "explanation": "List comprehensions, often called listcomps, provide a concise way to create lists from sequences or iterables.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:06:17.485738+00:00",
+    "exported_at": "2025-11-04T01:06:17.491262"
+  },
+  {
+    "question_text": "The process of extracting fields from a tuple into separate variables.",
+    "correct_answer": "unpacking",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Iterating Over Lists, Tuples, and Strings",
+    "game_data": {
+      "explanation": "Tuple unpacking safely assigns elements of a tuple to individual variables, improving code readability.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:06:17.589388+00:00",
+    "exported_at": "2025-11-04T01:06:17.593388"
+  },
+  {
+    "question_text": "A powerful syntax feature for extracting parts of sequences like lists or strings.",
+    "correct_answer": "slicing",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Iterating Over Lists, Tuples, and Strings",
+    "game_data": {
+      "explanation": "Slicing allows you to access subsequences of a sequence by specifying start, stop, and step indices.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:06:17.707475+00:00",
+    "exported_at": "2025-11-04T01:06:17.712981"
+  },
+  {
+    "question_text": "A method for matching and deconstructing sequences in Python 3.10 and later.",
+    "correct_answer": "destructuring",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Iterating Over Lists, Tuples, and Strings",
+    "game_data": {
+      "explanation": "Destructuring in pattern matching with match/case enables unpacking sequences into variables based on structure.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:06:17.810722+00:00",
+    "exported_at": "2025-11-04T01:06:17.813739"
+  },
+  {
+    "question_text": "An alternative to lists for storing large sequences of numbers efficiently.",
+    "correct_answer": "arrays",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Iterating Over Lists, Tuples, and Strings",
+    "game_data": {
+      "explanation": "Arrays are specialized sequences that store numeric data more compactly than lists, improving performance.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:06:17.907965+00:00",
+    "exported_at": "2025-11-04T01:06:17.910962"
+  },
+  {
+    "question_text": "A lazy evaluation construct for creating sequences without building a full list.",
+    "correct_answer": "genexps",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Iterating Over Lists, Tuples, and Strings",
+    "game_data": {
+      "explanation": "Generator expressions, or genexps, produce items on demand, saving memory compared to list comprehensions.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:06:17.993660+00:00",
+    "exported_at": "2025-11-04T01:06:17.996728"
+  },
+  {
+    "question_text": "A function that yields values and can be paused and resumed.",
+    "correct_answer": "generator",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Loop Depth and Performance Considerations",
+    "game_data": {
+      "explanation": "A generator is a special function that uses yield to produce a sequence of values, maintaining its state between successive calls.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:06:18.203791+00:00",
+    "exported_at": "2025-11-04T01:06:18.210301"
+  },
+  {
+    "question_text": "A variable used to annotate generic types in function signatures.",
+    "correct_answer": "TypeVar",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Loop Depth and Performance Considerations",
+    "game_data": {
+      "explanation": "TypeVar is used in type hints to define a placeholder for a type, allowing functions to be generic over multiple types while maintaining clarity.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:06:18.366388+00:00",
+    "exported_at": "2025-11-04T01:06:18.369891"
+  },
+  {
+    "question_text": "Generator that yields items without consuming values.",
+    "correct_answer": "generator",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Looping with enumerate() and zip()",
+    "game_data": {
+      "explanation": "A generator is a special iterator that produces values on demand using yield statements, conserving memory during iteration.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:06:19.356060+00:00",
+    "exported_at": "2025-11-04T01:06:19.359584"
+  },
+  {
+    "question_text": "Type variable used for covariant type parameters.",
+    "correct_answer": "covariant",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Looping with enumerate() and zip()",
+    "game_data": {
+      "explanation": "Covariant type variables allow subtyping relationships where a container of subtypes can be used where a container of supertypes is expected.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:06:19.455507+00:00",
+    "exported_at": "2025-11-04T01:06:19.460027"
+  },
+  {
+    "question_text": "A function that yields values but does not consume or return them.",
+    "correct_answer": "generator",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Managing Inner vs Outer Loop Variables",
+    "game_data": {
+      "explanation": "Generators produce values one at a time using yield, allowing efficient iteration without storing all values in memory.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:06:27.448817+00:00",
+    "exported_at": "2025-11-04T01:06:27.453823"
+  },
+  {
+    "question_text": "The protocol that allows objects to be traversed in loops.",
+    "correct_answer": "iterable",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Managing Inner vs Outer Loop Variables",
+    "game_data": {
+      "explanation": "Iterable objects implement __iter__ method, enabling them to be used in for loops and other iteration contexts.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:06:27.543012+00:00",
+    "exported_at": "2025-11-04T01:06:27.547538"
+  },
+  {
+    "question_text": "A function decorator that provides different implementations based on argument type.",
+    "correct_answer": "singledispatch",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Managing Inner vs Outer Loop Variables",
+    "game_data": {
+      "explanation": "singledispatch allows a function to have different behaviors depending on the type of its first argument, enabling polymorphism.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:06:27.716764+00:00",
+    "exported_at": "2025-11-04T01:06:27.721277"
+  },
+  {
+    "question_text": "A type variable used for generic programming with multiple type parameters.",
+    "correct_answer": "typevar",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Managing Inner vs Outer Loop Variables",
+    "game_data": {
+      "explanation": "TypeVar creates type variables for generic functions and classes, allowing flexible type annotations while maintaining type safety.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:06:27.807497+00:00",
+    "exported_at": "2025-11-04T01:06:27.811001"
+  },
+  {
+    "question_text": "The protocol that enables objects to be iterated over in loops.",
+    "correct_answer": "iterable",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Matrix Traversal and Processing",
+    "game_data": {
+      "explanation": "An iterable is any Python object capable of returning its elements one at a time, implementing __iter__ method for iteration support.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:06:31.909384+00:00",
+    "exported_at": "2025-11-04T01:06:31.913391"
+  },
+  {
+    "question_text": "Type variable naming convention for contravariant parameters.",
+    "correct_answer": "Tin",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Matrix Traversal and Processing",
+    "game_data": {
+      "explanation": "T_in is the suggested naming convention for contravariant type variables in generic classes, indicating input-oriented type parameters.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:06:32.046653+00:00",
+    "exported_at": "2025-11-04T01:06:32.051173"
+  },
+  {
+    "question_text": "Method that removes and returns the last inserted dictionary item.",
+    "correct_answer": "popitem",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Matrix Traversal and Processing",
+    "game_data": {
+      "explanation": "The popitem method removes and returns the most recently inserted key-value pair from a dictionary as a tuple.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:06:32.139492+00:00",
+    "exported_at": "2025-11-04T01:06:32.142490"
+  },
+  {
+    "question_text": "A design pattern for traversing collections without exposing their structure.",
+    "correct_answer": "Iterator",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Nested while and Mixed Loops",
+    "game_data": {
+      "explanation": "The Iterator pattern allows sequential access to elements in a collection, keeping the internal representation hidden from the user.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:06:32.703333+00:00",
+    "exported_at": "2025-11-04T01:06:32.707330"
+  },
+  {
+    "question_text": "A decorator that enables generic function overloading based on argument types.",
+    "correct_answer": "singledispatch",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Nested while and Mixed Loops",
+    "game_data": {
+      "explanation": "singledispatch allows a function to have different implementations for various data types, promoting flexible and clean code design.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:06:32.895113+00:00",
+    "exported_at": "2025-11-04T01:06:32.899647"
+  },
+  {
+    "question_text": "A decorator that caches function results to optimize repeated calls.",
+    "correct_answer": "lrucache",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Printing Patterns (e.g., triangle, pyramid)",
+    "game_data": {
+      "explanation": "The lru_cache decorator from functools memoizes function outputs, speeding up programs by avoiding redundant computations.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:06:33.890782+00:00",
+    "exported_at": "2025-11-04T01:06:33.894294"
+  },
+  {
+    "question_text": "A type variable that can accept subtypes in generic classes.",
+    "correct_answer": "covariant",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Printing Patterns (e.g., triangle, pyramid)",
+    "game_data": {
+      "explanation": "Covariant type parameters allow a generic class to accept more specific types, preserving subtype relationships in type hierarchies.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:06:34.074220+00:00",
+    "exported_at": "2025-11-04T01:06:34.077744"
+  },
+  {
+    "question_text": "The property that determines if an object can be used as a dictionary key.",
+    "correct_answer": "hashable",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Printing Patterns (e.g., triangle, pyramid)",
+    "game_data": {
+      "explanation": "Hashable objects have a fixed hash value and can be compared for equality, making them suitable as keys in dictionaries and elements in sets.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:06:34.170082+00:00",
+    "exported_at": "2025-11-04T01:06:34.173084"
+  },
+  {
+    "question_text": "A cache decorator that can be configured with size and type checking.",
+    "correct_answer": "lrucache",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Searching and Replacing Text",
+    "game_data": {
+      "explanation": "lrucache is a decorator that memoizes function results with options for maximum cache size and type differentiation.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:06:41.970505+00:00",
+    "exported_at": "2025-11-04T01:06:41.974512"
+  },
+  {
+    "question_text": "Type variables used for generic classes with covariance or contravariance.",
+    "correct_answer": "TypeVar",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Searching and Replacing Text",
+    "game_data": {
+      "explanation": "TypeVar creates type variables that support variance annotations, enabling flexible generic programming in type hints.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:06:42.072612+00:00",
+    "exported_at": "2025-11-04T01:06:42.075614"
+  },
+  {
+    "question_text": "A method that removes and returns the last inserted key-value pair.",
+    "correct_answer": "popitem",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Searching and Replacing Text",
+    "game_data": {
+      "explanation": "popitem is a dictionary method that removes and returns the most recently added item as a tuple of key and value.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:06:42.160436+00:00",
+    "exported_at": "2025-11-04T01:06:42.165434"
+  },
+  {
+    "question_text": "A string property preventing in-place modification.",
+    "correct_answer": "immutability",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "String Immutability",
+    "game_data": {
+      "explanation": "Strings in Python cannot be changed after creation; any modification creates a new string object.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:06:44.617302+00:00",
+    "exported_at": "2025-11-04T01:06:44.620308"
+  },
+  {
+    "question_text": "A function decorator that caches recent calls.",
+    "correct_answer": "lrucache",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "String Immutability",
+    "game_data": {
+      "explanation": "The lru_cache decorator from functools memoizes function results to optimize repeated calls with same arguments.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:06:44.719408+00:00",
+    "exported_at": "2025-11-04T01:06:44.722415"
+  },
+  {
+    "question_text": "An object that produces sequence elements on demand.",
+    "correct_answer": "generator",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "String Immutability",
+    "game_data": {
+      "explanation": "Generators yield values one at a time, maintaining state between calls for memory-efficient iteration.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:06:44.860233+00:00",
+    "exported_at": "2025-11-04T01:06:44.865227"
+  },
+  {
+    "question_text": "A decorator that enables function overloading by type.",
+    "correct_answer": "singledispatch",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "String Immutability",
+    "game_data": {
+      "explanation": "singledispatch allows different function implementations based on the type of the first argument.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:06:44.950759+00:00",
+    "exported_at": "2025-11-04T01:06:44.953767"
+  },
+  {
+    "question_text": "The protocol for making objects iterable in Python.",
+    "correct_answer": "iterator",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "String Immutability",
+    "game_data": {
+      "explanation": "Iterators implement __next__ to return successive items, supporting sequential access to collection elements.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:06:45.044632+00:00",
+    "exported_at": "2025-11-04T01:06:45.049831"
+  },
+  {
+    "question_text": "The process of delegating formatting tasks to expressions.",
+    "correct_answer": "delegation",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "String Splitting and Joining",
+    "game_data": {
+      "explanation": "In Python, delegation allows formatting operations to be handled by specific expressions rather than manual string manipulation.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:06:46.217732+00:00",
+    "exported_at": "2025-11-04T01:06:46.221482"
+  },
+  {
+    "question_text": "A syntax that benefits from inline expression evaluation.",
+    "correct_answer": "fstring",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "String Splitting and Joining",
+    "game_data": {
+      "explanation": "F-strings provide a concise way to embed expressions directly within string literals for formatting.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:06:46.358023+00:00",
+    "exported_at": "2025-11-04T01:06:46.362023"
+  },
+  {
+    "question_text": "Special methods used for object representation.",
+    "correct_answer": "methods",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "String Splitting and Joining",
+    "game_data": {
+      "explanation": "Python uses special methods to define how objects are represented as strings and support various operations.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:06:46.453130+00:00",
+    "exported_at": "2025-11-04T01:06:46.456130"
+  },
+  {
+    "question_text": "The advantage of using formatted string literals.",
+    "correct_answer": "benefits",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "String Splitting and Joining",
+    "game_data": {
+      "explanation": "Formatted string literals offer advantages like readability and performance when creating string representations.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:06:46.544987+00:00",
+    "exported_at": "2025-11-04T01:06:46.548496"
+  },
+  {
+    "question_text": "Creating string views through special method implementation.",
+    "correct_answer": "indexing",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "String Splitting and Joining",
+    "game_data": {
+      "explanation": "Indexing allows accessing specific portions of strings through special methods that define object behavior.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:06:46.639251+00:00",
+    "exported_at": "2025-11-04T01:06:46.643258"
+  },
+  {
+    "question_text": "A decorator that enables generic function overloading based on argument types.",
+    "correct_answer": "singledispatch",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "String Indexing and Slicing",
+    "game_data": {
+      "explanation": "The singledispatch decorator allows a function to have different implementations depending on the type of its first argument.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:06:47.360271+00:00",
+    "exported_at": "2025-11-04T01:06:47.364266"
+  },
+  {
+    "question_text": "A type variable property where subtypes are accepted in place of supertypes.",
+    "correct_answer": "covariant",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "String Indexing and Slicing",
+    "game_data": {
+      "explanation": "Covariant type variables allow a generic type to accept subtypes, preserving the inheritance relationship in type parameters.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:06:47.468363+00:00",
+    "exported_at": "2025-11-04T01:06:47.472370"
+  },
+  {
+    "question_text": "A method that removes and returns the last inserted key-value pair from a dictionary.",
+    "correct_answer": "popitem",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "String Indexing and Slicing",
+    "game_data": {
+      "explanation": "The popitem method removes the most recently added item from a dictionary and returns it as a key-value tuple.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:06:47.562023+00:00",
+    "exported_at": "2025-11-04T01:06:47.565023"
+  },
+  {
+    "question_text": "A type variable that can accept any subtype in generic definitions.",
+    "correct_answer": "covariant",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Syntax of Nested for Loops",
+    "game_data": {
+      "explanation": "Covariant type variables allow a generic type to accept subtypes, enabling more flexible type hierarchies in Python's type system.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:06:56.327697+00:00",
+    "exported_at": "2025-11-04T01:06:56.330923"
+  },
+  {
+    "question_text": "The protocol that allows objects to be iterated over using for loops.",
+    "correct_answer": "iterable",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Syntax of Nested for Loops",
+    "game_data": {
+      "explanation": "Iterable objects implement methods that return iterators, enabling them to be traversed in loops and supporting Python's iteration paradigm.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:06:56.557647+00:00",
+    "exported_at": "2025-11-04T01:06:56.563948"
+  },
+  {
+    "question_text": "A decorator that enables single dispatch generic function overloading.",
+    "correct_answer": "singledispatch",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Syntax of Nested for Loops",
+    "game_data": {
+      "explanation": "The singledispatch decorator from functools allows functions to have different implementations based on the type of the first argument.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:06:56.663997+00:00",
+    "exported_at": "2025-11-04T01:06:56.665998"
+  },
+  {
+    "question_text": "A generator that yields items but consumes no values.",
+    "correct_answer": "iterator",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Validating and Cleaning Input Strings",
+    "game_data": {
+      "explanation": "An iterator produces values one at a time through iteration, without consuming or returning additional values like coroutines do.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:06:58.165932+00:00",
+    "exported_at": "2025-11-04T01:06:58.169451"
+  },
+  {
+    "question_text": "The protocol that enables objects to be iterated over.",
+    "correct_answer": "iterable",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Validating and Cleaning Input Strings",
+    "game_data": {
+      "explanation": "Iterable objects implement methods that allow them to be looped over, typically using the __iter__ method.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:06:58.254606+00:00",
+    "exported_at": "2025-11-04T01:06:58.257605"
+  },
+  {
+    "question_text": "A type variable marked to produce consistent output types.",
+    "correct_answer": "covariant",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Validating and Cleaning Input Strings",
+    "game_data": {
+      "explanation": "Covariant type variables ensure that derived types can substitute base types in return positions safely.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:06:58.351916+00:00",
+    "exported_at": "2025-11-04T01:06:58.355927"
+  },
+  {
+    "question_text": "Function decorator that caches recent calls for efficiency.",
+    "correct_answer": "lrucache",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Validating and Cleaning Input Strings",
+    "game_data": {
+      "explanation": "The lru_cache decorator memorizes function results to avoid recomputation, using a least-recently-used eviction policy.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:06:58.451019+00:00",
+    "exported_at": "2025-11-04T01:06:58.454021"
+  },
+  {
+    "question_text": "Empty collection created with set() constructor.",
+    "correct_answer": "emptyset",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Validating and Cleaning Input Strings",
+    "game_data": {
+      "explanation": "An empty set in Python must be created using set() since {} creates an empty dictionary instead.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:06:58.550616+00:00",
+    "exported_at": "2025-11-04T01:06:58.553625"
+  },
+  {
+    "question_text": "The design pattern for creating objects that traverse collections.",
+    "correct_answer": "Iterator",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "while Loop and Loop Conditions",
+    "game_data": {
+      "explanation": "The Iterator design pattern provides a way to access elements of a collection sequentially without exposing its underlying structure.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:07:01.278758+00:00",
+    "exported_at": "2025-11-04T01:07:01.283757"
+  },
+  {
+    "question_text": "A function that produces a sequence of values using yield statements.",
+    "correct_answer": "Generator",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "while Loop and Loop Conditions",
+    "game_data": {
+      "explanation": "A Generator is a special function that yields values one at a time, pausing execution between yields to save memory.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:07:01.394157+00:00",
+    "exported_at": "2025-11-04T01:07:01.398937"
+  },
+  {
+    "question_text": "The property of an object that allows it to be used in sets or as dictionary keys.",
+    "correct_answer": "Hashable",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "while Loop and Loop Conditions",
+    "game_data": {
+      "explanation": "Hashable objects have a fixed hash value and can be stored in sets or used as keys in dictionaries in Python.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:07:01.495298+00:00",
+    "exported_at": "2025-11-04T01:07:01.500817"
+  },
+  {
+    "question_text": "A decorator that enables function overloading based on argument types.",
+    "correct_answer": "singledispatch",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "while Loop and Loop Conditions",
+    "game_data": {
+      "explanation": "The singledispatch decorator allows a function to have different implementations depending on the type of its first argument.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:07:01.602056+00:00",
+    "exported_at": "2025-11-04T01:07:01.606062"
+  },
+  {
+    "question_text": "An immutable facade for a mapping created using the types module.",
+    "correct_answer": "MappingProxyType",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Adding, Updating, and Deleting Keys",
+    "game_data": {
+      "explanation": "MappingProxyType from the types module wraps a mapping to provide a read-only view, protecting it from accidental changes while reflecting updates to the original.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:07:04.628788+00:00",
+    "exported_at": "2025-11-04T01:07:04.631787"
+  },
+  {
+    "question_text": "Memory efficient classes returned by dict methods that support set like operations.",
+    "correct_answer": "dictionaryviews",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Adding, Updating, and Deleting Keys",
+    "game_data": {
+      "explanation": "Dictionary views like dict_keys and dict_items are returned by .keys() and .items(), offering set operations without duplicating data, enhancing performance in Python 3.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:07:04.822603+00:00",
+    "exported_at": "2025-11-04T01:07:04.827599"
+  },
+  {
+    "question_text": "The type that creates an immutable facade for a mapping.",
+    "correct_answer": "MappingProxyType",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Creating and Accessing Dictionary Items",
+    "game_data": {
+      "explanation": "MappingProxyType from the types module provides a read-only view of a dictionary, preventing accidental modifications.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:07:11.677325+00:00",
+    "exported_at": "2025-11-04T01:07:11.681870"
+  },
+  {
+    "question_text": "Memory-efficient dictionary views introduced in Python 3.",
+    "correct_answer": "dictviews",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Creating and Accessing Dictionary Items",
+    "game_data": {
+      "explanation": "Dictionary views like dict_keys and dict_items eliminate memory overhead by providing dynamic views into dictionary data.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:07:11.779509+00:00",
+    "exported_at": "2025-11-04T01:07:11.782516"
+  },
+  {
+    "question_text": "Method returning common elements between a set and iterables.",
+    "correct_answer": "intersection",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Converting Between Sets and Other Types",
+    "game_data": {
+      "explanation": "This set method returns a new set containing elements present in both the original set and all provided iterables, equivalent to the & operator.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:07:11.872539+00:00",
+    "exported_at": "2025-11-04T01:07:11.877540"
+  },
+  {
+    "question_text": "In-place method for set union with multiple iterables.",
+    "correct_answer": "update",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Converting Between Sets and Other Types",
+    "game_data": {
+      "explanation": "While not explicitly shown, set update methods modify the original set by adding elements from other sets or iterables, similar to union operations.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:07:11.972587+00:00",
+    "exported_at": "2025-11-04T01:07:11.976593"
+  },
+  {
+    "question_text": "A compact notation for building sequences from iterables.",
+    "correct_answer": "listcomps",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Creating and Modifying Lists",
+    "game_data": {
+      "explanation": "List comprehensions, often called listcomps, provide a concise way to create lists by applying expressions to each item in an iterable.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:07:15.535446+00:00",
+    "exported_at": "2025-11-04T01:07:15.542932"
+  },
+  {
+    "question_text": "Sequences that can be changed after creation.",
+    "correct_answer": "mutable",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Creating and Modifying Lists",
+    "game_data": {
+      "explanation": "Mutable sequences like lists allow modification of their contents after they are created, unlike immutable types.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:07:15.654615+00:00",
+    "exported_at": "2025-11-04T01:07:15.659683"
+  },
+  {
+    "question_text": "Operations that extract parts of sequences using start and stop indices.",
+    "correct_answer": "slicing",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Creating and Modifying Lists",
+    "game_data": {
+      "explanation": "Slicing allows you to extract subsequences from lists, strings, and other sequence types using index ranges.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:07:15.752361+00:00",
+    "exported_at": "2025-11-04T01:07:15.757354"
+  },
+  {
+    "question_text": "Python sequences that store other sequences rather than simple values.",
+    "correct_answer": "container",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Creating and Modifying Lists",
+    "game_data": {
+      "explanation": "Container sequences can hold references to other objects, including other sequences, making them flexible for nested data.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:07:15.895834+00:00",
+    "exported_at": "2025-11-04T01:07:15.899357"
+  },
+  {
+    "question_text": "A sequence type optimized for storing large amounts of numeric data.",
+    "correct_answer": "arrays",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Creating and Modifying Lists",
+    "game_data": {
+      "explanation": "Arrays are specialized sequences that efficiently store large quantities of numeric values, often used as alternatives to lists.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:07:15.995317+00:00",
+    "exported_at": "2025-11-04T01:07:15.998848"
+  },
+  {
+    "question_text": "Memory-saving optimization technique used internally in sets and dictionaries.",
+    "correct_answer": "keysharing",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Creating and Using Sets",
+    "game_data": {
+      "explanation": "Key-sharing is a complex internal optimization that reduces memory usage by allowing multiple dictionaries to share key objects.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:07:19.320010+00:00",
+    "exported_at": "2025-11-04T01:07:19.325504"
+  },
+  {
+    "question_text": "Abstract base class for immutable sets in the collections module.",
+    "correct_answer": "Set",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Creating and Using Sets",
+    "game_data": {
+      "explanation": "The Set ABC from collections.abc defines the standard interface for immutable set-like objects in Python, ensuring consistent behavior.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:07:19.430721+00:00",
+    "exported_at": "2025-11-04T01:07:19.435721"
+  },
+  {
+    "question_text": "Python function objects can be created at runtime and passed as arguments.",
+    "correct_answer": "firstclass",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Defining Functions with def",
+    "game_data": {
+      "explanation": "First-class objects can be created at runtime, assigned to variables, passed as arguments, and returned from functions.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:07:25.096193+00:00",
+    "exported_at": "2025-11-04T01:07:25.100724"
+  },
+  {
+    "question_text": "A function parameter that assumes a preset value if none is provided.",
+    "correct_answer": "default",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Default and Keyword Arguments",
+    "game_data": {
+      "explanation": "Default parameters in Python allow functions to be called with fewer arguments, using predefined values when arguments are omitted.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:07:25.177362+00:00",
+    "exported_at": "2025-11-04T01:07:25.181402"
+  },
+  {
+    "question_text": "The quality of being able to be returned as the result of a function.",
+    "correct_answer": "returnable",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Defining Functions with def",
+    "game_data": {
+      "explanation": "First-class objects like functions can be returned as results from other functions, enabling higher-order functions.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:07:25.279480+00:00",
+    "exported_at": "2025-11-04T01:07:25.284492"
+  },
+  {
+    "question_text": "A function parameter that assumes a preset value if none is provided.",
+    "correct_answer": "default",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Default and Keyword Arguments",
+    "game_data": {
+      "explanation": "Default parameters in Python allow functions to be called with fewer arguments, using predefined values when arguments are omitted.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:07:25.177362+00:00",
+    "exported_at": "2025-11-04T01:07:25.181402"
+  },
+  {
+    "question_text": "Arguments passed by explicitly naming the parameter in a function call.",
+    "correct_answer": "keyword",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Default and Keyword Arguments",
+    "game_data": {
+      "explanation": "Keyword arguments specify which parameter receives which value, allowing arguments to be passed in any order.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:07:25.420926+00:00",
+    "exported_at": "2025-11-04T01:07:25.423926"
+  },
+  {
+    "question_text": "The term for functions that can accept a variable number of arguments.",
+    "correct_answer": "variadic",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Default and Keyword Arguments",
+    "game_data": {
+      "explanation": "Variadic parameters enable functions to handle an arbitrary number of arguments, enhancing flexibility in function design.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:07:25.523004+00:00",
+    "exported_at": "2025-11-04T01:07:25.526507"
+  },
+  {
+    "question_text": "A parameter that must be passed by position and cannot be named.",
+    "correct_answer": "positional",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Default and Keyword Arguments",
+    "game_data": {
+      "explanation": "Positional parameters are defined by their order in the function signature and cannot be assigned via keyword.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:07:25.623955+00:00",
+    "exported_at": "2025-11-04T01:07:25.628719"
+  },
+  {
+    "question_text": "The practice of examining a function's parameters and their details.",
+    "correct_answer": "introspection",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Default and Keyword Arguments",
+    "game_data": {
+      "explanation": "Introspection allows programmers to inspect function parameters dynamically, useful for debugging and advanced programming techniques.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:07:25.733478+00:00",
+    "exported_at": "2025-11-04T01:07:25.737474"
+  },
+  {
+    "question_text": "A programming style where functions are treated as first-class citizens.",
+    "correct_answer": "functional",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Default and Keyword Arguments",
+    "game_data": {
+      "explanation": "Functional programming treats functions as first-class objects, enabling them to be passed as arguments and returned from other functions.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:07:25.842545+00:00",
+    "exported_at": "2025-11-04T01:07:25.845559"
+  },
+  {
+    "question_text": "The Python feature that allows automatic handling of missing dictionary keys.",
+    "correct_answer": "defaultdict",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Dictionary Comprehensions",
+    "game_data": {
+      "explanation": "Defaultdict from collections module automatically provides default values for missing keys, avoiding KeyError exceptions.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:07:29.381349+00:00",
+    "exported_at": "2025-11-04T01:07:29.386349"
+  },
+  {
+    "question_text": "Objects returned by dict.keys, dict.items, and dict.values methods.",
+    "correct_answer": "views",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Dictionary Comprehensions",
+    "game_data": {
+      "explanation": "Dictionary views provide dynamic perspectives into dictionary contents and support set-like operations for efficient data manipulation.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:07:29.489514+00:00",
+    "exported_at": "2025-11-04T01:07:29.492521"
+  },
+  {
+    "question_text": "A double-ended queue collection type in Python's standard library.",
+    "correct_answer": "deque",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Dictionary Comprehensions",
+    "game_data": {
+      "explanation": "Deque supports efficient appends and pops from both ends, making it ideal for queue and stack implementations.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:07:29.630921+00:00",
+    "exported_at": "2025-11-04T01:07:29.635923"
+  },
+  {
+    "question_text": "The process of breaking down sequences into individual variables.",
+    "correct_answer": "unpacking",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Dictionary Comprehensions",
+    "game_data": {
+      "explanation": "Unpacking allows assigning elements from sequences or mappings to multiple variables in a single, readable statement.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:07:29.739514+00:00",
+    "exported_at": "2025-11-04T01:07:29.742515"
+  },
+  {
+    "question_text": "Immutable wrapper type that protects a mapping from modification.",
+    "correct_answer": "MappingProxyType",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Dictionary Methods (get(), pop(), update(), etc.)",
+    "game_data": {
+      "explanation": "MappingProxyType creates an immutable view of a dictionary, preventing accidental changes while allowing read access.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:07:32.768984+00:00",
+    "exported_at": "2025-11-04T01:07:32.773987"
+  },
+  {
+    "question_text": "Property required for objects to be stored in sets and as dictionary keys.",
+    "correct_answer": "hashable",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Frozen Sets and Hashing",
+    "game_data": {
+      "explanation": "Hashable objects have a hash code that never changes during their lifetime and can be compared to other objects using equality.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:07:40.029308+00:00",
+    "exported_at": "2025-11-04T01:07:40.033309"
+  },
+  {
+    "question_text": "Method that returns an object's never-changing hash code.",
+    "correct_answer": "hash",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Frozen Sets and Hashing",
+    "game_data": {
+      "explanation": "The __hash__ method returns a hash code that must remain constant throughout an object's lifetime for it to be hashable.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:07:40.174065+00:00",
+    "exported_at": "2025-11-04T01:07:40.177583"
+  },
+  {
+    "question_text": "Dictionary view class that supports frozenset operations.",
+    "correct_answer": "dictitems",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Frozen Sets and Hashing",
+    "game_data": {
+      "explanation": "The dict_items class provides a view of dictionary items that supports most useful operators and methods of frozenset.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:07:40.323025+00:00",
+    "exported_at": "2025-11-04T01:07:40.327543"
+  },
+  {
+    "question_text": "Python's approach to optional static typing in code.",
+    "correct_answer": "gradual",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Docstrings and Function Annotations",
+    "game_data": {
+      "explanation": "Gradual typing allows mixing dynamically and statically typed code, enabling incremental adoption of type hints without breaking existing Python code.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:07:40.635777+00:00",
+    "exported_at": "2025-11-04T01:07:40.639813"
+  },
+  {
+    "question_text": "A typing concept where types are defined by operations rather than inheritance.",
+    "correct_answer": "ducktyping",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Docstrings and Function Annotations",
+    "game_data": {
+      "explanation": "Duck typing focuses on an object's behavior (methods and attributes) rather than its explicit type, following the 'if it walks like a duck' philosophy.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:07:40.752571+00:00",
+    "exported_at": "2025-11-04T01:07:40.756472"
+  },
+  {
+    "question_text": "Special method for accessing a function's documentation string.",
+    "correct_answer": "doc",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Docstrings and Function Annotations",
+    "game_data": {
+      "explanation": "The __doc__ attribute stores the docstring of a function, class, or module, making it accessible for documentation and introspection purposes.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:07:40.851796+00:00",
+    "exported_at": "2025-11-04T01:07:40.854795"
+  },
+  {
+    "question_text": "A dynamic typing system that checks object compatibility at runtime.",
+    "correct_answer": "dynamic",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Docstrings and Function Annotations",
+    "game_data": {
+      "explanation": "Dynamic typing in Python determines variable types at runtime, allowing flexible code but requiring careful testing to catch type-related errors.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:07:40.946531+00:00",
+    "exported_at": "2025-11-04T01:07:40.951648"
+  },
+  {
+    "question_text": "Python syntax style that limits what can be inside lambdas.",
+    "correct_answer": "statementoriented",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Higher-Order Functions and Functional Programming Basics",
+    "game_data": {
+      "explanation": "Python's statement-oriented syntax prevents statements from appearing inside expressions, restricting lambda capabilities compared to Lisp.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:07:43.199127+00:00",
+    "exported_at": "2025-11-04T01:07:43.203127"
+  },
+  {
+    "question_text": "Functions that can accept or return other functions as values.",
+    "correct_answer": "higherorder",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Higher-Order Functions and Functional Programming Basics",
+    "game_data": {
+      "explanation": "Higher-order functions treat functions as first-class objects, enabling powerful functional programming patterns in Python.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:07:43.298274+00:00",
+    "exported_at": "2025-11-04T01:07:43.302372"
+  },
+  {
+    "question_text": "A Python feature that reduced the need for map and filter functions.",
+    "correct_answer": "comprehension",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Higher-Order Functions and Functional Programming Basics",
+    "game_data": {
+      "explanation": "List comprehensions provide a more readable alternative to map and filter operations for transforming and filtering sequences.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:07:43.393658+00:00",
+    "exported_at": "2025-11-04T01:07:43.398159"
+  },
+  {
+    "question_text": "A sequence type that guarantees fixed values if all items are immutable.",
+    "correct_answer": "tuple",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Iterating Through Lists and Tuples",
+    "game_data": {
+      "explanation": "Tuples are immutable sequences in Python, and their values remain fixed only if all contained items are also immutable.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:07:46.496377+00:00",
+    "exported_at": "2025-11-04T01:07:46.499984"
+  },
+  {
+    "question_text": "The process of extracting fields from a tuple by position.",
+    "correct_answer": "unpacking",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Iterating Through Lists and Tuples",
+    "game_data": {
+      "explanation": "Tuple unpacking safely extracts data from tuples by assigning items to variables based on their positions.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:07:46.603356+00:00",
+    "exported_at": "2025-11-04T01:07:46.606356"
+  },
+  {
+    "question_text": "A powerful notation to build and initialize sequences from iterables.",
+    "correct_answer": "comprehension",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Iterating Through Lists and Tuples",
+    "game_data": {
+      "explanation": "List comprehensions provide a concise way to create lists by iterating over sequences and applying expressions.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:07:46.710865+00:00",
+    "exported_at": "2025-11-04T01:07:46.715868"
+  },
+  {
+    "question_text": "A feature that allows extracting parts of a sequence using start, stop, and step.",
+    "correct_answer": "slicing",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Iterating Through Lists and Tuples",
+    "game_data": {
+      "explanation": "Slicing operations enable accessing subsequences of lists, tuples, or strings by specifying indices and steps.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:07:46.817323+00:00",
+    "exported_at": "2025-11-04T01:07:46.820833"
+  },
+  {
+    "question_text": "A method to merge or expand sequences in function calls and assignments.",
+    "correct_answer": "unpacking",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Iterating Through Lists and Tuples",
+    "game_data": {
+      "explanation": "Using the asterisk (*) operator, sequences can be unpacked to pass multiple arguments or merge mappings.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:07:46.920475+00:00",
+    "exported_at": "2025-11-04T01:07:46.924480"
+  },
+  {
+    "question_text": "An alternative to lists for storing large sequences of numeric data efficiently.",
+    "correct_answer": "array",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Iterating Through Lists and Tuples",
+    "game_data": {
+      "explanation": "Arrays are specialized sequences that store numeric data more compactly and efficiently than lists.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:07:47.021353+00:00",
+    "exported_at": "2025-11-04T01:07:47.029886"
+  },
+  {
+    "question_text": "The drawback of anonymous functions that makes stack traces harder to read.",
+    "correct_answer": "nameless",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Lambda Functions and Anonymous Functions",
+    "game_data": {
+      "explanation": "Anonymous functions lack a name, which complicates debugging because stack traces become less informative and harder to interpret.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:07:54.299236+00:00",
+    "exported_at": "2025-11-04T01:07:54.302239"
+  },
+  {
+    "question_text": "The programming language where everything is an expression, allowing unlimited lambda use.",
+    "correct_answer": "Lisp",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Lambda Functions and Anonymous Functions",
+    "game_data": {
+      "explanation": "Lisp treats everything as an expression, so lambdas can contain any construct, unlike Python where statements limit lambda capabilities.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:07:54.404441+00:00",
+    "exported_at": "2025-11-04T01:07:54.408966"
+  },
+  {
+    "question_text": "A modern asynchronous API concept that helps avoid callback hell.",
+    "correct_answer": "futures",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Lambda Functions and Anonymous Functions",
+    "game_data": {
+      "explanation": "Futures represent a value that may not yet be available, providing a structured way to handle asynchronous operations and prevent deeply nested callbacks.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:07:54.503836+00:00",
+    "exported_at": "2025-11-04T01:07:54.508374"
+  },
+  {
+    "question_text": "A concise way to build lists using an expression inside brackets.",
+    "correct_answer": "listcomps",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "List Indexing, Slicing, and Comprehension",
+    "game_data": {
+      "explanation": "List comprehensions (listcomps) provide a readable and efficient way to create lists by applying an expression to each item in an iterable.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:07:54.665268+00:00",
+    "exported_at": "2025-11-04T01:07:54.670791"
+  },
+  {
+    "question_text": "The functional language that inspired Python's list comprehension syntax.",
+    "correct_answer": "Haskell",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Lambda Functions and Anonymous Functions",
+    "game_data": {
+      "explanation": "Haskell's list comprehension syntax was adopted by Python, reducing the need for map, filter, and lambda functions in many common scenarios.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:07:54.614911+00:00",
+    "exported_at": "2025-11-04T01:07:54.620441"
+  },
+  {
+    "question_text": "The problem in JavaScript and Node.js with deeply nested anonymous functions.",
+    "correct_answer": "debugging",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Lambda Functions and Anonymous Functions",
+    "game_data": {
+      "explanation": "Deeply nested anonymous functions create complex call stacks that make debugging and error handling significantly more difficult and less clear.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:07:54.884115+00:00",
+    "exported_at": "2025-11-04T01:07:54.887632"
+  },
+  {
+    "question_text": "The problem in JavaScript and Node.js with deeply nested anonymous functions.",
+    "correct_answer": "debugging",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Lambda Functions and Anonymous Functions",
+    "game_data": {
+      "explanation": "Deeply nested anonymous functions create complex call stacks that make debugging and error handling significantly more difficult and less clear.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:07:54.884115+00:00",
+    "exported_at": "2025-11-04T01:07:54.887632"
+  },
+  {
+    "question_text": "The problem in JavaScript and Node.js with deeply nested anonymous functions.",
+    "correct_answer": "debugging",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Lambda Functions and Anonymous Functions",
+    "game_data": {
+      "explanation": "Deeply nested anonymous functions create complex call stacks that make debugging and error handling significantly more difficult and less clear.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:07:54.884115+00:00",
+    "exported_at": "2025-11-04T01:07:54.887632"
+  },
+  {
+    "question_text": "Generator expressions share this scoping behavior with list comprehensions.",
+    "correct_answer": "scope",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "List Indexing, Slicing, and Comprehension",
+    "game_data": {
+      "explanation": "Both list comprehensions and generator expressions have their own local scope, which affects variable visibility.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:07:55.152630+00:00",
+    "exported_at": "2025-11-04T01:07:55.155637"
+  },
+  {
+    "question_text": "A tuple's value is fixed only if all items have this property.",
+    "correct_answer": "immutable",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "List Indexing, Slicing, and Comprehension",
+    "game_data": {
+      "explanation": "A tuple is immutable, but if it contains mutable objects, those can change, affecting the tuple's effective value.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:07:55.406815+00:00",
+    "exported_at": "2025-11-04T01:07:55.412340"
+  }
+]

@@ -237,11 +237,12 @@ class EmbeddingGenerator:
 
     def generate_subtopic_dual_embeddings(self, subtopic) -> Dict[str, Any]:
         """
-        Generate dual embeddings for a subtopic using intent-based content.
-        Creates both MiniLM (concept) and CodeBERT (code) embeddings and saves them to the database.
+        Generate dual embeddings for a subtopic.
+        ALWAYS creates BOTH MiniLM (concept) AND CodeBERT (code) embeddings.
+        Uses subtopic name as base, enhanced with intent fields if available.
         
         Args:
-            subtopic: Subtopic model instance with concept_intent and/or code_intent fields
+            subtopic: Subtopic model instance with name (required) and optional intent fields
             
         Returns:
             Dict with success status and embedding info
@@ -264,55 +265,70 @@ class EmbeddingGenerator:
                 content_type='subtopic'
             ).delete()
             
-            # Generate concept embedding (MiniLM) if concept_intent exists
+            # ALWAYS generate concept embedding (MiniLM) from name + optional concept_intent
             if subtopic.concept_intent:
                 concept_text = f"{subtopic.topic.name} - {subtopic.name}: {subtopic.concept_intent}"
-                concept_result = self.generate_embedding(concept_text, chunk_type='Concept')
-                
-                if concept_result['vector'] is not None:
-                    # Save concept embedding
-                    concept_embedding = Embedding.objects.create(
+            else:
+                # Use just the name and topic for semantic processing
+                concept_text = f"{subtopic.topic.name} - {subtopic.name}"
+            
+            concept_result = self.generate_embedding(concept_text, chunk_type='Concept')
+            
+            if concept_result['vector'] is not None:
+                # Save concept embedding (always created)
+                concept_embedding = Embedding.objects.create(
+                    subtopic=subtopic,
+                    content_type='subtopic',
+                    model_type='sentence',
+                    model_name=concept_result['model_name'],
+                    dimension=concept_result['dimension'],
+                    minilm_vector=concept_result['vector']
+                )
+                results['concept_embedding'] = concept_embedding.id
+                results['embeddings_created'] += 1
+            else:
+                results['errors'].append(f"Failed to generate concept embedding: {concept_result.get('error', 'Unknown error')}")
+            
+            # ALWAYS generate code embedding (CodeBERT) from name + optional code_intent
+            if subtopic.code_intent:
+                code_text = f"Python task: {subtopic.topic.name} - {subtopic.name}. Use: {subtopic.code_intent}"
+            else:
+                # Use name-based code context for dual embedding
+                code_text = f"Python programming topic: {subtopic.topic.name} - {subtopic.name}"
+            
+            code_result = self.generate_embedding(code_text, chunk_type='Code')
+            
+            if code_result['vector'] is not None:
+                # Always add CodeBERT vector to the existing embedding
+                if results['concept_embedding']:
+                    # Update existing embedding with CodeBERT vector (dual embedding)
+                    concept_embedding = Embedding.objects.get(id=results['concept_embedding'])
+                    concept_embedding.codebert_vector = code_result['vector']
+                    concept_embedding.save()
+                    # Note: embeddings_created count remains the same (it's one dual embedding)
+                else:
+                    # Fallback: create new embedding with only CodeBERT vector
+                    code_embedding = Embedding.objects.create(
                         subtopic=subtopic,
                         content_type='subtopic',
-                        model_type='sentence',
-                        model_name=concept_result['model_name'],
-                        dimension=concept_result['dimension'],
-                        minilm_vector=concept_result['vector']
+                        model_type='code_bert',
+                        model_name=code_result['model_name'],
+                        dimension=code_result['dimension'],
+                        codebert_vector=code_result['vector']
                     )
-                    results['concept_embedding'] = concept_embedding.id
+                    results['code_embedding'] = code_embedding.id
                     results['embeddings_created'] += 1
-                else:
-                    results['errors'].append(f"Failed to generate concept embedding: {concept_result.get('error', 'Unknown error')}")
+            else:
+                results['errors'].append(f"Failed to generate code embedding: {code_result.get('error', 'Unknown error')}")
             
-            # Generate code embedding (CodeBERT) if code_intent exists
-            if subtopic.code_intent:
-                code_text = f"{subtopic.topic.name} - {subtopic.name}: {subtopic.code_intent}"
-                code_result = self.generate_embedding(code_text, chunk_type='Code')
-                
-                if code_result['vector'] is not None:
-                    # Save code embedding (update existing or create new)
-                    if results['concept_embedding']:
-                        # Update existing embedding with CodeBERT vector
-                        concept_embedding = Embedding.objects.get(id=results['concept_embedding'])
-                        concept_embedding.codebert_vector = code_result['vector']
-                        concept_embedding.save()
-                    else:
-                        # Create new embedding with only CodeBERT vector
-                        code_embedding = Embedding.objects.create(
-                            subtopic=subtopic,
-                            content_type='subtopic',
-                            model_type='code_bert',
-                            model_name=code_result['model_name'],
-                            dimension=code_result['dimension'],
-                            codebert_vector=code_result['vector']
-                        )
-                        results['code_embedding'] = code_embedding.id
-                        results['embeddings_created'] += 1
-                else:
-                    results['errors'].append(f"Failed to generate code embedding: {code_result.get('error', 'Unknown error')}")
+            # Verify dual embedding was created
+            if results['concept_embedding']:
+                final_embedding = Embedding.objects.get(id=results['concept_embedding'])
+                has_both = bool(final_embedding.minilm_vector) and bool(final_embedding.codebert_vector)
+                logger.info(f"Generated dual embedding for subtopic '{subtopic.name}': MiniLM={bool(final_embedding.minilm_vector)}, CodeBERT={bool(final_embedding.codebert_vector)}")
             
             results['success'] = results['embeddings_created'] > 0
-            logger.info(f"Generated {results['embeddings_created']} embeddings for subtopic '{subtopic.name}'")
+            logger.info(f"Generated {results['embeddings_created']} dual embeddings for subtopic '{subtopic.name}' (name: always, concept_intent: {bool(subtopic.concept_intent)}, code_intent: {bool(subtopic.code_intent)})")
             
         except Exception as e:
             logger.error(f"Error generating dual embeddings for subtopic {subtopic.id}: {e}")

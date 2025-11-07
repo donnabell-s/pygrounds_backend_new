@@ -3,6 +3,9 @@ from ..helpers.helper_imports import *
 from content_ingestion.models import CHUNK_TYPE_CHOICES
 from multiprocessing import Pool
 import psutil
+import logging
+
+logger = logging.getLogger(__name__)
 
 def _run_document_pipeline_background(document_id, reprocess=False):
     """
@@ -654,7 +657,10 @@ def upload_and_process_pipeline(request):
         # Save document and set processing status
         document = serializer.save()
         document.processing_status = 'PROCESSING'
+        document.processing_message = 'Starting document processing pipeline...'
         document.save()
+        
+        print(f"🚀 Starting pipeline processing for document: {document.title}")
         
         # Initialize pipeline results
         pipeline_results = {
@@ -667,75 +673,133 @@ def upload_and_process_pipeline(request):
         
         try:
             # Step 1: Generate TOC
+            print("📋 Step 1: Generating table of contents...")
+            document.processing_message = 'Generating table of contents...'
+            document.save()
+            
             toc_result = generate_toc_entries_for_document(document)
+            entries_count = len(toc_result) if toc_result else 0
             pipeline_results['pipeline_steps']['toc'] = {
                 'status': 'success',
-                'entries_count': len(toc_result) if toc_result else 0
+                'entries_count': entries_count
             }
+            print(f"✅ TOC generated with {entries_count} entries")
+            
         except Exception as e:
+            print(f"❌ TOC generation failed: {str(e)}")
             pipeline_results['pipeline_steps']['toc'] = {'status': 'error', 'error': str(e)}
         
         try:
             # Step 2: Chunk document pages according to TOC
+            print("📄 Step 2: Chunking document content...")
+            document.processing_message = 'Chunking document content...'
+            document.save()
+            
             chunk_processor = GranularChunkProcessor()
             chunking_result = chunk_processor.process_entire_document(document)
+            chunks_created = chunking_result.get('total_chunks_created', 0)
             pipeline_results['pipeline_steps']['chunking'] = {
                 'status': 'success',
-                'chunks_created': chunking_result.get('total_chunks_created', 0)
+                'chunks_created': chunks_created
             }
+            print(f"✅ Document chunked into {chunks_created} chunks")
+            
         except Exception as e:
+            print(f"❌ Chunking failed: {str(e)}")
             pipeline_results['pipeline_steps']['chunking'] = {'status': 'error', 'error': str(e)}
         
         try:
             # Step 3: Generate embeddings
+            print("🔮 Step 3: Generating embeddings...")
+            document.processing_message = 'Generating embeddings for content chunks...'
+            document.save()
+            
             embedding_generator = EmbeddingGenerator()
             chunks = DocumentChunk.objects.filter(document=document)
             embedding_result = embedding_generator.embed_and_save_batch(chunks)
+            embeddings_generated = embedding_result.get('embeddings_generated', 0)
             pipeline_results['pipeline_steps']['embeddings'] = {
                 'status': 'success',
-                'embeddings_generated': embedding_result.get('embeddings_generated', 0),
+                'embeddings_generated': embeddings_generated,
                 'database_saves': embedding_result.get('database_saves', 0)
             }
+            print(f"✅ Generated {embeddings_generated} embeddings")
+            
         except Exception as e:
+            print(f"❌ Embedding generation failed: {str(e)}")
             pipeline_results['pipeline_steps']['embeddings'] = {'status': 'error', 'error': str(e)}
         
         try:
             # Step 4: Semantic Similarity Processing
+            print("🔗 Step 4: Computing semantic similarities...")
+            document.processing_message = 'Computing semantic similarities...'
+            document.save()
+            
             semantic_result = compute_semantic_similarities_for_document(
                 document_id=document.id, 
                 similarity_threshold=0.1,  # Store similarities above 0.1
                 top_k_results=10  # Store top 10 similar chunks per subtopic
             )
+            processed_subtopics = semantic_result.get('processed_subtopics', 0)
+            total_similarities = semantic_result.get('total_similarities', 0)
             pipeline_results['pipeline_steps']['semantic_similarity'] = {
                 'status': semantic_result['status'],
-                'processed_subtopics': semantic_result.get('processed_subtopics', 0),
-                'total_similarities': semantic_result.get('total_similarities', 0)
+                'processed_subtopics': processed_subtopics,
+                'total_similarities': total_similarities
             }
+            print(f"✅ Processed {processed_subtopics} subtopics with {total_similarities} similarities")
+            
         except Exception as e:
+            print(f"❌ Semantic similarity computation failed: {str(e)}")
             pipeline_results['pipeline_steps']['semantic_similarity'] = {'status': 'error', 'error': str(e)}
         
-        # Update document status
-        document.processing_status = 'COMPLETED'
-        document.save()
-        
-        # Check if any steps failed
+        # Update final document status based on results
         failed_steps = [step for step, data in pipeline_results['pipeline_steps'].items() 
                        if data.get('status') == 'error']
         
         if failed_steps:
+            document.processing_status = 'FAILED'
+            document.processing_message = f'Processing failed at steps: {", ".join(failed_steps)}'
             pipeline_results['status'] = 'partial_success'
             pipeline_results['failed_steps'] = failed_steps
+            print(f"⚠️  Pipeline completed with failures: {failed_steps}")
+        else:
+            # Verify critical steps completed successfully
+            toc_result = pipeline_results['pipeline_steps'].get('toc', {})
+            chunking_result = pipeline_results['pipeline_steps'].get('chunking', {})
+            
+            if (toc_result.get('entries_count', 0) > 0 and 
+                chunking_result.get('chunks_created', 0) > 0):
+                document.processing_status = 'COMPLETED'
+                document.processing_message = 'Document processing completed successfully'
+                print(f"🎉 Pipeline completed successfully for: {document.title}")
+            else:
+                document.processing_status = 'COMPLETED_WITH_WARNINGS'
+                document.processing_message = 'Processing completed but with potential issues (low TOC entries or chunks)'
+                pipeline_results['status'] = 'completed_with_warnings'
+                print(f"⚠️  Pipeline completed with warnings for: {document.title}")
+        
+        document.save()
+        
+        # Return appropriate response based on status
+        if failed_steps:
             return Response(pipeline_results, status=status.HTTP_207_MULTI_STATUS)
         
         return Response(pipeline_results, status=status.HTTP_201_CREATED)
         
     except Exception as e:
         # Update document status if it was created
-        if 'document' in locals():
-            document.processing_status = 'ERROR'
-            document.save()
+        error_message = f'Pipeline processing failed: {str(e)}'
+        print(f"💥 Critical pipeline error: {error_message}")
         
+        if 'document' in locals():
+            document.processing_status = 'FAILED'
+            document.processing_message = error_message
+            document.save()
+            print(f"📝 Updated document {document.id} status to FAILED")
+        
+        logger.error(f"Critical error in upload_and_process_pipeline: {str(e)}")
         return Response({
             'status': 'error',
-            'message': f'Pipeline processing failed: {str(e)}'
+            'message': error_message
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

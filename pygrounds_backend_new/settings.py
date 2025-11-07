@@ -152,7 +152,7 @@ REST_FRAMEWORK = {
 
 
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),
+    "ACCESS_TOKEN_LIFETIME": timedelta(hours=4),  # Extended for long operations
     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
 }
 
@@ -261,3 +261,6 @@ LOGGING = {
 FILE_UPLOAD_MAX_MEMORY_SIZE = 25 * 1024 * 1024  # 25MB
 DATA_UPLOAD_MAX_MEMORY_SIZE = 25 * 1024 * 1024  # 25MB
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Question Generation Settings
+QUESTION_GENERATION_WORKERS = 4  # Number of parallel workers for question generation

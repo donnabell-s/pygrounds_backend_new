@@ -18,57 +18,37 @@ class DeepSeekPromptManager:
 
     def get_coding_prompt(self, context):
         return f"""
-          OUTPUT ONLY VALID JSON. MUST INCLUDE ALL 10 REQUIRED FIELDS FOR EACH QUESTION.
+OUTPUT ONLY VALID JSON ARRAY. NO prose, NO markdown, NO backticks.
 
-          ROLE: Senior Python challenge architect.
+TASK: Generate {context['num_questions']} Python DEBUGGING questions for {context['subtopic_name']} ({context['difficulty']}).
 
-          RAG_CONTEXT:
-          <<<
-          {context['rag_context']}
-          >>>
+RAG_CONTEXT:
+<<<
+{context['rag_context']}
+>>>
 
-          TOPIC: {context['subtopic_name']}
-          DIFFICULTY: {context['difficulty']}
-          NUM_QUESTIONS: {context['num_questions']}
+RULES (MUST):
+- Simple, real-world tasks; no external libs; < 20 lines/code.
+- snake_case function names.
+- Keep texts short and specific.
 
-          GOAL:
-          Generate {context['num_questions']} compact, real-world Python debugging tasks.
+ITEM SCHEMA (ALL FIELDS REQUIRED):
+{{
+  "question_text": "brief task (≤12 words)",
+  "buggy_question_text": "visible symptom (8–20 words)",
+  "explanation": "clear explanation of the main task/problem (20–40 words)",
+  "buggy_explanation": "explanation of the bug and debugging approach (20–40 words)",
+  "function_name": "snake_case",
+  "sample_input": "(example,)",
+  "sample_output": "expected",
+  "hidden_tests": [{{"input": "(test,)", "expected_output": "result"}}],
+  "buggy_code": "def name():\\n    # buggy version",
+  "correct_code": "def name():\\n    # working solution",
+  "buggy_correct_code": "def name():\\n    # fixed buggy version",
+  "difficulty": "{context['difficulty']}"
+}}
 
-          MANDATORY OUTPUT SCHEMA - MUST INCLUDE ALL 10 FIELDS:
-          [
-            {{
-              "question_text": "<≤12 words>",
-              "buggy_question_text": "<symptom-only, 8–20 words>", 
-              "function_name": "<snake_case>",
-              "sample_input": "<Python-literal tuple>",
-              "sample_output": "<expected result>",
-              "hidden_tests": [
-                {{"input": "(test1,)", "expected_output": "result1"}},
-                {{"input": "(test2,)", "expected_output": "result2"}}
-              ],
-              "buggy_code": "def function_name(...):\\n    # buggy implementation",
-              "correct_code": "def function_name(...):\\n    # correct implementation for question_text",
-              "buggy_correct_code": "def function_name(...):\\n    # fixed version of buggy_code",
-              "difficulty": "{context['difficulty']}"
-            }}
-          ]
-
-          CRITICAL FAILURE PREVENTION REQUIREMENTS:
-          - Every JSON object MUST have exactly these 10 fields, with NO fields missing
-          - MANDATORY: "buggy_code": Contains intentional bugs that align with buggy_question_text
-          - MANDATORY: "correct_code": Working solution for the main question_text problem  
-          - MANDATORY: "buggy_correct_code": Corrected version that fixes the bugs in buggy_code
-          - IMPORTANT: If ANY field is missing, the entire batch will be rejected and no questions will be saved
-
-          RULES:
-          - Create engaging, simple coding tasks with real-world context
-          - No external libraries, randomness, file I/O, or multi-part tasks
-          - Use engaging contexts: secret messages, gamer tags, social media, etc.
-          - `buggy_question_text` describes symptoms, not solutions
-          - Use snake_case for function names
-          - Keep code under 20 lines each
-
-          RETURN: Only the JSON array with ALL required fields.
+RETURN: JSON array ONLY.
 """
 
 
@@ -97,25 +77,26 @@ QUALITY RULES:
 - No code blocks or symbols anywhere (letters/spaces only).
 - Answers must be a **single term** (one token when split on spaces), 4–13 characters, letters only.
 - Answers must be **domain-specific** (e.g., “docstring”, “idempotent”, “immutability”, “generator”), not generic (“code”, “variable”, “python”, “function”).
-- Use action verbs in questions: Identify, Choose, Select, Spot, Predict, Name.
+- Frame questions as clever, crossword-style clues.
 - If multiple subtopics are present, integrate meaningfully (but still one-term answer).
 
 AVOID THESE STEM PATTERNS:
-- “What should X avoid?”
-- “Best practice for comments?”
-- “Why is X important?”
+- “What is the term for…”
+- “Identify the concept that…”
+- “Which keyword is used to…”
 
-INSTEAD USE:
-- “Identify the term for …”
-- “Select the keyword that …”
-- “Name the concept describing …”
-- “Spot the feature that …”
+INSTEAD USE (EXAMPLES):
+- “A special variable that holds multiple items.” (Answer: list)
+- “The Pythonic way of iterating through a sequence.” (Answer: forloop)
+- “A reusable block of code that performs a specific action.” (Answer: function)
+- “The process of finding and fixing errors in code.” (Answer: debugging)
 
 OUTPUT SCHEMA (array length = NUM_QUESTIONS):
 [
   {{
     "question_text": "<short, unambiguous question (≤18 words, letters/spaces only)>",
     "answer": "<single domain term, 4–13 letters>",
+    "explanation": "<brief concept note, 20–40 words, friendly and clear>",
     "difficulty": "{context['difficulty']}",
     }}
 ]

@@ -1,0 +1,644 @@
+[
+  {
+    "id": 31,
+    "question_text": "What does the print() function do in Python?",
+    "answer_options": [
+      "It asks the user for input",
+      "It displays text on the screen",
+      "It performs mathematical calculations",
+      "It creates a new file"
+    ],
+    "correct_answer": "It displays text on the screen",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      43,
+      45
+    ],
+    "subtopic_ids": [
+      305,
+      315
+    ],
+    "order": 0,
+    "created_at": null
+  },
+  {
+    "id": 32,
+    "question_text": "Which symbol is used to create a single-line comment in Python?",
+    "answer_options": [
+      "//",
+      "/*",
+      "#",
+      "--"
+    ],
+    "correct_answer": "#",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      47
+    ],
+    "subtopic_ids": [
+      328
+    ],
+    "order": 1,
+    "created_at": null
+  },
+  {
+    "id": 33,
+    "question_text": "What is the correct way to store someone's age as a number in Python?",
+    "answer_options": [
+      "age = '25'",
+      "age = 25",
+      "age = \"25\"",
+      "age = twenty-five"
+    ],
+    "correct_answer": "age = 25",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      44
+    ],
+    "subtopic_ids": [
+      307,
+      308
+    ],
+    "order": 2,
+    "created_at": null
+  },
+  {
+    "id": 34,
+    "question_text": "Which function is used to get input from the user?",
+    "answer_options": [
+      "print()",
+      "input()",
+      "get()",
+      "read()"
+    ],
+    "correct_answer": "input()",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      45
+    ],
+    "subtopic_ids": [
+      314,
+      400
+    ],
+    "order": 3,
+    "created_at": null
+  },
+  {
+    "id": 35,
+    "question_text": "What will be the result of 5 + 3 * 2 in Python?",
+    "answer_options": [
+      "16",
+      "11",
+      "13",
+      "10"
+    ],
+    "correct_answer": "11",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      46
+    ],
+    "subtopic_ids": [
+      321,
+      325
+    ],
+    "order": 4,
+    "created_at": null
+  },
+  {
+    "id": 36,
+    "question_text": "Which of these is a valid variable name in Python?",
+    "answer_options": [
+      "my-variable",
+      "1st_variable",
+      "my_variable",
+      "print"
+    ],
+    "correct_answer": "my_variable",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      44,
+      47
+    ],
+    "subtopic_ids": [
+      307,
+      331
+    ],
+    "order": 5,
+    "created_at": null
+  },
+  {
+    "id": 37,
+    "question_text": "What does the == operator check?",
+    "answer_options": [
+      "If two values are equal",
+      "If two values are not equal",
+      "If one value is greater than another",
+      "If one value is less than another"
+    ],
+    "correct_answer": "If two values are equal",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      46,
+      48
+    ],
+    "subtopic_ids": [
+      322,
+      338
+    ],
+    "order": 6,
+    "created_at": null
+  },
+  {
+    "id": 38,
+    "question_text": "How do you create a list of numbers in Python?",
+    "answer_options": [
+      "numbers = (1, 2, 3)",
+      "numbers = [1, 2, 3]",
+      "numbers = {1, 2, 3}",
+      "numbers = \"1, 2, 3\""
+    ],
+    "correct_answer": "numbers = [1, 2, 3]",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      53
+    ],
+    "subtopic_ids": [
+      370,
+      372
+    ],
+    "order": 7,
+    "created_at": null
+  },
+  {
+    "id": 39,
+    "question_text": "What will this code output: print(\"Hello\" + \"World\")?",
+    "answer_options": [
+      "HelloWorld",
+      "Hello World",
+      "Hello+World",
+      "Error"
+    ],
+    "correct_answer": "HelloWorld",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      45
+    ],
+    "subtopic_ids": [
+      316,
+      315
+    ],
+    "order": 8,
+    "created_at": null
+  },
+  {
+    "id": 40,
+    "question_text": "Which keyword is used to define a function in Python?",
+    "answer_options": [
+      "function",
+      "def",
+      "define",
+      "func"
+    ],
+    "correct_answer": "def",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      55
+    ],
+    "subtopic_ids": [
+      384,
+      385
+    ],
+    "order": 9,
+    "created_at": null
+  },
+  {
+    "id": 41,
+    "question_text": "What is the purpose of an if statement?",
+    "answer_options": [
+      "To repeat code multiple times",
+      "To define a function",
+      "To make decisions in code",
+      "To import modules"
+    ],
+    "correct_answer": "To make decisions in code",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      48
+    ],
+    "subtopic_ids": [
+      335,
+      338
+    ],
+    "order": 10,
+    "created_at": null
+  },
+  {
+    "id": 42,
+    "question_text": "How do you access the first element of a list called 'colors'?",
+    "answer_options": [
+      "colors[0]",
+      "colors[1]",
+      "colors.first",
+      "colors(0)"
+    ],
+    "correct_answer": "colors[0]",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      53
+    ],
+    "subtopic_ids": [
+      372,
+      370
+    ],
+    "order": 11,
+    "created_at": null
+  },
+  {
+    "id": 43,
+    "question_text": "What does the len() function do?",
+    "answer_options": [
+      "Makes text longer",
+      "Counts the number of items in a list or string",
+      "Converts numbers to text",
+      "Creates a new list"
+    ],
+    "correct_answer": "Counts the number of items in a list or string",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      52,
+      53
+    ],
+    "subtopic_ids": [
+      363,
+      375
+    ],
+    "order": 12,
+    "created_at": null
+  },
+  {
+    "id": 44,
+    "question_text": "Which loop is best when you know how many times you want to repeat something?",
+    "answer_options": [
+      "while loop",
+      "for loop",
+      "if loop",
+      "repeat loop"
+    ],
+    "correct_answer": "for loop",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      50
+    ],
+    "subtopic_ids": [
+      355,
+      349
+    ],
+    "order": 13,
+    "created_at": null
+  },
+  {
+    "id": 45,
+    "question_text": "What will this code output: print(type(3.14))?",
+    "answer_options": [
+      "<class 'int'>",
+      "<class 'float'>",
+      "<class 'str'>",
+      "<class 'number'>"
+    ],
+    "correct_answer": "<class 'float'>",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      44
+    ],
+    "subtopic_ids": [
+      312,
+      308
+    ],
+    "order": 14,
+    "created_at": null
+  },
+  {
+    "id": 46,
+    "question_text": "How do you convert the string \"123\" to the number 123?",
+    "answer_options": [
+      "int(\"123\")",
+      "str(123)",
+      "number(\"123\")",
+      "convert(\"123\")"
+    ],
+    "correct_answer": "int(\"123\")",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      44,
+      45
+    ],
+    "subtopic_ids": [
+      311,
+      317
+    ],
+    "order": 15,
+    "created_at": null
+  },
+  {
+    "id": 47,
+    "question_text": "What is the result of: True and False?",
+    "answer_options": [
+      "True",
+      "False",
+      "Error",
+      "None"
+    ],
+    "correct_answer": "False",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      46,
+      44
+    ],
+    "subtopic_ids": [
+      323,
+      310
+    ],
+    "order": 16,
+    "created_at": null
+  },
+  {
+    "id": 48,
+    "question_text": "Which method adds an item to the end of a list?",
+    "answer_options": [
+      ".add()",
+      ".append()",
+      ".insert()",
+      ".push()"
+    ],
+    "correct_answer": ".append()",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      53
+    ],
+    "subtopic_ids": [
+      371,
+      370
+    ],
+    "order": 17,
+    "created_at": null
+  },
+  {
+    "id": 49,
+    "question_text": "What does this code do: for i in range(3): print(i)?",
+    "answer_options": [
+      "Prints 0, 1, 2",
+      "Prints 1, 2, 3",
+      "Prints 3 three times",
+      "Causes an error"
+    ],
+    "correct_answer": "Prints 0, 1, 2",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      50
+    ],
+    "subtopic_ids": [
+      349,
+      350
+    ],
+    "order": 18,
+    "created_at": null
+  },
+  {
+    "id": 50,
+    "question_text": "How do you create a dictionary that maps 'name' to 'Alice'?",
+    "answer_options": [
+      "person = ['name': 'Alice']",
+      "person = {'name': 'Alice'}",
+      "person = ('name': 'Alice')",
+      "person = <'name': 'Alice'>"
+    ],
+    "correct_answer": "person = {'name': 'Alice'}",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      56
+    ],
+    "subtopic_ids": [
+      391,
+      392
+    ],
+    "order": 19,
+    "created_at": null
+  },
+  {
+    "id": 51,
+    "question_text": "What is the purpose of the else clause in a try-except block?",
+    "answer_options": [
+      "To handle any errors that occur",
+      "To run code only if no errors occurred",
+      "To always run after the try block",
+      "To define custom error messages"
+    ],
+    "correct_answer": "To run code only if no errors occurred",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      49
+    ],
+    "subtopic_ids": [
+      345,
+      343
+    ],
+    "order": 20,
+    "created_at": null
+  },
+  {
+    "id": 52,
+    "question_text": "Which string method converts text to uppercase?",
+    "answer_options": [
+      ".upper()",
+      ".uppercase()",
+      ".toupper()",
+      ".capitalize()"
+    ],
+    "correct_answer": ".upper()",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      52
+    ],
+    "subtopic_ids": [
+      365,
+      364
+    ],
+    "order": 21,
+    "created_at": null
+  },
+  {
+    "id": 53,
+    "question_text": "What does the break statement do in a loop?",
+    "answer_options": [
+      "Skips the current iteration",
+      "Stops the loop entirely",
+      "Continues to the next iteration",
+      "Pauses the loop temporarily"
+    ],
+    "correct_answer": "Stops the loop entirely",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      50
+    ],
+    "subtopic_ids": [
+      352,
+      354
+    ],
+    "order": 22,
+    "created_at": null
+  },
+  {
+    "id": 54,
+    "question_text": "How do you check if a key exists in a dictionary?",
+    "answer_options": [
+      "Using the in operator",
+      "Using the exists() method",
+      "Using the has_key() method",
+      "Using the contains() method"
+    ],
+    "correct_answer": "Using the in operator",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      46,
+      56
+    ],
+    "subtopic_ids": [
+      326,
+      391
+    ],
+    "order": 23,
+    "created_at": null
+  },
+  {
+    "id": 55,
+    "question_text": "What is the output of: print(\"Hello\\nWorld\")?",
+    "answer_options": [
+      "HelloWorld",
+      "Hello World",
+      "Hello\\nWorld",
+      "Hello (new line) World"
+    ],
+    "correct_answer": "Hello (new line) World",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      45
+    ],
+    "subtopic_ids": [
+      318,
+      315
+    ],
+    "order": 24,
+    "created_at": null
+  },
+  {
+    "id": 56,
+    "question_text": "Which data type is immutable in Python?",
+    "answer_options": [
+      "List",
+      "Dictionary",
+      "Tuple",
+      "Set"
+    ],
+    "correct_answer": "Tuple",
+    "estimated_difficulty": "advanced",
+    "topic_ids": [
+      53,
+      44
+    ],
+    "subtopic_ids": [
+      373,
+      313
+    ],
+    "order": 25,
+    "created_at": null
+  },
+  {
+    "id": 57,
+    "question_text": "What does this code do: numbers = [x*2 for x in range(5)]?",
+    "answer_options": [
+      "Creates [0, 2, 4, 6, 8]",
+      "Creates [2, 4, 6, 8, 10]",
+      "Multiplies all numbers by 2",
+      "Causes an error"
+    ],
+    "correct_answer": "Creates [0, 2, 4, 6, 8]",
+    "estimated_difficulty": "advanced",
+    "topic_ids": [
+      53,
+      50
+    ],
+    "subtopic_ids": [
+      372,
+      349
+    ],
+    "order": 26,
+    "created_at": null
+  },
+  {
+    "id": 58,
+    "question_text": "How do you handle multiple exceptions in one except block?",
+    "answer_options": [
+      "except (ValueError, TypeError):",
+      "except ValueError and TypeError:",
+      "except [ValueError, TypeError]:",
+      "except ValueError, TypeError:"
+    ],
+    "correct_answer": "except (ValueError, TypeError):",
+    "estimated_difficulty": "advanced",
+    "topic_ids": [
+      49
+    ],
+    "subtopic_ids": [
+      344,
+      343
+    ],
+    "order": 27,
+    "created_at": null
+  },
+  {
+    "id": 59,
+    "question_text": "What is the purpose of a lambda function?",
+    "answer_options": [
+      "To create large, complex functions",
+      "To create small anonymous functions",
+      "To import modules",
+      "To handle errors"
+    ],
+    "correct_answer": "To create small anonymous functions",
+    "estimated_difficulty": "advanced",
+    "topic_ids": [
+      55
+    ],
+    "subtopic_ids": [
+      389,
+      384
+    ],
+    "order": 28,
+    "created_at": null
+  },
+  {
+    "id": 60,
+    "question_text": "Imagine you're building a simple game that tracks player scores. Which data structure would be most efficient to quickly check if a player's score exists and update it?",
+    "answer_options": [
+      "List of tuples",
+      "Dictionary with player names as keys",
+      "Set of scores",
+      "String containing all scores"
+    ],
+    "correct_answer": "Dictionary with player names as keys",
+    "estimated_difficulty": "master",
+    "topic_ids": [
+      56,
+      54,
+      53
+    ],
+    "subtopic_ids": [
+      396,
+      392,
+      382,
+      376
+    ],
+    "order": 29,
+    "created_at": null
+  }
+]

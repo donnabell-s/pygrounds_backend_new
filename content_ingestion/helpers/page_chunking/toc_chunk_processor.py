@@ -11,6 +11,9 @@ from content_ingestion.helpers.toc_parser.toc_utils import find_content_boundari
 from content_ingestion.helpers.utils.token_utils import TokenCounter
 import tempfile
 import os
+import logging
+
+logger = logging.getLogger(__name__)
 
 class GranularChunkProcessor:
     """
@@ -245,20 +248,24 @@ class GranularChunkProcessor:
             DocumentChunk.objects.filter(document=document).delete()
             print(f"✅ Cleared all existing chunks")
         
-        # Find content boundaries using TOC data to avoid non-informational pages
+        doc = None
         try:
-            first_page, last_page = self._get_toc_content_boundaries(document)
-            results['content_boundaries'] = (first_page + 1, last_page + 1)  # Convert to 1-based for display
-            print(f"📖 Processing TOC-defined content pages: {first_page + 1}-{last_page + 1}")
-        except Exception as e:
-            print(f"⚠️ Could not determine TOC boundaries, falling back to heuristic: {e}")
-            first_page, last_page = find_content_boundaries(document.file.path)
-            results['content_boundaries'] = (first_page + 1, last_page + 1)  # Convert to 1-based for display
-            print(f"📖 Processing heuristic content pages: {first_page + 1}-{last_page + 1}")
-        
-        # Process the content area with granular chunking
-        try:
-            chunks = self._extract_granular_chunks_from_range(document, first_page, last_page)
+            # Open the document once and pass it to helper functions
+            doc = fitz.open(document.file.path)
+            
+            # Find content boundaries using TOC data to avoid non-informational pages
+            try:
+                first_page, last_page = self._get_toc_content_boundaries(document)
+                results['content_boundaries'] = (first_page + 1, last_page + 1)  # Convert to 1-based for display
+                print(f"📖 Processing TOC-defined content pages: {first_page + 1}-{last_page + 1}")
+            except Exception as e:
+                print(f"⚠️ Could not determine TOC boundaries, falling back to heuristic: {e}")
+                first_page, last_page = find_content_boundaries(document.file.path)
+                results['content_boundaries'] = (first_page + 1, last_page + 1)  # Convert to 1-based for display
+                print(f"📖 Processing heuristic content pages: {first_page + 1}-{last_page + 1}")
+            
+            # Process the content area with granular chunking
+            chunks = self._extract_granular_chunks_from_range(doc, document, first_page, last_page)
             
             if not chunks:
                 print(f"⚠️ No chunks extracted from content area")
@@ -279,7 +286,12 @@ class GranularChunkProcessor:
             
         except Exception as e:
             print(f"❌ Error processing document content: {str(e)}")
+            logger.error(f"Error in process_entire_document: {str(e)}")
             return results
+        finally:
+            # Ensure the document is closed
+            if doc:
+                doc.close()
         
         # Generate embeddings for all chunks
         embedding_results = self._generate_embeddings_for_document(document)
@@ -371,12 +383,13 @@ class GranularChunkProcessor:
             
         return False
 
-    def _extract_granular_chunks_from_range(self, document: UploadedDocument, start_page: int, end_page: int) -> List[Dict[str, Any]]:
+    def _extract_granular_chunks_from_range(self, doc: fitz.Document, document: UploadedDocument, start_page: int, end_page: int) -> List[Dict[str, Any]]:
         """
         Extract granular chunks from a page range of the document.
         Creates smaller, type-classified chunks instead of full-page chunks.
         
         Args:
+            doc: The open fitz.Document object
             document: The UploadedDocument instance
             start_page: Starting page (0-based)
             end_page: Ending page (0-based)
@@ -384,13 +397,11 @@ class GranularChunkProcessor:
         Returns:
             List of enhanced chunk dictionaries with granular content
         """
-        doc = None
         temp_pdf = None
         temp_path = None
         
         try:
-            # Open the PDF and validate page range
-            doc = fitz.open(document.file.path)
+            # Validate page range
             total_pages = len(doc)
             
             # Ensure pages are within document bounds
@@ -453,22 +464,35 @@ class GranularChunkProcessor:
                 
                 return valid_chunks
                 
+            except Exception as e:
+                logger.error(f"Error in granular chunking: {str(e)}")
+                print(f"   ❌ Error in granular chunking: {str(e)}")
+                return []
             finally:
-                # Clean up temporary file
+                # Clean up temporary file - ensure it gets removed even on exception
                 if temp_path and os.path.exists(temp_path):
                     try:
                         os.unlink(temp_path)
-                    except OSError:
+                        print(f"   🧹 Cleaned up temp file: {os.path.basename(temp_path)}")
+                    except Exception as cleanup_error:
+                        logger.warning(f"Failed to cleanup temp file {temp_path}: {cleanup_error}")
+                        print(f"   ⚠️  Warning: Failed to cleanup temp file: {cleanup_error}")
+                
+                # Also close the temp PDF document
+                if 'temp_pdf' in locals():
+                    try:
+                        temp_pdf.close()
+                    except (OSError, Exception):
                         pass
                         
         except Exception as e:
             print(f"   ❌ Error extracting granular chunks: {str(e)}")
             return []
         finally:
-            if temp_pdf:
-                temp_pdf.close()
-            if doc:
-                doc.close()
+            # This was closing the main document prematurely
+            # if temp_pdf:
+            #     temp_pdf.close()
+            pass
     
     def _save_granular_chunks(self, document: UploadedDocument, chunks: List[Dict[str, Any]]) -> int:
         """
@@ -482,6 +506,9 @@ class GranularChunkProcessor:
             Number of chunks saved
         """
         saved_count = 0
+        total_chunks = len(chunks)
+        
+        print(f"   💾 Saving {total_chunks} chunks to database...")
         
         with transaction.atomic():
             for chunk in chunks:
@@ -498,8 +525,16 @@ class GranularChunkProcessor:
                         token_count=token_count,
                     )
                     saved_count += 1
+                    
+                    # Progress indicator for large numbers of chunks
+                    if saved_count % 500 == 0:
+                        print(f"   💾 Saved {saved_count}/{total_chunks} chunks...")
+                        
                 except Exception as e:
-                    print(f"   ⚠️ Error saving chunk {chunk['order_in_doc']}: {str(e)}")
-                    continue
+                    print(f"   ❌ Error saving chunk {chunk.get('order_in_doc', 'unknown')}: {str(e)}")
+                    logger.error(f"Chunk save error: {str(e)}")
+                    # Don't continue - this suggests a serious issue
+                    raise e
         
+        print(f"   ✅ Successfully saved {saved_count}/{total_chunks} chunks to database")
         return saved_count

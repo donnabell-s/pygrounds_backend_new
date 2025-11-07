@@ -24,16 +24,66 @@ echo Database: "%DB_NAME%"
 echo Output: "%OUT_FILE%" (for git push)
 echo.
 
+REM ======= CHECK POSTGRESQL SERVICE ========
+echo [1/4] Checking PostgreSQL service...
+sc query postgresql-x64-17 | find "RUNNING" >nul
+if errorlevel 1 (
+    echo ✗ PostgreSQL service is not running!
+    echo   Starting PostgreSQL service...
+    net start postgresql-x64-17
+    if errorlevel 1 (
+        echo ✗ Failed to start PostgreSQL service!
+        pause
+        exit /b 1
+    )
+    echo ✓ PostgreSQL service started
+) else (
+    echo ✓ PostgreSQL is running
+)
+
+REM ======= CHECK DATABASE CONNECTION ========
+echo.
+echo [2/4] Testing database connection...
+"%PG_BIN%\psql.exe" -h "%DB_HOST%" -p %DB_PORT% -U "%DB_USER%" -d "%DB_NAME%" -c "SELECT 1;" >nul 2>&1
+if errorlevel 1 (
+    echo ✗ Cannot connect to database "%DB_NAME%"
+    echo   Please check:
+    echo   - Database exists
+    echo   - Username/password are correct
+    echo   - PostgreSQL is running
+    pause
+    exit /b 1
+)
+echo ✓ Database connection successful
+
+REM ======= COUNT TABLES ========
+echo.
+echo [3/4] Analyzing database...
+for /f "tokens=*" %%i in ('"%PG_BIN%\psql.exe" -h "%DB_HOST%" -p %DB_PORT% -U "%DB_USER%" -d "%DB_NAME%" -t -c "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='public';"') do set TABLE_COUNT=%%i
+set TABLE_COUNT=%TABLE_COUNT: =%
+echo ✓ Found %TABLE_COUNT% tables to backup
+
 REM ======= RUN FULL DUMP ========
+echo.
+echo [4/4] Creating database dump...
 set "PATH=%PG_BIN%;%PATH%"
 "%PG_BIN%\pg_dump.exe" ^
   -h "%DB_HOST%" -p %DB_PORT% -U "%DB_USER%" -d "%DB_NAME%" ^
-  --no-owner --no-privileges -v ^
+  --format=plain ^
+  --no-owner ^
+  --no-privileges ^
+  --clean ^
+  --if-exists ^
+  --create ^
+  --column-inserts ^
+  --encoding=UTF8 ^
+  -v ^
   -f "%OUT_FILE%"
 
 if errorlevel 1 (
   echo.
-  echo Dump FAILED. Check connection/creds or pg_dump path.
+  echo ✗ Dump FAILED. Check connection/creds or pg_dump path.
+  pause
   exit /b 1
 )
 

@@ -1,7 +1,7 @@
 from django.urls import path
 from .views import (
     # Document management
-    upload_pdf, list_documents, get_document_detail, delete_document,
+    upload_pdf, list_documents, get_document_detail, get_document_status, delete_document,
     # Functional processing steps  
     process_document_pipeline, cancel_document_pipeline, chunk_document_pages, generate_document_embeddings,
     # Core steps
@@ -29,6 +29,7 @@ urlpatterns = [
     path('docs/', list_documents, name='docs-list'),
     path('docs/upload/', upload_pdf, name='docs-upload'),
     path('docs/<int:document_id>/', get_document_detail, name='docs-detail'),
+    path('docs/<int:document_id>/status/', get_document_status, name='docs-status'),  # Public endpoint
     path('docs/<int:document_id>/delete/', delete_document, name='docs-delete'),
 
     # ========== PIPELINE (FUNCTIONAL) ==========

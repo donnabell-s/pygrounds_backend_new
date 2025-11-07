@@ -145,11 +145,13 @@ def generate_subtopic_embeddings(concept_intents_map=None, code_intents_map=None
                         subtopic.embedding_status = 'failed'
                         subtopic.embedding_error = str(e)
                         subtopic.save()
+                        failed_count += 1
                 else:
                     print(f"  ❌ No embeddings generated for '{subtopic.name}'")
                     subtopic.embedding_status = 'failed'
                     subtopic.embedding_error = 'No embeddings were generated'
                     subtopic.save()
+                    failed_count += 1
 
         except Exception as e:
             print(f"❌ Error during parallel processing: {e}")

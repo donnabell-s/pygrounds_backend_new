@@ -1,0 +1,1770 @@
+[
+  {
+    "question_text": "Backslash n represents this line ending character",
+    "correct_answer": "newline",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Printing Special Characters and Escape Sequences",
+    "game_data": {
+      "explanation": "The escape sequence \\n represents a newline character that moves to the next line when printing",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:35:19.016666+00:00",
+    "exported_at": "2025-11-03T20:35:19.017665"
+  },
+  {
+    "question_text": "Backslash t creates horizontal spacing in output",
+    "correct_answer": "tab",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Printing Special Characters and Escape Sequences",
+    "game_data": {
+      "explanation": "The \\t escape sequence inserts a tab character that creates consistent horizontal spacing in text",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:35:19.041182+00:00",
+    "exported_at": "2025-11-03T20:35:19.042183"
+  },
+  {
+    "question_text": "Backslash r moves cursor to start of line",
+    "correct_answer": "carriage",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Printing Special Characters and Escape Sequences",
+    "game_data": {
+      "explanation": "The \\r escape sequence represents a carriage return that moves the cursor back to the beginning of the current line",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:35:19.062185+00:00",
+    "exported_at": "2025-11-03T20:35:19.064183"
+  },
+  {
+    "question_text": "Hexadecimal representation for non ASCII bytes",
+    "correct_answer": "escape",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Printing Special Characters and Escape Sequences",
+    "game_data": {
+      "explanation": "Bytes outside the printable ASCII range use hexadecimal escape sequences like \\x00 for the null byte",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:35:19.084182+00:00",
+    "exported_at": "2025-11-03T20:35:19.085182"
+  },
+  {
+    "question_text": "A type variable naming convention for contravariant parameters.",
+    "correct_answer": "Tin",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Naming Conventions (PEP8 Guidelines)",
+    "game_data": {
+      "explanation": "PEP8 recommends 'T_in' for contravariant type variables to indicate input or consumed types in generic classes.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:35:18.990664+00:00",
+    "exported_at": "2025-11-03T20:35:18.991665"
+  },
+  {
+    "question_text": "A type variable naming convention for contravariant parameters.",
+    "correct_answer": "Tin",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Naming Conventions (PEP8 Guidelines)",
+    "game_data": {
+      "explanation": "PEP8 recommends 'T_in' for contravariant type variables to indicate input or consumed types in generic classes.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:35:18.990664+00:00",
+    "exported_at": "2025-11-03T20:35:18.991665"
+  },
+  {
+    "question_text": "The Python decorator that enables function overloading with type hints.",
+    "correct_answer": "overload",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Naming Conventions (PEP8 Guidelines)",
+    "game_data": {
+      "explanation": "The @overload decorator allows defining multiple type signatures for a single function, improving code clarity and type checking.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:35:19.274283+00:00",
+    "exported_at": "2025-11-03T20:35:19.275277"
+  },
+  {
+    "question_text": "A generator that yields items but consumes no values.",
+    "correct_answer": "Iterator",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Naming Conventions (PEP8 Guidelines)",
+    "game_data": {
+      "explanation": "Iterator[T] is a type hint for generators that only yield values without consuming or returning additional data.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:35:19.297276+00:00",
+    "exported_at": "2025-11-03T20:35:19.298275"
+  },
+  {
+    "question_text": "A type variable representing any type in generic programming.",
+    "correct_answer": "TypeVar",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Naming Conventions (PEP8 Guidelines)",
+    "game_data": {
+      "explanation": "TypeVar creates type variables for generic functions and classes, allowing flexible type annotations while maintaining type safety.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:35:19.326280+00:00",
+    "exported_at": "2025-11-03T20:35:19.327281"
+  },
+  {
+    "question_text": "The decorator that provides single-dispatch generic functions.",
+    "correct_answer": "singledispatch",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Naming Conventions (PEP8 Guidelines)",
+    "game_data": {
+      "explanation": "@singledispatch enables function overloading based on the first argument's type, allowing different implementations for different types.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:35:19.347791+00:00",
+    "exported_at": "2025-11-03T20:35:19.348790"
+  },
+  {
+    "question_text": "A protocol for objects that can be traversed one element at a time.",
+    "correct_answer": "iterable",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Multi-line Input and Output",
+    "game_data": {
+      "explanation": "An iterable is an object capable of returning its members one at a time, allowing it to be looped over with constructs like for loops.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:35:19.828803+00:00",
+    "exported_at": "2025-11-03T20:35:19.830804"
+  },
+  {
+    "question_text": "A type variable used for generic type annotations in Python.",
+    "correct_answer": "TypeVar",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Multi-line Input and Output",
+    "game_data": {
+      "explanation": "TypeVar is used to define type variables for creating generic functions and classes that can work with multiple types while maintaining type safety.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:35:19.866313+00:00",
+    "exported_at": "2025-11-03T20:35:19.867314"
+  },
+  {
+    "question_text": "A property of objects that determines if they can be used as dictionary keys.",
+    "correct_answer": "hashable",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Multi-line Input and Output",
+    "game_data": {
+      "explanation": "Hashable objects have a hash value that never changes during their lifetime, allowing them to be used as keys in dictionaries and elements in sets.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:35:19.900824+00:00",
+    "exported_at": "2025-11-03T20:35:19.902825"
+  },
+  {
+    "question_text": "A function decorator that provides generic function overloading based on argument types.",
+    "correct_answer": "singledispatch",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Multi-line Input and Output",
+    "game_data": {
+      "explanation": "The singledispatch decorator allows a function to have different implementations based on the type of the first argument, similar to method overloading.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:35:19.925840+00:00",
+    "exported_at": "2025-11-03T20:35:19.926841"
+  },
+  {
+    "question_text": "A design pattern where an object provides sequential access to its elements.",
+    "correct_answer": "iterator",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Operator Precedence and Associativity",
+    "game_data": {
+      "explanation": "The iterator pattern allows traversing a collection without exposing its underlying structure, using methods like __iter__ and __next__.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:35:20.997540+00:00",
+    "exported_at": "2025-11-03T20:35:20.999540"
+  },
+  {
+    "question_text": "A type variable that can be substituted with more specific types in subtyping.",
+    "correct_answer": "covariant",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Operator Precedence and Associativity",
+    "game_data": {
+      "explanation": "Covariant type variables allow a generic type to accept subtypes, preserving the inheritance relationship in type parameters.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:35:21.048504+00:00",
+    "exported_at": "2025-11-03T20:35:21.049504"
+  },
+  {
+    "question_text": "A type variable that accepts more general types in place of specific ones.",
+    "correct_answer": "contravariant",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Operator Precedence and Associativity",
+    "game_data": {
+      "explanation": "Contravariant type variables enable a generic type to use supertypes, reversing the typical inheritance direction for type safety.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:35:21.073622+00:00",
+    "exported_at": "2025-11-03T20:35:21.074621"
+  },
+  {
+    "question_text": "A decorator that enables different function implementations based on argument type.",
+    "correct_answer": "singledispatch",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Operator Precedence and Associativity",
+    "game_data": {
+      "explanation": "The singledispatch decorator from functools allows a function to have multiple behaviors depending on the type of its first argument.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:35:21.099628+00:00",
+    "exported_at": "2025-11-03T20:35:21.100621"
+  },
+  {
+    "question_text": "The method used for string formatting before f-strings became prevalent.",
+    "correct_answer": "format",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "String Concatenation and Formatting (f-strings, .format())",
+    "game_data": {
+      "explanation": "The .format() method allows inserting values into string templates using placeholders.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:35:35.686700+00:00",
+    "exported_at": "2025-11-03T20:35:35.688222"
+  },
+  {
+    "question_text": "Special methods used to define how objects are represented as strings.",
+    "correct_answer": "representation",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "String Concatenation and Formatting (f-strings, .format())",
+    "game_data": {
+      "explanation": "Special methods like __str__ and __repr__ control how objects are converted to string form.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:35:35.727761+00:00",
+    "exported_at": "2025-11-03T20:35:35.728764"
+  },
+  {
+    "question_text": "The act of assigning formatting tasks to specific methods or functions.",
+    "correct_answer": "delegation",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "String Concatenation and Formatting (f-strings, .format())",
+    "game_data": {
+      "explanation": "Delegation in formatting means passing the responsibility of string representation to specialized methods.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:35:35.753274+00:00",
+    "exported_at": "2025-11-03T20:35:35.754273"
+  },
+  {
+    "question_text": "A string that contains placeholders for dynamic values to be inserted.",
+    "correct_answer": "template",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "String Concatenation and Formatting (f-strings, .format())",
+    "game_data": {
+      "explanation": "String templates use special markers where values will be substituted during formatting.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:35:35.777687+00:00",
+    "exported_at": "2025-11-03T20:35:35.778678"
+  },
+  {
+    "question_text": "The characteristic of f-strings that makes them evaluate expressions at runtime.",
+    "correct_answer": "evaluation",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "String Concatenation and Formatting (f-strings, .format())",
+    "game_data": {
+      "explanation": "F-strings evaluate expressions inside curly braces at runtime and insert their values into the string.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:35:35.800682+00:00",
+    "exported_at": "2025-11-03T20:35:35.801679"
+  },
+  {
+    "question_text": "Special methods used to represent an object as a string.",
+    "correct_answer": "representation",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Strings and String Formatting",
+    "game_data": {
+      "explanation": "These methods define how objects are converted to strings, crucial for display and debugging purposes.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:35:36.492588+00:00",
+    "exported_at": "2025-11-03T20:35:36.493589"
+  },
+  {
+    "question_text": "A string that embeds expressions directly within its syntax.",
+    "correct_answer": "literal",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Strings and String Formatting",
+    "game_data": {
+      "explanation": "String literals can include embedded expressions, as seen in f-strings, for dynamic content.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:35:36.517589+00:00",
+    "exported_at": "2025-11-03T20:35:36.519588"
+  },
+  {
+    "question_text": "The process of converting data into a string format.",
+    "correct_answer": "formatting",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Strings and String Formatting",
+    "game_data": {
+      "explanation": "Formatting involves structuring strings to include variables and expressions in a readable way.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:35:36.543595+00:00",
+    "exported_at": "2025-11-03T20:35:36.545593"
+  },
+  {
+    "question_text": "Methods that define behavior for built-in operations in Python.",
+    "correct_answer": "special",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Strings and String Formatting",
+    "game_data": {
+      "explanation": "Special methods, often with double underscores, customize how objects interact with Python's core features.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:35:36.568106+00:00",
+    "exported_at": "2025-11-03T20:35:36.569106"
+  },
+  {
+    "question_text": "The readable and efficient nature of certain Python syntax features.",
+    "correct_answer": "pythonic",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Strings and String Formatting",
+    "game_data": {
+      "explanation": "Pythonic code emphasizes clarity and simplicity, making it easier to write and maintain.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:35:36.595106+00:00",
+    "exported_at": "2025-11-03T20:35:36.596107"
+  },
+  {
+    "question_text": "A dictionary method that removes and returns the last inserted key-value pair.",
+    "correct_answer": "popitem",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Single-line vs Multi-line Comments",
+    "game_data": {
+      "explanation": "The popitem method removes and returns the most recently added item from a dictionary as a key-value tuple, useful for LIFO operations.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:35:37.849070+00:00",
+    "exported_at": "2025-11-03T20:35:37.850070"
+  },
+  {
+    "question_text": "A design pattern for sequentially accessing elements without exposing underlying structure.",
+    "correct_answer": "iterator",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Structuring Code for Readability",
+    "game_data": {
+      "explanation": "The iterator pattern allows traversal through collections without knowing their internal representation, commonly implemented with __iter__ and __next__.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:35:39.005057+00:00",
+    "exported_at": "2025-11-03T20:35:39.006060"
+  },
+  {
+    "question_text": "A special method that enables reverse iteration over container keys.",
+    "correct_answer": "reversed",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Structuring Code for Readability",
+    "game_data": {
+      "explanation": "__reversed__ provides reverse iteration support for custom containers, allowing backward traversal through sequences or mappings.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:35:39.081335+00:00",
+    "exported_at": "2025-11-03T20:35:39.091849"
+  },
+  {
+    "question_text": "A declaration that modifies variable binding in nested functions.",
+    "correct_answer": "nonlocal",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Structuring Code for Readability",
+    "game_data": {
+      "explanation": "nonlocal allows inner functions to modify variables in enclosing scopes, crucial for closures and decorator implementations.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:35:39.118847+00:00",
+    "exported_at": "2025-11-03T20:35:39.119849"
+  },
+  {
+    "question_text": "Runtime type checking method that considers inheritance.",
+    "correct_answer": "isinstance",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Type Checking with type() and isinstance()",
+    "game_data": {
+      "explanation": "The isinstance() function checks if an object is an instance of a class or its subclasses, unlike type() which only checks exact type.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:35:54.446459+00:00",
+    "exported_at": "2025-11-03T20:35:54.449461"
+  },
+  {
+    "question_text": "Static type checking approach that verifies method existence.",
+    "correct_answer": "Protocol",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Type Checking with type() and isinstance()",
+    "game_data": {
+      "explanation": "Protocol enables structural subtyping where type checkers verify objects have required methods regardless of inheritance hierarchy.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:35:54.487853+00:00",
+    "exported_at": "2025-11-03T20:35:54.489853"
+  },
+  {
+    "question_text": "ABC method that enables structural typing with isinstance.",
+    "correct_answer": "subclasshook",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Type Checking with type() and isinstance()",
+    "game_data": {
+      "explanation": "The __subclasshook__ method allows ABCs to determine subclass relationships based on method implementation rather than explicit inheritance.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:35:54.524284+00:00",
+    "exported_at": "2025-11-03T20:35:54.525283"
+  },
+  {
+    "question_text": "Numeric ABC with abstract __complex__ method.",
+    "correct_answer": "SupportsComplex",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Type Checking with type() and isinstance()",
+    "game_data": {
+      "explanation": "SupportsComplex is a runtime-checkable protocol that requires objects to implement the __complex__ method for conversion.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:35:54.561299+00:00",
+    "exported_at": "2025-11-03T20:35:54.563293"
+  },
+  {
+    "question_text": "Programming style based on object capabilities rather than types.",
+    "correct_answer": "ducktyping",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Type Checking with type() and isinstance()",
+    "game_data": {
+      "explanation": "Duck typing focuses on what methods an object has rather than its explicit type, following 'if it walks like a duck' philosophy.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:35:54.589810+00:00",
+    "exported_at": "2025-11-03T20:35:54.591813"
+  },
+  {
+    "question_text": "Type checking that happens before code execution.",
+    "correct_answer": "static",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Type Checking with type() and isinstance()",
+    "game_data": {
+      "explanation": "Static type checking analyzes code without running it, using type hints to catch potential errors during development.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:35:54.622318+00:00",
+    "exported_at": "2025-11-03T20:35:54.624318"
+  },
+  {
+    "question_text": "A decorator that enables generic function overloading based on argument types.",
+    "correct_answer": "singledispatch",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Troubleshooting Common Setup Errors",
+    "game_data": {
+      "explanation": "The singledispatch decorator from functools allows functions to have different implementations depending on the type of the first argument.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:35:54.766837+00:00",
+    "exported_at": "2025-11-03T20:35:54.768837"
+  },
+  {
+    "question_text": "A declaration that allows nested functions to modify variables in enclosing scopes.",
+    "correct_answer": "nonlocal",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Troubleshooting Common Setup Errors",
+    "game_data": {
+      "explanation": "The nonlocal keyword enables inner functions to change variables defined in outer (non-global) scopes, crucial for closures and decorators.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:35:54.791864+00:00",
+    "exported_at": "2025-11-03T20:35:54.792863"
+  },
+  {
+    "question_text": "Objects that produce sequences of values one at a time when iterated.",
+    "correct_answer": "generator",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Troubleshooting Common Setup Errors",
+    "game_data": {
+      "explanation": "Generators are iterators that yield values on-the-fly using the yield keyword, conserving memory and enabling lazy evaluation.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:35:54.814867+00:00",
+    "exported_at": "2025-11-03T20:35:54.816865"
+  },
+  {
+    "question_text": "A type variable that can be used to represent covariant types in generics.",
+    "correct_answer": "TypeVar",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Type Conversion and Casting",
+    "game_data": {
+      "explanation": "TypeVar creates type variables for generic classes or functions, enabling flexible and reusable type annotations with variance.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:35:56.184033+00:00",
+    "exported_at": "2025-11-03T20:35:56.186040"
+  },
+  {
+    "question_text": "The protocol for making an object iterable by implementing __iter__.",
+    "correct_answer": "iterable",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Type Conversion and Casting",
+    "game_data": {
+      "explanation": "An iterable is any object that can return an iterator when its __iter__ method is called, allowing for loop usage.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:35:56.218415+00:00",
+    "exported_at": "2025-11-03T20:35:56.219414"
+  },
+  {
+    "question_text": "A cache decorator that memorizes function calls to optimize performance.",
+    "correct_answer": "lru_cache",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Type Conversion and Casting",
+    "game_data": {
+      "explanation": "lru_cache decorator stores recent function calls, reducing computation time by returning cached results for repeated inputs.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:35:56.240416+00:00",
+    "exported_at": "2025-11-03T20:35:56.241416"
+  },
+  {
+    "question_text": "The method to remove and return the last inserted item from a dictionary.",
+    "correct_answer": "popitem",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Type Conversion and Casting",
+    "game_data": {
+      "explanation": "popitem removes and returns the most recently added key-value pair from a dictionary, useful for ordered data processing.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:35:56.264423+00:00",
+    "exported_at": "2025-11-03T20:35:56.265423"
+  },
+  {
+    "question_text": "A design pattern where an object provides sequential access to its elements.",
+    "correct_answer": "Iterator",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Type Conversion and Casting",
+    "game_data": {
+      "explanation": "The Iterator pattern allows traversal through a collection without exposing its underlying structure, promoting clean and efficient code.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:35:56.286584+00:00",
+    "exported_at": "2025-11-03T20:35:56.288583"
+  },
+  {
+    "question_text": "A subclass that manages nested scopes using collection.ChainMap in interpreters.",
+    "correct_answer": "Environment",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Understanding the Python Interpreter and Shell",
+    "game_data": {
+      "explanation": "Environment handles variable scopes in interpreters, often implemented as a subclass of ChainMap for nested lookups.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:35:57.603023+00:00",
+    "exported_at": "2025-11-03T20:35:57.605030"
+  },
+  {
+    "question_text": "A tool that reads, evaluates, and prints results in interactive programming.",
+    "correct_answer": "REPL",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Understanding the Python Interpreter and Shell",
+    "game_data": {
+      "explanation": "REPL stands for Read-Eval-Print Loop, allowing immediate code execution and feedback in interactive shells.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:35:57.637183+00:00",
+    "exported_at": "2025-11-03T20:35:57.638182"
+  },
+  {
+    "question_text": "Expressions parsed as nested lists in Lisp-like languages.",
+    "correct_answer": "Sexpressions",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Understanding the Python Interpreter and Shell",
+    "game_data": {
+      "explanation": "S-expressions are symbolic expressions in Lisp, represented as nested lists for code and data structures.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:35:57.662188+00:00",
+    "exported_at": "2025-11-03T20:35:57.663187"
+  },
+  {
+    "question_text": "A language construct that sets up and tears down temporary contexts reliably.",
+    "correct_answer": "with",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Understanding the Python Interpreter and Shell",
+    "game_data": {
+      "explanation": "The with statement manages context using managers, ensuring proper setup and cleanup for resources like files.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:35:57.685699+00:00",
+    "exported_at": "2025-11-03T20:35:57.687700"
+  },
+  {
+    "question_text": "A technique using patterns to process language grammar in interpreters.",
+    "correct_answer": "matching",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Understanding the Python Interpreter and Shell",
+    "game_data": {
+      "explanation": "Pattern matching in match/case statements helps interpret language grammar by matching sequences and structures.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:35:57.713707+00:00",
+    "exported_at": "2025-11-03T20:35:57.714699"
+  },
+  {
+    "question_text": "Collections with unique elements written with curly braces.",
+    "correct_answer": "setliterals",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Using input() to Read User Data",
+    "game_data": {
+      "explanation": "Set literals use curly braces to define collections of unique items, similar to mathematical set notation.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:36:12.095764+00:00",
+    "exported_at": "2025-11-03T20:36:12.096764"
+  },
+  {
+    "question_text": "Objects that follow the standard protocol for sequential access.",
+    "correct_answer": "iterable",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Using input() to Read User Data",
+    "game_data": {
+      "explanation": "Iterable objects implement methods that allow them to be looped over using for loops or iteration functions.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:36:12.142739+00:00",
+    "exported_at": "2025-11-03T20:36:12.143739"
+  },
+  {
+    "question_text": "Dictionary method that removes and returns the last inserted item.",
+    "correct_answer": "popitem",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Using input() to Read User Data",
+    "game_data": {
+      "explanation": "The popitem method removes and returns the most recently added key-value pair from a dictionary.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:36:12.170738+00:00",
+    "exported_at": "2025-11-03T20:36:12.172739"
+  },
+  {
+    "question_text": "Specialized generators that can both consume and return values.",
+    "correct_answer": "coroutines",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Using input() to Read User Data",
+    "game_data": {
+      "explanation": "Coroutines are advanced generators that can receive values while executing, enabling complex control flow patterns.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:36:12.198267+00:00",
+    "exported_at": "2025-11-03T20:36:12.199273"
+  },
+  {
+    "question_text": "Function annotation feature allowing different implementations by type.",
+    "correct_answer": "overload",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Using input() to Read User Data",
+    "game_data": {
+      "explanation": "The overload decorator enables defining multiple function signatures with different type annotations for the same function.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:36:12.226274+00:00",
+    "exported_at": "2025-11-03T20:36:12.228267"
+  },
+  {
+    "question_text": "A package that enforces PEP 8 standards.",
+    "correct_answer": "pep8",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Using the print() Function Effectively",
+    "game_data": {
+      "explanation": "The pep8 package is used to check Python source code for adherence to the PEP 8 style guide, ensuring code readability and consistency.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:36:13.473509+00:00",
+    "exported_at": "2025-11-03T20:36:13.475513"
+  },
+  {
+    "question_text": "The underlying data stream for text files.",
+    "correct_answer": "binary",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Using the print() Function Effectively",
+    "game_data": {
+      "explanation": "In Python, text files are built on top of binary streams, which can be accessed directly for low-level byte operations when needed.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:36:13.521105+00:00",
+    "exported_at": "2025-11-03T20:36:13.522108"
+  },
+  {
+    "question_text": "A character encoding standard for text.",
+    "correct_answer": "unicode",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Using the print() Function Effectively",
+    "game_data": {
+      "explanation": "Unicode is a universal character encoding standard that supports text in all languages, used in Python for handling international characters.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:36:13.544100+00:00",
+    "exported_at": "2025-11-03T20:36:13.546100"
+  },
+  {
+    "question_text": "The process of removing and returning the last inserted dictionary item.",
+    "correct_answer": "popitem",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Writing and Running Your First Python Script",
+    "game_data": {
+      "explanation": "popitem is a dictionary method that removes and returns the most recently added key-value pair as a tuple.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:36:14.360396+00:00",
+    "exported_at": "2025-11-03T20:36:14.361384"
+  },
+  {
+    "question_text": "A type hint feature allowing union of multiple types with the | operator.",
+    "correct_answer": "TypeAlias",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Writing and Running Your First Python Script",
+    "game_data": {
+      "explanation": "TypeAlias creates custom type names for complex annotations, often used with union types for clearer code documentation.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:36:14.389389+00:00",
+    "exported_at": "2025-11-03T20:36:14.390388"
+  },
+  {
+    "question_text": "The method to remove a dictionary key and return its value or a default.",
+    "correct_answer": "pop",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Writing and Running Your First Python Script",
+    "game_data": {
+      "explanation": "The pop method in dictionaries removes a specified key and returns its value, with an optional default if the key is missing.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:36:14.420904+00:00",
+    "exported_at": "2025-11-03T20:36:14.421903"
+  },
+  {
+    "question_text": "The way to create an empty set since {} makes an empty dictionary.",
+    "correct_answer": "set",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Writing and Running Your First Python Script",
+    "game_data": {
+      "explanation": "The set() constructor is used to create an empty set because curly braces without elements default to an empty dictionary.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:36:14.452903+00:00",
+    "exported_at": "2025-11-03T20:36:14.453905"
+  },
+  {
+    "question_text": "A protocol allowing objects to be traversed using for loops.",
+    "correct_answer": "iterable",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Writing Self-Documenting Code",
+    "game_data": {
+      "explanation": "Iterable objects implement methods that enable sequential access to their elements, supporting iteration in Python.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:36:15.075881+00:00",
+    "exported_at": "2025-11-03T20:36:15.077879"
+  },
+  {
+    "question_text": "A design pattern for sequential element access without exposing structure.",
+    "correct_answer": "iterator",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Writing Self-Documenting Code",
+    "game_data": {
+      "explanation": "The iterator pattern provides a way to access elements of a collection sequentially without knowing its underlying representation.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:36:15.118321+00:00",
+    "exported_at": "2025-11-03T20:36:15.119322"
+  },
+  {
+    "question_text": "A decorator that enables function overloading based on argument types.",
+    "correct_answer": "singledispatch",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Writing Self-Documenting Code",
+    "game_data": {
+      "explanation": "singledispatch allows a function to have different implementations depending on the type of its first argument, enabling polymorphism.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:36:15.144324+00:00",
+    "exported_at": "2025-11-03T20:36:15.145325"
+  },
+  {
+    "question_text": "A type hint indicating a function that can return multiple types.",
+    "correct_answer": "overload",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Writing Self-Documenting Code",
+    "game_data": {
+      "explanation": "The overload decorator is used in type hints to specify that a function can have multiple signatures with different return types.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:36:15.170409+00:00",
+    "exported_at": "2025-11-03T20:36:15.171402"
+  },
+  {
+    "question_text": "A type variable used for generic programming in annotations.",
+    "correct_answer": "TypeVar",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Writing Self-Documenting Code",
+    "game_data": {
+      "explanation": "TypeVar creates type variables that enable writing generic functions and classes that work with multiple types while maintaining type safety.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:36:15.195916+00:00",
+    "exported_at": "2025-11-03T20:36:15.196916"
+  },
+  {
+    "question_text": "The special method for addition in Python.",
+    "correct_answer": "add",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Arithmetic Operators (+, -, *, /, %, //, **)",
+    "game_data": {
+      "explanation": "The __add__ method implements the + operator for custom classes, allowing objects to be added together.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:36:29.096107+00:00",
+    "exported_at": "2025-11-03T20:36:29.097101"
+  },
+  {
+    "question_text": "Operator that returns remainder after division.",
+    "correct_answer": "modulo",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Arithmetic Operators (+, -, *, /, %, //, **)",
+    "game_data": {
+      "explanation": "The modulo operator % returns the remainder of a division operation between two numbers.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:36:29.143623+00:00",
+    "exported_at": "2025-11-03T20:36:29.145626"
+  },
+  {
+    "question_text": "Special method for floor division operation.",
+    "correct_answer": "floordiv",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Arithmetic Operators (+, -, *, /, %, //, **)",
+    "game_data": {
+      "explanation": "The __floordiv__ method implements the // operator, which performs division and rounds down to the nearest integer.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:36:29.184623+00:00",
+    "exported_at": "2025-11-03T20:36:29.186621"
+  },
+  {
+    "question_text": "Method that implements exponentiation in Python.",
+    "correct_answer": "pow",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Arithmetic Operators (+, -, *, /, %, //, **)",
+    "game_data": {
+      "explanation": "The __pow__ method implements the ** operator for raising numbers to powers, and can optionally take a modulo argument.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:36:29.219149+00:00",
+    "exported_at": "2025-11-03T20:36:29.220144"
+  },
+  {
+    "question_text": "Shortcut operators that combine calculation with assignment.",
+    "correct_answer": "augmented",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Arithmetic Operators (+, -, *, /, %, //, **)",
+    "game_data": {
+      "explanation": "Augmented assignment operators like += and -= perform an operation and assign the result to the variable in one step.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:36:29.250143+00:00",
+    "exported_at": "2025-11-03T20:36:29.252142"
+  },
+  {
+    "question_text": "The special method for true division in Python.",
+    "correct_answer": "truediv",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Arithmetic Operators (+, -, *, /, %, //, **)",
+    "game_data": {
+      "explanation": "This method implements the / operator for floating-point division between objects.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:36:29.294150+00:00",
+    "exported_at": "2025-11-03T20:36:29.296153"
+  },
+  {
+    "question_text": "The special method for bitwise exclusive OR assignment.",
+    "correct_answer": "ixor",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Arithmetic Operators (+, -, *, /, %, //, **)",
+    "game_data": {
+      "explanation": "This in-place method handles the ^= operator for bitwise XOR assignment operations.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:36:29.312318+00:00",
+    "exported_at": "2025-11-03T20:36:29.313318"
+  },
+  {
+    "question_text": "The special method for floor division in Python.",
+    "correct_answer": "floordiv",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Arithmetic Operators (+, -, *, /, %, //, **)",
+    "game_data": {
+      "explanation": "This method implements the // operator for integer division that rounds down.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:36:29.341319+00:00",
+    "exported_at": "2025-11-03T20:36:29.344325"
+  },
+  {
+    "question_text": "The special method for bitwise right shift assignment.",
+    "correct_answer": "irshift",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Arithmetic Operators (+, -, *, /, %, //, **)",
+    "game_data": {
+      "explanation": "This in-place method is called when using the >>= operator for bitwise right shift assignment.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:36:29.369318+00:00",
+    "exported_at": "2025-11-03T20:36:29.371319"
+  },
+  {
+    "question_text": "The special method for matrix multiplication assignment.",
+    "correct_answer": "imatmul",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Arithmetic Operators (+, -, *, /, %, //, **)",
+    "game_data": {
+      "explanation": "This in-place method handles the @= operator for matrix multiplication assignment operations.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:36:29.403397+00:00",
+    "exported_at": "2025-11-03T20:36:29.404398"
+  },
+  {
+    "question_text": "The special method for reversed modulo operations.",
+    "correct_answer": "rmod",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Arithmetic Operators (+, -, *, /, %, //, **)",
+    "game_data": {
+      "explanation": "This method is called when the left operand cannot handle the % operator, so Python tries the right operand.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:36:29.434582+00:00",
+    "exported_at": "2025-11-03T20:36:29.436582"
+  },
+  {
+    "question_text": "Special method for in-place addition assignment.",
+    "correct_answer": "iadd",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Arithmetic Operators (+, -, *, /, %, //, **)",
+    "game_data": {
+      "explanation": "The __iadd__ method implements the += operator, modifying the left operand in place rather than creating a new object.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:36:29.279142+00:00",
+    "exported_at": "2025-11-03T20:36:29.280142"
+  },
+  {
+    "question_text": "Method called when left operand cannot handle the operation.",
+    "correct_answer": "reversed",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Arithmetic Operators (+, -, *, /, %, //, **)",
+    "game_data": {
+      "explanation": "Reversed operator methods like __radd__ are called when the left operand doesn't support the operation but the right operand does.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:36:29.562261+00:00",
+    "exported_at": "2025-11-03T20:36:29.563260"
+  },
+  {
+    "question_text": "The special method for addition that supports in-place operations.",
+    "correct_answer": "iadd",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Arithmetic Operators (+, -, *, /, %, //, **)",
+    "game_data": {
+      "explanation": "The __iadd__ method implements in-place addition, allowing objects to modify themselves when using the += operator.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:36:32.366313+00:00",
+    "exported_at": "2025-11-03T20:36:32.367312"
+  },
+  {
+    "question_text": "The special method for addition that supports in-place operations.",
+    "correct_answer": "iadd",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Arithmetic Operators (+, -, *, /, %, //, **)",
+    "game_data": {
+      "explanation": "The __iadd__ method implements in-place addition, allowing objects to modify themselves when using the += operator.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:36:32.366313+00:00",
+    "exported_at": "2025-11-03T20:36:32.393313"
+  },
+  {
+    "question_text": "Special method that implements true division with reverse operation support.",
+    "correct_answer": "rtruediv",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Arithmetic Operators (+, -, *, /, %, //, **)",
+    "game_data": {
+      "explanation": "__rtruediv__ provides reverse true division support when the left operand doesn't implement the operation, enabling flexible division behavior.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:36:32.418382+00:00",
+    "exported_at": "2025-11-03T20:36:32.421380"
+  },
+  {
+    "question_text": "Floor division special method that supports in-place modification.",
+    "correct_answer": "ifloordiv",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Arithmetic Operators (+, -, *, /, %, //, **)",
+    "game_data": {
+      "explanation": "The __ifloordiv__ method implements in-place floor division, allowing objects to update themselves when using the //= operator.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:36:32.445381+00:00",
+    "exported_at": "2025-11-03T20:36:32.446380"
+  },
+  {
+    "question_text": "Power operation that can take an optional third argument for modulo.",
+    "correct_answer": "pow",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Arithmetic Operators (+, -, *, /, %, //, **)",
+    "game_data": {
+      "explanation": "The pow function supports exponentiation with an optional third parameter for modulo calculation, enabling efficient modular exponentiation.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:36:32.470381+00:00",
+    "exported_at": "2025-11-03T20:36:32.471381"
+  },
+  {
+    "question_text": "Comparison operator that checks for inequality between two values.",
+    "correct_answer": "notequal",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Arithmetic Operators (+, -, *, /, %, //, **)",
+    "game_data": {
+      "explanation": "The != operator tests for inequality, returning True when values are different and implementing the __ne__ special method.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:36:32.496388+00:00",
+    "exported_at": "2025-11-03T20:36:32.497386"
+  },
+  {
+    "question_text": "Special method that implements the greater than or equal comparison.",
+    "correct_answer": "ge",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Arithmetic Operators (+, -, *, /, %, //, **)",
+    "game_data": {
+      "explanation": "The __ge__ method implements the >= comparison operator, allowing objects to define their own greater than or equal behavior.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:36:32.521529+00:00",
+    "exported_at": "2025-11-03T20:36:32.522530"
+  },
+  {
+    "question_text": "Operator that returns the remainder after division of two numbers.",
+    "correct_answer": "modulo",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Arithmetic Operators (+, -, *, /, %, //, **)",
+    "game_data": {
+      "explanation": "The modulo operator (%) calculates the remainder when one number is divided by another, useful for cyclic patterns and divisibility checks.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:36:33.330719+00:00",
+    "exported_at": "2025-11-03T20:36:33.340698"
+  },
+  {
+    "question_text": "Floor division operator that rounds down to the nearest integer.",
+    "correct_answer": "floordiv",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Arithmetic Operators (+, -, *, /, %, //, **)",
+    "game_data": {
+      "explanation": "Floor division (//) divides numbers and rounds down to the nearest whole number, different from true division which returns floats.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:36:33.391605+00:00",
+    "exported_at": "2025-11-03T20:36:33.393608"
+  },
+  {
+    "question_text": "Special method name for exponentiation with optional modulo argument.",
+    "correct_answer": "pow",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Arithmetic Operators (+, -, *, /, %, //, **)",
+    "game_data": {
+      "explanation": "The pow method handles exponentiation and can take an optional third argument for modulo calculation, providing mathematical flexibility.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:36:33.425135+00:00",
+    "exported_at": "2025-11-03T20:36:33.426142"
+  },
+  {
+    "question_text": "Unary operator that inverts the truth value of its operand.",
+    "correct_answer": "not",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Arithmetic Operators (+, -, *, /, %, //, **)",
+    "game_data": {
+      "explanation": "The 'not' operator reverses boolean values, turning True to False and vice versa, essential for logical negation in conditions.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:36:33.469283+00:00",
+    "exported_at": "2025-11-03T20:36:33.471283"
+  },
+  {
+    "question_text": "The special method that implements true division in Python.",
+    "correct_answer": "truediv",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Arithmetic Operators (+, -, *, /, %, //, **)",
+    "game_data": {
+      "explanation": "This method defines how objects respond to the division operator /, performing true mathematical division.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:36:45.610503+00:00",
+    "exported_at": "2025-11-03T20:36:45.612503"
+  },
+  {
+    "question_text": "The special method that implements exponentiation with optional modulo.",
+    "correct_answer": "pow",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Arithmetic Operators (+, -, *, /, %, //, **)",
+    "game_data": {
+      "explanation": "This method handles the power operator ** and can optionally take a third argument for modulo calculation.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:36:45.664790+00:00",
+    "exported_at": "2025-11-03T20:36:45.667782"
+  },
+  {
+    "question_text": "The special method for implementing in-place addition.",
+    "correct_answer": "iadd",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Arithmetic Operators (+, -, *, /, %, //, **)",
+    "game_data": {
+      "explanation": "This method defines behavior for the += operator, performing addition and assignment in one step.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:36:45.698781+00:00",
+    "exported_at": "2025-11-03T20:36:45.700792"
+  },
+  {
+    "question_text": "The special method for implementing in-place multiplication.",
+    "correct_answer": "imul",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Arithmetic Operators (+, -, *, /, %, //, **)",
+    "game_data": {
+      "explanation": "This method handles the *= operator, performing multiplication and assignment simultaneously.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:36:45.729874+00:00",
+    "exported_at": "2025-11-03T20:36:45.730875"
+  },
+  {
+    "question_text": "The special method for implementing in-place floor division.",
+    "correct_answer": "ifloordiv",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Arithmetic Operators (+, -, *, /, %, //, **)",
+    "game_data": {
+      "explanation": "This method defines behavior for the //= operator, performing floor division and assignment together.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:36:45.764868+00:00",
+    "exported_at": "2025-11-03T20:36:45.765867"
+  },
+  {
+    "question_text": "Special method for implementing floor division in custom classes.",
+    "correct_answer": "floordiv",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Arithmetic Operators (+, -, *, /, %, //, **)",
+    "game_data": {
+      "explanation": "__floordiv__ is the special method that implements the // operator for floor division in Python classes.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:36:47.260803+00:00",
+    "exported_at": "2025-11-03T20:36:47.264797"
+  },
+  {
+    "question_text": "Special method that implements the exponentiation operation with three arguments.",
+    "correct_answer": "pow",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Arithmetic Operators (+, -, *, /, %, //, **)",
+    "game_data": {
+      "explanation": "__pow__ special method handles the ** operator and can accept an optional third argument for modulo operation.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:36:47.323207+00:00",
+    "exported_at": "2025-11-03T20:36:47.324207"
+  },
+  {
+    "question_text": "Operator that tests whether two variables reference the same object.",
+    "correct_answer": "identity",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Arithmetic Operators (+, -, *, /, %, //, **)",
+    "game_data": {
+      "explanation": "Identity operators (is, is not) check if two variables point to the same object in memory, not just equal values.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:36:47.353563+00:00",
+    "exported_at": "2025-11-03T20:36:47.354562"
+  },
+  {
+    "question_text": "Arithmetic operation that combines floor division and modulo in one call.",
+    "correct_answer": "divmod",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Arithmetic Operators (+, -, *, /, %, //, **)",
+    "game_data": {
+      "explanation": "divmod() function returns a tuple containing both the quotient and remainder from division operations.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:36:47.381563+00:00",
+    "exported_at": "2025-11-03T20:36:47.382562"
+  },
+  {
+    "question_text": "Special method for implementing in-place addition operations.",
+    "correct_answer": "iadd",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Arithmetic Operators (+, -, *, /, %, //, **)",
+    "game_data": {
+      "explanation": "__iadd__ is the special method that implements the += operator for in-place addition in Python classes.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:36:47.410578+00:00",
+    "exported_at": "2025-11-03T20:36:47.412568"
+  },
+  {
+    "question_text": "Special method for bitwise AND augmented assignment.",
+    "correct_answer": "iand",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Assignment Operators (=, +=, -=, etc. )",
+    "game_data": {
+      "explanation": "__iand__ is the special method implementing the &= augmented assignment operator.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:36:47.461522+00:00",
+    "exported_at": "2025-11-03T20:36:47.463571"
+  },
+  {
+    "question_text": "Special method for bitwise XOR augmented assignment.",
+    "correct_answer": "ixor",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Assignment Operators (=, +=, -=, etc. )",
+    "game_data": {
+      "explanation": "__ixor__ is the special method implementing the ^= augmented assignment operator.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:36:47.510535+00:00",
+    "exported_at": "2025-11-03T20:36:47.512542"
+  },
+  {
+    "question_text": "Special method for left shift augmented assignment.",
+    "correct_answer": "ilshift",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Assignment Operators (=, +=, -=, etc. )",
+    "game_data": {
+      "explanation": "__ilshift__ is the special method implementing the <<= augmented assignment operator.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:36:47.545050+00:00",
+    "exported_at": "2025-11-03T20:36:47.546051"
+  },
+  {
+    "question_text": "Special method for right shift augmented assignment.",
+    "correct_answer": "irshift",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Assignment Operators (=, +=, -=, etc. )",
+    "game_data": {
+      "explanation": "__irshift__ is the special method implementing the >>= augmented assignment operator.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:36:47.577713+00:00",
+    "exported_at": "2025-11-03T20:36:47.578716"
+  },
+  {
+    "question_text": "Operator category including AND, OR, XOR, and shifts.",
+    "correct_answer": "bitwise",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Assignment Operators (=, +=, -=, etc. )",
+    "game_data": {
+      "explanation": "Bitwise operators work on binary representations of integers at the bit level.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:36:47.613725+00:00",
+    "exported_at": "2025-11-03T20:36:47.615724"
+  },
+  {
+    "question_text": "A decorator that caches function results to optimize performance.",
+    "correct_answer": "lrucache",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Assignment Operators (=, +=, -=, etc. )",
+    "game_data": {
+      "explanation": "lru_cache is a decorator that memoizes function results, storing recent outputs to avoid recomputation.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:36:51.027224+00:00",
+    "exported_at": "2025-11-03T20:36:51.029217"
+  },
+  {
+    "question_text": "Operator category including bitwise assignments like &= and ^=.",
+    "correct_answer": "Bitwise",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Assignment Operators (=, +=, -=, etc. )",
+    "game_data": {
+      "explanation": "Bitwise operators perform operations on binary representations of integers, with augmented versions for assignment.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:36:51.072434+00:00",
+    "exported_at": "2025-11-03T20:36:51.073435"
+  },
+  {
+    "question_text": "Assignment shortcuts combining an infix operator with variable assignment.",
+    "correct_answer": "Augmented",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Assignment Operators (=, +=, -=, etc. )",
+    "game_data": {
+      "explanation": "Augmented assignments like += and -= combine an operation with assignment in one step, making code more concise and efficient.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:37:04.040797+00:00",
+    "exported_at": "2025-11-03T20:37:04.042800"
+  },
+  {
+    "question_text": "Python calls this on the second operand when the first cannot handle the operation.",
+    "correct_answer": "Reversed",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Assignment Operators (=, +=, -=, etc. )",
+    "game_data": {
+      "explanation": "Reversed operators are special methods invoked on the second operand when the first operand's method is unavailable for an operation.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:37:04.089393+00:00",
+    "exported_at": "2025-11-03T20:37:04.090394"
+  },
+  {
+    "question_text": "The standard protocol for making objects iterable in Python.",
+    "correct_answer": "Iterable",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Assignment Operators (=, +=, -=, etc. )",
+    "game_data": {
+      "explanation": "The iterable protocol allows objects to be looped over, typically by implementing __iter__ to return an iterator.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:37:04.127400+00:00",
+    "exported_at": "2025-11-03T20:37:04.129398"
+  },
+  {
+    "question_text": "A decorator that caches function results to optimize repeated calls.",
+    "correct_answer": "lrucache",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Assignment Operators (=, +=, -=, etc. )",
+    "game_data": {
+      "explanation": "lru_cache is a decorator from functools that memoizes function results, speeding up programs by avoiding redundant computations.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:37:04.156925+00:00",
+    "exported_at": "2025-11-03T20:37:04.157925"
+  },
+  {
+    "question_text": "A decorator that caches function results to optimize repeated calls.",
+    "correct_answer": "lrucache",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Assignment Operators (=, +=, -=, etc. )",
+    "game_data": {
+      "explanation": "lru_cache is a decorator from functools that memoizes function results, speeding up programs by avoiding redundant computations.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:37:04.156925+00:00",
+    "exported_at": "2025-11-03T20:37:04.185926"
+  },
+  {
+    "question_text": "Bitwise augmented assignment operators like &= and |= use these special methods.",
+    "correct_answer": "Iand",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Assignment Operators (=, +=, -=, etc. )",
+    "game_data": {
+      "explanation": "__iand__ and similar methods implement in-place bitwise operations for augmented assignments, modifying the left operand directly.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:37:04.211925+00:00",
+    "exported_at": "2025-11-03T20:37:04.212932"
+  },
+  {
+    "question_text": "A shortcut combining an infix operator with variable assignment.",
+    "correct_answer": "augmented",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Assignment Operators (=, +=, -=, etc. )",
+    "game_data": {
+      "explanation": "Augmented assignment operators like += combine an operation with assignment, modifying the variable in place.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:37:04.467641+00:00",
+    "exported_at": "2025-11-03T20:37:04.469642"
+  },
+  {
+    "question_text": "Special methods called for augmented assignment operations.",
+    "correct_answer": "imethods",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Assignment Operators (=, +=, -=, etc. )",
+    "game_data": {
+      "explanation": "Python uses special methods like __iadd__ for augmented assignment operations on objects.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:37:04.498700+00:00",
+    "exported_at": "2025-11-03T20:37:04.500646"
+  },
+  {
+    "question_text": "Assignment operator that modifies a variable by adding to it.",
+    "correct_answer": "addition",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Assignment Operators (=, +=, -=, etc. )",
+    "game_data": {
+      "explanation": "The += operator performs addition assignment, adding the right operand to the variable and storing the result.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:37:04.544171+00:00",
+    "exported_at": "2025-11-03T20:37:04.545170"
+  },
+  {
+    "question_text": "Special methods called when normal operator methods cannot be used.",
+    "correct_answer": "reversed",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Assignment Operators (=, +=, -=, etc. )",
+    "game_data": {
+      "explanation": "Reversed operator methods are called on the second operand when the first operand's method is unavailable.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:37:04.579165+00:00",
+    "exported_at": "2025-11-03T20:37:04.580165"
+  },
+  {
+    "question_text": "Operators that combine an infix operation with variable assignment.",
+    "correct_answer": "Augmented",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Assignment Operators (=, +=, -=, etc. )",
+    "game_data": {
+      "explanation": "Augmented assignments like += and -= perform an operation and assign the result in one step, making code more concise.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:37:04.782217+00:00",
+    "exported_at": "2025-11-03T20:37:04.783213"
+  },
+  {
+    "question_text": "Operators that combine an infix operation with variable assignment.",
+    "correct_answer": "Augmented",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Assignment Operators (=, +=, -=, etc. )",
+    "game_data": {
+      "explanation": "Augmented assignments like += and -= perform an operation and assign the result in one step, making code more concise.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:37:04.782217+00:00",
+    "exported_at": "2025-11-03T20:37:04.817236"
+  },
+  {
+    "question_text": "Operator category including in and not in for collection checking.",
+    "correct_answer": "Membership",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Assignment Operators (=, +=, -=, etc. )",
+    "game_data": {
+      "explanation": "Membership operators test whether a value is present in a sequence or collection like lists, strings, or sets.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:37:04.842582+00:00",
+    "exported_at": "2025-11-03T20:37:04.843582"
+  },
+  {
+    "question_text": "The method name for augmented bitwise OR assignment.",
+    "correct_answer": "ior",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Assignment Operators (=, +=, -=, etc. )",
+    "game_data": {
+      "explanation": "The __ior__ special method handles the |= operator that performs bitwise OR and assignment together.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:37:04.875583+00:00",
+    "exported_at": "2025-11-03T20:37:04.876582"
+  },
+  {
+    "question_text": "A generator that yields items but does not consume or return values.",
+    "correct_answer": "Iterator",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Assignment Operators (=, +=, -=, etc. )",
+    "game_data": {
+      "explanation": "Iterators are objects that produce values one at a time when iterated over, without additional input or output.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:37:04.901584+00:00",
+    "exported_at": "2025-11-03T20:37:04.902582"
+  },
+  {
+    "question_text": "The process where Python tries reversed operators when forward ones fail.",
+    "correct_answer": "Reversed",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Assignment Operators (=, +=, -=, etc. )",
+    "game_data": {
+      "explanation": "Python attempts reversed operator methods when the normal operator method on the first operand cannot be used.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:37:04.929602+00:00",
+    "exported_at": "2025-11-03T20:37:04.931599"
+  },
+  {
+    "question_text": "A reversed operator special method called on the second operand.",
+    "correct_answer": "reversed",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Bitwise Operators and Binary Representation (Advanced)",
+    "game_data": {
+      "explanation": "When the first operand's special method cannot be used, Python calls this on the second operand for operations like comparisons.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:37:08.634499+00:00",
+    "exported_at": "2025-11-03T20:37:08.635491"
+  },
+  {
+    "question_text": "Shortcuts combining an infix operator with variable assignment.",
+    "correct_answer": "augmented",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Bitwise Operators and Binary Representation (Advanced)",
+    "game_data": {
+      "explanation": "These are operators like += or &= that perform an operation and assign the result back to the variable.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:37:08.675398+00:00",
+    "exported_at": "2025-11-03T20:37:08.677334"
+  },
+  {
+    "question_text": "A decorator that enables function overloading based on argument types.",
+    "correct_answer": "singledispatch",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Bitwise Operators and Binary Representation (Advanced)",
+    "game_data": {
+      "explanation": "This functools decorator allows a function to have different implementations depending on the type of the first argument.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:37:08.738338+00:00",
+    "exported_at": "2025-11-03T20:37:08.739337"
+  },
+  {
+    "question_text": "A property indicating an object can be used as a dictionary key.",
+    "correct_answer": "hashable",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Bitwise Operators and Binary Representation (Advanced)",
+    "game_data": {
+      "explanation": "Objects with this property have a hash value that does not change and can be keys in dictionaries or elements in sets.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:37:08.765851+00:00",
+    "exported_at": "2025-11-03T20:37:08.767852"
+  },
+  {
+    "question_text": "The protocol for iterating through a sequence using the Iterator design pattern.",
+    "correct_answer": "iterable",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Bitwise Operators and Binary Representation (Advanced)",
+    "game_data": {
+      "explanation": "An object that implements this protocol can be looped over, typically by providing an iterator via the __iter__ method.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:37:08.799857+00:00",
+    "exported_at": "2025-11-03T20:37:08.801850"
+  },
+  {
+    "question_text": "A generator that yields items but consumes no values.",
+    "correct_answer": "iterator",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Bitwise Operators and Binary Representation (Advanced)",
+    "game_data": {
+      "explanation": "An Iterator[T] is a generator that produces items of type T without consuming or returning additional values during iteration.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:37:21.375037+00:00",
+    "exported_at": "2025-11-03T20:37:21.376038"
+  },
+  {
+    "question_text": "Special method for left shift augmented assignment.",
+    "correct_answer": "ilshift",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Bitwise Operators and Binary Representation (Advanced)",
+    "game_data": {
+      "explanation": "The __ilshift__ method implements the <<= operator for augmented assignment with bitwise left shift operations.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:37:21.401569+00:00",
+    "exported_at": "2025-11-03T20:37:21.402570"
+  },
+  {
+    "question_text": "A special method for bitwise AND augmented assignment.",
+    "correct_answer": "iand",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Bitwise Operators and Binary Representation (Advanced)",
+    "game_data": {
+      "explanation": "The __iand__ method implements the in-place bitwise AND operation, used when writing expressions like a &= b.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:37:21.969592+00:00",
+    "exported_at": "2025-11-03T20:37:21.970585"
+  },
+  {
+    "question_text": "A special method for bitwise XOR augmented assignment.",
+    "correct_answer": "ixor",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Bitwise Operators and Binary Representation (Advanced)",
+    "game_data": {
+      "explanation": "The __ixor__ method implements the in-place bitwise XOR operation, used when writing expressions like a ^= b.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:37:22.035361+00:00",
+    "exported_at": "2025-11-03T20:37:22.036361"
+  },
+  {
+    "question_text": "A special method for bitwise XOR augmented assignment.",
+    "correct_answer": "ixor",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Bitwise Operators and Binary Representation (Advanced)",
+    "game_data": {
+      "explanation": "The __ixor__ method implements the in-place bitwise XOR operation, used when writing expressions like a ^= b.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:37:22.035361+00:00",
+    "exported_at": "2025-11-03T20:37:22.068880"
+  },
+  {
+    "question_text": "A special method for right shift augmented assignment.",
+    "correct_answer": "irshift",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Bitwise Operators and Binary Representation (Advanced)",
+    "game_data": {
+      "explanation": "The __irshift__ method implements the in-place right shift operation, used when writing expressions like a >>= b.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:37:22.095890+00:00",
+    "exported_at": "2025-11-03T20:37:22.096879"
+  }
+]

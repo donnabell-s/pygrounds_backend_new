@@ -1,0 +1,3688 @@
+[
+  {
+    "game_type": "coding",
+    "difficulty": "advanced",
+    "subtopic": "Naming Conventions (PEP8 Guidelines)",
+    "game_data": {
+      "normal": {
+        "question_text": "Calculate the factorial of a non-negative integer.",
+        "function_name": "calculate_factorial",
+        "sample_input": "(5,)",
+        "sample_output": "120",
+        "hidden_tests": [
+          {
+            "input": "(0,)",
+            "expected_output": "1"
+          },
+          {
+            "input": "(3,)",
+            "expected_output": "6"
+          }
+        ],
+        "correct_code": "def calculate_factorial(n):\n    if n == 0:\n        return 1\n    else:\n        return n * calculate_factorial(n - 1)",
+        "explanation": "Implement factorial calculation recursively or iteratively with all identifiers in snake_case as per PEP8 standards."
+      },
+      "buggy": {
+        "buggy_question_text": "Function errors due to mixedCase variable names not following PEP8.",
+        "buggy_code": "def calculate_factorial(n):\n    if n == 0:\n        return 1\n    else:\n        return n * calculate_factorial(n-1)",
+        "buggy_correct_code": "def calculate_factorial(n):\n    if n == 0:\n        return 1\n    else:\n        return n * calculate_factorial(n - 1)",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:47:22.241511"
+    },
+    "created_at": "2025-11-03T14:47:22.237511+00:00",
+    "exported_at": "2025-11-03T22:47:22.241511"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "advanced",
+    "subtopic": "Naming Conventions (PEP8 Guidelines)",
+    "game_data": {
+      "normal": {
+        "question_text": "Check if a string is a palindrome.",
+        "function_name": "is_palindrome",
+        "sample_input": "('radar',)",
+        "sample_output": "True",
+        "hidden_tests": [
+          {
+            "input": "('hello',)",
+            "expected_output": "False"
+          },
+          {
+            "input": "('a',)",
+            "expected_output": "True"
+          }
+        ],
+        "correct_code": "def is_palindrome(s):\n    return s == s[::-1]",
+        "explanation": "The function should verify if the string reads the same forwards and backwards, using snake_case for all names."
+      },
+      "buggy": {
+        "buggy_question_text": "Code fails because of uppercase variable names breaking PEP8 rules.",
+        "buggy_code": "def is_palindrome(S):\n    return S == S[::-1]",
+        "buggy_correct_code": "def is_palindrome(s):\n    return s == s[::-1]",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:47:22.640174"
+    },
+    "created_at": "2025-11-03T14:47:22.625374+00:00",
+    "exported_at": "2025-11-03T22:47:22.640174"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "advanced",
+    "subtopic": "Naming Conventions (PEP8 Guidelines)",
+    "game_data": {
+      "normal": {
+        "question_text": "Count vowels in a given string.",
+        "function_name": "count_vowels",
+        "sample_input": "('hello',)",
+        "sample_output": "2",
+        "hidden_tests": [
+          {
+            "input": "('world',)",
+            "expected_output": "1"
+          },
+          {
+            "input": "('aeiou',)",
+            "expected_output": "5"
+          }
+        ],
+        "correct_code": "def count_vowels(s):\n    vowel_count = 0\n    for char in s:\n        if char.lower() in 'aeiou':\n            vowel_count += 1\n    return vowel_count",
+        "explanation": "Count the number of vowels (a, e, i, o, u) in the input string, ensuring all identifiers follow PEP8 snake_case."
+      },
+      "buggy": {
+        "buggy_question_text": "Function misbehaves due to non-snake_case variable names.",
+        "buggy_code": "def count_vowels(Str):\n    VowelCount = 0\n    for char in Str:\n        if char.lower() in 'aeiou':\n            VowelCount += 1\n    return VowelCount",
+        "buggy_correct_code": "def count_vowels(s):\n    vowel_count = 0\n    for char in s:\n        if char.lower() in 'aeiou':\n            vowel_count += 1\n    return vowel_count",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:47:22.703525"
+    },
+    "created_at": "2025-11-03T14:47:22.701517+00:00",
+    "exported_at": "2025-11-03T22:47:22.703525"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "advanced",
+    "subtopic": "Naming Conventions (PEP8 Guidelines)",
+    "game_data": {
+      "normal": {
+        "question_text": "Find the maximum number in a list.",
+        "function_name": "find_max",
+        "sample_input": "([1, 5, 3],)",
+        "sample_output": "5",
+        "hidden_tests": [
+          {
+            "input": "([-1, -5, -3],)",
+            "expected_output": "-1"
+          },
+          {
+            "input": "([10],)",
+            "expected_output": "10"
+          }
+        ],
+        "correct_code": "def find_max(nums):\n    max_num = nums[0]\n    for num in nums:\n        if num > max_num:\n            max_num = num\n    return max_num",
+        "explanation": "Return the largest number in a list of integers, with all variable and function names in snake_case per PEP8."
+      },
+      "buggy": {
+        "buggy_question_text": "Code errors from using capitalized variable names against PEP8.",
+        "buggy_code": "def find_max(nums):\n    MaxNum = nums[0]\n    for num in nums:\n        if num > MaxNum:\n            MaxNum = num\n    return MaxNum",
+        "buggy_correct_code": "def find_max(nums):\n    max_num = nums[0]\n    for num in nums:\n        if num > max_num:\n            max_num = num\n    return max_num",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:47:22.780746"
+    },
+    "created_at": "2025-11-03T14:47:22.777746+00:00",
+    "exported_at": "2025-11-03T22:47:22.780746"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "advanced",
+    "subtopic": "Naming Conventions (PEP8 Guidelines)",
+    "game_data": {
+      "normal": {
+        "question_text": "Compute the sum of squares of a list.",
+        "function_name": "sum_of_squares",
+        "sample_input": "([1, 2, 3],)",
+        "sample_output": "14",
+        "hidden_tests": [
+          {
+            "input": "([0, 0],)",
+            "expected_output": "0"
+          },
+          {
+            "input": "([2, 4],)",
+            "expected_output": "20"
+          }
+        ],
+        "correct_code": "def sum_of_squares(lst):\n    total_squares = 0\n    for x in lst:\n        total_squares += x**2\n    return total_squares",
+        "explanation": "Calculate the sum of squares of all elements in a list, using snake_case for all identifiers as per PEP8."
+      },
+      "buggy": {
+        "buggy_question_text": "Function fails because of non-PEP8 compliant variable naming.",
+        "buggy_code": "def sum_of_squares(lst):\n    TotalSquares = 0\n    for x in lst:\n        TotalSquares += x**2\n    return TotalSquares",
+        "buggy_correct_code": "def sum_of_squares(lst):\n    total_squares = 0\n    for x in lst:\n        total_squares += x**2\n    return total_squares",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:47:22.862972"
+    },
+    "created_at": "2025-11-03T14:47:22.858969+00:00",
+    "exported_at": "2025-11-03T22:47:22.862972"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "advanced",
+    "subtopic": "Naming Conventions (PEP8 Guidelines)",
+    "game_data": {
+      "normal": {
+        "question_text": "Check if a number is prime.",
+        "function_name": "is_prime",
+        "sample_input": "(7,)",
+        "sample_output": "True",
+        "hidden_tests": [
+          {
+            "input": "(4,)",
+            "expected_output": "False"
+          },
+          {
+            "input": "(2,)",
+            "expected_output": "True"
+          }
+        ],
+        "correct_code": "def is_prime(num):\n    if num < 2:\n        return False\n    for i in range(2, int(num**0.5) + 1):\n        if num % i == 0:\n            return False\n    return True",
+        "explanation": "Determine if a number is prime, ensuring all variable and function names use snake_case following PEP8 guidelines."
+      },
+      "buggy": {
+        "buggy_question_text": "Code malfunctions due to incorrect casing in variable names.",
+        "buggy_code": "def is_prime(Num):\n    if Num < 2:\n        return False\n    for i in range(2, int(Num**0.5)+1):\n        if Num % i == 0:\n            return False\n    return True",
+        "buggy_correct_code": "def is_prime(num):\n    if num < 2:\n        return False\n    for i in range(2, int(num**0.5) + 1):\n        if num % i == 0:\n            return False\n    return True",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:47:22.952410"
+    },
+    "created_at": "2025-11-03T14:47:22.948886+00:00",
+    "exported_at": "2025-11-03T22:47:22.952410"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "advanced",
+    "subtopic": "Operator Precedence and Associativity",
+    "game_data": {
+      "normal": {
+        "question_text": "Compute expression with mixed operators and parentheses.",
+        "function_name": "compute_expression",
+        "sample_input": "(2, 3, 5)",
+        "sample_output": 3,
+        "hidden_tests": [
+          {
+            "input": "(4, 2, 3)",
+            "expected_output": 1
+          },
+          {
+            "input": "(5, 3, 7)",
+            "expected_output": 6
+          }
+        ],
+        "correct_code": "def compute_expression(a, b, c):\n    return (a ** b) % c",
+        "explanation": "The correct code evaluates the expression using proper operator precedence: exponentiation before modulus, ensuring accurate computation of the mathematical expression."
+      },
+      "buggy": {
+        "buggy_question_text": "Function returns incorrect result for expression with exponentiation and modulus.",
+        "buggy_code": "def compute_expression(a, b, c):\n    return a ** b % c",
+        "buggy_correct_code": "def compute_expression(a, b, c):\n    return (a ** b) % c",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:47:29.275455"
+    },
+    "created_at": "2025-11-03T14:47:29.268445+00:00",
+    "exported_at": "2025-11-03T22:47:29.275455"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "advanced",
+    "subtopic": "Operator Precedence and Associativity",
+    "game_data": {
+      "normal": {
+        "question_text": "Evaluate bitwise and arithmetic expression with correct precedence.",
+        "function_name": "evaluate_bitwise",
+        "sample_input": "(1, 2, 3)",
+        "sample_output": 7,
+        "hidden_tests": [
+          {
+            "input": "(4, 5, 6)",
+            "expected_output": 15
+          },
+          {
+            "input": "(0, 7, 8)",
+            "expected_output": 15
+          }
+        ],
+        "correct_code": "def evaluate_bitwise(x, y, z):\n    return x | (y + z)",
+        "explanation": "Correct code uses parentheses to enforce addition before bitwise OR, ensuring the expression is evaluated as intended with proper operator precedence."
+      },
+      "buggy": {
+        "buggy_question_text": "Function gives wrong output for bitwise OR and addition combination.",
+        "buggy_code": "def evaluate_bitwise(x, y, z):\n    return x | y + z",
+        "buggy_correct_code": "def evaluate_bitwise(x, y, z):\n    return x | (y + z)",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:47:29.357985"
+    },
+    "created_at": "2025-11-03T14:47:29.354938+00:00",
+    "exported_at": "2025-11-03T22:47:29.357985"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "advanced",
+    "subtopic": "Operator Precedence and Associativity",
+    "game_data": {
+      "normal": {
+        "question_text": "Calculate result using left-associative modulus and division.",
+        "function_name": "chain_modulus",
+        "sample_input": "(10, 3, 2)",
+        "sample_output": 1,
+        "hidden_tests": [
+          {
+            "input": "(15, 4, 3)",
+            "expected_output": 2
+          },
+          {
+            "input": "(20, 6, 4)",
+            "expected_output": 0
+          }
+        ],
+        "correct_code": "def chain_modulus(a, b, c):\n    return (a % b) % c",
+        "explanation": "The correct code applies modulus operations from left to right, respecting left associativity, to compute the final remainder accurately."
+      },
+      "buggy": {
+        "buggy_question_text": "Function produces incorrect value for chained modulus operations.",
+        "buggy_code": "def chain_modulus(a, b, c):\n    return a % b % c",
+        "buggy_correct_code": "def chain_modulus(a, b, c):\n    return (a % b) % c",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:47:29.444026"
+    },
+    "created_at": "2025-11-03T14:47:29.440034+00:00",
+    "exported_at": "2025-11-03T22:47:29.444026"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "advanced",
+    "subtopic": "Operator Precedence and Associativity",
+    "game_data": {
+      "normal": {
+        "question_text": "Compute expression with exponentiation and bitwise shift.",
+        "function_name": "exp_shift_compute",
+        "sample_input": "(2, 3, 1)",
+        "sample_output": 16,
+        "hidden_tests": [
+          {
+            "input": "(3, 2, 2)",
+            "expected_output": 36
+          },
+          {
+            "input": "(1, 4, 3)",
+            "expected_output": 16
+          }
+        ],
+        "correct_code": "def exp_shift_compute(x, y, z):\n    return (x ** y) << z",
+        "explanation": "Correct code uses parentheses to prioritize exponentiation over left shift, ensuring the mathematical expression is computed with accurate operator precedence."
+      },
+      "buggy": {
+        "buggy_question_text": "Function returns unexpected result for exponentiation and left shift.",
+        "buggy_code": "def exp_shift_compute(x, y, z):\n    return x ** y << z",
+        "buggy_correct_code": "def exp_shift_compute(x, y, z):\n    return (x ** y) << z",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:47:29.525540"
+    },
+    "created_at": "2025-11-03T14:47:29.522542+00:00",
+    "exported_at": "2025-11-03T22:47:29.525540"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "advanced",
+    "subtopic": "Operator Precedence and Associativity",
+    "game_data": {
+      "normal": {
+        "question_text": "Evaluate arithmetic expression with multiplication and floor division.",
+        "function_name": "mult_floor_div",
+        "sample_input": "(6, 3, 2)",
+        "sample_output": 9,
+        "hidden_tests": [
+          {
+            "input": "(8, 2, 4)",
+            "expected_output": 4
+          },
+          {
+            "input": "(10, 5, 2)",
+            "expected_output": 25
+          }
+        ],
+        "correct_code": "def mult_floor_div(a, b, c):\n    return (a * b) // c",
+        "explanation": "The correct code uses parentheses to ensure multiplication happens before floor division, adhering to operator precedence rules for accurate computation."
+      },
+      "buggy": {
+        "buggy_question_text": "Function gives wrong output for multiplication and floor division mix.",
+        "buggy_code": "def mult_floor_div(a, b, c):\n    return a * b // c",
+        "buggy_correct_code": "def mult_floor_div(a, b, c):\n    return (a * b) // c",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:47:29.614340"
+    },
+    "created_at": "2025-11-03T14:47:29.611352+00:00",
+    "exported_at": "2025-11-03T22:47:29.614340"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "advanced",
+    "subtopic": "Operator Precedence and Associativity",
+    "game_data": {
+      "normal": {
+        "question_text": "Calculate result using right-associative exponentiation.",
+        "function_name": "right_assoc_exp",
+        "sample_input": "(2, 3, 2)",
+        "sample_output": 512,
+        "hidden_tests": [
+          {
+            "input": "(3, 2, 2)",
+            "expected_output": 6561
+          },
+          {
+            "input": "(1, 5, 3)",
+            "expected_output": 1
+          }
+        ],
+        "correct_code": "def right_assoc_exp(a, b, c):\n    return a ** (b ** c)",
+        "explanation": "Correct code uses parentheses to enforce right associativity for exponentiation, ensuring the expression is evaluated from right to left as intended."
+      },
+      "buggy": {
+        "buggy_question_text": "Function computes exponentiation incorrectly for multiple exponents.",
+        "buggy_code": "def right_assoc_exp(a, b, c):\n    return a ** b ** c",
+        "buggy_correct_code": "def right_assoc_exp(a, b, c):\n    return a ** (b ** c)",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:47:29.718904"
+    },
+    "created_at": "2025-11-03T14:47:29.714377+00:00",
+    "exported_at": "2025-11-03T22:47:29.718904"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "beginner",
+    "subtopic": "Assignment Operators (=, +=, -=, etc. )",
+    "game_data": {
+      "normal": {
+        "question_text": "Increment a number by 5 and check if it equals 10.",
+        "function_name": "check_increment",
+        "sample_input": "(5,)",
+        "sample_output": "True",
+        "hidden_tests": [
+          {
+            "input": "(10,)",
+            "expected_output": "False"
+          },
+          {
+            "input": "(5,)",
+            "expected_output": "True"
+          }
+        ],
+        "correct_code": "def check_increment(n):\n    n += 5\n    return n == 10",
+        "explanation": "The function should add 5 to the input number and return True if the result equals 10, otherwise False."
+      },
+      "buggy": {
+        "buggy_question_text": "The function returns False even when the incremented value is 10.",
+        "buggy_code": "def check_increment(n):\n    n = 5\n    return n == 10",
+        "buggy_correct_code": "def check_increment(n):\n    n += 5\n    return n == 10",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:47:40.875539"
+    },
+    "created_at": "2025-11-03T14:47:40.870538+00:00",
+    "exported_at": "2025-11-03T22:47:40.875539"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "beginner",
+    "subtopic": "Assignment Operators (=, +=, -=, etc. )",
+    "game_data": {
+      "normal": {
+        "question_text": "Decrease a number by 3 and check if it is less than 5.",
+        "function_name": "check_decrease",
+        "sample_input": "(7,)",
+        "sample_output": "False",
+        "hidden_tests": [
+          {
+            "input": "(8,)",
+            "expected_output": "False"
+          },
+          {
+            "input": "(4,)",
+            "expected_output": "True"
+          }
+        ],
+        "correct_code": "def check_decrease(n):\n    n -= 3\n    return n < 5",
+        "explanation": "The function should subtract 3 from the input and return True if the result is less than 5, otherwise False."
+      },
+      "buggy": {
+        "buggy_question_text": "The function returns True for input 7, but it should be False.",
+        "buggy_code": "def check_decrease(n):\n    n = 3\n    return n < 5",
+        "buggy_correct_code": "def check_decrease(n):\n    n -= 3\n    return n < 5",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:47:40.974981"
+    },
+    "created_at": "2025-11-03T14:47:40.972974+00:00",
+    "exported_at": "2025-11-03T22:47:40.974981"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "beginner",
+    "subtopic": "Assignment Operators (=, +=, -=, etc. )",
+    "game_data": {
+      "normal": {
+        "question_text": "Double a number and check if it is greater than or equal to 20.",
+        "function_name": "check_double",
+        "sample_input": "(10,)",
+        "sample_output": "True",
+        "hidden_tests": [
+          {
+            "input": "(9,)",
+            "expected_output": "False"
+          },
+          {
+            "input": "(10,)",
+            "expected_output": "True"
+          }
+        ],
+        "correct_code": "def check_double(n):\n    n *= 2\n    return n >= 20",
+        "explanation": "The function should multiply the input by 2 and return True if the result is >= 20, otherwise False."
+      },
+      "buggy": {
+        "buggy_question_text": "The function returns False for input 10, but it should be True.",
+        "buggy_code": "def check_double(n):\n    n = 2\n    return n >= 20",
+        "buggy_correct_code": "def check_double(n):\n    n *= 2\n    return n >= 20",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:47:41.039630"
+    },
+    "created_at": "2025-11-03T14:47:41.037630+00:00",
+    "exported_at": "2025-11-03T22:47:41.039630"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "beginner",
+    "subtopic": "Assignment Operators (=, +=, -=, etc. )",
+    "game_data": {
+      "normal": {
+        "question_text": "Add 1 to a number and check if it is not equal to 5.",
+        "function_name": "check_not_equal",
+        "sample_input": "(4,)",
+        "sample_output": "False",
+        "hidden_tests": [
+          {
+            "input": "(5,)",
+            "expected_output": "True"
+          },
+          {
+            "input": "(4,)",
+            "expected_output": "False"
+          }
+        ],
+        "correct_code": "def check_not_equal(n):\n    n += 1\n    return n != 5",
+        "explanation": "The function should increment the input by 1 and return True if the result is not equal to 5, otherwise False."
+      },
+      "buggy": {
+        "buggy_question_text": "The function returns True for input 4, but it should be False.",
+        "buggy_code": "def check_not_equal(n):\n    n = 1\n    return n != 5",
+        "buggy_correct_code": "def check_not_equal(n):\n    n += 1\n    return n != 5",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:47:41.119270"
+    },
+    "created_at": "2025-11-03T14:47:41.115761+00:00",
+    "exported_at": "2025-11-03T22:47:41.119270"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "beginner",
+    "subtopic": "Assignment Operators (=, +=, -=, etc. )",
+    "game_data": {
+      "normal": {
+        "question_text": "Subtract 2 from a number and check if it is less than or equal to 3.",
+        "function_name": "check_subtract_le",
+        "sample_input": "(5,)",
+        "sample_output": "True",
+        "hidden_tests": [
+          {
+            "input": "(6,)",
+            "expected_output": "False"
+          },
+          {
+            "input": "(5,)",
+            "expected_output": "True"
+          }
+        ],
+        "correct_code": "def check_subtract_le(n):\n    n -= 2\n    return n <= 3",
+        "explanation": "The function should subtract 2 from the input and return True if the result is <= 3, otherwise False."
+      },
+      "buggy": {
+        "buggy_question_text": "The function returns False for input 5, but it should be True.",
+        "buggy_code": "def check_subtract_le(n):\n    n = 2\n    return n <= 3",
+        "buggy_correct_code": "def check_subtract_le(n):\n    n -= 2\n    return n <= 3",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:47:41.228646"
+    },
+    "created_at": "2025-11-03T14:47:41.224138+00:00",
+    "exported_at": "2025-11-03T22:47:41.228646"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "beginner",
+    "subtopic": "Assignment Operators (=, +=, -=, etc. )",
+    "game_data": {
+      "normal": {
+        "question_text": "Multiply a number by 3 and check if it is greater than 15.",
+        "function_name": "check_multiply_gt",
+        "sample_input": "(6,)",
+        "sample_output": "True",
+        "hidden_tests": [
+          {
+            "input": "(5,)",
+            "expected_output": "False"
+          },
+          {
+            "input": "(6,)",
+            "expected_output": "True"
+          }
+        ],
+        "correct_code": "def check_multiply_gt(n):\n    n *= 3\n    return n > 15",
+        "explanation": "The function should multiply the input by 3 and return True if the result is > 15, otherwise False."
+      },
+      "buggy": {
+        "buggy_question_text": "The function returns False for input 6, but it should be True.",
+        "buggy_code": "def check_multiply_gt(n):\n    n = 3\n    return n > 15",
+        "buggy_correct_code": "def check_multiply_gt(n):\n    n *= 3\n    return n > 15",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:47:41.324040"
+    },
+    "created_at": "2025-11-03T14:47:41.321045+00:00",
+    "exported_at": "2025-11-03T22:47:41.324040"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "beginner",
+    "subtopic": "Assignment Operators (=, +=, -=, etc. )",
+    "game_data": {
+      "normal": {
+        "question_text": "Divide a number by 2 and check if it equals 4.",
+        "function_name": "check_divide_eq",
+        "sample_input": "(8,)",
+        "sample_output": "True",
+        "hidden_tests": [
+          {
+            "input": "(10,)",
+            "expected_output": "False"
+          },
+          {
+            "input": "(8,)",
+            "expected_output": "True"
+          }
+        ],
+        "correct_code": "def check_divide_eq(n):\n    n /= 2\n    return n == 4",
+        "explanation": "The function should divide the input by 2 and return True if the result equals 4, otherwise False."
+      },
+      "buggy": {
+        "buggy_question_text": "The function returns False for input 8, but it should be True.",
+        "buggy_code": "def check_divide_eq(n):\n    n = 2\n    return n == 4",
+        "buggy_correct_code": "def check_divide_eq(n):\n    n /= 2\n    return n == 4",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:47:41.398067"
+    },
+    "created_at": "2025-11-03T14:47:41.394647+00:00",
+    "exported_at": "2025-11-03T22:47:41.398067"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "advanced",
+    "subtopic": "Printing Special Characters and Escape Sequences",
+    "game_data": {
+      "normal": {
+        "question_text": "Print a string with escaped quotes and newlines.",
+        "function_name": "print_escaped",
+        "sample_input": "()",
+        "sample_output": "She said, \"Hello\\nWorld!\"",
+        "hidden_tests": [
+          {
+            "input": "()",
+            "expected_output": "She said, \"Hello\\nWorld!\""
+          }
+        ],
+        "correct_code": "def print_escaped():\n    print('She said, \"Hello\\nWorld!\"')",
+        "explanation": "This task requires using escape sequences to correctly display quotes and newlines in the output string, ensuring special characters are properly interpreted."
+      },
+      "buggy": {
+        "buggy_question_text": "The function prints quotes and newlines incorrectly.",
+        "buggy_code": "def print_escaped():\n    print('She said, \"Hello\\nWorld!\"')",
+        "buggy_correct_code": "def print_escaped():\n    print('She said, \"Hello\\nWorld!\"')",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:47:45.900816"
+    },
+    "created_at": "2025-11-03T14:47:45.897811+00:00",
+    "exported_at": "2025-11-03T22:47:45.900816"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "advanced",
+    "subtopic": "Printing Special Characters and Escape Sequences",
+    "game_data": {
+      "normal": {
+        "question_text": "Print a string with a tab and carriage return.",
+        "function_name": "print_formatted",
+        "sample_input": "()",
+        "sample_output": "Name:\\tJohn\\rAge: 25",
+        "hidden_tests": [
+          {
+            "input": "()",
+            "expected_output": "Name:\\tJohn\\rAge: 25"
+          }
+        ],
+        "correct_code": "def print_formatted():\n    print('Name:\\tJohn\\rAge: 25')",
+        "explanation": "This function must use escape sequences for tab and carriage return to format the output correctly, aligning text and moving the cursor as intended."
+      },
+      "buggy": {
+        "buggy_question_text": "The output lacks proper tab and carriage return formatting.",
+        "buggy_code": "def print_formatted():\n    print('Name:JohnAge: 25')",
+        "buggy_correct_code": "def print_formatted():\n    print('Name:\\tJohn\\rAge: 25')",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:47:45.995695"
+    },
+    "created_at": "2025-11-03T14:47:45.992687+00:00",
+    "exported_at": "2025-11-03T22:47:45.995695"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "advanced",
+    "subtopic": "Printing Special Characters and Escape Sequences",
+    "game_data": {
+      "normal": {
+        "question_text": "Print a string with a backslash and single quote.",
+        "function_name": "print_special_chars",
+        "sample_input": "()",
+        "sample_output": "Path: C:\\\\ User's File",
+        "hidden_tests": [
+          {
+            "input": "()",
+            "expected_output": "Path: C:\\\\ User's File"
+          }
+        ],
+        "correct_code": "def print_special_chars():\n    print('Path: C:\\\\ User\\'s File')",
+        "explanation": "Escaping both backslash and single quote ensures they are printed literally, avoiding syntax errors and achieving the desired output format."
+      },
+      "buggy": {
+        "buggy_question_text": "The function fails to print backslash and quote correctly.",
+        "buggy_code": "def print_special_chars():\n    print('Path: C:\\ User's File')",
+        "buggy_correct_code": "def print_special_chars():\n    print('Path: C:\\\\ User\\'s File')",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:47:46.066629"
+    },
+    "created_at": "2025-11-03T14:47:46.064124+00:00",
+    "exported_at": "2025-11-03T22:47:46.066629"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "advanced",
+    "subtopic": "Printing Special Characters and Escape Sequences",
+    "game_data": {
+      "normal": {
+        "question_text": "Print a string with a bell alert and form feed.",
+        "function_name": "print_alert_feed",
+        "sample_input": "()",
+        "sample_output": "Alert!\\fNext Page",
+        "hidden_tests": [
+          {
+            "input": "()",
+            "expected_output": "Alert!\\fNext Page"
+          }
+        ],
+        "correct_code": "def print_alert_feed():\n    print('Alert!\\a\\fNext Page')",
+        "explanation": "Using escape sequences for bell (\\a) and form feed (\\f) triggers audible alert and page break effects in supported terminals, enhancing output interactivity."
+      },
+      "buggy": {
+        "buggy_question_text": "The output does not produce bell sound or form feed.",
+        "buggy_code": "def print_alert_feed():\n    print('Alert!Next Page')",
+        "buggy_correct_code": "def print_alert_feed():\n    print('Alert!\\a\\fNext Page')",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:47:46.140931"
+    },
+    "created_at": "2025-11-03T14:47:46.137933+00:00",
+    "exported_at": "2025-11-03T22:47:46.140931"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "advanced",
+    "subtopic": "Printing Special Characters and Escape Sequences",
+    "game_data": {
+      "normal": {
+        "question_text": "Print a string with vertical tab and backspace.",
+        "function_name": "print_vertical_backspace",
+        "sample_input": "()",
+        "sample_output": "Line1\\vLine2\\bX",
+        "hidden_tests": [
+          {
+            "input": "()",
+            "expected_output": "Line1\\vLine2\\bX"
+          }
+        ],
+        "correct_code": "def print_vertical_backspace():\n    print('Line1\\vLine2\\bX')",
+        "explanation": "Escape sequences for vertical tab (\\v) and backspace (\\b) control vertical spacing and character deletion in terminal output, ensuring precise text layout."
+      },
+      "buggy": {
+        "buggy_question_text": "Vertical tab and backspace are not functioning in output.",
+        "buggy_code": "def print_vertical_backspace():\n    print('Line1Line2X')",
+        "buggy_correct_code": "def print_vertical_backspace():\n    print('Line1\\vLine2\\bX')",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:47:46.237586"
+    },
+    "created_at": "2025-11-03T14:47:46.234057+00:00",
+    "exported_at": "2025-11-03T22:47:46.237586"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "advanced",
+    "subtopic": "Printing Special Characters and Escape Sequences",
+    "game_data": {
+      "normal": {
+        "question_text": "Print a string with octal and hex escape sequences.",
+        "function_name": "print_octal_hex",
+        "sample_input": "()",
+        "sample_output": "A\\x41",
+        "hidden_tests": [
+          {
+            "input": "()",
+            "expected_output": "A\\x41"
+          }
+        ],
+        "correct_code": "def print_octal_hex():\n    print('\\101\\x41')",
+        "explanation": "Using octal (e.g., \\101 for 'A') and hex (e.g., \\x41 for 'A') escape sequences allows printing specific ASCII characters by their numeric codes, ensuring correct symbol output."
+      },
+      "buggy": {
+        "buggy_question_text": "Octal and hex escapes are printed literally, not as characters.",
+        "buggy_code": "def print_octal_hex():\n    print('\\101\\x41')",
+        "buggy_correct_code": "def print_octal_hex():\n    print('\\101\\x41')",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:47:46.330193"
+    },
+    "created_at": "2025-11-03T14:47:46.326670+00:00",
+    "exported_at": "2025-11-03T22:47:46.330193"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "beginner",
+    "subtopic": "Assignment Operators (=, +=, -=, etc. )",
+    "game_data": {
+      "normal": {
+        "question_text": "Append item to list if not already present.",
+        "function_name": "append_if_new",
+        "sample_input": "([1, 2], 3)",
+        "sample_output": "[1, 2, 3]",
+        "hidden_tests": [
+          {
+            "input": "([4, 5], 4)",
+            "expected_output": "[4, 5]"
+          },
+          {
+            "input": "([], 6)",
+            "expected_output": "[6]"
+          }
+        ],
+        "correct_code": "def append_if_new(lst, item):\n    if item not in lst:\n        lst.append(item)\n    return lst",
+        "explanation": "This function uses 'not in' to check membership and '+=' to append the item only if it is not already in the list."
+      },
+      "buggy": {
+        "buggy_question_text": "Function appends duplicate items to the list.",
+        "buggy_code": "def append_if_new(lst, item):\n    if item is not lst:\n        lst += [item]\n    return lst",
+        "buggy_correct_code": "def append_if_new(lst, item):\n    if item not in lst:\n        lst += [item]\n    return lst",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:48:09.545121"
+    },
+    "created_at": "2025-11-03T14:48:09.543119+00:00",
+    "exported_at": "2025-11-03T22:48:09.545121"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "beginner",
+    "subtopic": "Assignment Operators (=, +=, -=, etc. )",
+    "game_data": {
+      "normal": {
+        "question_text": "Increment counter if key is in dictionary.",
+        "function_name": "count_key_presence",
+        "sample_input": "({'a': 1}, 'a')",
+        "sample_output": "1",
+        "hidden_tests": [
+          {
+            "input": "({'b': 2}, 'c')",
+            "expected_output": "0"
+          },
+          {
+            "input": "({}, 'x')",
+            "expected_output": "0"
+          }
+        ],
+        "correct_code": "def count_key_presence(d, key):\n    count = 0\n    if key in d:\n        count += 1\n    return count",
+        "explanation": "Function checks if a key is in a dictionary using 'in' and increments a counter with '+=' operator if found."
+      },
+      "buggy": {
+        "buggy_question_text": "Counter does not increment when key is in dict.",
+        "buggy_code": "def count_key_presence(d, key):\n    count = 0\n    if key is d:\n        count += 1\n    return count",
+        "buggy_correct_code": "def count_key_presence(d, key):\n    count = 0\n    if key in d:\n        count += 1\n    return count",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:48:09.612766"
+    },
+    "created_at": "2025-11-03T14:48:09.609768+00:00",
+    "exported_at": "2025-11-03T22:48:09.612766"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "beginner",
+    "subtopic": "Assignment Operators (=, +=, -=, etc. )",
+    "game_data": {
+      "normal": {
+        "question_text": "Update total if item not in seen set.",
+        "function_name": "update_unique_total",
+        "sample_input": "({1, 2}, 3, 10)",
+        "sample_output": "13",
+        "hidden_tests": [
+          {
+            "input": "({4, 5}, 4, 10)",
+            "expected_output": "10"
+          },
+          {
+            "input": "(set(), 6, 0)",
+            "expected_output": "6"
+          }
+        ],
+        "correct_code": "def update_unique_total(seen, item, total):\n    if item not in seen:\n        total += item\n    return total",
+        "explanation": "Function checks if an item is not in a set using 'not in', and updates a total with '+=' operator if condition is met."
+      },
+      "buggy": {
+        "buggy_question_text": "Total updates incorrectly when item is not in set.",
+        "buggy_code": "def update_unique_total(seen, item, total):\n    if item is not seen:\n        total += item\n    return total",
+        "buggy_correct_code": "def update_unique_total(seen, item, total):\n    if item not in seen:\n        total += item\n    return total",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:48:09.700407"
+    },
+    "created_at": "2025-11-03T14:48:09.697405+00:00",
+    "exported_at": "2025-11-03T22:48:09.700407"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "beginner",
+    "subtopic": "Assignment Operators (=, +=, -=, etc. )",
+    "game_data": {
+      "normal": {
+        "question_text": "Compute final value after operations.",
+        "function_name": "compute_final",
+        "sample_input": "(10, 5, 2, 3)",
+        "sample_output": "27",
+        "hidden_tests": [
+          {
+            "input": "(5, 2, 3, 1)",
+            "expected_output": "20"
+          },
+          {
+            "input": "(0, 0, 5, 0)",
+            "expected_output": "0"
+          }
+        ],
+        "correct_code": "def compute_final(start, add, factor, subtract):\n    result = (start + add) * factor - subtract\n    return result",
+        "explanation": "Function should compute value as (start + add) * factor - subtract. Correct code uses parentheses to control operation order."
+      },
+      "buggy": {
+        "buggy_question_text": "Final value is wrong due to associativity issue.",
+        "buggy_code": "def compute_final(start, add, factor, subtract):\n    result = start + add * factor - subtract\n    return result",
+        "buggy_correct_code": "def compute_final(start, add, factor, subtract):\n    result = (start + add) * factor - subtract\n    return result",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:48:10.679688"
+    },
+    "created_at": "2025-11-03T14:48:10.675165+00:00",
+    "exported_at": "2025-11-03T22:48:10.679688"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "beginner",
+    "subtopic": "Assignment Operators (=, +=, -=, etc. )",
+    "game_data": {
+      "normal": {
+        "question_text": "Accumulate values into a total.",
+        "function_name": "accumulate_total",
+        "sample_input": "([1, 2, 3],)",
+        "sample_output": "6",
+        "hidden_tests": [
+          {
+            "input": "([10, 20, 30],)",
+            "expected_output": "60"
+          },
+          {
+            "input": "([0, 0, 0],)",
+            "expected_output": "0"
+          }
+        ],
+        "correct_code": "def accumulate_total(values):\n    total = 0\n    for v in values:\n        total += v\n    return total",
+        "explanation": "Function should add each value in the list to total. Correct code uses += in a loop to accumulate sum properly."
+      },
+      "buggy": {
+        "buggy_question_text": "Total does not accumulate correctly.",
+        "buggy_code": "def accumulate_total(values):\n    total = 0\n    for v in values:\n        total = v\n    return total",
+        "buggy_correct_code": "def accumulate_total(values):\n    total = 0\n    for v in values:\n        total += v\n    return total",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:48:10.780118"
+    },
+    "created_at": "2025-11-03T14:48:10.776602+00:00",
+    "exported_at": "2025-11-03T22:48:10.780118"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "beginner",
+    "subtopic": "Assignment Operators (=, +=, -=, etc. )",
+    "game_data": {
+      "normal": {
+        "question_text": "Apply discount and add tax to price.",
+        "function_name": "apply_discount_tax",
+        "sample_input": "(100, 0.1, 0.05)",
+        "sample_output": "94.5",
+        "hidden_tests": [
+          {
+            "input": "(200, 0.2, 0.1)",
+            "expected_output": "176.0"
+          },
+          {
+            "input": "(50, 0.0, 0.0)",
+            "expected_output": "50.0"
+          }
+        ],
+        "correct_code": "def apply_discount_tax(price, discount, tax):\n    final = (price * (1 - discount)) * (1 + tax)\n    return final",
+        "explanation": "Function should compute final price as (price * (1 - discount)) * (1 + tax). Correct code uses parentheses to ensure discount is applied before tax."
+      },
+      "buggy": {
+        "buggy_question_text": "Price calculation is incorrect due to operator precedence.",
+        "buggy_code": "def apply_discount_tax(price, discount, tax):\n    final = price * 1 - discount * (1 + tax)\n    return final",
+        "buggy_correct_code": "def apply_discount_tax(price, discount, tax):\n    final = (price * (1 - discount)) * (1 + tax)\n    return final",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:48:10.881809"
+    },
+    "created_at": "2025-11-03T14:48:10.877803+00:00",
+    "exported_at": "2025-11-03T22:48:10.881809"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "beginner",
+    "subtopic": "Assignment Operators (=, +=, -=, etc. )",
+    "game_data": {
+      "normal": {
+        "question_text": "Decrease inventory by sold items.",
+        "function_name": "update_inventory",
+        "sample_input": "(50, 10)",
+        "sample_output": "40",
+        "hidden_tests": [
+          {
+            "input": "(100, 25)",
+            "expected_output": "75"
+          },
+          {
+            "input": "(5, 5)",
+            "expected_output": "0"
+          }
+        ],
+        "correct_code": "def update_inventory(inventory, sold):\n    inventory -= sold\n    return inventory",
+        "explanation": "Function should subtract sold from inventory using -=. Correct code uses assignment operator to update inventory properly."
+      },
+      "buggy": {
+        "buggy_question_text": "Inventory update does not reduce correctly.",
+        "buggy_code": "def update_inventory(inventory, sold):\n    inventory = sold\n    return inventory",
+        "buggy_correct_code": "def update_inventory(inventory, sold):\n    inventory -= sold\n    return inventory",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:48:10.982949"
+    },
+    "created_at": "2025-11-03T14:48:10.978944+00:00",
+    "exported_at": "2025-11-03T22:48:10.982949"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "beginner",
+    "subtopic": "Assignment Operators (=, +=, -=, etc. )",
+    "game_data": {
+      "normal": {
+        "question_text": "Calculate net after expenses and income.",
+        "function_name": "calculate_net",
+        "sample_input": "(100, 20, 0.1, 10)",
+        "sample_output": "18.0",
+        "hidden_tests": [
+          {
+            "input": "(200, 50, 0.2, 5)",
+            "expected_output": "35.0"
+          },
+          {
+            "input": "(0, 0, 0.0, 0)",
+            "expected_output": "0.0"
+          }
+        ],
+        "correct_code": "def calculate_net(income, expenses, tax_rate, bonus):\n    net = (income - expenses) * tax_rate + bonus\n    return net",
+        "explanation": "Function should compute net as (income - expenses) * tax_rate + bonus. Correct code uses parentheses to control operation order."
+      },
+      "buggy": {
+        "buggy_question_text": "Net calculation gives wrong result due to associativity.",
+        "buggy_code": "def calculate_net(income, expenses, tax_rate, bonus):\n    net = income - expenses * tax_rate + bonus\n    return net",
+        "buggy_correct_code": "def calculate_net(income, expenses, tax_rate, bonus):\n    net = (income - expenses) * tax_rate + bonus\n    return net",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:48:11.088352"
+    },
+    "created_at": "2025-11-03T14:48:11.085850+00:00",
+    "exported_at": "2025-11-03T22:48:11.088352"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "beginner",
+    "subtopic": "Assignment Operators (=, +=, -=, etc. )",
+    "game_data": {
+      "normal": {
+        "question_text": "Add bonus if age >= 18 and not student.",
+        "function_name": "add_bonus_if_eligible",
+        "sample_input": "(1000, 20, False)",
+        "sample_output": "1100",
+        "hidden_tests": [
+          {
+            "input": "(1000, 16, False)",
+            "expected_output": "1000"
+          },
+          {
+            "input": "(1000, 20, True)",
+            "expected_output": "1000"
+          },
+          {
+            "input": "(1000, 25, False)",
+            "expected_output": "1100"
+          }
+        ],
+        "correct_code": "def add_bonus_if_eligible(salary, age, student):\n    if age >= 18 and not student:\n        salary += 100\n    return salary",
+        "explanation": "The function should add a bonus to salary using assignment operator only if age is at least 18 and student status is False."
+      },
+      "buggy": {
+        "buggy_question_text": "Bonus is added even if age < 18 or student is True.",
+        "buggy_code": "def add_bonus_if_eligible(salary, age, student):\n    if age >= 18 or not student:\n        salary += 100\n    return salary",
+        "buggy_correct_code": "def add_bonus_if_eligible(salary, age, student):\n    if age >= 18 and not student:\n        salary += 100\n    return salary",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:48:16.933007"
+    },
+    "created_at": "2025-11-03T14:48:16.928006+00:00",
+    "exported_at": "2025-11-03T22:48:16.933007"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "beginner",
+    "subtopic": "Assignment Operators (=, +=, -=, etc. )",
+    "game_data": {
+      "normal": {
+        "question_text": "Subtract penalty if balance low and not premium.",
+        "function_name": "apply_penalty",
+        "sample_input": "(50, True, False)",
+        "sample_output": "40",
+        "hidden_tests": [
+          {
+            "input": "(50, False, False)",
+            "expected_output": "50"
+          },
+          {
+            "input": "(50, True, True)",
+            "expected_output": "50"
+          },
+          {
+            "input": "(50, False, True)",
+            "expected_output": "50"
+          }
+        ],
+        "correct_code": "def apply_penalty(points, balance_low, premium):\n    if balance_low and not premium:\n        points -= 10\n    return points",
+        "explanation": "The function should subtract a penalty from points using assignment operator only if balance is low and premium status is False."
+      },
+      "buggy": {
+        "buggy_question_text": "Penalty subtracts even when balance is not low or premium is True.",
+        "buggy_code": "def apply_penalty(points, balance_low, premium):\n    if balance_low or not premium:\n        points -= 10\n    return points",
+        "buggy_correct_code": "def apply_penalty(points, balance_low, premium):\n    if balance_low and not premium:\n        points -= 10\n    return points",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:48:17.077039"
+    },
+    "created_at": "2025-11-03T14:48:17.073538+00:00",
+    "exported_at": "2025-11-03T22:48:17.077039"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "beginner",
+    "subtopic": "Assignment Operators (=, +=, -=, etc. )",
+    "game_data": {
+      "normal": {
+        "question_text": "Increase count if flag is True and value is not negative.",
+        "function_name": "increment_count_conditionally",
+        "sample_input": "(5, True, 10)",
+        "sample_output": "6",
+        "hidden_tests": [
+          {
+            "input": "(5, False, 10)",
+            "expected_output": "5"
+          },
+          {
+            "input": "(5, True, -5)",
+            "expected_output": "5"
+          },
+          {
+            "input": "(5, False, -5)",
+            "expected_output": "5"
+          }
+        ],
+        "correct_code": "def increment_count_conditionally(count, flag, value):\n    if flag and value >= 0:\n        count += 1\n    return count",
+        "explanation": "The function should increase count using assignment operator only if flag is True and value is not negative, using logical operators."
+      },
+      "buggy": {
+        "buggy_question_text": "Count increases when flag is False or value is negative.",
+        "buggy_code": "def increment_count_conditionally(count, flag, value):\n    if not flag and value >= 0:\n        count += 1\n    return count",
+        "buggy_correct_code": "def increment_count_conditionally(count, flag, value):\n    if flag and value >= 0:\n        count += 1\n    return count",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:48:17.175216"
+    },
+    "created_at": "2025-11-03T14:48:17.172212+00:00",
+    "exported_at": "2025-11-03T22:48:17.175216"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "beginner",
+    "subtopic": "Assignment Operators (=, +=, -=, etc. )",
+    "game_data": {
+      "normal": {
+        "question_text": "Reset value to zero if it is negative or above max.",
+        "function_name": "reset_if_out_of_range",
+        "sample_input": "(15, 10)",
+        "sample_output": "0",
+        "hidden_tests": [
+          {
+            "input": "(-5, 10)",
+            "expected_output": "0"
+          },
+          {
+            "input": "(5, 10)",
+            "expected_output": "5"
+          },
+          {
+            "input": "(12, 10)",
+            "expected_output": "0"
+          }
+        ],
+        "correct_code": "def reset_if_out_of_range(value, max_val):\n    if value < 0 or value > max_val:\n        value = 0\n    return value",
+        "explanation": "The function should reset value to zero using assignment operator if it is negative or above max, using logical operators to check either condition."
+      },
+      "buggy": {
+        "buggy_question_text": "Value resets only if it is negative and above max, not or.",
+        "buggy_code": "def reset_if_out_of_range(value, max_val):\n    if value < 0 and value > max_val:\n        value = 0\n    return value",
+        "buggy_correct_code": "def reset_if_out_of_range(value, max_val):\n    if value < 0 or value > max_val:\n        value = 0\n    return value",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:48:17.272907"
+    },
+    "created_at": "2025-11-03T14:48:17.269913+00:00",
+    "exported_at": "2025-11-03T22:48:17.272907"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "advanced",
+    "subtopic": "Single-line vs Multi-line Comments",
+    "game_data": {
+      "normal": {
+        "question_text": "Create a function that returns a multi-line comment string.",
+        "function_name": "multi_line_comment",
+        "sample_input": "()",
+        "sample_output": "'''Line 1\nLine 2\nLine 3'''",
+        "hidden_tests": [
+          {
+            "input": "()",
+            "expected_output": "'''Line 1\nLine 2\nLine 3'''"
+          }
+        ],
+        "correct_code": "def multi_line_comment():\n    return '''Line 1\nLine 2\nLine 3'''",
+        "explanation": "The function should return a string containing a valid multi-line Python comment using triple quotes, preserving line breaks."
+      },
+      "buggy": {
+        "buggy_question_text": "The function returns a string with single-line comments instead of a multi-line comment.",
+        "buggy_code": "def multi_line_comment():\n    # Line 1\n    # Line 2\n    # Line 3\n    return '# Line 1\\n# Line 2\\n# Line 3'",
+        "buggy_correct_code": "def multi_line_comment():\n    return '''Line 1\nLine 2\nLine 3'''",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:48:33.022027"
+    },
+    "created_at": "2025-11-03T14:48:33.016499+00:00",
+    "exported_at": "2025-11-03T22:48:33.022027"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "advanced",
+    "subtopic": "Single-line vs Multi-line Comments",
+    "game_data": {
+      "normal": {
+        "question_text": "Create a function that returns a docstring as a multi-line comment.",
+        "function_name": "docstring_comment",
+        "sample_input": "()",
+        "sample_output": "'''This is a docstring\nfor documentation.'''",
+        "hidden_tests": [
+          {
+            "input": "()",
+            "expected_output": "'''This is a docstring\nfor documentation.'''"
+          }
+        ],
+        "correct_code": "def docstring_comment():\n    return '''This is a docstring\nfor documentation.'''",
+        "explanation": "The function should return a string that represents a valid Python docstring using triple quotes, typically used for function documentation."
+      },
+      "buggy": {
+        "buggy_question_text": "The function returns a single-line comment instead of a proper docstring.",
+        "buggy_code": "def docstring_comment():\n    # This is a docstring\n    # for documentation.\n    return '# This is a docstring\\n# for documentation.'",
+        "buggy_correct_code": "def docstring_comment():\n    return '''This is a docstring\nfor documentation.'''",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:48:33.184317"
+    },
+    "created_at": "2025-11-03T14:48:33.180314+00:00",
+    "exported_at": "2025-11-03T22:48:33.184317"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "advanced",
+    "subtopic": "Single-line vs Multi-line Comments",
+    "game_data": {
+      "normal": {
+        "question_text": "Create a function that returns a comment with special characters.",
+        "function_name": "special_chars_comment",
+        "sample_input": "()",
+        "sample_output": "'''Comment with 'quotes' and \\\\ backslashes'''",
+        "hidden_tests": [
+          {
+            "input": "()",
+            "expected_output": "'''Comment with 'quotes' and \\\\ backslashes'''"
+          }
+        ],
+        "correct_code": "def special_chars_comment():\n    return \"\"\"Comment with 'quotes' and \\\\ backslashes\"\"\"",
+        "explanation": "The function should return a string containing a multi-line comment with special characters like quotes and backslashes properly escaped."
+      },
+      "buggy": {
+        "buggy_question_text": "The function incorrectly handles special characters in multi-line comments.",
+        "buggy_code": "def special_chars_comment():\n    '''Comment with 'quotes' and \\ backslashes'''\n    return '''Comment with 'quotes' and \\ backslashes'''",
+        "buggy_correct_code": "def special_chars_comment():\n    return \"\"\"Comment with 'quotes' and \\\\ backslashes\"\"\"",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:48:33.293471"
+    },
+    "created_at": "2025-11-03T14:48:33.290474+00:00",
+    "exported_at": "2025-11-03T22:48:33.293471"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "advanced",
+    "subtopic": "Single-line vs Multi-line Comments",
+    "game_data": {
+      "normal": {
+        "question_text": "Write a function that returns a formatted comment string.",
+        "function_name": "formatted_comment",
+        "sample_input": "()",
+        "sample_output": "'''First line\n    Indented line\nLast line'''",
+        "hidden_tests": [
+          {
+            "input": "()",
+            "expected_output": "'''First line\n    Indented line\nLast line'''"
+          }
+        ],
+        "correct_code": "def formatted_comment():\n    return '''First line\n    Indented line\nLast line'''",
+        "explanation": "The function must return a properly formatted multi-line comment string with correct line breaks and indentation preserved."
+      },
+      "buggy": {
+        "buggy_question_text": "The function returns a malformed comment string with incorrect line breaks.",
+        "buggy_code": "def formatted_comment():\n    return '''First line\\n    Indented line\\nLast line'''",
+        "buggy_correct_code": "def formatted_comment():\n    return '''First line\n    Indented line\nLast line'''",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:48:33.394588"
+    },
+    "created_at": "2025-11-03T14:48:33.388581+00:00",
+    "exported_at": "2025-11-03T22:48:33.394588"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "advanced",
+    "subtopic": "String Concatenation and Formatting (f-strings, .format())",
+    "game_data": {
+      "normal": {
+        "question_text": "Format a string with f-strings using variables.",
+        "function_name": "format_user_info",
+        "sample_input": "('Alice', 30)",
+        "sample_output": "Name: Alice, Age: 30",
+        "hidden_tests": [
+          {
+            "input": "('Bob', 25)",
+            "expected_output": "Name: Bob, Age: 25"
+          },
+          {
+            "input": "('Charlie', 40)",
+            "expected_output": "Name: Charlie, Age: 40"
+          }
+        ],
+        "correct_code": "def format_user_info(name, age):\n    return f'Name: {name}, Age: {age}'",
+        "explanation": "This task requires using f-strings to embed variables into a string correctly, ensuring all placeholders are replaced with actual values for accurate output."
+      },
+      "buggy": {
+        "buggy_question_text": "The function returns an incorrect formatted string with missing values.",
+        "buggy_code": "def format_user_info(name, age):\n    return f'Name: {name}, Age: {age}'",
+        "buggy_correct_code": "def format_user_info(name, age):\n    return f'Name: {name}, Age: {age}'",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:48:36.646873"
+    },
+    "created_at": "2025-11-03T14:48:36.644368+00:00",
+    "exported_at": "2025-11-03T22:48:36.646873"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "advanced",
+    "subtopic": "String Concatenation and Formatting (f-strings, .format())",
+    "game_data": {
+      "normal": {
+        "question_text": "Use .format() to insert multiple values into a string.",
+        "function_name": "create_message",
+        "sample_input": "('hello', 'world')",
+        "sample_output": "Message: hello world",
+        "hidden_tests": [
+          {
+            "input": "('good', 'morning')",
+            "expected_output": "Message: good morning"
+          },
+          {
+            "input": "('python', 'debug')",
+            "expected_output": "Message: python debug"
+          }
+        ],
+        "correct_code": "def create_message(a, b):\n    return 'Message: {} {}'.format(a, b)",
+        "explanation": "This function must use .format() with positional or keyword arguments to place values in the correct order within the string template."
+      },
+      "buggy": {
+        "buggy_question_text": "The formatted string shows incorrect order of inserted values.",
+        "buggy_code": "def create_message(a, b):\n    return 'Message: {} {}'.format(b, a)",
+        "buggy_correct_code": "def create_message(a, b):\n    return 'Message: {} {}'.format(a, b)",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:48:36.719948"
+    },
+    "created_at": "2025-11-03T14:48:36.716855+00:00",
+    "exported_at": "2025-11-03T22:48:36.719948"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "advanced",
+    "subtopic": "String Concatenation and Formatting (f-strings, .format())",
+    "game_data": {
+      "normal": {
+        "question_text": "Combine f-strings with arithmetic expressions.",
+        "function_name": "calculate_display",
+        "sample_input": "(5, 3)",
+        "sample_output": "5 + 3 = 8",
+        "hidden_tests": [
+          {
+            "input": "(10, 2)",
+            "expected_output": "10 + 2 = 12"
+          },
+          {
+            "input": "(7, 4)",
+            "expected_output": "7 + 4 = 11"
+          }
+        ],
+        "correct_code": "def calculate_display(x, y):\n    return f'{x} + {y} = {x + y}'",
+        "explanation": "This task involves embedding arithmetic operations inside f-strings to compute and display results directly within the formatted string."
+      },
+      "buggy": {
+        "buggy_question_text": "The f-string does not evaluate the arithmetic expression correctly.",
+        "buggy_code": "def calculate_display(x, y):\n    result = x + y\n    return f'{x} + {y} = {result}'",
+        "buggy_correct_code": "def calculate_display(x, y):\n    return f'{x} + {y} = {x + y}'",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:48:36.793734"
+    },
+    "created_at": "2025-11-03T14:48:36.790726+00:00",
+    "exported_at": "2025-11-03T22:48:36.793734"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "advanced",
+    "subtopic": "String Concatenation and Formatting (f-strings, .format())",
+    "game_data": {
+      "normal": {
+        "question_text": "Format a string with .format() using keyword arguments.",
+        "function_name": "build_greeting",
+        "sample_input": "('John', 'Doe')",
+        "sample_output": "Hello John Doe!",
+        "hidden_tests": [
+          {
+            "input": "('Jane', 'Smith')",
+            "expected_output": "Hello Jane Smith!"
+          },
+          {
+            "input": "('Alex', 'Brown')",
+            "expected_output": "Hello Alex Brown!"
+          }
+        ],
+        "correct_code": "def build_greeting(first, last):\n    return 'Hello {first} {last}!'.format(first=first, last=last)",
+        "explanation": "This requires using .format() with named placeholders and matching keyword arguments to avoid KeyError and produce the correct string."
+      },
+      "buggy": {
+        "buggy_question_text": "The function raises KeyError due to incorrect keyword names.",
+        "buggy_code": "def build_greeting(first, last):\n    return 'Hello {first} {last}!'.format(firstname=first, lastname=last)",
+        "buggy_correct_code": "def build_greeting(first, last):\n    return 'Hello {first} {last}!'.format(first=first, last=last)",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:48:36.873032"
+    },
+    "created_at": "2025-11-03T14:48:36.870032+00:00",
+    "exported_at": "2025-11-03T22:48:36.873032"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "advanced",
+    "subtopic": "String Concatenation and Formatting (f-strings, .format())",
+    "game_data": {
+      "normal": {
+        "question_text": "Use f-strings to format floating-point numbers.",
+        "function_name": "format_price",
+        "sample_input": "(19.9876)",
+        "sample_output": "Price: $19.99",
+        "hidden_tests": [
+          {
+            "input": "(5.555)",
+            "expected_output": "Price: $5.56"
+          },
+          {
+            "input": "(12.3)",
+            "expected_output": "Price: $12.30"
+          }
+        ],
+        "correct_code": "def format_price(price):\n    return f'Price: ${price:.2f}'",
+        "explanation": "This function must use f-strings with precision specifiers to format floating-point numbers to a fixed number of decimal places."
+      },
+      "buggy": {
+        "buggy_question_text": "The f-string displays too many decimal places.",
+        "buggy_code": "def format_price(price):\n    return f'Price: ${price}'",
+        "buggy_correct_code": "def format_price(price):\n    return f'Price: ${price:.2f}'",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:48:36.942207"
+    },
+    "created_at": "2025-11-03T14:48:36.938209+00:00",
+    "exported_at": "2025-11-03T22:48:36.942207"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "advanced",
+    "subtopic": "String Concatenation and Formatting (f-strings, .format())",
+    "game_data": {
+      "normal": {
+        "question_text": "Combine .format() with list unpacking.",
+        "function_name": "unpack_format",
+        "sample_input": "(['apple', 'banana'])",
+        "sample_output": "Fruits: apple and banana",
+        "hidden_tests": [
+          {
+            "input": "(['red', 'blue'])",
+            "expected_output": "Fruits: red and blue"
+          },
+          {
+            "input": "(['cat', 'dog'])",
+            "expected_output": "Fruits: cat and dog"
+          }
+        ],
+        "correct_code": "def unpack_format(items):\n    return 'Fruits: {} and {}'.format(*items)",
+        "explanation": "This task involves using .format() with * unpacking to insert list elements into placeholders, ensuring all values are correctly placed."
+      },
+      "buggy": {
+        "buggy_question_text": "The function fails when unpacking a list in .format().",
+        "buggy_code": "def unpack_format(items):\n    return 'Fruits: {} and {}'.format(items)",
+        "buggy_correct_code": "def unpack_format(items):\n    return 'Fruits: {} and {}'.format(*items)",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:48:37.015907"
+    },
+    "created_at": "2025-11-03T14:48:37.012916+00:00",
+    "exported_at": "2025-11-03T22:48:37.015907"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "advanced",
+    "subtopic": "String Concatenation and Formatting (f-strings, .format())",
+    "game_data": {
+      "normal": {
+        "question_text": "Use f-strings with dictionary key access.",
+        "function_name": "dict_to_string",
+        "sample_input": "({'name': 'Tom', 'score': 95})",
+        "sample_output": "Tom scored 95",
+        "hidden_tests": [
+          {
+            "input": "({'name': 'Sara', 'score': 88})",
+            "expected_output": "Sara scored 88"
+          },
+          {
+            "input": "({'name': 'Leo', 'score': 92})",
+            "expected_output": "Leo scored 92"
+          }
+        ],
+        "correct_code": "def dict_to_string(data):\n    return f\"{data['name']} scored {data['score']}\"",
+        "explanation": "This requires using f-strings to directly access and format values from a dictionary by key within the string template."
+      },
+      "buggy": {
+        "buggy_question_text": "The f-string cannot access dictionary keys properly.",
+        "buggy_code": "def dict_to_string(data):\n    return f'{data[name]} scored {data[score]}'",
+        "buggy_correct_code": "def dict_to_string(data):\n    return f\"{data['name']} scored {data['score']}\"",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:48:37.080771"
+    },
+    "created_at": "2025-11-03T14:48:37.076765+00:00",
+    "exported_at": "2025-11-03T22:48:37.080771"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "beginner",
+    "subtopic": "Bitwise Operators and Binary Representation (Advanced)",
+    "game_data": {
+      "normal": {
+        "question_text": "Compare two numbers using > and return the larger.",
+        "function_name": "get_larger",
+        "sample_input": "(5, 3)",
+        "sample_output": "5",
+        "hidden_tests": [
+          {
+            "input": "(2, 8)",
+            "expected_output": "8"
+          },
+          {
+            "input": "(-1, -5)",
+            "expected_output": "-1"
+          },
+          {
+            "input": "(0, 0)",
+            "expected_output": "0"
+          }
+        ],
+        "correct_code": "def get_larger(a, b):\n    if a > b:\n        return a\n    else:\n        return b",
+        "explanation": "This function compares two numbers and returns the larger one using the greater-than operator."
+      },
+      "buggy": {
+        "buggy_question_text": "Function returns the smaller number instead of the larger.",
+        "buggy_code": "def get_larger(a, b):\n    if a > b:\n        return b\n    else:\n        return a",
+        "buggy_correct_code": "def get_larger(a, b):\n    if a > b:\n        return a\n    else:\n        return b",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:48:49.438173"
+    },
+    "created_at": "2025-11-03T14:48:49.435662+00:00",
+    "exported_at": "2025-11-03T22:48:49.438173"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "beginner",
+    "subtopic": "Bitwise Operators and Binary Representation (Advanced)",
+    "game_data": {
+      "normal": {
+        "question_text": "Compare two integers for equality using ==.",
+        "function_name": "are_equal",
+        "sample_input": "(5, 5)",
+        "sample_output": "True",
+        "hidden_tests": [
+          {
+            "input": "(3, 7)",
+            "expected_output": "False"
+          },
+          {
+            "input": "(-1, -1)",
+            "expected_output": "True"
+          },
+          {
+            "input": "(0, 0)",
+            "expected_output": "True"
+          }
+        ],
+        "correct_code": "def are_equal(a, b):\n    return a == b",
+        "explanation": "This function checks if two integers are equal using the == operator and returns True if they are."
+      },
+      "buggy": {
+        "buggy_question_text": "Function returns False when numbers are equal.",
+        "buggy_code": "def are_equal(a, b):\n    return a != b",
+        "buggy_correct_code": "def are_equal(a, b):\n    return a == b",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:48:49.543811"
+    },
+    "created_at": "2025-11-03T14:48:49.540808+00:00",
+    "exported_at": "2025-11-03T22:48:49.543811"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "beginner",
+    "subtopic": "Bitwise Operators and Binary Representation (Advanced)",
+    "game_data": {
+      "normal": {
+        "question_text": "Check if number is odd using bitwise OR.",
+        "function_name": "is_odd",
+        "sample_input": "(3,)",
+        "sample_output": "True",
+        "hidden_tests": [
+          {
+            "input": "(4,)",
+            "expected_output": "False"
+          },
+          {
+            "input": "(1,)",
+            "expected_output": "True"
+          },
+          {
+            "input": "(-3,)",
+            "expected_output": "True"
+          }
+        ],
+        "correct_code": "def is_odd(n):\n    return (n | 1) == n",
+        "explanation": "The function checks if a number is odd by using bitwise OR with 1 and comparing to the number."
+      },
+      "buggy": {
+        "buggy_question_text": "Function returns True for even numbers, fails for odd.",
+        "buggy_code": "def is_odd(n):\n    return (n | 1) != n",
+        "buggy_correct_code": "def is_odd(n):\n    return (n | 1) == n",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:48:49.610803"
+    },
+    "created_at": "2025-11-03T14:48:49.606728+00:00",
+    "exported_at": "2025-11-03T22:48:49.610803"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "beginner",
+    "subtopic": "Bitwise Operators and Binary Representation (Advanced)",
+    "game_data": {
+      "normal": {
+        "question_text": "Check if a number is positive using >.",
+        "function_name": "is_positive",
+        "sample_input": "(5,)",
+        "sample_output": "True",
+        "hidden_tests": [
+          {
+            "input": "(0,)",
+            "expected_output": "False"
+          },
+          {
+            "input": "(-2,)",
+            "expected_output": "False"
+          },
+          {
+            "input": "(1,)",
+            "expected_output": "True"
+          }
+        ],
+        "correct_code": "def is_positive(n):\n    return n > 0",
+        "explanation": "This function checks if a number is positive by comparing it to 0 using the greater-than operator."
+      },
+      "buggy": {
+        "buggy_question_text": "Function returns True for zero and negative numbers.",
+        "buggy_code": "def is_positive(n):\n    return n >= 0",
+        "buggy_correct_code": "def is_positive(n):\n    return n > 0",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:48:49.690903"
+    },
+    "created_at": "2025-11-03T14:48:49.687902+00:00",
+    "exported_at": "2025-11-03T22:48:49.690903"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "beginner",
+    "subtopic": "Bitwise Operators and Binary Representation (Advanced)",
+    "game_data": {
+      "normal": {
+        "question_text": "Check if two numbers are not equal using !=.",
+        "function_name": "are_not_equal",
+        "sample_input": "(4, 7)",
+        "sample_output": "True",
+        "hidden_tests": [
+          {
+            "input": "(5, 5)",
+            "expected_output": "False"
+          },
+          {
+            "input": "(-1, 1)",
+            "expected_output": "True"
+          },
+          {
+            "input": "(0, 0)",
+            "expected_output": "False"
+          }
+        ],
+        "correct_code": "def are_not_equal(a, b):\n    return a != b",
+        "explanation": "This function checks if two numbers are not equal using the != operator and returns True if they differ."
+      },
+      "buggy": {
+        "buggy_question_text": "Function returns False when numbers are different.",
+        "buggy_code": "def are_not_equal(a, b):\n    return a == b",
+        "buggy_correct_code": "def are_not_equal(a, b):\n    return a != b",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:48:49.754713"
+    },
+    "created_at": "2025-11-03T14:48:49.752713+00:00",
+    "exported_at": "2025-11-03T22:48:49.754713"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "advanced",
+    "subtopic": "Strings and String Formatting",
+    "game_data": {
+      "normal": {
+        "question_text": "Format a string with named placeholders using a dictionary.",
+        "function_name": "format_named_string",
+        "sample_input": "('Hello {name}, you are {age} years old.', {'name': 'Alice', 'age': 30})",
+        "sample_output": "Hello Alice, you are 30 years old.",
+        "hidden_tests": [
+          {
+            "input": "('Hi {user}, your score is {score}.', {'user': 'Bob'})",
+            "expected_output": "Hi Bob, your score is unknown."
+          },
+          {
+            "input": "('Welcome {title} {name}', {'title': 'Dr.', 'name': 'Smith'})",
+            "expected_output": "Welcome Dr. Smith"
+          }
+        ],
+        "correct_code": "from collections import defaultdict\n\ndef format_named_string(template, data):\n    default_data = defaultdict(lambda: 'unknown', data)\n    return template.format_map(default_data)",
+        "explanation": "The function should use str.format_map with a dictionary to replace named placeholders safely, handling missing keys by providing defaults or skipping them."
+      },
+      "buggy": {
+        "buggy_question_text": "The function raises a KeyError when formatting with missing keys.",
+        "buggy_code": "def format_named_string(template, data):\n    return template.format(**data)",
+        "buggy_correct_code": "from collections import defaultdict\n\ndef format_named_string(template, data):\n    default_data = defaultdict(lambda: 'unknown', data)\n    return template.format_map(default_data)",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:49:02.075817"
+    },
+    "created_at": "2025-11-03T14:49:02.072817+00:00",
+    "exported_at": "2025-11-03T22:49:02.075817"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "advanced",
+    "subtopic": "Strings and String Formatting",
+    "game_data": {
+      "normal": {
+        "question_text": "Reverse words in a string while preserving whitespace.",
+        "function_name": "reverse_words_preserve_whitespace",
+        "sample_input": "('hello  world  python',)",
+        "sample_output": "olleh  dlrow  nohtyp",
+        "hidden_tests": [
+          {
+            "input": "('a b c',)",
+            "expected_output": "a b c"
+          },
+          {
+            "input": "('  leading  spaces  ',)",
+            "expected_output": "  gnidael  secaps  "
+          }
+        ],
+        "correct_code": "import re\n\ndef reverse_words_preserve_whitespace(s):\n    return ''.join(word[::-1] if word.strip() else word for word in re.split(r'(\\s+)', s))",
+        "explanation": "The function should split the string into words, reverse each word, and rejoin with original whitespace preserved exactly."
+      },
+      "buggy": {
+        "buggy_question_text": "The function reverses the entire string, not individual words.",
+        "buggy_code": "def reverse_words_preserve_whitespace(s):\n    return s[::-1]",
+        "buggy_correct_code": "import re\n\ndef reverse_words_preserve_whitespace(s):\n    return ''.join(word[::-1] if word.strip() else word for word in re.split(r'(\\s+)', s))",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:49:02.168543"
+    },
+    "created_at": "2025-11-03T14:49:02.166538+00:00",
+    "exported_at": "2025-11-03T22:49:02.168543"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "advanced",
+    "subtopic": "Strings and String Formatting",
+    "game_data": {
+      "normal": {
+        "question_text": "Interleave two strings of different lengths.",
+        "function_name": "interleave_strings",
+        "sample_input": "('abc', '12')",
+        "sample_output": "a1b2c",
+        "hidden_tests": [
+          {
+            "input": "('xy', '1234')",
+            "expected_output": "x1y234"
+          },
+          {
+            "input": "('', 'test')",
+            "expected_output": "test"
+          }
+        ],
+        "correct_code": "from itertools import zip_longest\n\ndef interleave_strings(s1, s2):\n    return ''.join(a + b for a, b in zip_longest(s1, s2, fillvalue='') if a is not None and b is not None)",
+        "explanation": "The function should interleave characters from both strings, continuing with the remainder of the longer string after the shorter one ends."
+      },
+      "buggy": {
+        "buggy_question_text": "The function stops early when one string is shorter.",
+        "buggy_code": "def interleave_strings(s1, s2):\n    return ''.join(a + b for a, b in zip(s1, s2))",
+        "buggy_correct_code": "from itertools import zip_longest\n\ndef interleave_strings(s1, s2):\n    return ''.join(a + b for a, b in zip_longest(s1, s2, fillvalue=''))",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:49:02.247173"
+    },
+    "created_at": "2025-11-03T14:49:02.243651+00:00",
+    "exported_at": "2025-11-03T22:49:02.247173"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "advanced",
+    "subtopic": "Strings and String Formatting",
+    "game_data": {
+      "normal": {
+        "question_text": "Count overlapping substring occurrences in a string.",
+        "function_name": "count_overlapping_substrings",
+        "sample_input": "('ababab', 'aba')",
+        "sample_output": 2,
+        "hidden_tests": [
+          {
+            "input": "('aaaa', 'aa')",
+            "expected_output": 3
+          },
+          {
+            "input": "('xyz', 'abc')",
+            "expected_output": 0
+          }
+        ],
+        "correct_code": "def count_overlapping_substrings(s, sub):\n    count = 0\n    for i in range(len(s) - len(sub) + 1):\n        if s[i:i+len(sub)] == sub:\n            count += 1\n    return count",
+        "explanation": "The function should count all occurrences of a substring in a string, including those that overlap, by scanning each possible starting position."
+      },
+      "buggy": {
+        "buggy_question_text": "The function misses overlapping matches in the count.",
+        "buggy_code": "def count_overlapping_substrings(s, sub):\n    return s.count(sub)",
+        "buggy_correct_code": "def count_overlapping_substrings(s, sub):\n    count = 0\n    for i in range(len(s) - len(sub) + 1):\n        if s[i:i+len(sub)] == sub:\n            count += 1\n    return count",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:49:02.327490"
+    },
+    "created_at": "2025-11-03T14:49:02.323981+00:00",
+    "exported_at": "2025-11-03T22:49:02.327490"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "advanced",
+    "subtopic": "Strings and String Formatting",
+    "game_data": {
+      "normal": {
+        "question_text": "Convert a string to title case ignoring minor words.",
+        "function_name": "smart_title_case",
+        "sample_input": "('the cat and the hat',)",
+        "sample_output": "The Cat and the Hat",
+        "hidden_tests": [
+          {
+            "input": "('a tale of two cities',)",
+            "expected_output": "A Tale of Two Cities"
+          },
+          {
+            "input": "('hello world',)",
+            "expected_output": "Hello World"
+          }
+        ],
+        "correct_code": "def smart_title_case(s):\n    minor_words = {'a', 'an', 'the', 'and', 'but', 'or', 'for', 'nor', 'on', 'at', 'to', 'by'}\n    words = s.split()\n    result = [words[0].capitalize()]\n    for word in words[1:]:\n        if word.lower() in minor_words:\n            result.append(word.lower())\n        else:\n            result.append(word.capitalize())\n    return ' '.join(result)",
+        "explanation": "The function should convert a string to title case but leave minor words (like 'and', 'the') lowercase unless they are the first word."
+      },
+      "buggy": {
+        "buggy_question_text": "The function capitalizes every word, including minor ones.",
+        "buggy_code": "def smart_title_case(s):\n    return s.title()",
+        "buggy_correct_code": "def smart_title_case(s):\n    minor_words = {'a', 'an', 'the', 'and', 'but', 'or', 'for', 'nor', 'on', 'at', 'to', 'by'}\n    words = s.split()\n    result = [words[0].capitalize()]\n    for word in words[1:]:\n        if word.lower() in minor_words:\n            result.append(word.lower())\n        else:\n            result.append(word.capitalize())\n    return ' '.join(result)",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:49:02.406674"
+    },
+    "created_at": "2025-11-03T14:49:02.404171+00:00",
+    "exported_at": "2025-11-03T22:49:02.406674"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "advanced",
+    "subtopic": "Strings and String Formatting",
+    "game_data": {
+      "normal": {
+        "question_text": "Remove duplicate characters from a string preserving order.",
+        "function_name": "remove_duplicates_ordered",
+        "sample_input": "('programming',)",
+        "sample_output": "progamin",
+        "hidden_tests": [
+          {
+            "input": "('aabbcc',)",
+            "expected_output": "abc"
+          },
+          {
+            "input": "('abcabc',)",
+            "expected_output": "abc"
+          }
+        ],
+        "correct_code": "def remove_duplicates_ordered(s):\n    seen = set()\n    result = []\n    for char in s:\n        if char not in seen:\n            seen.add(char)\n            result.append(char)\n    return ''.join(result)",
+        "explanation": "The function should remove duplicate characters from a string while preserving the first occurrence order of each character."
+      },
+      "buggy": {
+        "buggy_question_text": "The function removes all duplicates but loses character order.",
+        "buggy_code": "def remove_duplicates_ordered(s):\n    return ''.join(set(s))",
+        "buggy_correct_code": "def remove_duplicates_ordered(s):\n    seen = set()\n    result = []\n    for char in s:\n        if char not in seen:\n            seen.add(char)\n            result.append(char)\n    return ''.join(result)",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:49:02.486505"
+    },
+    "created_at": "2025-11-03T14:49:02.483001+00:00",
+    "exported_at": "2025-11-03T22:49:02.486505"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "advanced",
+    "subtopic": "Strings and String Formatting",
+    "game_data": {
+      "normal": {
+        "question_text": "Split a string by multiple delimiters.",
+        "function_name": "split_by_multiple_delimiters",
+        "sample_input": "('a,b;c d', [',', ';', ' '])",
+        "sample_output": "['a', 'b', 'c', 'd']",
+        "hidden_tests": [
+          {
+            "input": "('1.2-3/4', ['.', '-', '/'])",
+            "expected_output": "['1', '2', '3', '4']"
+          },
+          {
+            "input": "('hello world', [' '])",
+            "expected_output": "['hello', 'world']"
+          }
+        ],
+        "correct_code": "import re\n\ndef split_by_multiple_delimiters(s, delimiters):\n    pattern = '|'.join(map(re.escape, delimiters))\n    return re.split(pattern, s)",
+        "explanation": "The function should split a string by any of multiple delimiters, returning a list of substrings without the delimiter characters."
+      },
+      "buggy": {
+        "buggy_question_text": "The function splits only by the first delimiter found.",
+        "buggy_code": "def split_by_multiple_delimiters(s, delimiters):\n    return s.split(delimiters[0])",
+        "buggy_correct_code": "import re\n\ndef split_by_multiple_delimiters(s, delimiters):\n    pattern = '|'.join(map(re.escape, delimiters))\n    return re.split(pattern, s)",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:49:02.564126"
+    },
+    "created_at": "2025-11-03T14:49:02.562126+00:00",
+    "exported_at": "2025-11-03T22:49:02.564126"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "beginner",
+    "subtopic": "Bitwise Operators and Binary Representation (Advanced)",
+    "game_data": {
+      "normal": {
+        "question_text": "Flip all bits of a number using bitwise NOT.",
+        "function_name": "flip_bits",
+        "sample_input": "(5,)",
+        "sample_output": "-6",
+        "hidden_tests": [
+          {
+            "input": "(0,)",
+            "expected_output": "-1"
+          },
+          {
+            "input": "(10,)",
+            "expected_output": "-11"
+          },
+          {
+            "input": "(255,)",
+            "expected_output": "-256"
+          }
+        ],
+        "correct_code": "def flip_bits(n):\n    return ~n",
+        "explanation": "The correct code uses bitwise NOT (~) to flip all bits of the integer, producing the complement."
+      },
+      "buggy": {
+        "buggy_question_text": "Function returns the same number instead of flipped bits.",
+        "buggy_code": "def flip_bits(n):\n    return n",
+        "buggy_correct_code": "def flip_bits(n):\n    return ~n",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:49:13.782087"
+    },
+    "created_at": "2025-11-03T14:49:13.778088+00:00",
+    "exported_at": "2025-11-03T22:49:13.782087"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "beginner",
+    "subtopic": "Bitwise Operators and Binary Representation (Advanced)",
+    "game_data": {
+      "normal": {
+        "question_text": "Flip all bits of a number using bitwise NOT.",
+        "function_name": "flip_bits",
+        "sample_input": "(5,)",
+        "sample_output": "-6",
+        "hidden_tests": [
+          {
+            "input": "(0,)",
+            "expected_output": "-1"
+          },
+          {
+            "input": "(10,)",
+            "expected_output": "-11"
+          },
+          {
+            "input": "(255,)",
+            "expected_output": "-256"
+          }
+        ],
+        "correct_code": "def flip_bits(n):\n    return ~n",
+        "explanation": "The correct code uses bitwise NOT (~) to flip all bits of the integer, producing the complement."
+      },
+      "buggy": {
+        "buggy_question_text": "Function returns the same number instead of flipped bits.",
+        "buggy_code": "def flip_bits(n):\n    return n",
+        "buggy_correct_code": "def flip_bits(n):\n    return ~n",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:49:13.882717"
+    },
+    "created_at": "2025-11-03T14:49:13.778088+00:00",
+    "exported_at": "2025-11-03T22:49:13.883712"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "beginner",
+    "subtopic": "Bitwise Operators and Binary Representation (Advanced)",
+    "game_data": {
+      "normal": {
+        "question_text": "Flip all bits of a number using bitwise NOT.",
+        "function_name": "flip_bits",
+        "sample_input": "(5,)",
+        "sample_output": "-6",
+        "hidden_tests": [
+          {
+            "input": "(0,)",
+            "expected_output": "-1"
+          },
+          {
+            "input": "(10,)",
+            "expected_output": "-11"
+          },
+          {
+            "input": "(255,)",
+            "expected_output": "-256"
+          }
+        ],
+        "correct_code": "def flip_bits(n):\n    return ~n",
+        "explanation": "The correct code uses bitwise NOT (~) to flip all bits of the integer, producing the complement."
+      },
+      "buggy": {
+        "buggy_question_text": "Function returns the same number instead of flipped bits.",
+        "buggy_code": "def flip_bits(n):\n    return n",
+        "buggy_correct_code": "def flip_bits(n):\n    return ~n",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:49:13.979743"
+    },
+    "created_at": "2025-11-03T14:49:13.778088+00:00",
+    "exported_at": "2025-11-03T22:49:13.979743"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "beginner",
+    "subtopic": "Bitwise Operators and Binary Representation (Advanced)",
+    "game_data": {
+      "normal": {
+        "question_text": "Flip all bits of a number using bitwise NOT.",
+        "function_name": "flip_bits",
+        "sample_input": "(5,)",
+        "sample_output": "-6",
+        "hidden_tests": [
+          {
+            "input": "(0,)",
+            "expected_output": "-1"
+          },
+          {
+            "input": "(10,)",
+            "expected_output": "-11"
+          },
+          {
+            "input": "(255,)",
+            "expected_output": "-256"
+          }
+        ],
+        "correct_code": "def flip_bits(n):\n    return ~n",
+        "explanation": "The correct code uses bitwise NOT (~) to flip all bits of the integer, producing the complement."
+      },
+      "buggy": {
+        "buggy_question_text": "Function returns the same number instead of flipped bits.",
+        "buggy_code": "def flip_bits(n):\n    return n",
+        "buggy_correct_code": "def flip_bits(n):\n    return ~n",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:49:14.078863"
+    },
+    "created_at": "2025-11-03T14:49:13.778088+00:00",
+    "exported_at": "2025-11-03T22:49:14.078863"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "beginner",
+    "subtopic": "Bitwise Operators and Binary Representation (Advanced)",
+    "game_data": {
+      "normal": {
+        "question_text": "Clear the second bit of a number using bitwise AND.",
+        "function_name": "clear_second_bit",
+        "sample_input": "(3,)",
+        "sample_output": "1",
+        "hidden_tests": [
+          {
+            "input": "(2,)",
+            "expected_output": "0"
+          },
+          {
+            "input": "(6,)",
+            "expected_output": "4"
+          },
+          {
+            "input": "(0,)",
+            "expected_output": "0"
+          }
+        ],
+        "correct_code": "def clear_second_bit(n):\n    return n & ~2",
+        "explanation": "The correct code uses bitwise AND with ~2 (binary 111...1101) to clear the second bit (bit index 1)."
+      },
+      "buggy": {
+        "buggy_question_text": "Function sets the second bit instead of clearing it.",
+        "buggy_code": "def clear_second_bit(n):\n    return n | 2",
+        "buggy_correct_code": "def clear_second_bit(n):\n    return n & ~2",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:49:14.180005"
+    },
+    "created_at": "2025-11-03T14:49:14.178006+00:00",
+    "exported_at": "2025-11-03T22:49:14.180005"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "advanced",
+    "subtopic": "Structuring Code for Readability",
+    "game_data": {
+      "normal": {
+        "question_text": "Implement a generator that yields even numbers up to n.",
+        "function_name": "even_numbers",
+        "sample_input": "(5,)",
+        "sample_output": "[0, 2, 4]",
+        "hidden_tests": [
+          {
+            "input": "(0,)",
+            "expected_output": "[]"
+          },
+          {
+            "input": "(10,)",
+            "expected_output": "[0, 2, 4, 6, 8]"
+          }
+        ],
+        "correct_code": "def even_numbers(n):\n    for i in range(n):\n        if i % 2 == 0:\n            yield i",
+        "explanation": "This task requires a generator function to yield even numbers sequentially, conserving memory and enabling lazy evaluation for large n."
+      },
+      "buggy": {
+        "buggy_question_text": "The function returns a list instead of yielding values one by one.",
+        "buggy_code": "def even_numbers(n):\n    result = []\n    for i in range(n):\n        if i % 2 == 0:\n            result.append(i)\n    return result",
+        "buggy_correct_code": "def even_numbers(n):\n    for i in range(n):\n        if i % 2 == 0:\n            yield i",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:49:18.943247"
+    },
+    "created_at": "2025-11-03T14:49:18.939248+00:00",
+    "exported_at": "2025-11-03T22:49:18.943247"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "advanced",
+    "subtopic": "Structuring Code for Readability",
+    "game_data": {
+      "normal": {
+        "question_text": "Create a function to filter unique elements using a set.",
+        "function_name": "get_unique",
+        "sample_input": "([1, 2, 2, 3],)",
+        "sample_output": "[1, 2, 3]",
+        "hidden_tests": [
+          {
+            "input": "([],)",
+            "expected_output": "[]"
+          },
+          {
+            "input": "(['a', 'b', 'a'],)",
+            "expected_output": "['a', 'b']"
+          }
+        ],
+        "correct_code": "def get_unique(items):\n    return list(set(items))",
+        "explanation": "This function should return unique elements from the input list, leveraging set properties for O(1) lookups and avoiding duplicates."
+      },
+      "buggy": {
+        "buggy_question_text": "The function incorrectly returns a list with duplicates when given mixed types.",
+        "buggy_code": "def get_unique(items):\n    return [x for x in items]",
+        "buggy_correct_code": "def get_unique(items):\n    return list(set(items))",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:49:19.060478"
+    },
+    "created_at": "2025-11-03T14:49:19.054966+00:00",
+    "exported_at": "2025-11-03T22:49:19.060478"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "advanced",
+    "subtopic": "Structuring Code for Readability",
+    "game_data": {
+      "normal": {
+        "question_text": "Write a decorator to cache function results.",
+        "function_name": "cache_decorator",
+        "sample_input": "(fib, 5)",
+        "sample_output": "5",
+        "hidden_tests": [
+          {
+            "input": "(factorial, 3)",
+            "expected_output": "6"
+          },
+          {
+            "input": "(square, 4)",
+            "expected_output": "16"
+          }
+        ],
+        "correct_code": "def cache_decorator(func):\n    cache = {}\n    def wrapper(*args):\n        if args in cache:\n            return cache[args]\n        result = func(*args)\n        cache[args] = result\n        return result\n    return wrapper",
+        "explanation": "This decorator should memoize function results to avoid redundant calculations, improving performance for repeated calls with same arguments."
+      },
+      "buggy": {
+        "buggy_question_text": "The decorator does not cache results, causing repeated expensive computations.",
+        "buggy_code": "def cache_decorator(func):\n    def wrapper(*args):\n        return func(*args)\n    return wrapper",
+        "buggy_correct_code": "def cache_decorator(func):\n    cache = {}\n    def wrapper(*args):\n        if args in cache:\n            return cache[args]\n        result = func(*args)\n        cache[args] = result\n        return result\n    return wrapper",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:49:19.159234"
+    },
+    "created_at": "2025-11-03T14:49:19.155721+00:00",
+    "exported_at": "2025-11-03T22:49:19.159234"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "advanced",
+    "subtopic": "Structuring Code for Readability",
+    "game_data": {
+      "normal": {
+        "question_text": "Implement a reverse iterator for a custom sequence.",
+        "function_name": "reverse_iter",
+        "sample_input": "([1, 2, 3],)",
+        "sample_output": "[3, 2, 1]",
+        "hidden_tests": [
+          {
+            "input": "([],)",
+            "expected_output": "[]"
+          },
+          {
+            "input": "(['x', 'y'],)",
+            "expected_output": "['y', 'x']"
+          }
+        ],
+        "correct_code": "def reverse_iter(seq):\n    for i in reversed(seq):\n        yield i",
+        "explanation": "This method should return an iterator that yields sequence items in reverse order, supporting efficient reverse iteration without building a full list."
+      },
+      "buggy": {
+        "buggy_question_text": "The __reversed__ method returns a list instead of an iterator.",
+        "buggy_code": "def reverse_iter(seq):\n    return list(reversed(seq))",
+        "buggy_correct_code": "def reverse_iter(seq):\n    for i in reversed(seq):\n        yield i",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:49:19.241628"
+    },
+    "created_at": "2025-11-03T14:49:19.237624+00:00",
+    "exported_at": "2025-11-03T22:49:19.241628"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "advanced",
+    "subtopic": "Structuring Code for Readability",
+    "game_data": {
+      "normal": {
+        "question_text": "Create a function to merge two dictionaries.",
+        "function_name": "merge_dicts",
+        "sample_input": "({'a': 1}, {'b': 2})",
+        "sample_output": "{'a': 1, 'b': 2}",
+        "hidden_tests": [
+          {
+            "input": "({'x': 1}, {'x': 2})",
+            "expected_output": "{'x': [1, 2]}"
+          },
+          {
+            "input": "({}, {})",
+            "expected_output": "{}"
+          }
+        ],
+        "correct_code": "def merge_dicts(d1, d2):\n    result = {}\n    for k, v in d1.items():\n        result[k] = [v]\n    for k, v in d2.items():\n        if k in result:\n            result[k].append(v)\n        else:\n            result[k] = [v]\n    return result",
+        "explanation": "This function should merge two dictionaries, preserving all key-value pairs and handling key conflicts by combining values into a list."
+      },
+      "buggy": {
+        "buggy_question_text": "The function fails when dictionaries have overlapping keys, overwriting values.",
+        "buggy_code": "def merge_dicts(d1, d2):\n    result = d1.copy()\n    result.update(d2)\n    return result",
+        "buggy_correct_code": "def merge_dicts(d1, d2):\n    result = {}\n    for k, v in d1.items():\n        result[k] = [v]\n    for k, v in d2.items():\n        if k in result:\n            result[k].append(v)\n        else:\n            result[k] = [v]\n    return result",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:49:19.342870"
+    },
+    "created_at": "2025-11-03T14:49:19.338870+00:00",
+    "exported_at": "2025-11-03T22:49:19.342870"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "advanced",
+    "subtopic": "Structuring Code for Readability",
+    "game_data": {
+      "normal": {
+        "question_text": "Write a function to flatten a nested list.",
+        "function_name": "flatten_list",
+        "sample_input": "([1, [2, [3]]],)",
+        "sample_output": "[1, 2, 3]",
+        "hidden_tests": [
+          {
+            "input": "([],)",
+            "expected_output": "[]"
+          },
+          {
+            "input": "([1, 2],)",
+            "expected_output": "[1, 2]"
+          }
+        ],
+        "correct_code": "def flatten_list(nested):\n    result = []\n    for item in nested:\n        if isinstance(item, list):\n            result.extend(flatten_list(item))\n        else:\n            result.append(item)\n    return result",
+        "explanation": "This function should recursively flatten a nested list of integers into a single list, handling arbitrary depth and non-list items gracefully."
+      },
+      "buggy": {
+        "buggy_question_text": "The function crashes when encountering non-list elements in the nested structure.",
+        "buggy_code": "def flatten_list(nested):\n    result = []\n    for item in nested:\n        result.extend(flatten_list(item))\n    return result",
+        "buggy_correct_code": "def flatten_list(nested):\n    result = []\n    for item in nested:\n        if isinstance(item, list):\n            result.extend(flatten_list(item))\n        else:\n            result.append(item)\n    return result",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:49:19.436677"
+    },
+    "created_at": "2025-11-03T14:49:19.433167+00:00",
+    "exported_at": "2025-11-03T22:49:19.436677"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "advanced",
+    "subtopic": "Structuring Code for Readability",
+    "game_data": {
+      "normal": {
+        "question_text": "Implement a type-hinted function with overloads for different input types.",
+        "function_name": "process_value",
+        "sample_input": "(5,)",
+        "sample_output": "10",
+        "hidden_tests": [
+          {
+            "input": "('hello',)",
+            "expected_output": "'hellohello'"
+          },
+          {
+            "input": "([1, 2],)",
+            "expected_output": "[1, 2, 1, 2]"
+          }
+        ],
+        "correct_code": "from typing import overload, Union, List\n\n@overload\ndef process_value(x: int) -> int: ...\n@overload\ndef process_value(x: str) -> str: ...\n@overload\ndef process_value(x: List) -> List: ...\n\ndef process_value(x):\n    return x * 2",
+        "explanation": "This function should use @overload to specify return types based on input types, ensuring type safety and clarity for callers with different argument types."
+      },
+      "buggy": {
+        "buggy_question_text": "The function lacks proper type hints, causing mypy errors for mixed-type inputs.",
+        "buggy_code": "def process_value(x):\n    if isinstance(x, int):\n        return x * 2\n    elif isinstance(x, str):\n        return x * 2\n    elif isinstance(x, list):\n        return x * 2",
+        "buggy_correct_code": "from typing import overload, Union, List\n\n@overload\ndef process_value(x: int) -> int: ...\n@overload\ndef process_value(x: str) -> str: ...\n@overload\ndef process_value(x: List) -> List: ...\n\ndef process_value(x):\n    return x * 2",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:49:19.522888"
+    },
+    "created_at": "2025-11-03T14:49:19.520888+00:00",
+    "exported_at": "2025-11-03T22:49:19.522888"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "beginner",
+    "subtopic": "Bitwise Operators and Binary Representation (Advanced)",
+    "game_data": {
+      "normal": {
+        "question_text": "Check if item is not in tuple using membership.",
+        "function_name": "not_in_tuple",
+        "sample_input": "((1, 2, 3), 4)",
+        "sample_output": "True",
+        "hidden_tests": [
+          {
+            "input": "((), 1)",
+            "expected_output": "True"
+          },
+          {
+            "input": "(('a', 'b'), 'a')",
+            "expected_output": "False"
+          },
+          {
+            "input": "((10,), 10)",
+            "expected_output": "False"
+          }
+        ],
+        "correct_code": "def not_in_tuple(tup, item):\n    return item not in tup",
+        "explanation": "Function uses 'not in' operator to check if item is absent from tuple, returning True if missing."
+      },
+      "buggy": {
+        "buggy_question_text": "Function returns incorrect result for items not in tuple.",
+        "buggy_code": "def not_in_tuple(tup, item):\n    return item not tup",
+        "buggy_correct_code": "def not_in_tuple(tup, item):\n    return item not in tup",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:49:20.064822"
+    },
+    "created_at": "2025-11-03T14:49:20.060207+00:00",
+    "exported_at": "2025-11-03T22:49:20.064822"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "beginner",
+    "subtopic": "Bitwise Operators and Binary Representation (Advanced)",
+    "game_data": {
+      "normal": {
+        "question_text": "Swap two numbers using XOR bitwise operation.",
+        "function_name": "swap_numbers",
+        "sample_input": "(5, 3)",
+        "sample_output": "(3, 5)",
+        "hidden_tests": [
+          {
+            "input": "(10, 20)",
+            "expected_output": "(20, 10)"
+          },
+          {
+            "input": "(0, 7)",
+            "expected_output": "(7, 0)"
+          },
+          {
+            "input": "(-1, 1)",
+            "expected_output": "(1, -1)"
+          }
+        ],
+        "correct_code": "def swap_numbers(a, b):\n    a = a ^ b\n    b = a ^ b\n    a = a ^ b\n    return (a, b)",
+        "explanation": "Function uses XOR operations to swap two numbers without temporary variable, modifying values in place."
+      },
+      "buggy": {
+        "buggy_question_text": "Function does not swap values correctly.",
+        "buggy_code": "def swap_numbers(a, b):\n    a = a ^ b\n    b = a ^ b\n    return (a, b)",
+        "buggy_correct_code": "def swap_numbers(a, b):\n    a = a ^ b\n    b = a ^ b\n    a = a ^ b\n    return (a, b)",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:49:20.172795"
+    },
+    "created_at": "2025-11-03T14:49:20.168796+00:00",
+    "exported_at": "2025-11-03T22:49:20.172795"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "beginner",
+    "subtopic": "Bitwise Operators and Binary Representation (Advanced)",
+    "game_data": {
+      "normal": {
+        "question_text": "Check if variable is None using identity operator.",
+        "function_name": "is_none",
+        "sample_input": "(None,)",
+        "sample_output": "True",
+        "hidden_tests": [
+          {
+            "input": "(0,)",
+            "expected_output": "False"
+          },
+          {
+            "input": "('',)",
+            "expected_output": "False"
+          },
+          {
+            "input": "(False,)",
+            "expected_output": "False"
+          }
+        ],
+        "correct_code": "def is_none(x):\n    return x is None",
+        "explanation": "Function uses 'is' operator to check if variable is exactly None, the correct way to test for None."
+      },
+      "buggy": {
+        "buggy_question_text": "Function returns wrong result for None values.",
+        "buggy_code": "def is_none(x):\n    return x == None",
+        "buggy_correct_code": "def is_none(x):\n    return x is None",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:49:20.292910"
+    },
+    "created_at": "2025-11-03T14:49:20.289913+00:00",
+    "exported_at": "2025-11-03T22:49:20.292910"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "advanced",
+    "subtopic": "Type Checking with type() and isinstance()",
+    "game_data": {
+      "normal": {
+        "question_text": "Check if input is a numeric type using isinstance.",
+        "function_name": "check_numeric",
+        "sample_input": "(5,)",
+        "sample_output": "True",
+        "hidden_tests": [
+          {
+            "input": "(5.5,)",
+            "expected_output": "True"
+          },
+          {
+            "input": "('hello',)",
+            "expected_output": "False"
+          },
+          {
+            "input": "([1, 2],)",
+            "expected_output": "False"
+          }
+        ],
+        "correct_code": "def check_numeric(value):\n    return isinstance(value, (int, float))",
+        "explanation": "The function should return True for int and float types, and False otherwise, using isinstance to handle inheritance correctly."
+      },
+      "buggy": {
+        "buggy_question_text": "Function fails when checking numeric types like int and float.",
+        "buggy_code": "def check_numeric(value):\n    return type(value) in (int, float)",
+        "buggy_correct_code": "def check_numeric(value):\n    return isinstance(value, (int, float))",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:49:44.202174"
+    },
+    "created_at": "2025-11-03T14:49:44.198170+00:00",
+    "exported_at": "2025-11-03T22:49:44.202174"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "advanced",
+    "subtopic": "Type Checking with type() and isinstance()",
+    "game_data": {
+      "normal": {
+        "question_text": "Validate if input is a sequence but not a string.",
+        "function_name": "is_sequence_not_string",
+        "sample_input": "([1, 2],)",
+        "sample_output": "True",
+        "hidden_tests": [
+          {
+            "input": "(('a', 'b'),)",
+            "expected_output": "True"
+          },
+          {
+            "input": "('abc',)",
+            "expected_output": "False"
+          },
+          {
+            "input": "(123,)",
+            "expected_output": "False"
+          }
+        ],
+        "correct_code": "def is_sequence_not_string(value):\n    return type(value) in (list, tuple) and not isinstance(value, str)",
+        "explanation": "The function should return True for list or tuple, but False for str, using type checking to exclude strings."
+      },
+      "buggy": {
+        "buggy_question_text": "Function incorrectly treats strings as sequences.",
+        "buggy_code": "def is_sequence_not_string(value):\n    from collections.abc import Sequence\n    return isinstance(value, Sequence)",
+        "buggy_correct_code": "def is_sequence_not_string(value):\n    return type(value) in (list, tuple) and not isinstance(value, str)",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:49:44.298803"
+    },
+    "created_at": "2025-11-03T14:49:44.295294+00:00",
+    "exported_at": "2025-11-03T22:49:44.298803"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "advanced",
+    "subtopic": "Type Checking with type() and isinstance()",
+    "game_data": {
+      "normal": {
+        "question_text": "Check if input is an integer or integer subclass.",
+        "function_name": "is_integer_type",
+        "sample_input": "(5,)",
+        "sample_output": "True",
+        "hidden_tests": [
+          {
+            "input": "(True,)",
+            "expected_output": "True"
+          },
+          {
+            "input": "(5.0,)",
+            "expected_output": "False"
+          },
+          {
+            "input": "('5',)",
+            "expected_output": "False"
+          }
+        ],
+        "correct_code": "def is_integer_type(value):\n    return isinstance(value, int)",
+        "explanation": "The function should return True for int and its subclasses, using isinstance to handle inheritance properly."
+      },
+      "buggy": {
+        "buggy_question_text": "Function fails for integer subclasses.",
+        "buggy_code": "def is_integer_type(value):\n    return type(value) == int",
+        "buggy_correct_code": "def is_integer_type(value):\n    return isinstance(value, int)",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:49:44.388912"
+    },
+    "created_at": "2025-11-03T14:49:44.384405+00:00",
+    "exported_at": "2025-11-03T22:49:44.388912"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "advanced",
+    "subtopic": "Type Checking with type() and isinstance()",
+    "game_data": {
+      "normal": {
+        "question_text": "Determine if input is a callable or function.",
+        "function_name": "is_callable_object",
+        "sample_input": "(len,)",
+        "sample_output": "True",
+        "hidden_tests": [
+          {
+            "input": "([1, 2],)",
+            "expected_output": "False"
+          },
+          {
+            "input": "(lambda x: x,)",
+            "expected_output": "True"
+          },
+          {
+            "input": "(5,)",
+            "expected_output": "False"
+          }
+        ],
+        "correct_code": "def is_callable_object(value):\n    return callable(value)",
+        "explanation": "The function should return True for callable objects like functions, using callable() and type checking for precision."
+      },
+      "buggy": {
+        "buggy_question_text": "Function misidentifies some callable objects.",
+        "buggy_code": "def is_callable_object(value):\n    return type(value).__name__ == 'function'",
+        "buggy_correct_code": "def is_callable_object(value):\n    return callable(value)",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:49:44.474558"
+    },
+    "created_at": "2025-11-03T14:49:44.470558+00:00",
+    "exported_at": "2025-11-03T22:49:44.474558"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "advanced",
+    "subtopic": "Type Checking with type() and isinstance()",
+    "game_data": {
+      "normal": {
+        "question_text": "Verify if input is a dictionary or defaultdict.",
+        "function_name": "is_dict_type",
+        "sample_input": "({},)",
+        "sample_output": "True",
+        "hidden_tests": [
+          {
+            "input": "(dict(),)",
+            "expected_output": "True"
+          },
+          {
+            "input": "(defaultdict(list),)",
+            "expected_output": "True"
+          },
+          {
+            "input": "([],)",
+            "expected_output": "False"
+          }
+        ],
+        "correct_code": "def is_dict_type(value):\n    return isinstance(value, dict)",
+        "explanation": "The function should return True for dict and defaultdict, using isinstance to include subclasses of dict."
+      },
+      "buggy": {
+        "buggy_question_text": "Function does not recognize defaultdict as a dict.",
+        "buggy_code": "def is_dict_type(value):\n    return type(value) == dict",
+        "buggy_correct_code": "def is_dict_type(value):\n    return isinstance(value, dict)",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:49:44.559597"
+    },
+    "created_at": "2025-11-03T14:49:44.555083+00:00",
+    "exported_at": "2025-11-03T22:49:44.559597"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "advanced",
+    "subtopic": "Type Checking with type() and isinstance()",
+    "game_data": {
+      "normal": {
+        "question_text": "Check if input is a numeric or string type.",
+        "function_name": "is_numeric_or_string",
+        "sample_input": "(5,)",
+        "sample_output": "True",
+        "hidden_tests": [
+          {
+            "input": "('hello',)",
+            "expected_output": "True"
+          },
+          {
+            "input": "(True,)",
+            "expected_output": "True"
+          },
+          {
+            "input": "([],)",
+            "expected_output": "False"
+          }
+        ],
+        "correct_code": "def is_numeric_or_string(value):\n    return isinstance(value, (int, float, str))",
+        "explanation": "The function should return True for numeric types (int, float) and str, using isinstance to handle inheritance."
+      },
+      "buggy": {
+        "buggy_question_text": "Function fails for numeric subclasses like bool.",
+        "buggy_code": "def is_numeric_or_string(value):\n    return type(value) in (int, float, str)",
+        "buggy_correct_code": "def is_numeric_or_string(value):\n    return isinstance(value, (int, float, str))",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:49:44.667456"
+    },
+    "created_at": "2025-11-03T14:49:44.664950+00:00",
+    "exported_at": "2025-11-03T22:49:44.667456"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "advanced",
+    "subtopic": "Type Checking with type() and isinstance()",
+    "game_data": {
+      "normal": {
+        "question_text": "Validate if input is a tuple or namedtuple.",
+        "function_name": "is_tuple_type",
+        "sample_input": "((1, 2),)",
+        "sample_output": "True",
+        "hidden_tests": [
+          {
+            "input": "(namedtuple('Point', 'x y')(1, 2),)",
+            "expected_output": "True"
+          },
+          {
+            "input": "([1, 2],)",
+            "expected_output": "False"
+          },
+          {
+            "input": "('abc',)",
+            "expected_output": "False"
+          }
+        ],
+        "correct_code": "def is_tuple_type(value):\n    return isinstance(value, tuple)",
+        "explanation": "The function should return True for tuple and namedtuple, using isinstance to include tuple subclasses."
+      },
+      "buggy": {
+        "buggy_question_text": "Function does not recognize namedtuple as a tuple.",
+        "buggy_code": "def is_tuple_type(value):\n    return type(value) == tuple",
+        "buggy_correct_code": "def is_tuple_type(value):\n    return isinstance(value, tuple)",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:49:44.777730"
+    },
+    "created_at": "2025-11-03T14:49:44.773215+00:00",
+    "exported_at": "2025-11-03T22:49:44.777730"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "advanced",
+    "subtopic": "Troubleshooting Common Setup Errors",
+    "game_data": {
+      "normal": {
+        "question_text": "Create an empty set and add elements.",
+        "function_name": "create_empty_set",
+        "sample_input": "()",
+        "sample_output": "set()",
+        "hidden_tests": [
+          {
+            "input": "()",
+            "expected_output": "set()"
+          }
+        ],
+        "correct_code": "def create_empty_set():\n    return set()",
+        "explanation": "The task requires creating an empty set using set() since {} creates an empty dictionary. This avoids the common setup error of using incorrect literal syntax."
+      },
+      "buggy": {
+        "buggy_question_text": "Code fails to create an empty set, raises TypeError.",
+        "buggy_code": "def create_empty_set():\n    return {}",
+        "buggy_correct_code": "def create_empty_set():\n    return set()",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:49:45.695447"
+    },
+    "created_at": "2025-11-03T14:49:45.692447+00:00",
+    "exported_at": "2025-11-03T22:49:45.695447"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "advanced",
+    "subtopic": "Troubleshooting Common Setup Errors",
+    "game_data": {
+      "normal": {
+        "question_text": "Use multiprocessing Process with correct imports.",
+        "function_name": "run_simple_process",
+        "sample_input": "()",
+        "sample_output": "<Process name='Process-1' parent=... initial>",
+        "hidden_tests": [
+          {
+            "input": "()",
+            "expected_output": "<Process name='Process-1' parent=... initial>"
+          }
+        ],
+        "correct_code": "from multiprocessing import Process\n\ndef run_simple_process():\n    p = Process(target=lambda: None)\n    return p",
+        "explanation": "This task involves importing multiprocessing.Process correctly and using it to run a simple function, ensuring no import or type hint errors occur."
+      },
+      "buggy": {
+        "buggy_question_text": "Import error when using multiprocessing.Process without proper synchronization.",
+        "buggy_code": "def run_simple_process():\n    p = Process(target=lambda: None)\n    return p",
+        "buggy_correct_code": "from multiprocessing import Process\n\ndef run_simple_process():\n    p = Process(target=lambda: None)\n    return p",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:49:45.779994"
+    },
+    "created_at": "2025-11-03T14:49:45.776821+00:00",
+    "exported_at": "2025-11-03T22:49:45.779994"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "advanced",
+    "subtopic": "Troubleshooting Common Setup Errors",
+    "game_data": {
+      "normal": {
+        "question_text": "Pop item from dict with default.",
+        "function_name": "safe_pop",
+        "sample_input": "('missing',)",
+        "sample_output": "None",
+        "hidden_tests": [
+          {
+            "input": "('missing',)",
+            "expected_output": "None"
+          },
+          {
+            "input": "('key',)",
+            "expected_output": "value"
+          }
+        ],
+        "correct_code": "def safe_pop(key):\n    d = {'key': 'value'}\n    return d.pop(key, None)",
+        "explanation": "The function should safely pop a key from a dictionary, returning a default if the key is missing, to avoid KeyError exceptions during execution."
+      },
+      "buggy": {
+        "buggy_question_text": "KeyError when popping missing key without default value.",
+        "buggy_code": "def safe_pop(key):\n    d = {'key': 'value'}\n    return d.pop(key)",
+        "buggy_correct_code": "def safe_pop(key):\n    d = {'key': 'value'}\n    return d.pop(key, None)",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:49:45.859862"
+    },
+    "created_at": "2025-11-03T14:49:45.856854+00:00",
+    "exported_at": "2025-11-03T22:49:45.859862"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "advanced",
+    "subtopic": "Troubleshooting Common Setup Errors",
+    "game_data": {
+      "normal": {
+        "question_text": "Implement a simple decorator without errors.",
+        "function_name": "simple_decorator",
+        "sample_input": "()",
+        "sample_output": "decorated",
+        "hidden_tests": [
+          {
+            "input": "()",
+            "expected_output": "decorated"
+          }
+        ],
+        "correct_code": "from functools import wraps\n\ndef simple_decorator(func):\n    @wraps(func)\n    def wrapper():\n        return 'decorated'\n    return wrapper",
+        "explanation": "Create a decorator that wraps a function properly, preserving its metadata and avoiding common setup errors like missing functools.wraps."
+      },
+      "buggy": {
+        "buggy_question_text": "Decorator fails due to incorrect function wrapping.",
+        "buggy_code": "def simple_decorator(func):\n    def wrapper():\n        return 'decorated'\n    return wrapper",
+        "buggy_correct_code": "from functools import wraps\n\ndef simple_decorator(func):\n    @wraps(func)\n    def wrapper():\n        return 'decorated'\n    return wrapper",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:49:45.955456"
+    },
+    "created_at": "2025-11-03T14:49:45.952456+00:00",
+    "exported_at": "2025-11-03T22:49:45.955456"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "advanced",
+    "subtopic": "Troubleshooting Common Setup Errors",
+    "game_data": {
+      "normal": {
+        "question_text": "Define a generator with correct type hints.",
+        "function_name": "int_generator",
+        "sample_input": "()",
+        "sample_output": "[1, 2, 3]",
+        "hidden_tests": [
+          {
+            "input": "()",
+            "expected_output": "[1, 2, 3]"
+          }
+        ],
+        "correct_code": "from typing import Iterator\n\ndef int_generator() -> Iterator[int]:\n    yield 1\n    yield 2\n    yield 3",
+        "explanation": "Define a generator function that yields integers and uses correct type hints (Generator or Iterator) to avoid mypy or IDE setup errors."
+      },
+      "buggy": {
+        "buggy_question_text": "Type hint error for generator yielding integers.",
+        "buggy_code": "def int_generator():\n    yield 1\n    yield 2\n    yield 3",
+        "buggy_correct_code": "from typing import Iterator\n\ndef int_generator() -> Iterator[int]:\n    yield 1\n    yield 2\n    yield 3",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:49:46.048597"
+    },
+    "created_at": "2025-11-03T14:49:46.046557+00:00",
+    "exported_at": "2025-11-03T22:49:46.048597"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "advanced",
+    "subtopic": "Troubleshooting Common Setup Errors",
+    "game_data": {
+      "normal": {
+        "question_text": "Use lru_cache decorator with parameters.",
+        "function_name": "cached_function",
+        "sample_input": "(1, 2)",
+        "sample_output": "3",
+        "hidden_tests": [
+          {
+            "input": "(1, 2)",
+            "expected_output": "3"
+          },
+          {
+            "input": "(2, 3)",
+            "expected_output": "5"
+          }
+        ],
+        "correct_code": "from functools import lru_cache\n\n@lru_cache(maxsize=128, typed=True)\ndef cached_function(a, b):\n    return a + b",
+        "explanation": "Apply lru_cache decorator with specific parameters (maxsize, typed) to a function, ensuring correct syntax and avoiding common setup mistakes."
+      },
+      "buggy": {
+        "buggy_question_text": "lru_cache usage error without proper parameter syntax.",
+        "buggy_code": "from functools import lru_cache\n\n@lru_cache\ndef cached_function(a, b):\n    return a + b",
+        "buggy_correct_code": "from functools import lru_cache\n\n@lru_cache(maxsize=128, typed=True)\ndef cached_function(a, b):\n    return a + b",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:49:46.136889"
+    },
+    "created_at": "2025-11-03T14:49:46.134377+00:00",
+    "exported_at": "2025-11-03T22:49:46.136889"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "advanced",
+    "subtopic": "Troubleshooting Common Setup Errors",
+    "game_data": {
+      "normal": {
+        "question_text": "Create a namedtuple with default values.",
+        "function_name": "create_person",
+        "sample_input": "('Alice',)",
+        "sample_output": "Person(name='Alice', age=0)",
+        "hidden_tests": [
+          {
+            "input": "('Alice',)",
+            "expected_output": "Person(name='Alice', age=0)"
+          },
+          {
+            "input": "('Bob', 25)",
+            "expected_output": "Person(name='Bob', age=25)"
+          }
+        ],
+        "correct_code": "from collections import namedtuple\n\ndef create_person(name, age=0):\n    Person = namedtuple('Person', ['name', 'age'])\n    return Person(name, age)",
+        "explanation": "Define a namedtuple with a field that has a default value, ensuring correct syntax and avoiding errors when instantiating without all arguments."
+      },
+      "buggy": {
+        "buggy_question_text": "TypeError when creating namedtuple without defaults.",
+        "buggy_code": "from collections import namedtuple\n\ndef create_person(name, age):\n    Person = namedtuple('Person', ['name', 'age'])\n    return Person(name, age)",
+        "buggy_correct_code": "from collections import namedtuple\n\ndef create_person(name, age=0):\n    Person = namedtuple('Person', ['name', 'age'])\n    return Person(name, age)",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:49:46.225847"
+    },
+    "created_at": "2025-11-03T14:49:46.222855+00:00",
+    "exported_at": "2025-11-03T22:49:46.225847"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "intermediate",
+    "subtopic": "Arithmetic Operators (+, -, *, /, %, //, **)",
+    "game_data": {
+      "normal": {
+        "question_text": "Compute the difference between two numbers.",
+        "function_name": "compute_difference",
+        "sample_input": "(10, 4)",
+        "sample_output": 6,
+        "hidden_tests": [
+          {
+            "input": "(15, 7)",
+            "expected_output": 8
+          },
+          {
+            "input": "(5, 3)",
+            "expected_output": 2
+          }
+        ],
+        "correct_code": "def compute_difference(a, b):\n    return a - b",
+        "explanation": "This function subtracts the second number from the first using the - operator. It correctly computes the numerical difference."
+      },
+      "buggy": {
+        "buggy_question_text": "The function returns sum instead of difference of inputs.",
+        "buggy_code": "def compute_difference(a, b):\n    return a + b",
+        "buggy_correct_code": "def compute_difference(a, b):\n    return a - b",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:50:21.838703"
+    },
+    "created_at": "2025-11-03T14:50:21.833497+00:00",
+    "exported_at": "2025-11-03T22:50:21.838703"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "intermediate",
+    "subtopic": "Assignment Operators (=, +=, -=, etc. )",
+    "game_data": {
+      "normal": {
+        "question_text": "Decrease inventory count using assignment operators.",
+        "function_name": "sell_items",
+        "sample_input": "(3,)",
+        "sample_output": "7",
+        "hidden_tests": [
+          {
+            "input": "(2,)",
+            "expected_output": "5"
+          },
+          {
+            "input": "(5,)",
+            "expected_output": "0"
+          }
+        ],
+        "correct_code": "inventory = 10\ndef sell_items(sold):\n    global inventory\n    inventory -= sold\n    return inventory",
+        "explanation": "This function should reduce inventory by the sold quantity. Correct code uses -= operator to subtract from the current inventory count."
+      },
+      "buggy": {
+        "buggy_question_text": "Inventory does not decrease correctly when items are sold.",
+        "buggy_code": "inventory = 10\ndef sell_items(sold):\n    inventory = sold\n    return inventory",
+        "buggy_correct_code": "inventory = 10\ndef sell_items(sold):\n    global inventory\n    inventory -= sold\n    return inventory",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:50:28.499669"
+    },
+    "created_at": "2025-11-03T14:50:28.494158+00:00",
+    "exported_at": "2025-11-03T22:50:28.499669"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "intermediate",
+    "subtopic": "Assignment Operators (=, +=, -=, etc. )",
+    "game_data": {
+      "normal": {
+        "question_text": "Multiply a running total using assignment operators.",
+        "function_name": "multiply_total",
+        "sample_input": "(2,)",
+        "sample_output": "2",
+        "hidden_tests": [
+          {
+            "input": "(3,)",
+            "expected_output": "6"
+          },
+          {
+            "input": "(0.5,)",
+            "expected_output": "3"
+          }
+        ],
+        "correct_code": "total = 1\ndef multiply_total(factor):\n    global total\n    total *= factor\n    return total",
+        "explanation": "This function should multiply a running total by given factors. Correct code uses *= operator to update the total with each multiplication."
+      },
+      "buggy": {
+        "buggy_question_text": "Running total resets instead of multiplying when function is called.",
+        "buggy_code": "total = 1\ndef multiply_total(factor):\n    total = factor\n    return total",
+        "buggy_correct_code": "total = 1\ndef multiply_total(factor):\n    global total\n    total *= factor\n    return total",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:50:28.599346"
+    },
+    "created_at": "2025-11-03T14:50:28.595838+00:00",
+    "exported_at": "2025-11-03T22:50:28.599346"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "intermediate",
+    "subtopic": "Assignment Operators (=, +=, -=, etc. )",
+    "game_data": {
+      "normal": {
+        "question_text": "Divide a balance using assignment operators.",
+        "function_name": "divide_balance",
+        "sample_input": "(2,)",
+        "sample_output": "50.0",
+        "hidden_tests": [
+          {
+            "input": "(5,)",
+            "expected_output": "10.0"
+          },
+          {
+            "input": "(2,)",
+            "expected_output": "5.0"
+          }
+        ],
+        "correct_code": "balance = 100\ndef divide_balance(divisor):\n    global balance\n    balance /= divisor\n    return balance",
+        "explanation": "This function should divide a balance by given divisors. Correct code uses /= operator to update the balance with each division."
+      },
+      "buggy": {
+        "buggy_question_text": "Balance does not divide correctly when function is called.",
+        "buggy_code": "balance = 100\ndef divide_balance(divisor):\n    balance = divisor\n    return balance",
+        "buggy_correct_code": "balance = 100\ndef divide_balance(divisor):\n    global balance\n    balance /= divisor\n    return balance",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:50:28.702988"
+    },
+    "created_at": "2025-11-03T14:50:28.698982+00:00",
+    "exported_at": "2025-11-03T22:50:28.702988"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "intermediate",
+    "subtopic": "Assignment Operators (=, +=, -=, etc. )",
+    "game_data": {
+      "normal": {
+        "question_text": "Divide a balance using assignment operators.",
+        "function_name": "divide_balance",
+        "sample_input": "(2,)",
+        "sample_output": "50.0",
+        "hidden_tests": [
+          {
+            "input": "(5,)",
+            "expected_output": "10.0"
+          },
+          {
+            "input": "(2,)",
+            "expected_output": "5.0"
+          }
+        ],
+        "correct_code": "balance = 100\ndef divide_balance(divisor):\n    global balance\n    balance /= divisor\n    return balance",
+        "explanation": "This function should divide a balance by given divisors. Correct code uses /= operator to update the balance with each division."
+      },
+      "buggy": {
+        "buggy_question_text": "Balance does not divide correctly when function is called.",
+        "buggy_code": "balance = 100\ndef divide_balance(divisor):\n    balance = divisor\n    return balance",
+        "buggy_correct_code": "balance = 100\ndef divide_balance(divisor):\n    global balance\n    balance /= divisor\n    return balance",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:50:28.803641"
+    },
+    "created_at": "2025-11-03T14:50:28.698982+00:00",
+    "exported_at": "2025-11-03T22:50:28.803641"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "intermediate",
+    "subtopic": "Assignment Operators (=, +=, -=, etc. )",
+    "game_data": {
+      "normal": {
+        "question_text": "Modulo update a value using assignment operators.",
+        "function_name": "modulo_update",
+        "sample_input": "(3,)",
+        "sample_output": "1",
+        "hidden_tests": [
+          {
+            "input": "(2,)",
+            "expected_output": "1"
+          },
+          {
+            "input": "(5,)",
+            "expected_output": "1"
+          }
+        ],
+        "correct_code": "value = 10\ndef modulo_update(modulus):\n    global value\n    value %= modulus\n    return value",
+        "explanation": "This function should modulo update a value by given moduli. Correct code uses %= operator to update the value with remainder after division."
+      },
+      "buggy": {
+        "buggy_question_text": "Value does not modulo update correctly when function is called.",
+        "buggy_code": "value = 10\ndef modulo_update(modulus):\n    value = modulus\n    return value",
+        "buggy_correct_code": "value = 10\ndef modulo_update(modulus):\n    global value\n    value %= modulus\n    return value",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:50:28.904918"
+    },
+    "created_at": "2025-11-03T14:50:28.901917+00:00",
+    "exported_at": "2025-11-03T22:50:28.904918"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "advanced",
+    "subtopic": "Understanding the Python Interpreter and Shell",
+    "game_data": {
+      "normal": {
+        "question_text": "Implement a memoized fibonacci function using lru_cache.",
+        "function_name": "fibonacci",
+        "sample_input": "(6,)",
+        "sample_output": "8",
+        "hidden_tests": [
+          {
+            "input": "(10,)",
+            "expected_output": "55"
+          },
+          {
+            "input": "(15,)",
+            "expected_output": "610"
+          }
+        ],
+        "correct_code": "from functools import lru_cache\n\n@lru_cache(maxsize=None)\ndef fibonacci(n):\n    if n < 2:\n        return n\n    return fibonacci(n - 1) + fibonacci(n - 2)",
+        "explanation": "The task requires using functools.lru_cache to memoize recursive Fibonacci calls, reducing redundant calculations and improving performance significantly."
+      },
+      "buggy": {
+        "buggy_question_text": "Function runs slowly and does not cache results properly.",
+        "buggy_code": "def fibonacci(n):\n    if n < 2:\n        return n\n    return fibonacci(n - 1) + fibonacci(n - 2)",
+        "buggy_correct_code": "from functools import lru_cache\n\n@lru_cache(maxsize=None)\ndef fibonacci(n):\n    if n < 2:\n        return n\n    return fibonacci(n - 1) + fibonacci(n - 2)",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:50:32.489259"
+    },
+    "created_at": "2025-11-03T14:50:32.487257+00:00",
+    "exported_at": "2025-11-03T22:50:32.489259"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "advanced",
+    "subtopic": "Understanding the Python Interpreter and Shell",
+    "game_data": {
+      "normal": {
+        "question_text": "Create a function to remove and return last dict item.",
+        "function_name": "pop_last_item",
+        "sample_input": "({'a': 1, 'b': 2},)",
+        "sample_output": "('b', 2)",
+        "hidden_tests": [
+          {
+            "input": "({},)",
+            "expected_output": "None"
+          },
+          {
+            "input": "({'x': 10},)",
+            "expected_output": "('x', 10)"
+          }
+        ],
+        "correct_code": "def pop_last_item(d):\n    return d.popitem() if d else None",
+        "explanation": "This function should use popitem to remove and return the last inserted key-value pair, handling empty dicts by returning None."
+      },
+      "buggy": {
+        "buggy_question_text": "Function raises KeyError when dictionary is empty.",
+        "buggy_code": "def pop_last_item(d):\n    return d.popitem()",
+        "buggy_correct_code": "def pop_last_item(d):\n    return d.popitem() if d else None",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:50:32.583901"
+    },
+    "created_at": "2025-11-03T14:50:32.579901+00:00",
+    "exported_at": "2025-11-03T22:50:32.583901"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "advanced",
+    "subtopic": "Understanding the Python Interpreter and Shell",
+    "game_data": {
+      "normal": {
+        "question_text": "Write a function to create an empty set.",
+        "function_name": "create_empty_set",
+        "sample_input": "()",
+        "sample_output": "set()",
+        "hidden_tests": [
+          {
+            "input": "()",
+            "expected_output": "set()"
+          }
+        ],
+        "correct_code": "def create_empty_set():\n    return set()",
+        "explanation": "The function must return an empty set. Using {} creates a dict, so set() must be used to correctly create an empty set."
+      },
+      "buggy": {
+        "buggy_question_text": "Function creates empty dict instead of empty set.",
+        "buggy_code": "def create_empty_set():\n    return {}",
+        "buggy_correct_code": "def create_empty_set():\n    return set()",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:50:32.684220"
+    },
+    "created_at": "2025-11-03T14:50:32.680217+00:00",
+    "exported_at": "2025-11-03T22:50:32.684220"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "advanced",
+    "subtopic": "Understanding the Python Interpreter and Shell",
+    "game_data": {
+      "normal": {
+        "question_text": "Implement a decorator to time function execution.",
+        "function_name": "timer_decorator",
+        "sample_input": "()",
+        "sample_output": "<function result>",
+        "hidden_tests": [
+          {
+            "input": "()",
+            "expected_output": "<decorated function output>"
+          }
+        ],
+        "correct_code": "import time\n\ndef timer_decorator(func):\n    def wrapper(*args, **kwargs):\n        start = time.time()\n        result = func(*args, **kwargs)\n        end = time.time()\n        print(f'Time: {end - start}s')\n        return result\n    return wrapper",
+        "explanation": "The decorator should time function execution, print elapsed time, and return the function's result to maintain original behavior."
+      },
+      "buggy": {
+        "buggy_question_text": "Decorator does not return function result, only prints time.",
+        "buggy_code": "import time\n\ndef timer_decorator(func):\n    def wrapper(*args, **kwargs):\n        start = time.time()\n        func(*args, **kwargs)\n        end = time.time()\n        print(f'Time: {end - start}s')\n    return wrapper",
+        "buggy_correct_code": "import time\n\ndef timer_decorator(func):\n    def wrapper(*args, **kwargs):\n        start = time.time()\n        result = func(*args, **kwargs)\n        end = time.time()\n        print(f'Time: {end - start}s')\n        return result\n    return wrapper",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:50:32.772433"
+    },
+    "created_at": "2025-11-03T14:50:32.770433+00:00",
+    "exported_at": "2025-11-03T22:50:32.772433"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "advanced",
+    "subtopic": "Understanding the Python Interpreter and Shell",
+    "game_data": {
+      "normal": {
+        "question_text": "Create a function to reverse dictionary keys.",
+        "function_name": "reverse_keys",
+        "sample_input": "({'a': 1, 'b': 2},)",
+        "sample_output": "['b', 'a']",
+        "hidden_tests": [
+          {
+            "input": "({'x': 1, 'y': 2, 'z': 3},)",
+            "expected_output": "['z', 'y', 'x']"
+          },
+          {
+            "input": "({},)",
+            "expected_output": "[]"
+          }
+        ],
+        "correct_code": "def reverse_keys(d):\n    return list(reversed(d))",
+        "explanation": "The function should return dictionary keys in reverse insertion order using reversed() on the dictionary object."
+      },
+      "buggy": {
+        "buggy_question_text": "Function returns keys in insertion order, not reversed.",
+        "buggy_code": "def reverse_keys(d):\n    return list(d.keys())",
+        "buggy_correct_code": "def reverse_keys(d):\n    return list(reversed(d))",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:50:32.861066"
+    },
+    "created_at": "2025-11-03T14:50:32.858067+00:00",
+    "exported_at": "2025-11-03T22:50:32.861066"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "advanced",
+    "subtopic": "Understanding the Python Interpreter and Shell",
+    "game_data": {
+      "normal": {
+        "question_text": "Write a function to safely get dict value with default.",
+        "function_name": "safe_get",
+        "sample_input": "({'a': 1}, 'b', 0)",
+        "sample_output": "0",
+        "hidden_tests": [
+          {
+            "input": "({'x': 10}, 'x', 5)",
+            "expected_output": "10"
+          },
+          {
+            "input": "({}, 'key', 'default')",
+            "expected_output": "'default'"
+          }
+        ],
+        "correct_code": "def safe_get(d, key, default):\n    return d.get(key, default)",
+        "explanation": "The function should use dict.get with a provided default value to return the default when the key is missing."
+      },
+      "buggy": {
+        "buggy_question_text": "Function returns None for missing keys, not specified default.",
+        "buggy_code": "def safe_get(d, key, default):\n    return d.get(key)",
+        "buggy_correct_code": "def safe_get(d, key, default):\n    return d.get(key, default)",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:50:32.966817"
+    },
+    "created_at": "2025-11-03T14:50:32.962823+00:00",
+    "exported_at": "2025-11-03T22:50:32.966817"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "advanced",
+    "subtopic": "Understanding the Python Interpreter and Shell",
+    "game_data": {
+      "normal": {
+        "question_text": "Implement a multiprocessing process starter function.",
+        "function_name": "run_process",
+        "sample_input": "()",
+        "sample_output": "Process completed",
+        "hidden_tests": [
+          {
+            "input": "()",
+            "expected_output": "Process completed"
+          }
+        ],
+        "correct_code": "import multiprocessing\n\ndef worker():\n    print('Process completed')\n\ndef run_process():\n    p = multiprocessing.Process(target=worker)\n    p.start()\n    p.join()",
+        "explanation": "The function should start a process and wait for it to finish using join(), ensuring the process completes before main exits."
+      },
+      "buggy": {
+        "buggy_question_text": "Process starts but main script exits before process completes.",
+        "buggy_code": "import multiprocessing\n\ndef worker():\n    print('Process completed')\n\ndef run_process():\n    p = multiprocessing.Process(target=worker)\n    p.start()",
+        "buggy_correct_code": "import multiprocessing\n\ndef worker():\n    print('Process completed')\n\ndef run_process():\n    p = multiprocessing.Process(target=worker)\n    p.start()\n    p.join()",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:50:33.063259"
+    },
+    "created_at": "2025-11-03T14:50:33.060262+00:00",
+    "exported_at": "2025-11-03T22:50:33.063259"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "advanced",
+    "subtopic": "Type Conversion and Casting",
+    "game_data": {
+      "normal": {
+        "question_text": "Convert a mixed list to a set of integers.",
+        "function_name": "mixed_to_int_set",
+        "sample_input": "(['1', 2, '3.0'],)",
+        "sample_output": "{1, 2, 3}",
+        "hidden_tests": [
+          {
+            "input": "(['5', '6.7', 8],)",
+            "expected_output": "{5, 6, 8}"
+          },
+          {
+            "input": "(['9.9', 10],)",
+            "expected_output": "{9, 10}"
+          },
+          {
+            "input": "([11, '12'],)",
+            "expected_output": "{11, 12}"
+          }
+        ],
+        "correct_code": "def mixed_to_int_set(lst):\n    return {int(float(x)) if isinstance(x, str) else int(x) for x in lst}",
+        "explanation": "This function must convert all elements in a mixed list to integers and return a set. It handles strings that represent integers and actual integers."
+      },
+      "buggy": {
+        "buggy_question_text": "The function fails when the list contains non-integer convertible strings.",
+        "buggy_code": "def mixed_to_int_set(lst):\n    return {int(x) for x in lst}",
+        "buggy_correct_code": "def mixed_to_int_set(lst):\n    return {int(float(x)) if isinstance(x, str) else int(x) for x in lst}",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:50:43.753016"
+    },
+    "created_at": "2025-11-03T14:50:43.750016+00:00",
+    "exported_at": "2025-11-03T22:50:43.753016"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "advanced",
+    "subtopic": "Type Conversion and Casting",
+    "game_data": {
+      "normal": {
+        "question_text": "Cast a dictionary's string values to floats.",
+        "function_name": "safe_float_cast_dict",
+        "sample_input": "({'a': '1.5', 'b': '2.0', 'c': 'invalid'},)",
+        "sample_output": "{'a': 1.5, 'b': 2.0}",
+        "hidden_tests": [
+          {
+            "input": "({'x': '3.14', 'y': 'text'},)",
+            "expected_output": "{'x': 3.14}"
+          },
+          {
+            "input": "({'p': '5', 'q': 6},)",
+            "expected_output": "{'p': 5.0, 'q': 6}"
+          },
+          {
+            "input": "({'m': '7.8', 'n': '9.0'},)",
+            "expected_output": "{'m': 7.8, 'n': 9.0}"
+          }
+        ],
+        "correct_code": "def safe_float_cast_dict(d):\n    result = {}\n    for k, v in d.items():\n        try:\n            result[k] = float(v)\n        except (ValueError, TypeError):\n            pass\n    return result",
+        "explanation": "This function converts all string values in a dictionary to floats, skipping non-convertible entries to avoid errors."
+      },
+      "buggy": {
+        "buggy_question_text": "The function crashes when a value cannot be converted to float.",
+        "buggy_code": "def safe_float_cast_dict(d):\n    return {k: float(v) for k, v in d.items()}",
+        "buggy_correct_code": "def safe_float_cast_dict(d):\n    result = {}\n    for k, v in d.items():\n        try:\n            result[k] = float(v)\n        except (ValueError, TypeError):\n            pass\n    return result",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:50:43.886455"
+    },
+    "created_at": "2025-11-03T14:50:43.882951+00:00",
+    "exported_at": "2025-11-03T22:50:43.886455"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "advanced",
+    "subtopic": "Type Conversion and Casting",
+    "game_data": {
+      "normal": {
+        "question_text": "Convert a tuple of mixed types to integers.",
+        "function_name": "tuple_to_ints",
+        "sample_input": "(('1', 2.5, '3.7', 'text'),)",
+        "sample_output": "[1, 2, 3]",
+        "hidden_tests": [
+          {
+            "input": "(('4.9', 5, '6.0'),)",
+            "expected_output": "[4, 5, 6]"
+          },
+          {
+            "input": "(('7', 8.2),)",
+            "expected_output": "[7, 8]"
+          },
+          {
+            "input": "(('9.1', '10'),)",
+            "expected_output": "[9, 10]"
+          }
+        ],
+        "correct_code": "def tuple_to_ints(tup):\n    result = []\n    for x in tup:\n        try:\n            if isinstance(x, str):\n                result.append(int(float(x)))\n            else:\n                result.append(int(x))\n        except (ValueError, TypeError):\n            continue\n    return result",
+        "explanation": "This function processes a tuple, converting numeric strings and floats to integers, ignoring non-convertible types."
+      },
+      "buggy": {
+        "buggy_question_text": "The function returns incorrect results for float strings.",
+        "buggy_code": "def tuple_to_ints(tup):\n    return [int(x) for x in tup]",
+        "buggy_correct_code": "def tuple_to_ints(tup):\n    result = []\n    for x in tup:\n        try:\n            if isinstance(x, str):\n                result.append(int(float(x)))\n            else:\n                result.append(int(x))\n        except (ValueError, TypeError):\n            continue\n    return result",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:50:44.058843"
+    },
+    "created_at": "2025-11-03T14:50:44.052732+00:00",
+    "exported_at": "2025-11-03T22:50:44.058843"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "advanced",
+    "subtopic": "Type Conversion and Casting",
+    "game_data": {
+      "normal": {
+        "question_text": "Cast list elements to bool, handling zeros.",
+        "function_name": "custom_bool_cast",
+        "sample_input": "([0, 1, '', 'a', 0.0],)",
+        "sample_output": "[False, True, False, True, False]",
+        "hidden_tests": [
+          {
+            "input": "([0, '0', 1],)",
+            "expected_output": "[False, True, True]"
+          },
+          {
+            "input": "([0.0, 'hello', ''],)",
+            "expected_output": "[False, True, False]"
+          },
+          {
+            "input": "([1, 2, 0],)",
+            "expected_output": "[True, True, False]"
+          }
+        ],
+        "correct_code": "def custom_bool_cast(lst):\n    return [False if x == 0 or x == '' else True for x in lst]",
+        "explanation": "This function converts each element in a list to a boolean, where zero and empty strings become False, others True."
+      },
+      "buggy": {
+        "buggy_question_text": "The function treats numeric zero as True incorrectly.",
+        "buggy_code": "def custom_bool_cast(lst):\n    return [bool(x) for x in lst]",
+        "buggy_correct_code": "def custom_bool_cast(lst):\n    return [False if x == 0 or x == '' else True for x in lst]",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:50:44.172637"
+    },
+    "created_at": "2025-11-03T14:50:44.169810+00:00",
+    "exported_at": "2025-11-03T22:50:44.172637"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "advanced",
+    "subtopic": "Type Conversion and Casting",
+    "game_data": {
+      "normal": {
+        "question_text": "Convert a set of strings to integers safely.",
+        "function_name": "safe_str_set_to_int",
+        "sample_input": "({'1', '2', 'abc'},)",
+        "sample_output": "{1, 2}",
+        "hidden_tests": [
+          {
+            "input": "({'3', '4.5', '6'},)",
+            "expected_output": "{3, 6}"
+          },
+          {
+            "input": "({'7', 'eight'},)",
+            "expected_output": "{7}"
+          },
+          {
+            "input": "({'9', '10'},)",
+            "expected_output": "{9, 10}"
+          }
+        ],
+        "correct_code": "def safe_str_set_to_int(s):\n    result = set()\n    for x in s:\n        try:\n            result.add(int(x))\n        except ValueError:\n            continue\n    return result",
+        "explanation": "This function converts a set of strings to integers, skipping any that cannot be converted, and returns a set of integers."
+      },
+      "buggy": {
+        "buggy_question_text": "The function fails if the set contains non-integer strings.",
+        "buggy_code": "def safe_str_set_to_int(s):\n    return {int(x) for x in s}",
+        "buggy_correct_code": "def safe_str_set_to_int(s):\n    result = set()\n    for x in s:\n        try:\n            result.add(int(x))\n        except ValueError:\n            continue\n    return result",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-03T22:50:44.259002"
+    },
+    "created_at": "2025-11-03T14:50:44.256996+00:00",
+    "exported_at": "2025-11-03T22:50:44.259002"
+  }
+]

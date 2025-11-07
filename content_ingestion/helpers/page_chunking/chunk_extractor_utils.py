@@ -20,21 +20,40 @@ def extract_unstructured_chunks(file_path):
     - Conceptual content (for non-coding questions)
     - Coding content (for coding questions - includes Code, Try_It, Exercise, Example)
     """
+    import tempfile
+    import os
+    
+    # Use context manager for better temp file handling
+    temp_dir = None
     try:
         print(f"Starting unstructured processing for {file_path}")
         print("📋 Analyzing PDF structure and extracting content elements...")
         
-        # Partition the PDF
-        elements = partition_pdf(
-            filename=file_path,
-            extract_images_in_pdf=False,
-            infer_table_structure=True,
-            chunking_strategy="by_title",
-            max_characters=1000,  # Increased for better context
-            new_after_n_chars=800,  # Adaptive chunking
-            combine_text_under_n_chars=200,  # Combine small fragments
-            overlap=50
-        )
+        # Create a temporary directory for unstructured library to use
+        temp_dir = tempfile.mkdtemp(prefix='unstructured_')
+        
+        # Set environment variable for unstructured to use our temp directory
+        old_tmpdir = os.environ.get('TMPDIR')
+        os.environ['TMPDIR'] = temp_dir
+        
+        try:
+            # Partition the PDF
+            elements = partition_pdf(
+                filename=file_path,
+                extract_images_in_pdf=False,
+                infer_table_structure=True,
+                chunking_strategy="by_title",
+                max_characters=1000,  # Increased for better context
+                new_after_n_chars=800,  # Adaptive chunking
+                combine_text_under_n_chars=200,  # Combine small fragments
+                overlap=50
+            )
+        finally:
+            # Restore original TMPDIR
+            if old_tmpdir:
+                os.environ['TMPDIR'] = old_tmpdir
+            elif 'TMPDIR' in os.environ:
+                del os.environ['TMPDIR']
         
         print(f"✅ Successfully extracted {len(elements)} elements from PDF")
         print("📝 Note: Any 'skipping bad link/annot' messages above are normal - corrupted PDF links are automatically handled")
@@ -111,6 +130,16 @@ def extract_unstructured_chunks(file_path):
         logger.error(f"Error in extract_unstructured_chunks: {str(e)}")
         print(f"Error processing {file_path}: {str(e)}")
         return []
+    finally:
+        # Clean up temporary directory
+        if temp_dir and os.path.exists(temp_dir):
+            try:
+                import shutil
+                shutil.rmtree(temp_dir)
+                print(f"🧹 Cleaned up temporary directory: {temp_dir}")
+            except Exception as cleanup_error:
+                logger.warning(f"Failed to cleanup temp directory {temp_dir}: {cleanup_error}")
+                print(f"⚠️  Warning: Failed to cleanup temp directory: {cleanup_error}")
 
 
 def _create_basic_context(text: str, chunk_type: str) -> str:

@@ -28,6 +28,9 @@ class GeneratedQuestion(models.Model):
         choices=[('pending', 'Pending Validation'), ('processing', 'Processing')],
         default='pending'
     )
+    
+    # Timestamp
+    created_at = models.DateTimeField(auto_now_add=True)
    
     class Meta:
         ordering = ['subtopic__name']

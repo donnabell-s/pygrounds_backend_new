@@ -1,6 +1,6 @@
 # Document management and admin views
 from .admin_views import (
-    upload_pdf, list_documents, get_document_detail, delete_document,
+    upload_pdf, list_documents, get_document_detail, get_document_status, delete_document,
     ZoneList, ZoneDetail, TopicList, TopicDetail, 
     SubtopicList, SubtopicDetail, DocumentList, DocumentDetail,
     ZoneTopicsView, TopicSubtopicsView
@@ -32,7 +32,7 @@ from .semantic_views import (
 
 __all__ = [
     # Admin and document management
-    'upload_pdf', 'list_documents', 'get_document_detail', 'delete_document',
+    'upload_pdf', 'list_documents', 'get_document_detail', 'get_document_status', 'delete_document',
     'ZoneList', 'ZoneDetail', 'TopicList', 'TopicDetail',
     'SubtopicList', 'SubtopicDetail', 'DocumentList', 'DocumentDetail',
     'ZoneTopicsView', 'TopicSubtopicsView',

@@ -1,0 +1,145 @@
+[
+  {
+    "question_text": "A widely used type checker known for its popularity in Python.",
+    "correct_answer": "Mypy",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Choosing and Setting Up an IDE (VS Code, PyCharm, etc.)",
+    "game_data": {
+      "explanation": "Mypy is a prominent static type checker for Python that helps enforce type annotations and catch errors early in development.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:34:08.683231+00:00",
+    "exported_at": "2025-11-03T20:34:08.685232"
+  },
+  {
+    "question_text": "Microsoft's type checker integrated into many development tools.",
+    "correct_answer": "Pyright",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Choosing and Setting Up an IDE (VS Code, PyCharm, etc.)",
+    "game_data": {
+      "explanation": "Pyright is a fast type checker from Microsoft, often used in IDEs like VS Code to provide real-time type analysis.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:34:08.708233+00:00",
+    "exported_at": "2025-11-03T20:34:08.710232"
+  },
+  {
+    "question_text": "Facebook's static analysis tool for type checking Python.",
+    "correct_answer": "Pyre",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Choosing and Setting Up an IDE (VS Code, PyCharm, etc.)",
+    "game_data": {
+      "explanation": "Pyre is a performant type checker developed by Facebook, designed for large codebases and continuous integration.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:34:08.737231+00:00",
+    "exported_at": "2025-11-03T20:34:08.738234"
+  },
+  {
+    "question_text": "A cache decorator that stores function results to optimize repeated calls.",
+    "correct_answer": "lru_cache",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Booleans and Logical Expressions",
+    "game_data": {
+      "explanation": "lru_cache is a decorator that memoizes function results, reducing computation time by storing outputs for given inputs in a least-recently-used cache.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:34:08.665073+00:00",
+    "exported_at": "2025-11-03T20:34:08.666072"
+  },
+  {
+    "question_text": "A design pattern where an object provides sequential access to its elements.",
+    "correct_answer": "Iterator",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Booleans and Logical Expressions",
+    "game_data": {
+      "explanation": "The Iterator pattern allows traversal through a collection's elements without exposing its underlying structure, commonly used in loops and generators.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:34:08.824655+00:00",
+    "exported_at": "2025-11-03T20:34:08.826654"
+  },
+  {
+    "question_text": "A function decorator that allows multiple implementations based on input types.",
+    "correct_answer": "overload",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Booleans and Logical Expressions",
+    "game_data": {
+      "explanation": "The overload decorator specifies multiple type signatures for a function, helping static type checkers understand different argument and return types.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:34:08.857657+00:00",
+    "exported_at": "2025-11-03T20:34:08.858660"
+  },
+  {
+    "question_text": "A method that removes and returns the last inserted key-value pair.",
+    "correct_answer": "popitem",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Booleans and Logical Expressions",
+    "game_data": {
+      "explanation": "popitem removes and returns the most recently added item from a dictionary as a tuple, useful for ordered data manipulation.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:34:08.883167+00:00",
+    "exported_at": "2025-11-03T20:34:08.884166"
+  },
+  {
+    "question_text": "A type variable used to represent generic types in function signatures.",
+    "correct_answer": "TypeVar",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Code Indentation and Block Structure",
+    "game_data": {
+      "explanation": "TypeVar creates type variables for generic programming, allowing flexible type annotations in functions and classes.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:34:23.748843+00:00",
+    "exported_at": "2025-11-03T20:34:23.750843"
+  },
+  {
+    "question_text": "Generators that can both consume and return values are known as this.",
+    "correct_answer": "coroutines",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Code Indentation and Block Structure",
+    "game_data": {
+      "explanation": "Coroutines are advanced generators that can consume values via send() and return values, enabling cooperative multitasking.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:34:23.779850+00:00",
+    "exported_at": "2025-11-03T20:34:23.780853"
+  },
+  {
+    "question_text": "Language feature that allows safe sharing of identical string objects.",
+    "correct_answer": "interning",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Constants and Immutability Concepts",
+    "game_data": {
+      "explanation": "String interning reuses existing immutable string objects when identical strings are created, saving memory safely.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:34:25.395649+00:00",
+    "exported_at": "2025-11-03T20:34:25.399661"
+  },
+  {
+    "question_text": "Unique identifier for each object in Python's memory.",
+    "correct_answer": "identity",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Constants and Immutability Concepts",
+    "game_data": {
+      "explanation": "Object identity distinguishes different objects in memory, crucial when dealing with mutable objects that might be shared.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T12:34:25.445180+00:00",
+    "exported_at": "2025-11-03T20:34:25.447179"
+  }
+]

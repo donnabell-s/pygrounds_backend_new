@@ -10,7 +10,8 @@ from django.db.models import Count
 from django.http import FileResponse
 
 from rest_framework import generics, status
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
 from ..models import (
@@ -67,22 +68,6 @@ class ZoneList(generics.ListCreateAPIView):
 
             return super().create(request, *args, **kwargs)
 
-        except Exception as e:
-            logger.error(f"Error creating zone: {str(e)}")
-            return Response(
-                {'error': 'Failed to create zone. Please try again.'},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
-            # Check required fields
-            required_fields = ['name', 'description', 'order']
-            missing_fields = [field for field in required_fields if not request.data.get(field)]
-            if missing_fields:
-                return Response(
-                    {'error': f'Missing required fields: {", ".join(missing_fields)}'},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-            
-            return super().create(request, *args, **kwargs)
         except Exception as e:
             logger.error(f"Error creating zone: {str(e)}")
             return Response(
@@ -335,6 +320,11 @@ class SubtopicList(generics.ListCreateAPIView):
                     status=status.HTTP_400_BAD_REQUEST
                 )
             
+            # Log intent fields for debugging
+            concept_intent = request.data.get('concept_intent')
+            code_intent = request.data.get('code_intent')
+            logger.info(f"Creating subtopic '{name}' with concept_intent: {bool(concept_intent)}, code_intent: {bool(code_intent)}")
+            
             return super().create(request, *args, **kwargs)
             
         except Exception as e:
@@ -353,6 +343,10 @@ class SubtopicDetail(generics.RetrieveUpdateDestroyAPIView):
             # Delete related embeddings first
             from content_ingestion.models import Embedding
             Embedding.objects.filter(subtopic=instance).delete()
+            
+            # Delete related semantic data (this will be cascade deleted, but explicit is clearer)
+            from content_ingestion.models import SemanticSubtopic
+            SemanticSubtopic.objects.filter(subtopic=instance).delete()
             
             # Then delete the subtopic
             instance.delete()
@@ -554,6 +548,32 @@ def get_document_detail(request, document_id):
         logger.error(f"Error getting document detail: {str(e)}")
         return Response(
             {'error': 'Failed to retrieve document'},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
+@api_view(['GET'])
+@permission_classes([AllowAny])  # Public endpoint - no authentication required
+def get_document_status(request, document_id):
+    """
+    Get document processing status without authentication.
+    Used for long-running pipeline operations where tokens might expire.
+    """
+    try:
+        document = get_object_or_404(UploadedDocument, id=document_id)
+        
+        return Response({
+            'document_id': document_id,
+            'title': document.title,
+            'processing_status': document.processing_status,
+            'processing_message': document.processing_message,
+            'processing_progress': document.processing_progress,
+            'processing_updated_at': document.processing_updated_at,
+            'created_at': document.created_at,
+        })
+    except Exception as e:
+        logger.error(f"Error getting document status: {str(e)}")
+        return Response(
+            {'error': 'Failed to retrieve document status'},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
 

@@ -203,3 +203,38 @@ Create {game_type} questions that would be appropriate for learners.
 """
     
     return rag_context
+
+
+def get_batched_rag_contexts(all_combinations, difficulty: str, game_type: str = 'non_coding'):
+    """
+    Batch fetch RAG contexts for multiple subtopic combinations to optimize database access.
+    
+    Args:
+        all_combinations: List of subtopic combinations (each is a tuple/list of subtopics)
+        difficulty: Difficulty level 
+        game_type: 'coding' or 'non_coding'
+        
+    Returns:
+        dict: Mapping of combination_key (tuple) to RAG context string
+    """
+    rag_contexts = {}
+    
+    try:
+        for combination in all_combinations:
+            # Ensure combination is a tuple for dictionary key
+            combination_key = tuple(combination) if isinstance(combination, (list, tuple)) else (combination,)
+            
+            if len(combination) == 1:
+                # Single subtopic
+                context = get_rag_context_for_subtopic(combination[0], difficulty, game_type)
+            else:
+                # Multiple subtopics
+                context = get_combined_rag_context(combination, difficulty, game_type)
+            
+            rag_contexts[combination_key] = context
+            
+    except Exception as e:
+        print(f"⚠️ Error in batch RAG context retrieval: {str(e)}")
+        # Return empty dict if there's an error - individual calls will handle fallbacks
+        
+    return rag_contexts

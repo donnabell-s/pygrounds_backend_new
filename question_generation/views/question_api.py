@@ -29,16 +29,43 @@ def generate_questions_bulk(request):
     # Parameters:
     # - game_type: 'coding' or 'non_coding' (required)
     # - difficulty_levels: ['beginner', 'intermediate', etc] (required)
-    # - num_questions_per_subtopic: int (required)
-    # - zone_ids: [int] or null (optional)
-    # - topic_ids: [int] or null (optional)
-    # - subtopic_ids: [int] or null (optional)
+    # - num_questions_per_subtopic: int (required) - questions per subtopic
+    # - zone_ids: [int] or null (optional) - specific zones to process
+    # - topic_ids: [int] or null (optional) - specific topics to process  
+    # - subtopic_ids: [int] or null (optional) - specific subtopics to process
+    # 
+    # Hierarchy: If subtopic_ids provided → use only those subtopics (NO combinations)
+    #           If topic_ids provided → use all subtopics from those topics
+    #           If zone_ids provided → use all subtopics from those zones (WITH combinations)
+    #           If none provided → use all zones (WITH combinations)
+    #
+    # Note: max_total_questions is NOT used here (it's for pre-assessment generation only)
     try:
         # Extract parameters
         game_type = request.data.get('game_type', 'non_coding')
         difficulty_levels = request.data.get('difficulty_levels', ['beginner', 'intermediate', 'advanced', 'master'])
         num_questions_per_subtopic = int(request.data.get('num_questions_per_subtopic', 2))
+        max_total_questions = request.data.get('max_total_questions')  # New parameter
         zone_ids = request.data.get('zone_ids')
+        topic_ids = request.data.get('topic_ids')
+        subtopic_ids = request.data.get('subtopic_ids')
+        
+        # Debug logging to understand what parameters are being received
+        print(f"🔍 BULK GENERATION REQUEST DEBUG:")
+        print(f"   ├── game_type: {game_type}")
+        print(f"   ├── difficulty_levels: {difficulty_levels}")
+        print(f"   ├── num_questions_per_subtopic: {num_questions_per_subtopic}")
+        print(f"   ├── zone_ids: {zone_ids} ({'MISSING - should specify selected zone' if not zone_ids else 'OK'})")
+        print(f"   ├── topic_ids: {topic_ids} ({'MISSING - should specify selected topic' if not topic_ids and not subtopic_ids else 'OK' if topic_ids else 'Not needed if subtopic_ids provided'})")
+        print(f"   └── subtopic_ids: {subtopic_ids} ({'OK - specific subtopic selected' if subtopic_ids else 'Not provided'})")
+        
+        # Note: max_total_questions is for pre-assessment only, not regular minigame generation
+        if max_total_questions:
+            print(f"   ⚠️  max_total_questions: {max_total_questions} (NOTE: This is for pre-assessment only, not minigame generation)")
+        
+        # Validate hierarchical selection
+        if subtopic_ids and not zone_ids and not topic_ids:
+            print(f"   ℹ️  INFO: Subtopic selected without zone/topic context (this is OK for specific subtopic generation)")
         
         # Validate parameters
         valid_game_types = ['coding', 'non_coding']
@@ -53,6 +80,116 @@ def generate_questions_bulk(request):
             return Response({
                 'error': f'Invalid difficulty levels. Must be from: {valid_difficulties}'
             }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Check if specific subtopics are requested
+        if subtopic_ids:
+            # SPECIFIC SUBTOPIC GENERATION - NO COMBINATIONS
+            from ..helpers.parallel_workers import run_subtopic_specific_generation
+            
+            print(f"🎯 Specific subtopic generation requested: {len(subtopic_ids)} subtopics")
+            print(f"🔍 Subtopic IDs: {subtopic_ids}")
+            
+            # Create session for tracking
+            session_id = str(uuid.uuid4())
+            total_workers = len(subtopic_ids) * len(difficulty_levels)
+            
+            # Initialize status tracking for specific subtopics
+            generation_status_tracker.create_session(
+                session_id=session_id,
+                total_workers=total_workers,
+                zones=["Specific Subtopics"],
+                difficulties=difficulty_levels
+            )
+            
+            # Start subtopic-specific generation in background thread
+            import threading
+            def run_specific_generation():
+                try:
+                    run_subtopic_specific_generation(
+                        subtopic_ids=subtopic_ids,
+                        difficulty_levels=difficulty_levels,
+                        num_questions_per_subtopic=num_questions_per_subtopic,
+                        game_type=game_type,
+                        session_id=session_id
+                    )
+                except Exception as e:
+                    logger.error(f"Specific generation failed for session {session_id}: {str(e)}")
+                    generation_status_tracker.update_status(session_id, {
+                        'status': 'error',
+                        'error': str(e)
+                    })
+            
+            # Start the background thread
+            thread = threading.Thread(target=run_specific_generation)
+            thread.daemon = True
+            thread.start()
+            
+            return Response({
+                'status': 'initializing',
+                'session_id': session_id,
+                'message': 'Specific subtopic generation started. Use the status endpoint to track progress.',
+                'mode': 'specific_subtopics',
+                'total_workers': total_workers,
+                'subtopic_count': len(subtopic_ids),
+                'difficulties': difficulty_levels
+            })
+        
+        # BULK ZONE/TOPIC GENERATION - WITH COMBINATIONS
+        # Handle topic_ids if provided (but no specific subtopics)
+        if topic_ids and not subtopic_ids:
+            # Get all subtopics from specified topics
+            topic_subtopics = list(Subtopic.objects.filter(topic_id__in=topic_ids).select_related('topic__zone'))
+            
+            if not topic_subtopics:
+                return Response({
+                    'error': 'No subtopics found for the specified topics'
+                }, status=status.HTTP_404_NOT_FOUND)
+            
+            print(f"🎯 Topic-specific generation requested: {len(topic_ids)} topics, {len(topic_subtopics)} subtopics")
+            
+            # Use subtopic-specific generation for topic subtopics
+            session_id = str(uuid.uuid4())
+            total_workers = len(topic_subtopics) * len(difficulty_levels)
+            
+            generation_status_tracker.create_session(
+                session_id=session_id,
+                total_workers=total_workers,
+                zones=["Specific Topics"],
+                difficulties=difficulty_levels
+            )
+            
+            import threading
+            def run_topic_generation():
+                try:
+                    from ..helpers.parallel_workers import run_subtopic_specific_generation
+                    run_subtopic_specific_generation(
+                        subtopic_ids=[s.id for s in topic_subtopics],
+                        difficulty_levels=difficulty_levels,
+                        num_questions_per_subtopic=num_questions_per_subtopic,
+                        game_type=game_type,
+                        session_id=session_id
+                    )
+                except Exception as e:
+                    logger.error(f"Topic generation failed for session {session_id}: {str(e)}")
+                    generation_status_tracker.update_status(session_id, {
+                        'status': 'error',
+                        'error': str(e)
+                    })
+            
+            thread = threading.Thread(target=run_topic_generation)
+            thread.daemon = True
+            thread.start()
+            
+            return Response({
+                'status': 'initializing',
+                'session_id': session_id,
+                'message': 'Topic-specific generation started. Use the status endpoint to track progress.',
+                'mode': 'specific_topics',
+                'total_workers': total_workers,
+                'topic_count': len(topic_ids),
+                'subtopic_count': len(topic_subtopics),
+                'difficulties': difficulty_levels
+            })
         
         # Get zones to process
         if zone_ids:
@@ -89,7 +226,8 @@ def generate_questions_bulk(request):
                     difficulty_levels=difficulty_levels,
                     num_questions_per_subtopic=num_questions_per_subtopic,
                     game_type=game_type,
-                    session_id=session_id
+                    session_id=session_id,
+                    max_total_questions=max_total_questions
                 )
             except Exception as e:
                 logger.error(f"Generation failed for session {session_id}: {str(e)}")
