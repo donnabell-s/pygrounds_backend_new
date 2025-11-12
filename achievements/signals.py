@@ -16,6 +16,9 @@ def award_achievement(user, achievement_code):
     return ua
 
 
+CONCEPT_GAMES = ("crossword", "wordsearch")
+
+
 @receiver(post_save, sender=QuestionResponse)
 def handle_question_response(sender, instance: QuestionResponse, created, **kwargs):
     """Re-evaluate the parent GameSession when a response is saved.
@@ -49,8 +52,8 @@ def handle_question_response(sender, instance: QuestionResponse, created, **kwar
             if perfect_sessions >= 5:
                 award_achievement(user, 'perfection_seeker')
 
-        # Speed Solver: perfect non-debugging game in under 60s
-        if session.game_type and session.game_type != 'debugging' and is_perfect:
+        # Speed Solver: perfect concept game in under 60s (crossword/wordsearch)
+        if session.game_type in CONCEPT_GAMES and is_perfect:
             if session.end_time and session.start_time:
                 duration = (session.end_time - session.start_time).total_seconds()
                 if duration <= 60:
@@ -85,12 +88,19 @@ def handle_game_session(sender, instance: GameSession, created, **kwargs):
 
         user = instance.user
 
-        # 1) Game Enthusiast: Play 20 games (completed sessions)
+        # 1) First Steps (concept): first completed concept game (crossword/wordsearch)
+        total_concept_completed = GameSession.objects.filter(
+            user=user, status='completed', game_type__in=CONCEPT_GAMES
+        ).count()
+        if instance.game_type in CONCEPT_GAMES and total_concept_completed >= 1:
+            award_achievement(user, 'first_steps')
+
+        # 2) Game Enthusiast: Play 20 games (completed sessions, any type)
         total_completed = GameSession.objects.filter(user=user, status='completed').count()
         if total_completed >= 20:
             award_achievement(user, 'game_enthusiast')
 
-        # 2) Perfection Seeker: perfect 5 games -> check count of perfect sessions
+        # 3) Perfection Seeker: perfect 5 games -> check count of perfect sessions
         # A perfect session: all QuestionResponse for session are is_correct=True
         from django.db.models import Count, Q
 
@@ -109,8 +119,8 @@ def handle_game_session(sender, instance: GameSession, created, **kwargs):
             if perfect_sessions >= 5:
                 award_achievement(user, 'perfection_seeker')
 
-        # 3) Speed Solver: perfect a non-coding game in under 60s
-        if instance.game_type and instance.game_type != 'debugging' and is_perfect:
+        # 4) Speed Solver: perfect a concept game in under 60s (crossword/wordsearch)
+        if instance.game_type in CONCEPT_GAMES and is_perfect:
             if instance.end_time and instance.start_time:
                 duration = (instance.end_time - instance.start_time).total_seconds()
                 if duration <= 60:
