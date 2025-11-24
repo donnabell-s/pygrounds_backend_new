@@ -1,0 +1,67 @@
+[
+  {
+    "question_text": "Identify the clause that executes after try when no exception occurs",
+    "correct_answer": "else",
+    "game_type": "non_coding",
+    "difficulty": "intermediate",
+    "subtopic": "else and finally Clauses in Error Handling",
+    "game_data": {
+      "explanation": "The else clause in error handling runs only if the try block completes without raising any exceptions, allowing for clean separation of normal and error cases.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-02T15:15:46.319500+00:00",
+    "exported_at": "2025-11-02T23:15:46.320483"
+  },
+  {
+    "question_text": "Name the Python feature that allows sending data to a function while preserving its state between calls",
+    "correct_answer": "generator",
+    "game_type": "non_coding",
+    "difficulty": "advanced",
+    "subtopic": "Best Practices for User-Friendly I/O",
+    "game_data": {
+      "explanation": "Generators are functions that can pause execution and resume later, maintaining state between calls while yielding values one at a time.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-02T15:15:48.492074+00:00",
+    "exported_at": "2025-11-02T23:15:48.494085"
+  },
+  {
+    "question_text": "Name the concept that allows a function to pause and resume execution while maintaining state",
+    "correct_answer": "generator",
+    "game_type": "non_coding",
+    "difficulty": "intermediate",
+    "subtopic": "Best Practices for User-Friendly I/O",
+    "game_data": {
+      "explanation": "Generators are functions that use yield to pause execution and return values one at a time, maintaining their state between calls for memory-efficient iteration.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-02T15:15:48.687055+00:00",
+    "exported_at": "2025-11-02T23:15:48.687055"
+  },
+  {
+    "question_text": "Name the Python feature that enables pausing and resuming function execution for interactive I/O",
+    "correct_answer": "generator",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Best Practices for User-Friendly I/O",
+    "game_data": {
+      "explanation": "Generators allow functions to pause execution and yield values, making them ideal for interactive input/output scenarios where you need to maintain state between user interactions.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-02T15:15:48.851782+00:00",
+    "exported_at": "2025-11-02T23:15:48.852785"
+  },
+  {
+    "question_text": "Name the operator that returns the remainder of a division",
+    "correct_answer": "modulo",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "Arithmetic Operators (+, -, *, /, %, //, **)",
+    "game_data": {
+      "explanation": "The modulo operator (%) calculates the remainder after division, useful for checking divisibility or cycling through values.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-02T15:34:07.540703+00:00",
+    "exported_at": "2025-11-02T23:34:07.542015"
+  }
+]

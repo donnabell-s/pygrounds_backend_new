@@ -1,0 +1,653 @@
+[
+  {
+    "id": 1,
+    "question_text": "What does this code do: print('Hello, World!')?",
+    "answer_options": [
+      "Displays text on screen",
+      "Asks for user input",
+      "Creates a variable",
+      "Performs math calculation"
+    ],
+    "correct_answer": "Displays text on screen",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      3,
+      5
+    ],
+    "subtopic_ids": [
+      13,
+      23
+    ],
+    "order": 0,
+    "created_at": null
+  },
+  {
+    "id": 2,
+    "question_text": "Which line correctly creates a variable to store someone's age?",
+    "answer_options": [
+      "age = 25",
+      "25 = age",
+      "variable age 25",
+      "create age as 25"
+    ],
+    "correct_answer": "age = 25",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      4
+    ],
+    "subtopic_ids": [
+      15,
+      16
+    ],
+    "order": 1,
+    "created_at": null
+  },
+  {
+    "id": 3,
+    "question_text": "What will this code output: print(5 + 3)?",
+    "answer_options": [
+      "8",
+      "53",
+      "5+3",
+      "Error"
+    ],
+    "correct_answer": "8",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      6,
+      5
+    ],
+    "subtopic_ids": [
+      29,
+      23
+    ],
+    "order": 2,
+    "created_at": null
+  },
+  {
+    "id": 4,
+    "question_text": "How do you ask the user for their name and store it?",
+    "answer_options": [
+      "name = input('Enter your name: ')",
+      "input = name('Enter your name: ')",
+      "get name from user",
+      "name = read('Enter your name: ')"
+    ],
+    "correct_answer": "name = input('Enter your name: ')",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      5,
+      4
+    ],
+    "subtopic_ids": [
+      22,
+      15
+    ],
+    "order": 3,
+    "created_at": null
+  },
+  {
+    "id": 5,
+    "question_text": "What does the '#' symbol do in Python code?",
+    "answer_options": [
+      "Starts a comment",
+      "Performs division",
+      "Creates a variable",
+      "Indicates an error"
+    ],
+    "correct_answer": "Starts a comment",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      7
+    ],
+    "subtopic_ids": [
+      36,
+      38
+    ],
+    "order": 4,
+    "created_at": null
+  },
+  {
+    "id": 6,
+    "question_text": "If temperature = 30, what does temperature > 25 evaluate to?",
+    "answer_options": [
+      "True",
+      "False",
+      "30",
+      "Error"
+    ],
+    "correct_answer": "True",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      6,
+      4
+    ],
+    "subtopic_ids": [
+      30,
+      18
+    ],
+    "order": 5,
+    "created_at": null
+  },
+  {
+    "id": 7,
+    "question_text": "Which code correctly checks if someone can vote (age 18 or older)?",
+    "answer_options": [
+      "if age >= 18:",
+      "if age > 18:",
+      "when age = 18:",
+      "check age == 18:"
+    ],
+    "correct_answer": "if age >= 18:",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      8,
+      6
+    ],
+    "subtopic_ids": [
+      43,
+      30
+    ],
+    "order": 6,
+    "created_at": null
+  },
+  {
+    "id": 8,
+    "question_text": "What does this code do: for i in range(3): print(i)?",
+    "answer_options": [
+      "Prints 0, 1, 2",
+      "Prints 1, 2, 3",
+      "Prints 'i' three times",
+      "Causes an error"
+    ],
+    "correct_answer": "Prints 0, 1, 2",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      10,
+      5
+    ],
+    "subtopic_ids": [
+      57,
+      23
+    ],
+    "order": 7,
+    "created_at": null
+  },
+  {
+    "id": 9,
+    "question_text": "How do you create a list of favorite colors?",
+    "answer_options": [
+      "colors = ['red', 'blue', 'green']",
+      "colors = ('red', 'blue', 'green')",
+      "colors = 'red, blue, green'",
+      "list colors = red blue green"
+    ],
+    "correct_answer": "colors = ['red', 'blue', 'green']",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      13,
+      4
+    ],
+    "subtopic_ids": [
+      78,
+      17
+    ],
+    "order": 8,
+    "created_at": null
+  },
+  {
+    "id": 10,
+    "question_text": "What will len('hello') return?",
+    "answer_options": [
+      "5",
+      "hello",
+      "6",
+      "Error"
+    ],
+    "correct_answer": "5",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      4,
+      12
+    ],
+    "subtopic_ids": [
+      17,
+      71
+    ],
+    "order": 9,
+    "created_at": null
+  },
+  {
+    "id": 11,
+    "question_text": "Which code converts user input to a number for calculations?",
+    "answer_options": [
+      "number = int(input('Enter number: '))",
+      "number = input('Enter number: ')",
+      "number = convert(input('Enter number: '))",
+      "input number = int('Enter number: ')"
+    ],
+    "correct_answer": "number = int(input('Enter number: '))",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      5,
+      4
+    ],
+    "subtopic_ids": [
+      25,
+      19
+    ],
+    "order": 10,
+    "created_at": null
+  },
+  {
+    "id": 12,
+    "question_text": "What does this code do: name = 'Alice'; print(f'Hello {name}!')?",
+    "answer_options": [
+      "Prints 'Hello Alice!'",
+      "Prints 'Hello {name}!'",
+      "Asks for Alice's name",
+      "Causes an error"
+    ],
+    "correct_answer": "Prints 'Hello Alice!'",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      5,
+      3
+    ],
+    "subtopic_ids": [
+      24,
+      13
+    ],
+    "order": 11,
+    "created_at": null
+  },
+  {
+    "id": 13,
+    "question_text": "How do you handle potential errors when converting user input?",
+    "answer_options": [
+      "Use try-except block",
+      "Use if-else statement",
+      "Add more print statements",
+      "Ignore the error"
+    ],
+    "correct_answer": "Use try-except block",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      9
+    ],
+    "subtopic_ids": [
+      51,
+      50
+    ],
+    "order": 12,
+    "created_at": null
+  },
+  {
+    "id": 14,
+    "question_text": "What will colors[0] return for colors = ['red', 'blue', 'green']?",
+    "answer_options": [
+      "'red'",
+      "'blue'",
+      "'green'",
+      "Error"
+    ],
+    "correct_answer": "'red'",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      13
+    ],
+    "subtopic_ids": [
+      80,
+      78
+    ],
+    "order": 13,
+    "created_at": null
+  },
+  {
+    "id": 15,
+    "question_text": "Which loop repeats until a condition becomes False?",
+    "answer_options": [
+      "while loop",
+      "for loop",
+      "if loop",
+      "repeat loop"
+    ],
+    "correct_answer": "while loop",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      10
+    ],
+    "subtopic_ids": [
+      59,
+      63
+    ],
+    "order": 14,
+    "created_at": null
+  },
+  {
+    "id": 16,
+    "question_text": "How do you add 'yellow' to the colors list?",
+    "answer_options": [
+      "colors.append('yellow')",
+      "colors.add('yellow')",
+      "colors.insert('yellow')",
+      "colors += 'yellow'"
+    ],
+    "correct_answer": "colors.append('yellow')",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      13
+    ],
+    "subtopic_ids": [
+      79,
+      78
+    ],
+    "order": 15,
+    "created_at": null
+  },
+  {
+    "id": 17,
+    "question_text": "What does 'hello'.upper() return?",
+    "answer_options": [
+      "'HELLO'",
+      "'hello'",
+      "'Hello'",
+      "Error"
+    ],
+    "correct_answer": "'HELLO'",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      12
+    ],
+    "subtopic_ids": [
+      73,
+      72
+    ],
+    "order": 16,
+    "created_at": null
+  },
+  {
+    "id": 18,
+    "question_text": "How do you create a function that greets someone?",
+    "answer_options": [
+      "def greet(name): return f'Hello {name}'",
+      "function greet(name): print('Hello name')",
+      "greet = def(name): 'Hello name'",
+      "create greet(name) as 'Hello name'"
+    ],
+    "correct_answer": "def greet(name): return f'Hello {name}'",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      15
+    ],
+    "subtopic_ids": [
+      92,
+      93
+    ],
+    "order": 17,
+    "created_at": null
+  },
+  {
+    "id": 19,
+    "question_text": "What will 10 % 3 return?",
+    "answer_options": [
+      "1",
+      "3",
+      "0",
+      "Error"
+    ],
+    "correct_answer": "1",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      6,
+      4
+    ],
+    "subtopic_ids": [
+      29,
+      16
+    ],
+    "order": 18,
+    "created_at": null
+  },
+  {
+    "id": 20,
+    "question_text": "How do you check if 'apple' is in fruits list?",
+    "answer_options": [
+      "if 'apple' in fruits:",
+      "if fruits contains 'apple':",
+      "if fruits.has('apple'):",
+      "if 'apple' == fruits:"
+    ],
+    "correct_answer": "if 'apple' in fruits:",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      6,
+      13
+    ],
+    "subtopic_ids": [
+      34,
+      83
+    ],
+    "order": 19,
+    "created_at": null
+  },
+  {
+    "id": 21,
+    "question_text": "What does this code do: numbers = [1, 2, 3]; numbers[1] = 5?",
+    "answer_options": [
+      "Changes second element to 5",
+      "Adds 5 to the list",
+      "Creates a new list",
+      "Causes an error"
+    ],
+    "correct_answer": "Changes second element to 5",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      13
+    ],
+    "subtopic_ids": [
+      78,
+      80
+    ],
+    "order": 20,
+    "created_at": null
+  },
+  {
+    "id": 22,
+    "question_text": "How do you create a dictionary storing ages?",
+    "answer_options": [
+      "ages = {'Alice': 25, 'Bob': 30}",
+      "ages = ['Alice': 25, 'Bob': 30]",
+      "ages = ('Alice': 25, 'Bob': 30)",
+      "ages = Alice=25, Bob=30"
+    ],
+    "correct_answer": "ages = {'Alice': 25, 'Bob': 30}",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      16
+    ],
+    "subtopic_ids": [
+      99,
+      100
+    ],
+    "order": 21,
+    "created_at": null
+  },
+  {
+    "id": 23,
+    "question_text": "What does 'hello world'.split() return?",
+    "answer_options": [
+      "['hello', 'world']",
+      "'hello world'",
+      "['hello world']",
+      "Error"
+    ],
+    "correct_answer": "['hello', 'world']",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      12,
+      13
+    ],
+    "subtopic_ids": [
+      75,
+      78
+    ],
+    "order": 22,
+    "created_at": null
+  },
+  {
+    "id": 24,
+    "question_text": "How do you get Bob's age from ages dictionary?",
+    "answer_options": [
+      "ages['Bob']",
+      "ages.Bob",
+      "ages.get('Bob')",
+      "ages('Bob')"
+    ],
+    "correct_answer": "ages['Bob']",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      16
+    ],
+    "subtopic_ids": [
+      99,
+      102
+    ],
+    "order": 23,
+    "created_at": null
+  },
+  {
+    "id": 25,
+    "question_text": "What does this code do: x = 5; x += 3?",
+    "answer_options": [
+      "x becomes 8",
+      "x becomes 53",
+      "x becomes 15",
+      "Error"
+    ],
+    "correct_answer": "x becomes 8",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      6
+    ],
+    "subtopic_ids": [
+      32,
+      29
+    ],
+    "order": 24,
+    "created_at": null
+  },
+  {
+    "id": 26,
+    "question_text": "How do you handle both ValueError and TypeError in one except block?",
+    "answer_options": [
+      "except (ValueError, TypeError):",
+      "except ValueError or TypeError:",
+      "except any error:",
+      "except all errors:"
+    ],
+    "correct_answer": "except (ValueError, TypeError):",
+    "estimated_difficulty": "advanced",
+    "topic_ids": [
+      9
+    ],
+    "subtopic_ids": [
+      52,
+      51
+    ],
+    "order": 25,
+    "created_at": null
+  },
+  {
+    "id": 27,
+    "question_text": "What does [x*2 for x in range(3)] create?",
+    "answer_options": [
+      "[0, 2, 4]",
+      "[0, 1, 2]",
+      "[2, 4, 6]",
+      "Error"
+    ],
+    "correct_answer": "[0, 2, 4]",
+    "estimated_difficulty": "advanced",
+    "topic_ids": [
+      13,
+      10
+    ],
+    "subtopic_ids": [
+      80,
+      57
+    ],
+    "order": 26,
+    "created_at": null
+  },
+  {
+    "id": 28,
+    "question_text": "How do you create a set from a list with duplicates?",
+    "answer_options": [
+      "set([1, 2, 2, 3])",
+      "set(1, 2, 2, 3)",
+      "{1, 2, 2, 3}",
+      "create set from [1, 2, 2, 3]"
+    ],
+    "correct_answer": "set([1, 2, 2, 3])",
+    "estimated_difficulty": "advanced",
+    "topic_ids": [
+      14
+    ],
+    "subtopic_ids": [
+      85,
+      88
+    ],
+    "order": 27,
+    "created_at": null
+  },
+  {
+    "id": 29,
+    "question_text": "What does lambda x: x*2 do?",
+    "answer_options": [
+      "Creates a function that doubles a number",
+      "Multiplies x by 2 immediately",
+      "Creates a variable",
+      "Causes an error"
+    ],
+    "correct_answer": "Creates a function that doubles a number",
+    "estimated_difficulty": "advanced",
+    "topic_ids": [
+      15
+    ],
+    "subtopic_ids": [
+      97,
+      92
+    ],
+    "order": 28,
+    "created_at": null
+  },
+  {
+    "id": 30,
+    "question_text": "Imagine you're building a simple game score tracker. How would you design functions to add scores, get average score, and find highest score using lists, dictionaries, loops, and error handling?",
+    "answer_options": [
+      "Create add_score(), get_average(), get_highest() functions with proper data structures",
+      "Use only print statements for everything",
+      "Hardcode all scores as variables",
+      "Ask user to calculate manually"
+    ],
+    "correct_answer": "Create add_score(), get_average(), get_highest() functions with proper data structures",
+    "estimated_difficulty": "master",
+    "topic_ids": [
+      15,
+      13,
+      16,
+      9
+    ],
+    "subtopic_ids": [
+      92,
+      78,
+      101,
+      51,
+      104,
+      83
+    ],
+    "order": 29,
+    "created_at": null
+  }
+]

@@ -16,8 +16,20 @@ venv/
 # Environment Variables
 .env
 
+# Database backups
+backups/
+*.dump
+# Allow db_dump.sql for sharing
+# *.sql
+
 # VS Code
 .vscode/
+
+# Local ML Models (too large for git)
+models/
+
+# Document uploads
+pdfs\
 
 # load-db.bat
 # dump-db.bat

@@ -1,0 +1,396 @@
+[
+  {
+    "game_type": "coding",
+    "difficulty": "beginner",
+    "subtopic": "Arithmetic Operators (+, -, *, /, %, //, **)",
+    "game_data": {
+      "normal": {
+        "question_text": "Calculate the area of a rectangle given length and width.",
+        "function_name": "calculate_area",
+        "sample_input": "(5, 4)",
+        "sample_output": "20",
+        "hidden_tests": [
+          {
+            "input": "(3, 7)",
+            "expected_output": "21"
+          },
+          {
+            "input": "(10, 2)",
+            "expected_output": "20"
+          }
+        ],
+        "correct_code": "def calculate_area(length, width):\n    return length * width",
+        "explanation": "This function multiplies length and width to compute the area of a rectangle. It correctly uses the * operator for multiplication."
+      },
+      "buggy": {
+        "buggy_question_text": "The function returns incorrect area when length and width are integers.",
+        "buggy_code": "def calculate_area(length, width):\n    return length + width",
+        "buggy_correct_code": "def calculate_area(length, width):\n    return length * width",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-02T23:20:12.375275"
+    },
+    "created_at": "2025-11-02T15:20:12.373312+00:00",
+    "exported_at": "2025-11-02T23:20:12.375275"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "beginner",
+    "subtopic": "Boolean Logic in Conditions",
+    "game_data": {
+      "normal": {
+        "question_text": "Check if a number is positive and even.",
+        "function_name": "is_positive_even",
+        "sample_input": "(4,)",
+        "sample_output": "True",
+        "hidden_tests": [
+          {
+            "input": "(-2,)",
+            "expected_output": "False"
+          },
+          {
+            "input": "(3,)",
+            "expected_output": "False"
+          },
+          {
+            "input": "(6,)",
+            "expected_output": "True"
+          }
+        ],
+        "correct_code": "def is_positive_even(n):\n    if n > 0 and n % 2 == 0:\n        return True\n    return False",
+        "explanation": "The function should return True only if the number is both positive and even. It checks positivity and divisibility by 2 using boolean logic."
+      },
+      "buggy": {
+        "buggy_question_text": "Function returns True for negative even numbers, should return False.",
+        "buggy_code": "def is_positive_even(n):\n    if n > 0 or n % 2 == 0:\n        return True\n    return False",
+        "buggy_correct_code": "def is_positive_even(n):\n    if n > 0 and n % 2 == 0:\n        return True\n    return False",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-02T23:20:14.633523"
+    },
+    "created_at": "2025-11-02T15:20:14.620930+00:00",
+    "exported_at": "2025-11-02T23:20:14.633523"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "beginner",
+    "subtopic": "Avoiding Logical Errors in Nested Structures",
+    "game_data": {
+      "normal": {
+        "question_text": "Sum all elements in a 2D list.",
+        "function_name": "sum_2d_list",
+        "sample_input": "([[1, 2], [3, 4]],)",
+        "sample_output": "10",
+        "hidden_tests": [
+          {
+            "input": "([[5]],)",
+            "expected_output": "5"
+          },
+          {
+            "input": "([],)",
+            "expected_output": "0"
+          },
+          {
+            "input": "([[1, 2, 3], [4, 5]],)",
+            "expected_output": "15"
+          }
+        ],
+        "correct_code": "def sum_2d_list(matrix):\n    total = 0\n    for row in matrix:\n        for num in row:\n            total += num\n    return total",
+        "explanation": "This function should iterate through each sublist and add all elements to compute the total sum correctly, handling nested structures properly."
+      },
+      "buggy": {
+        "buggy_question_text": "The function returns incorrect total when summing nested lists.",
+        "buggy_code": "def sum_2d_list(matrix):\n    total = 0\n    for i in range(len(matrix)):\n        for i in range(len(matrix[i])):\n            total += matrix[i][i]\n    return total",
+        "buggy_correct_code": "def sum_2d_list(matrix):\n    total = 0\n    for i in range(len(matrix)):\n        for j in range(len(matrix[i])):\n            total += matrix[i][j]\n    return total",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-02T23:20:16.443265"
+    },
+    "created_at": "2025-11-02T15:20:16.440263+00:00",
+    "exported_at": "2025-11-02T23:20:16.444344"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "beginner",
+    "subtopic": "Assignment Operators (=, +=, -=, etc. )",
+    "game_data": {
+      "normal": {
+        "question_text": "Increment a number by 5 using assignment operators.",
+        "function_name": "increment_by_five",
+        "sample_input": "(10,)",
+        "sample_output": 15,
+        "hidden_tests": [
+          {
+            "input": "(3,)",
+            "expected_output": 8
+          },
+          {
+            "input": "(-2,)",
+            "expected_output": 3
+          },
+          {
+            "input": "(0,)",
+            "expected_output": 5
+          }
+        ],
+        "correct_code": "def increment_by_five(num):\n    num += 5\n    return num",
+        "explanation": "This task requires using the += assignment operator to add 5 to the given number and return the updated value, demonstrating basic assignment operator usage."
+      },
+      "buggy": {
+        "buggy_question_text": "The function does not update the number correctly when adding 5.",
+        "buggy_code": "def increment_by_five(num):\n    num = num + 5\n    return num",
+        "buggy_correct_code": "def increment_by_five(num):\n    num += 5\n    return num",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-02T23:20:23.043551"
+    },
+    "created_at": "2025-11-02T15:20:23.042542+00:00",
+    "exported_at": "2025-11-02T23:20:23.043551"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "beginner",
+    "subtopic": "Catching Multiple Exceptions",
+    "game_data": {
+      "normal": {
+        "question_text": "Write a function that catches both ZeroDivisionError and TypeError.",
+        "function_name": "safe_divide",
+        "sample_input": "(10, 2)",
+        "sample_output": "5.0",
+        "hidden_tests": [
+          {
+            "input": "(10, 0)",
+            "expected_output": "Error: Division by zero."
+          },
+          {
+            "input": "(10, 'a')",
+            "expected_output": "Error: Invalid type for division."
+          }
+        ],
+        "correct_code": "def safe_divide(a, b):\n    try:\n        return a / b\n    except ZeroDivisionError:\n        return \"Error: Division by zero.\"\n    except TypeError:\n        return \"Error: Invalid type for division.\"",
+        "explanation": "This function should handle both ZeroDivisionError and TypeError exceptions separately, providing specific error messages for each case to ensure robust error handling."
+      },
+      "buggy": {
+        "buggy_question_text": "The function fails to handle TypeError when dividing by zero or invalid types.",
+        "buggy_code": "def safe_divide(a, b):\n    try:\n        return a / b\n    except ZeroDivisionError:\n        return \"Error: Division by zero.\"",
+        "buggy_correct_code": "def safe_divide(a, b):\n    try:\n        return a / b\n    except ZeroDivisionError:\n        return \"Error: Division by zero.\"\n    except TypeError:\n        return \"Error: Invalid type for division.\"",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-02T23:20:28.598682"
+    },
+    "created_at": "2025-11-02T15:20:28.597676+00:00",
+    "exported_at": "2025-11-02T23:20:28.598682"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "beginner",
+    "subtopic": "break, continue, and pass Statements",
+    "game_data": {
+      "normal": {
+        "question_text": "Print numbers 1 to 10, skip 5, stop at 8.",
+        "function_name": "print_numbers",
+        "sample_input": "()",
+        "sample_output": "1\n2\n3\n4\n6\n7\n8",
+        "hidden_tests": [
+          {
+            "input": "()",
+            "expected_output": "1\n2\n3\n4\n6\n7\n8"
+          }
+        ],
+        "correct_code": "def print_numbers():\n    for i in range(1, 11):\n        if i == 5:\n            continue\n        if i == 8:\n            break\n        print(i)",
+        "explanation": "The function should iterate from 1 to 10, skip 5 using continue, and stop at 8 using break. This ensures only numbers 1-4, 6-8 are printed."
+      },
+      "buggy": {
+        "buggy_question_text": "The function prints 1, 2, 3, 4, 6, 7, 8, 9, 10 instead of stopping at 8.",
+        "buggy_code": "def print_numbers():\n    for i in range(1, 11):\n        if i == 5:\n            continue\n        if i == 8:\n            pass\n        print(i)",
+        "buggy_correct_code": "def print_numbers():\n    for i in range(1, 11):\n        if i == 5:\n            continue\n        if i == 8:\n            break\n        print(i)",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-02T23:20:30.701016"
+    },
+    "created_at": "2025-11-02T15:20:30.698015+00:00",
+    "exported_at": "2025-11-02T23:20:30.701016"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "beginner",
+    "subtopic": "Avoiding Magic Numbers and Hardcoding",
+    "game_data": {
+      "normal": {
+        "question_text": "Calculate the area of a circle given its radius.",
+        "function_name": "calculate_circle_area",
+        "sample_input": "(3,)",
+        "sample_output": 28.26,
+        "hidden_tests": [
+          {
+            "input": "(5,)",
+            "expected_output": 78.5
+          },
+          {
+            "input": "(0,)",
+            "expected_output": 0.0
+          },
+          {
+            "input": "(10,)",
+            "expected_output": 314.0
+          }
+        ],
+        "correct_code": "def calculate_circle_area(radius):\n    pi = 3.14\n    return pi * radius * radius",
+        "explanation": "The function should compute the area using π * radius². Using a named constant for π and avoiding hardcoded values ensures correctness and readability."
+      },
+      "buggy": {
+        "buggy_question_text": "The function always returns 28.26 regardless of the input radius.",
+        "buggy_code": "def calculate_circle_area(radius):\n    return 28.26",
+        "buggy_correct_code": "def calculate_circle_area(radius):\n    pi = 3.14\n    return pi * radius * radius",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-02T23:20:34.447423"
+    },
+    "created_at": "2025-11-02T15:20:34.444393+00:00",
+    "exported_at": "2025-11-02T23:20:34.447423"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "beginner",
+    "subtopic": "Common Logic Pitfalls and Debugging",
+    "game_data": {
+      "normal": {
+        "question_text": "Check if a number is positive or negative.",
+        "function_name": "check_number",
+        "sample_input": "(0,)",
+        "sample_output": "zero",
+        "hidden_tests": [
+          {
+            "input": "(5,)",
+            "expected_output": "positive"
+          },
+          {
+            "input": "(-3,)",
+            "expected_output": "negative"
+          },
+          {
+            "input": "(0,)",
+            "expected_output": "zero"
+          }
+        ],
+        "correct_code": "def check_number(num):\n    if num > 0:\n        return 'positive'\n    elif num < 0:\n        return 'negative'\n    else:\n        return 'zero'",
+        "explanation": "This function should return 'positive' for numbers greater than zero, 'negative' for numbers less than zero, and 'zero' for zero. It uses conditional checks to determine the correct output."
+      },
+      "buggy": {
+        "buggy_question_text": "The function returns 'positive' for zero, but it should return 'zero'.",
+        "buggy_code": "def check_number(num):\n    if num > 0:\n        return 'positive'\n    elif num < 0:\n        return 'negative'",
+        "buggy_correct_code": "def check_number(num):\n    if num > 0:\n        return 'positive'\n    elif num < 0:\n        return 'negative'\n    else:\n        return 'zero'",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-02T23:20:42.036749"
+    },
+    "created_at": "2025-11-02T15:20:42.033750+00:00",
+    "exported_at": "2025-11-02T23:20:42.036749"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "beginner",
+    "subtopic": "Case Conversion Methods (lower(), upper(), etc.)",
+    "game_data": {
+      "normal": {
+        "question_text": "Convert a string to uppercase and lowercase alternately.",
+        "function_name": "alternate_case",
+        "sample_input": "hello",
+        "sample_output": "HeLlO",
+        "hidden_tests": [
+          {
+            "input": "python",
+            "expected_output": "PyThOn"
+          },
+          {
+            "input": "a",
+            "expected_output": "A"
+          },
+          {
+            "input": "ab",
+            "expected_output": "Ab"
+          }
+        ],
+        "correct_code": "def alternate_case(s):\n    result = ''\n    for i, char in enumerate(s):\n        if i % 2 == 0:\n            result += char.upper()\n        else:\n            result += char.lower()\n    return result",
+        "explanation": "This function should take a string and return a new string where each character alternates between uppercase and lowercase, starting with uppercase."
+      },
+      "buggy": {
+        "buggy_question_text": "The function returns only uppercase letters, ignoring lowercase conversion.",
+        "buggy_code": "def alternate_case(s):\n    return s.upper()",
+        "buggy_correct_code": "def alternate_case(s):\n    result = ''\n    for i, char in enumerate(s):\n        if i % 2 == 0:\n            result += char.upper()\n        else:\n            result += char.lower()\n    return result",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-02T23:20:43.337820"
+    },
+    "created_at": "2025-11-02T15:20:43.335301+00:00",
+    "exported_at": "2025-11-02T23:20:43.337820"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "beginner",
+    "subtopic": "Basic Text Output with print()",
+    "game_data": {
+      "normal": {
+        "question_text": "Print a greeting message with a name.",
+        "function_name": "print_greeting",
+        "sample_input": "('Alice',)",
+        "sample_output": "Hello, Alice",
+        "hidden_tests": [
+          {
+            "input": "('Bob',)",
+            "expected_output": "Hello, Bob"
+          },
+          {
+            "input": "('',)",
+            "expected_output": "Hello, "
+          }
+        ],
+        "correct_code": "def print_greeting(name):\n    print(f'Hello, {name}')",
+        "explanation": "The task is to print a personalized greeting using the print() function. The correct code uses string formatting to insert the name into the greeting message."
+      },
+      "buggy": {
+        "buggy_question_text": "The function prints 'Hello, name' instead of 'Hello, Alice' when given 'Alice'.",
+        "buggy_code": "def print_greeting(name):\n    print('Hello, name')",
+        "buggy_correct_code": "def print_greeting(name):\n    print(f'Hello, {name}')",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-02T23:20:45.239719"
+    },
+    "created_at": "2025-11-02T15:20:45.238719+00:00",
+    "exported_at": "2025-11-02T23:20:45.239719"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "beginner",
+    "subtopic": "Arithmetic Operators (+, -, *, /, %, //, **)",
+    "game_data": {
+      "normal": {
+        "question_text": "Calculate the area of a rectangle given length and width.",
+        "function_name": "calculate_area",
+        "sample_input": "(5, 4)",
+        "sample_output": 20,
+        "hidden_tests": [
+          {
+            "input": "(3, 7)",
+            "expected_output": 21
+          },
+          {
+            "input": "(10, 2)",
+            "expected_output": 20
+          }
+        ],
+        "correct_code": "def calculate_area(length, width):\n    return length * width",
+        "explanation": "This function multiplies length and width using the * operator to compute the area of a rectangle, which is the correct arithmetic operation for this task."
+      },
+      "buggy": {
+        "buggy_question_text": "The function returns incorrect area when length and width are integers.",
+        "buggy_code": "def calculate_area(length, width):\n    return length + width",
+        "buggy_correct_code": "def calculate_area(length, width):\n    return length * width",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-02T23:35:30.397563"
+    },
+    "created_at": "2025-11-02T15:35:30.395562+00:00",
+    "exported_at": "2025-11-02T23:35:30.397563"
+  }
+]

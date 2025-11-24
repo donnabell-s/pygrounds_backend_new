@@ -1,0 +1,509 @@
+[
+  {
+    "question_text": "A design pattern for accessing elements sequentially without exposing underlying structure.",
+    "correct_answer": "iterator",
+    "game_type": "non_coding",
+    "difficulty": "intermediate",
+    "subtopic": "if Statement Syntax and Structure",
+    "game_data": {
+      "explanation": "This pattern provides a way to access elements of a collection one by one, using next() method.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T16:59:00.430506+00:00",
+    "exported_at": "2025-11-04T00:59:00.435034"
+  },
+  {
+    "question_text": "A decorator enabling generic function behavior based on argument type.",
+    "correct_answer": "singledispatch",
+    "game_type": "non_coding",
+    "difficulty": "intermediate",
+    "subtopic": "if-else and elif Ladder",
+    "game_data": {
+      "explanation": "This decorator allows a function to have different implementations depending on the type of the first argument.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T16:59:00.540062+00:00",
+    "exported_at": "2025-11-04T00:59:00.544068"
+  },
+  {
+    "question_text": "A decorator that enables function overloading based on argument types.",
+    "correct_answer": "singledispatch",
+    "game_type": "non_coding",
+    "difficulty": "intermediate",
+    "subtopic": "if Statement Syntax and Structure",
+    "game_data": {
+      "explanation": "This functools decorator allows different function implementations for different data types.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T16:59:00.618195+00:00",
+    "exported_at": "2025-11-04T00:59:00.621204"
+  },
+  {
+    "question_text": "A decorator enabling generic function behavior based on argument type.",
+    "correct_answer": "singledispatch",
+    "game_type": "non_coding",
+    "difficulty": "intermediate",
+    "subtopic": "if-else and elif Ladder",
+    "game_data": {
+      "explanation": "This decorator allows a function to have different implementations depending on the type of the first argument.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T16:59:00.540062+00:00",
+    "exported_at": "2025-11-04T00:59:00.544068"
+  },
+  {
+    "question_text": "A type variable used to maintain consistency in generic function signatures.",
+    "correct_answer": "typevar",
+    "game_type": "non_coding",
+    "difficulty": "intermediate",
+    "subtopic": "if-else and elif Ladder",
+    "game_data": {
+      "explanation": "It represents a placeholder type in generics, ensuring type safety across different usages of a function.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T16:59:00.766696+00:00",
+    "exported_at": "2025-11-04T00:59:00.768205"
+  },
+  {
+    "question_text": "A function that remembers previous results to avoid recomputation.",
+    "correct_answer": "memoization",
+    "game_type": "non_coding",
+    "difficulty": "intermediate",
+    "subtopic": "Nested Conditional Statements",
+    "game_data": {
+      "explanation": "Memoization stores function results to speed up future calls with the same inputs, often implemented with decorators like lru_cache.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T16:59:01.986070+00:00",
+    "exported_at": "2025-11-04T00:59:01.988601"
+  },
+  {
+    "question_text": "A type variable that can be replaced by any of its subtypes.",
+    "correct_answer": "covariant",
+    "game_type": "non_coding",
+    "difficulty": "intermediate",
+    "subtopic": "Nested Conditional Statements",
+    "game_data": {
+      "explanation": "Covariant type variables allow a generic type to accept subtypes, commonly used in type annotations for flexible inheritance.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T16:59:02.074371+00:00",
+    "exported_at": "2025-11-04T00:59:02.077870"
+  },
+  {
+    "question_text": "An object that produces items one at a time when iterated.",
+    "correct_answer": "generator",
+    "game_type": "non_coding",
+    "difficulty": "intermediate",
+    "subtopic": "Nested Conditional Statements",
+    "game_data": {
+      "explanation": "Generators yield values lazily, conserving memory by producing items on demand rather than storing them all at once.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T16:59:02.173750+00:00",
+    "exported_at": "2025-11-04T00:59:02.177264"
+  },
+  {
+    "question_text": "A design pattern where an object manages traversal through a collection.",
+    "correct_answer": "iterator",
+    "game_type": "non_coding",
+    "difficulty": "intermediate",
+    "subtopic": "Nested Conditional Statements",
+    "game_data": {
+      "explanation": "Iterators implement the protocol for sequentially accessing elements in a container without exposing its underlying structure.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T16:59:02.262613+00:00",
+    "exported_at": "2025-11-04T00:59:02.265613"
+  },
+  {
+    "question_text": "A decorator that enables different function behaviors based on argument types.",
+    "correct_answer": "singledispatch",
+    "game_type": "non_coding",
+    "difficulty": "intermediate",
+    "subtopic": "Nested Conditional Statements",
+    "game_data": {
+      "explanation": "The singledispatch decorator allows a function to have multiple implementations, selected by the type of the first argument.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T16:59:02.348527+00:00",
+    "exported_at": "2025-11-04T00:59:02.352505"
+  },
+  {
+    "question_text": "A type variable used for creating generic functions and classes.",
+    "correct_answer": "TypeVar",
+    "game_type": "non_coding",
+    "difficulty": "intermediate",
+    "subtopic": "Raising Custom Exceptions",
+    "game_data": {
+      "explanation": "This typing module construct defines type variables for creating reusable generic types that work with multiple data types.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T16:59:12.466149+00:00",
+    "exported_at": "2025-11-04T00:59:12.469659"
+  },
+  {
+    "question_text": "A generator that yields items but does not consume or return values.",
+    "correct_answer": "Iterator",
+    "game_type": "non_coding",
+    "difficulty": "intermediate",
+    "subtopic": "Raising Custom Exceptions",
+    "game_data": {
+      "explanation": "In type hints, this represents a generator that only produces values without accepting or returning additional data.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T16:59:12.558303+00:00",
+    "exported_at": "2025-11-04T00:59:12.560304"
+  },
+  {
+    "question_text": "The protocol that objects must implement to be used in for loops.",
+    "correct_answer": "iterable",
+    "game_type": "non_coding",
+    "difficulty": "intermediate",
+    "subtopic": "Raising Custom Exceptions",
+    "game_data": {
+      "explanation": "Objects supporting this protocol can be looped over using for statements by providing an iterator.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T16:59:12.703821+00:00",
+    "exported_at": "2025-11-04T00:59:12.705814"
+  },
+  {
+    "question_text": "A property that determines if an object can be used as a dictionary key.",
+    "correct_answer": "Hashable",
+    "game_type": "non_coding",
+    "difficulty": "intermediate",
+    "subtopic": "Raising Custom Exceptions",
+    "game_data": {
+      "explanation": "Objects with this property have a consistent hash value and can serve as keys in dictionaries and elements in sets.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T16:59:12.811729+00:00",
+    "exported_at": "2025-11-04T00:59:12.815723"
+  },
+  {
+    "question_text": "Objects that manage resources using with statements.",
+    "correct_answer": "contextmanagers",
+    "game_type": "non_coding",
+    "difficulty": "intermediate",
+    "subtopic": "Try-Except Block Structure",
+    "game_data": {
+      "explanation": "Context managers control with blocks, ensuring proper resource cleanup, often replacing try-finally patterns.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T16:59:14.482248+00:00",
+    "exported_at": "2025-11-04T00:59:14.487248"
+  },
+  {
+    "question_text": "Clause that always executes after try, regardless of exceptions.",
+    "correct_answer": "finally",
+    "game_type": "non_coding",
+    "difficulty": "intermediate",
+    "subtopic": "Try-Except Block Structure",
+    "game_data": {
+      "explanation": "The finally clause runs after try-except blocks, guaranteeing execution for cleanup or final actions.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T16:59:14.589101+00:00",
+    "exported_at": "2025-11-04T00:59:14.591101"
+  },
+  {
+    "question_text": "Variable binding scope limited to an except clause.",
+    "correct_answer": "exception",
+    "game_type": "non_coding",
+    "difficulty": "intermediate",
+    "subtopic": "Try-Except Block Structure",
+    "game_data": {
+      "explanation": "In try-except, exception variables bound in except clauses are only accessible within that clause's block.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T16:59:14.674489+00:00",
+    "exported_at": "2025-11-04T00:59:14.678012"
+  },
+  {
+    "question_text": "A concise way to write if-else logic in one line.",
+    "correct_answer": "ternary",
+    "game_type": "non_coding",
+    "difficulty": "intermediate",
+    "subtopic": "Ternary Operators (One-liner conditionals)",
+    "game_data": {
+      "explanation": "Ternary operators allow conditional expressions to be written compactly, choosing between two values based on a condition.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T16:59:15.013835+00:00",
+    "exported_at": "2025-11-04T00:59:15.017349"
+  },
+  {
+    "question_text": "A decorator that caches function results to optimize performance.",
+    "correct_answer": "lrucache",
+    "game_type": "non_coding",
+    "difficulty": "intermediate",
+    "subtopic": "Ternary Operators (One-liner conditionals)",
+    "game_data": {
+      "explanation": "The lru_cache decorator from functools memoizes function calls, storing results to avoid redundant computations.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T16:59:15.102661+00:00",
+    "exported_at": "2025-11-04T00:59:15.106660"
+  },
+  {
+    "question_text": "An object that produces items one at a time when iterated.",
+    "correct_answer": "generator",
+    "game_type": "non_coding",
+    "difficulty": "intermediate",
+    "subtopic": "Ternary Operators (One-liner conditionals)",
+    "game_data": {
+      "explanation": "Generators are iterators that yield values lazily, pausing execution between items to save memory.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T16:59:15.203673+00:00",
+    "exported_at": "2025-11-04T00:59:15.207678"
+  },
+  {
+    "question_text": "A protocol that allows objects to be looped over using for loops.",
+    "correct_answer": "iterable",
+    "game_type": "non_coding",
+    "difficulty": "intermediate",
+    "subtopic": "Ternary Operators (One-liner conditionals)",
+    "game_data": {
+      "explanation": "Iterable objects implement __iter__ and can be traversed sequentially, like lists or strings.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T16:59:15.333418+00:00",
+    "exported_at": "2025-11-04T00:59:15.336425"
+  },
+  {
+    "question_text": "A property indicating an object can be used as a dictionary key.",
+    "correct_answer": "hashable",
+    "game_type": "non_coding",
+    "difficulty": "intermediate",
+    "subtopic": "Ternary Operators (One-liner conditionals)",
+    "game_data": {
+      "explanation": "Hashable objects have a fixed hash value and can be keys in dictionaries or elements in sets.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T16:59:15.423086+00:00",
+    "exported_at": "2025-11-04T00:59:15.426085"
+  },
+  {
+    "question_text": "A method to remove and return the last inserted dictionary item.",
+    "correct_answer": "popitem",
+    "game_type": "non_coding",
+    "difficulty": "intermediate",
+    "subtopic": "Ternary Operators (One-liner conditionals)",
+    "game_data": {
+      "explanation": "popitem removes the most recently added key-value pair from a dictionary, useful for LIFO operations.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T16:59:15.497639+00:00",
+    "exported_at": "2025-11-04T00:59:15.499070"
+  },
+  {
+    "question_text": "A function that yields items but does not consume or return values.",
+    "correct_answer": "generator",
+    "game_type": "non_coding",
+    "difficulty": "intermediate",
+    "subtopic": "Understanding Common Runtime Errors",
+    "game_data": {
+      "explanation": "Generators produce values one at a time using yield, allowing efficient iteration without storing all values in memory at once.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T16:59:16.059945+00:00",
+    "exported_at": "2025-11-04T00:59:16.062941"
+  },
+  {
+    "question_text": "A design pattern for traversing collections without exposing their underlying structure.",
+    "correct_answer": "iterator",
+    "game_type": "non_coding",
+    "difficulty": "intermediate",
+    "subtopic": "Understanding Common Runtime Errors",
+    "game_data": {
+      "explanation": "Iterators provide a way to access elements of a collection sequentially, abstracting the details of the data structure.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T16:59:16.181603+00:00",
+    "exported_at": "2025-11-04T00:59:16.185609"
+  },
+  {
+    "question_text": "A property allowing an object to be used as a dictionary key.",
+    "correct_answer": "hashable",
+    "game_type": "non_coding",
+    "difficulty": "intermediate",
+    "subtopic": "Understanding Common Runtime Errors",
+    "game_data": {
+      "explanation": "Hashable objects have a fixed hash value and can be keys in dictionaries or elements in sets.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T16:59:16.379599+00:00",
+    "exported_at": "2025-11-04T00:59:16.383606"
+  },
+  {
+    "question_text": "A function decorator that provides different implementations based on argument type.",
+    "correct_answer": "singledispatch",
+    "game_type": "non_coding",
+    "difficulty": "intermediate",
+    "subtopic": "Understanding Common Runtime Errors",
+    "game_data": {
+      "explanation": "singledispatch allows a function to have multiple behaviors depending on the type of its first argument.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T16:59:16.505276+00:00",
+    "exported_at": "2025-11-04T00:59:16.509798"
+  },
+  {
+    "question_text": "A type variable used to create generic functions or classes.",
+    "correct_answer": "typevar",
+    "game_type": "non_coding",
+    "difficulty": "intermediate",
+    "subtopic": "Understanding Common Runtime Errors",
+    "game_data": {
+      "explanation": "TypeVar defines placeholder types in type hints, enabling flexible and reusable generic code in Python.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T16:59:16.600968+00:00",
+    "exported_at": "2025-11-04T00:59:16.603971"
+  },
+  {
+    "question_text": "Automated process that runs code to verify expected behavior.",
+    "correct_answer": "testing",
+    "game_type": "non_coding",
+    "difficulty": "intermediate",
+    "subtopic": "Using assert Statements",
+    "game_data": {
+      "explanation": "Testing involves running code automatically to check if it behaves as intended, catching errors before production.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T16:59:25.357320+00:00",
+    "exported_at": "2025-11-04T00:59:25.360326"
+  },
+  {
+    "question_text": "Type of error where tools incorrectly flag valid code.",
+    "correct_answer": "falsepositive",
+    "game_type": "non_coding",
+    "difficulty": "intermediate",
+    "subtopic": "Using assert Statements",
+    "game_data": {
+      "explanation": "A false positive occurs when static analysis tools report errors in code that is actually correct.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T16:59:25.452075+00:00",
+    "exported_at": "2025-11-04T00:59:25.454076"
+  },
+  {
+    "question_text": "Type of error where tools miss actual problems in code.",
+    "correct_answer": "falsenegative",
+    "game_type": "non_coding",
+    "difficulty": "intermediate",
+    "subtopic": "Using assert Statements",
+    "game_data": {
+      "explanation": "A false negative happens when static analysis fails to detect real errors in the code.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T16:59:25.532341+00:00",
+    "exported_at": "2025-11-04T00:59:25.534348"
+  },
+  {
+    "question_text": "Analysis that checks code without executing it.",
+    "correct_answer": "static",
+    "game_type": "non_coding",
+    "difficulty": "intermediate",
+    "subtopic": "Using assert Statements",
+    "game_data": {
+      "explanation": "Static analysis examines code for errors without running it, often using type checkers.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T16:59:25.629085+00:00",
+    "exported_at": "2025-11-04T00:59:25.632081"
+  },
+  {
+    "question_text": "Statement that skips the rest of the loop body and continues with the next iteration.",
+    "correct_answer": "continue",
+    "game_type": "non_coding",
+    "difficulty": "intermediate",
+    "subtopic": "break, continue, and pass Statements",
+    "game_data": {
+      "explanation": "The continue statement skips remaining code in the current loop iteration and moves to the next cycle.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T16:59:29.043214+00:00",
+    "exported_at": "2025-11-04T00:59:29.046215"
+  },
+  {
+    "question_text": "Statement that immediately terminates the loop entirely.",
+    "correct_answer": "break",
+    "game_type": "non_coding",
+    "difficulty": "intermediate",
+    "subtopic": "break, continue, and pass Statements",
+    "game_data": {
+      "explanation": "The break statement exits the loop prematurely, stopping all further iterations.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T16:59:29.145961+00:00",
+    "exported_at": "2025-11-04T00:59:29.150478"
+  },
+  {
+    "question_text": "A decorator that caches function results to optimize performance.",
+    "correct_answer": "lrucache",
+    "game_type": "non_coding",
+    "difficulty": "intermediate",
+    "subtopic": "Using Conditions with Input",
+    "game_data": {
+      "explanation": "The lru_cache decorator from functools stores recent function calls to avoid redundant computations, improving efficiency.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T16:59:29.223358+00:00",
+    "exported_at": "2025-11-04T00:59:29.226356"
+  },
+  {
+    "question_text": "Placeholder statement that does nothing when executed.",
+    "correct_answer": "pass",
+    "game_type": "non_coding",
+    "difficulty": "intermediate",
+    "subtopic": "break, continue, and pass Statements",
+    "game_data": {
+      "explanation": "Pass is a null operation used when syntax requires a statement but no action is needed.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T16:59:29.264074+00:00",
+    "exported_at": "2025-11-04T00:59:29.265073"
+  },
+  {
+    "question_text": "A type variable that can be used to define covariant generic classes.",
+    "correct_answer": "covariant",
+    "game_type": "non_coding",
+    "difficulty": "intermediate",
+    "subtopic": "Using Conditions with Input",
+    "game_data": {
+      "explanation": "Covariant type variables allow subtyping relationships in generics, where a container of a subtype is also a subtype.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T16:59:29.321403+00:00",
+    "exported_at": "2025-11-04T00:59:29.324401"
+  },
+  {
+    "question_text": "A protocol that objects follow to support iteration.",
+    "correct_answer": "iterable",
+    "game_type": "non_coding",
+    "difficulty": "advanced",
+    "subtopic": "for Loop with range()",
+    "game_data": {
+      "explanation": "Objects implementing __iter__ method can be looped over using for loops, following the iterable protocol.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:02:56.113080+00:00",
+    "exported_at": "2025-11-04T01:02:56.116082"
+  },
+  {
+    "question_text": "Operator for creating new mappings from union since Python 3.9.",
+    "correct_answer": "union",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Creating and Accessing Dictionary Items",
+    "game_data": {
+      "explanation": "The | operator performs union operations on mappings, creating new dictionaries from combined key-value pairs.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-11-03T17:07:11.914670+00:00",
+    "exported_at": "2025-11-04T01:07:11.919176"
+  }
+]

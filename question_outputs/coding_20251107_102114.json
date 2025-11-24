@@ -1,0 +1,40 @@
+[
+  {
+    "game_type": "coding",
+    "difficulty": "beginner",
+    "subtopic": "Set Operations (union, intersection, difference, etc.)",
+    "game_data": {
+      "normal": {
+        "question_text": "Find the union of two sets of numbers.",
+        "function_name": "find_union",
+        "sample_input": "({1, 2}, {2, 3})",
+        "sample_output": "{1, 2, 3}",
+        "hidden_tests": [
+          {
+            "input": "({4, 5}, {5, 6})",
+            "expected_output": "{4, 5, 6}"
+          },
+          {
+            "input": "(set(), {7, 8})",
+            "expected_output": "{7, 8}"
+          },
+          {
+            "input": "({9}, {10})",
+            "expected_output": "{9, 10}"
+          }
+        ],
+        "correct_code": "def find_union(set_a, set_b):\n    return set_a | set_b",
+        "explanation": "This function should return the union of two sets, which combines all unique elements from both sets. Using the union operator or method achieves this correctly."
+      },
+      "buggy": {
+        "buggy_question_text": "The function returns an empty set instead of the union of the two sets.",
+        "buggy_code": "def find_union(set_a, set_b):\n    result = set()\n    return result",
+        "buggy_correct_code": "def find_union(set_a, set_b):\n    result = set_a | set_b\n    return result",
+        "buggy_code_explanation": ""
+      },
+      "generation_timestamp": "2025-11-07T10:21:14.103002"
+    },
+    "created_at": "2025-11-07T02:21:14.092880+00:00",
+    "exported_at": "2025-11-07T10:21:14.103002"
+  }
+]

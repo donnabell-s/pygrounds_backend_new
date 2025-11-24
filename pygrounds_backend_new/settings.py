@@ -13,6 +13,33 @@ from decouple import config
 import os
 from pathlib import Path
 from datetime import timedelta
+from dotenv import load_dotenv
+load_dotenv()
+
+# Suppress TensorFlow warnings and logs
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # Suppress all TF logs except errors
+os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'  # Disable oneDNN optimizations to avoid warnings
+os.environ['PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION'] = 'python'  # Fix protobuf issues
+
+# Additional TensorFlow warning suppression
+import warnings
+warnings.filterwarnings('ignore', category=DeprecationWarning)
+warnings.filterwarnings('ignore', message='.*sparse_softmax_cross_entropy.*')
+warnings.filterwarnings('ignore', message='.*MessageFactory.*')
+warnings.filterwarnings('ignore', message='.*GetPrototype.*')
+
+# Suppress specific library warnings
+import logging
+logging.getLogger('tensorflow').setLevel(logging.ERROR)
+logging.getLogger('google.protobuf').setLevel(logging.ERROR)
+
+try:
+    import tensorflow as tf
+    tf.get_logger().setLevel('ERROR')  # Only show TF errors
+    # Additional TensorFlow configuration
+    tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
+except ImportError:
+    pass  # TensorFlow not installed
 
 SECRET_KEY = config('SECRET_KEY')
 DEBUG = config('DEBUG', default=False, cast=bool)
@@ -22,6 +49,9 @@ DEEPSEEK_API_URL = config('DEEPSEEK_API_URL')
 
 
 ALLOWED_HOSTS = []
+
+AUTH_USER_MODEL = 'users.User'  # Replace with actual app name
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -48,16 +78,20 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'rest_framework_simplejwt',
+    'django_filters',
     'users',
     'content_ingestion',
     'question_generation',
-    'user_learning'
+    'user_learning',
+    'minigames',
+    'reading',
+    'achievements',
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -65,21 +99,63 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
+# For development, allow all origins
+CORS_ALLOW_ALL_ORIGINS = True
+
+# Allow credentials for authentication
+CORS_ALLOW_CREDENTIALS = True
+
+# Allow all headers
+CORS_ALLOW_HEADERS = ['*']
+CORS_ALLOW_CREDENTIALS = False
+
+# Allow all methods
+CORS_ALLOW_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
 ]
 
+# Ensure headers are added to all responses including errors
+CORS_URLS_REGEX = r'^/api/.*$'
+
+# Send CORS headers even for errors
+CORS_HANDLE_PREFLIGHT_OPTIONS = True
+CORS_EXPOSE_HEADERS = ['*']
+
+# Ensure CORS headers are sent for all responses including 404s
+CORS_PREFLIGHT_MAX_AGE = 86400
+
+# Add this to ensure CORS headers on error responses
+CORS_URLS_REGEX = r'^/api/.*$'
+
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
-    ),
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE": 10,
+    "DEFAULT_FILTER_BACKENDS": [
+        "django_filters.rest_framework.DjangoFilterBackend",
+        "rest_framework.filters.SearchFilter",
+        "rest_framework.filters.OrderingFilter",
+    ],
+    #enable JWT
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+        "rest_framework.authentication.SessionAuthentication",
+    ],
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.AllowAny",
+    ],
 }
 
+
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    "ACCESS_TOKEN_LIFETIME": timedelta(hours=4),  # Extended for long operations
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
 }
+
 
 
 ROOT_URLCONF = 'pygrounds_backend_new.urls'
@@ -158,3 +234,33 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Logging configuration
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+    },
+    'loggers': {
+        'user_learning': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+    },
+}
+
+# File Upload Settings
+# Set maximum file upload size to 25MB (slightly above our 20MB app limit for safety)
+FILE_UPLOAD_MAX_MEMORY_SIZE = 25 * 1024 * 1024  # 25MB
+DATA_UPLOAD_MAX_MEMORY_SIZE = 25 * 1024 * 1024  # 25MB
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Question Generation Settings
+QUESTION_GENERATION_WORKERS = 4  # Number of parallel workers for question generation

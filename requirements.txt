@@ -1,0 +1,19 @@
+# --- Core (Python 3.9 compatible) ---
+Django>=4.2,<4.3                 # LTS, supports Py3.9
+djangorestframework>=3.14,<3.16
+djangorestframework-simplejwt>=5.3,<6
+django-cors-headers>=4.3,<5
+django-filter>=23.2,<24          # For API filtering
+python-decouple>=3.8,<4
+psycopg2-binary>=2.9,<3          # only if you use Postgres
+
+# --- NLP (optional, if you actually use spaCy) ---
+spacy>=3.7,<3.8
+en-core-web-md @ https://github.com/explosion/spacy-models/releases/download/en_core_web_md-3.7.1/en_core_web_md-3.7.1-py3-none-any.whl
+
+# --- PDF parsing (optional) ---
+PyMuPDF>=1.23,<1.24
+
+ipython>=8,<9
+python-dotenv>=1.0
+openai>=1.30,<2.0

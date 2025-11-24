@@ -1,70 +1,64 @@
-## 🗃️ Database Setup for Local Development (PostgreSQL)
+# Pygrounds Backend
 
-### 📤 Dump the Local Database (Export)
+This document covers backend seeding tasks you may need during development: achievements and reading content.
 
-If you've made changes to the database (schema or data) and want to share it with the team:
+## Prerequisites
+- Run these commands from the backend project root (the folder that contains `manage.py`).
+- Ensure your Python environment is active and dependencies from `requirements.txt` are installed.
 
-1. Open your terminal or double-click the script.
-2. Run the script:
+## Seed Achievements
+The achievements seeder is an idempotent Django management command. It will create any missing default achievements by code and can optionally update existing ones.
 
-```bash
-./dump-db.bat
+Common commands (PowerShell):
+
+```powershell
+# Initial seed (creates any missing achievements; leaves existing ones unchanged)
+python manage.py seed_achievements
+
+# Update existing achievements' title/description/unlocked_zone to match defaults
+python manage.py seed_achievements --update
+
+# Preview what would change without writing to the database
+python manage.py seed_achievements --update --dry-run
+
+# Destructive reset: delete ALL user achievement unlocks and ALL achievements, then reseed
+python manage.py seed_achievements --reset
 ```
 
-This will export the current state of your local `pygrounds_db` into `db_dump.sql`.
+Notes:
+- `--update` only modifies title, description, and unlocked_zone for existing codes; it never creates duplicates.
+- `--dry-run` prints what would be created/updated and is safe to use in any environment.
+- `--reset` is destructive. It removes all `UserAchievement` rows first, then all `Achievement` rows, and reseeds the defaults.
+- After running, check the console summary: `Seed complete. Created: X. Updated: Y. Total in DB: Z`.
 
-> ✅ Commit `db_dump.sql` after running this if you want others to sync to your version:
+## Seed Reading Content
+Reading content can be seeded via a small script executed inside the Django shell.
 
-```bash
-git add db_dump.sql
-git commit -m "Update DB dump"
-git push
+Commands (PowerShell):
+
+```powershell
+# Open a Django shell from the backend project root
+python manage.py shell
 ```
 
----
+Then in the interactive shell:
 
-### 📥 Load the Shared Database (Import)
-
-If someone updated `db_dump.sql` and you want to apply those changes:
-
-1. Pull the latest version of the repository:
-
-```bash
-git pull
+```python
+# Execute the seeding script (path relative to manage.py)
+exec(open('reading/seed_reading.py').read())
 ```
 
-2. Run the load script:
+Tips:
+- The path `reading/seed_reading.py` is relative to the project root containing `manage.py`.
+- If your file lives elsewhere, adjust the relative path accordingly.
+- The script should be idempotent or handle duplicate data gracefully; rerun as needed during development.
 
-```bash
-./load-db.bat
-```
+## Verification
+- Use Django admin to confirm results:
+  - Achievements: titles/descriptions updated and expected entries present.
+  - Reading content: new entries visible and linked as expected.
 
-This will:
-
-* Create the `pygrounds_db` database (if it doesn't exist)
-* Import the latest schema and data from `db_dump.sql`
-
----
-
-### ⚙️ Script Configuration
-
-Both scripts use hardcoded PostgreSQL settings like user, DB name, and installation path.
-Before using them, make sure you:
-
-1. Copy the example scripts (if provided) and configure your local settings:
-
-   * `PG_BIN` – your PostgreSQL bin path (e.g., `C:\Program Files\PostgreSQL\17\bin`)
-   * `DB_USER` – your local Postgres username (usually `postgres`)
-   * `PGPASSWORD` – your password
-
----
-
-### 🔒 Git Ignore Reminder
-
-These scripts should not be pushed to GitHub. They are ignored in `.gitignore`:
-
-```gitignore
-load-db.bat
-dump-db.bat
-```
-
+## Troubleshooting
+- If you see "Skipped existing achievement (use --update to modify)", rerun with `--update`.
+- To safely inspect planned changes before applying, use `--dry-run`.
+- Ensure you’re in the correct directory (where `manage.py` is) when running commands.
