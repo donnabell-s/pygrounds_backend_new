@@ -1,8 +1,7 @@
 from django.utils.text import slugify
 from django.db import transaction
-from content_ingestion.models import Topic as CITopic, Subtopic as CISubtopic, GameZone
+from content_ingestion.models import Topic as CITopic, Subtopic as CISubtopic
 from reading.models import ReadingMaterial
-from content_ingestion.models import Topic, Subtopic
 
 
 def find_topic(name: str) -> CITopic:
@@ -42,25 +41,6 @@ def upsert_material(topic: CITopic, sub: CISubtopic, title: str, content: str, o
     if created:
         print(f"Created ReadingMaterial: {title} -> {topic.name}/{sub.name}")
     else:
-        print(f"Already exists: {title} -> {topic.name}/{sub.name}")
-
-    return obj
-
-
-def upsert_material(topic: CITopic, sub: CISubtopic, title: str, content: str, order_in_topic: int = 0):
-    obj, created = ReadingMaterial.objects.get_or_create(
-        topic_ref=topic,
-        subtopic_ref=sub,
-        title=title.strip(),
-        defaults={
-            "content": (content or "").strip(),
-            "order_in_topic": order_in_topic or 0,
-        },
-    )
-
-    if created:
-        print(f"Created ReadingMaterial: {title} -> {topic.name}/{sub.name}")
-    else:
         changed = False
         if obj.content != (content or "").strip():
             obj.content = (content or "").strip()
@@ -75,6 +55,7 @@ def upsert_material(topic: CITopic, sub: CISubtopic, title: str, content: str, o
             print(f"Already up-to-date: {title} -> {topic.name}/{sub.name}")
 
     return obj
+
 
 @transaction.atomic
 def run():
@@ -106,8 +87,9 @@ bash
 brew install python
 python3 --version
 """.strip(),
-order_in_topic=1,
-)
+        order_in_topic=1,
+    )
+
 
 
 # 2) Choosing and Setting Up an IDE
