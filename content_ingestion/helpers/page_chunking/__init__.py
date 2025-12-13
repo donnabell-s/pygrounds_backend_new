@@ -1,16 +1,4 @@
-"""
-Page chunking utilities for content ingestion.
-
-This module provides modular tools for processing PDF content into chunks optimized for different question types:
-- Conceptual content for non-coding questions  
-- Coding content for programming-related questions
-
-Main modules:
-- chunk_extractor_utils: Core chunk extraction and processing
-- chunk_classifier: Content type classification (Concept, Code, Exercise, Try_It, Example)
-- text_cleaner: Text cleaning and URL removal utilities  
-- context_creator: Context creation for different chunk types
-"""
+## Page chunking utilities for content ingestion.
 
 from .chunk_extractor_utils import (
     extract_unstructured_chunks,

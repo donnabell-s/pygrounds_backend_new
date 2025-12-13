@@ -1,14 +1,10 @@
-"""
-Text cleaning utilities for chunk processing.
-"""
+## Text cleaning utilities for chunk processing.
 import re
 from typing import Optional
 
 
 def clean_raw_text(text: str) -> str:
-    """
-    Clean raw text from PDF before processing to remove titles, links, and noise.
-    """
+    # Clean raw PDF text: remove titles, links, and noise.
     if not text:
         return ""
     
@@ -36,12 +32,8 @@ def clean_raw_text(text: str) -> str:
 
 
 def clean_chunk_text(text: str) -> str:
-    """
-    Clean and normalize chunk text with enhanced preservation for conceptual vs coding content.
-    
-    For Concept chunks: Focus on preserving definitions, keywords, and explanatory text
-    For Code/Example/Try_It/Exercise chunks: Preserve code structure and context
-    """
+    # Clean/normalize chunk text.
+    # Concept chunks: preserve definitions/explanations. Code-ish chunks: preserve structure/context.
     lines = text.strip().split("\n")
     cleaned_lines = []
     
@@ -93,14 +85,12 @@ def clean_chunk_text(text: str) -> str:
 
 
 def clean_urls_from_line(line: str) -> str:
-    """
-    Helper function to clean URLs from a single line while preserving other content.
-    """
+    # Clean URLs from a single line while preserving other content.
     return _remove_urls(line)
 
 
 def _remove_urls(text: str) -> str:
-    """Remove various URL patterns from text."""
+    # Remove various URL patterns from text.
     # Remove URLs with various protocols and special characters
     text = re.sub(r'https?://[^\s]+', '', text)
     text = re.sub(r'https?:/[^\s]*', '', text)  # Catch partial protocols
@@ -134,7 +124,7 @@ def _remove_urls(text: str) -> str:
 
 
 def _is_conceptual_content(text: str) -> bool:
-    """Check if text appears to be conceptual rather than code."""
+    # Heuristic: does this look like conceptual text vs code?
     return not any([
         ">>>" in text,
         "def " in text,
@@ -145,7 +135,7 @@ def _is_conceptual_content(text: str) -> bool:
 
 
 def _has_conceptual_markers(line: str) -> bool:
-    """Check if line contains important conceptual markers."""
+    # Heuristic: does this line contain definition-like markers?
     conceptual_markers = [
         " is defined as ", " refers to ", " means ", "definition:",
         "in other words", "simply put", "key term", "important to note",
@@ -155,7 +145,7 @@ def _has_conceptual_markers(line: str) -> bool:
 
 
 def _should_skip_basic_line(line: str, is_conceptual: bool) -> bool:
-    """Determine if a line should be skipped during cleaning (simplified version)."""
+    # Determine if a line should be skipped during cleaning (simplified version).
     line_lower = line.lower()
     
     # Remove common title patterns (but be more careful with conceptual content)
@@ -168,7 +158,7 @@ def _should_skip_basic_line(line: str, is_conceptual: bool) -> bool:
 
 
 def _remove_references_and_numbers(line: str) -> str:
-    """Remove references and page numbers from line."""
+    # Remove references and page numbers from a line.
     # Remove standalone markdown reference links [1], [2], etc.
     line = re.sub(r'\[\d+\]', '', line)
     
@@ -180,7 +170,7 @@ def _remove_references_and_numbers(line: str) -> str:
 
 
 def _remove_duplicates(cleaned_lines: list) -> list:
-    """Remove duplicate lines while preserving important content."""
+    # Remove duplicate lines while preserving important content.
     if len(cleaned_lines) <= 1:
         return cleaned_lines
     

@@ -1,7 +1,3 @@
-"""
-Embedding generator with multi-model support and parallel processing.
-"""
-
 import os
 import threading
 import time
@@ -20,10 +16,7 @@ logger = logging.getLogger(__name__)
 
 
 def _is_in_subprocess() -> bool:
-    """
-    Detect if we're already running inside a subprocess (worker process).
-    Used to avoid nested multiprocessing which causes issues.
-    """
+    # Avoid nested multiprocessing when already in a worker process.
     try:
         # Check if current process is not the main process
         return multiprocessing.current_process().name != 'MainProcess'
@@ -33,20 +26,7 @@ def _is_in_subprocess() -> bool:
 
 # Worker function for multiprocessing (must be at module level for pickling)
 def _embed_chunk_worker(chunk_id: int, text: str, chunk_type: str) -> Dict[str, Any]:
-    """
-    Worker function for embedding a single chunk in a separate process.
-    
-    This MUST be a module-level function (not a method) for multiprocessing to work.
-    Each process will load its own model instance.
-    
-    Args:
-        chunk_id: Database ID of the chunk
-        text: Text content to embed
-        chunk_type: Type of chunk (Code, Concept, etc.)
-    
-    Returns:
-        Dict with chunk_id, embedding vector, and model info
-    """
+    # Module-level worker function (required for multiprocessing pickling).
     try:
         # Create a fresh generator instance in this process
         # Each process gets its own model cache
@@ -72,21 +52,10 @@ def _embed_chunk_worker(chunk_id: int, text: str, chunk_type: str) -> Dict[str, 
 
 
 class EmbeddingGenerator:
-    """
-    Creates embeddings for different kinds of text (code vs. concepts).
-    - Picks a model per chunk type.
-    - Loads models on demand and caches them.
-    - Can run work in parallel for batches.
-    """
+    # Embedding generation for code vs concept chunks (parallel + cached models).
 
     def __init__(self, max_workers: int = None, use_gpu: bool = False):
-        """
-        Set up the generator.
-
-        Args:
-            max_workers: Max workers for batch work (defaults to CPU count).
-            use_gpu: Use CUDA if available (forces ThreadPoolExecutor).
-        """
+        # Configure workers + whether to use GPU.
         self.max_workers = max_workers or multiprocessing.cpu_count()
         self.use_gpu = use_gpu
         self.models: Dict[EmbeddingModelType, dict] = {}  # Cache loaded models
@@ -107,21 +76,11 @@ class EmbeddingGenerator:
         logger.info(f"Initialized EmbeddingGenerator with {self.max_workers} workers, GPU: {use_gpu}, In subprocess: {in_subprocess}, Executor: {self.executor_class.__name__}")
 
     def _get_model_type_for_chunk(self, chunk_type: str) -> EmbeddingModelType:
-        """
-        Pick the model family to use for a given chunk type.
-
-        Returns:
-            An EmbeddingModelType (e.g., CODE_BERT or SENTENCE_TRANSFORMER).
-        """
+        # Map chunk types to embedding model families.
         return CHUNK_TYPE_TO_MODEL.get(chunk_type, EmbeddingModelType.SENTENCE_TRANSFORMER)
 
     def _load_model(self, model_type: EmbeddingModelType) -> Optional[dict]:
-        """
-        Load a model once and cache it.
-
-        Returns:
-            A dict with the loaded model (and tokenizer if needed), or None on error.
-        """
+        # Lazy-load and cache models per model type.
         with self._model_lock:
             if model_type in self.models:
                 return self.models[model_type]
@@ -173,12 +132,7 @@ class EmbeddingGenerator:
                 return None
 
     def _generate_codebert_embedding(self, text: str, model_data: dict) -> Optional[List[float]]:
-        """
-        Make a vector for code-like text using CodeBERT.
-
-        Returns:
-            The embedding as a list of floats, or None on error.
-        """
+        # Make a vector for code-like text using CodeBERT.
         try:
             import torch
 
@@ -209,12 +163,7 @@ class EmbeddingGenerator:
             return None
 
     def _generate_sentence_embedding(self, text: str, model_data: dict) -> Optional[List[float]]:
-        """
-        Make a vector for natural-language text using a SentenceTransformer.
-
-        Returns:
-            The embedding as a list of floats, or None on error.
-        """
+        # Make a vector for natural-language text using a SentenceTransformer.
         try:
             model = model_data['model']
             embedding = model.encode(text)
@@ -224,35 +173,12 @@ class EmbeddingGenerator:
             return None
 
     def generate_subtopic_embedding(self, subtopic_name: str, topic_name: str = "") -> Dict[str, Any]:
-        """
-        Create an embedding for a subtopic name (optionally with its topic).
-        Always uses a sentence model since this is conceptual text.
-
-        Returns:
-            A dict with the vector, model info, and dimension (or error).
-        """
+        # Embed a subtopic name (optionally prefixed by topic name).
         text = f"{topic_name} - {subtopic_name}" if topic_name else subtopic_name
         return self.generate_embedding(text, chunk_type='Concept')
 
     def generate_embedding(self, text: str, chunk_type: str) -> Dict[str, Any]:
-        """
-        Create an embedding for one piece of text.
-
-        Steps:
-          1) Pick model by chunk type.
-          2) Load model if needed.
-          3) Clean/truncate text for the model.
-          4) Encode to a vector.
-
-        Returns:
-            {
-              'vector': List[float] | None,
-              'model_name': str,
-              'model_type': EmbeddingModelType | None,
-              'dimension': int,
-              'error': str | None
-            }
-        """
+                # Embed one piece of text (pick model by chunk_type; load; clean/truncate; encode).
         try:
             model_type = self._get_model_type_for_chunk(chunk_type)
             model_data = self._load_model(model_type)
@@ -302,17 +228,7 @@ class EmbeddingGenerator:
             }
 
     def generate_subtopic_dual_embeddings(self, subtopic) -> Dict[str, Any]:
-        """
-        Generate dual embeddings for a subtopic.
-        ALWAYS creates BOTH MiniLM (concept) AND CodeBERT (code) embeddings.
-        Uses subtopic name as base, enhanced with intent fields if available.
-        
-        Args:
-            subtopic: Subtopic model instance with name (required) and optional intent fields
-            
-        Returns:
-            Dict with success status and embedding info
-        """
+        # Generate dual embeddings for a subtopic (MiniLM concept + CodeBERT code).
         from content_ingestion.models import Embedding
         
         results = {
@@ -404,12 +320,7 @@ class EmbeddingGenerator:
         return results
 
     def _prepare_text_for_embedding(self, text: str, config: 'EmbeddingConfig') -> str:
-        """
-        Light cleanup and length control for the text.
-        - Trims and normalizes whitespace.
-        - Preserves basic structure for code.
-        - Truncates to the model's token budget (rough 4 chars/token).
-        """
+        # Light cleanup + length control (normalize whitespace; preserve code lines; truncate to token budget).
         if not text:
             return ""
 
@@ -433,13 +344,8 @@ class EmbeddingGenerator:
         return clean_text
 
     def embed_chunks_batch(self, model_chunks: List[Any]) -> Dict[str, Any]:
-        """
-        Encode a list of chunks that share the same model type.
-        Uses ProcessPoolExecutor for true CPU parallelization (when in main process).
-        Falls back to ThreadPoolExecutor if already in a subprocess to avoid nested multiprocessing.
-        
-        Returns items shaped for save_embeddings_to_db().
-        """
+        # Encode chunks that share the same model type.
+        # Uses processes in main process; threads in subprocess to avoid nested multiprocessing.
         success, failed, items = 0, 0, []
         
         # Extract serializable data from chunks (avoid passing Django ORM objects to processes)
@@ -476,23 +382,7 @@ class EmbeddingGenerator:
         return {'success': success, 'failed': failed, 'total': success + failed, 'embeddings': items}
 
     def generate_batch_embeddings(self, chunks: List[Any]) -> Dict[str, Any]:
-        """
-        Create embeddings for many chunks.
-
-        Strategy:
-          - Group chunks by model type (fewer model switches).
-          - Process each group (in parallel within the group).
-
-        Returns:
-            {
-              'success': int,
-              'failed': int,
-              'total': int,
-              'models_used': { model_type_str: count },
-              'processing_time': float,
-              'embeddings': List[Dict]
-            }
-        """
+                # Create embeddings for many chunks by grouping per model type.
         if not chunks:
             return {
                 'success': 0,
@@ -551,12 +441,7 @@ class EmbeddingGenerator:
         return results
 
     def embed_and_save_batch(self, chunks: List[Any]) -> Dict[str, Any]:
-        """
-        Run batch embedding and write results to the database.
-
-        Returns:
-            Stats about generation and DB writes.
-        """
+        # Run batch embedding and write results to the database.
         embedding_results = self.generate_batch_embeddings(chunks)
 
         if embedding_results['embeddings']:
@@ -583,12 +468,7 @@ class EmbeddingGenerator:
         }
 
     def save_embeddings_to_db(self, embeddings: List[Dict[str, Any]]) -> Dict[str, Any]:
-        """
-        Persist embeddings to the DB using BULK operations for performance.
-        
-        Uses bulk_create for new embeddings and bulk_update for existing ones.
-        Much faster than individual saves.
-        """
+        # Persist embeddings to the DB using bulk_create/bulk_update.
         from content_ingestion.models import Embedding
         from traceback import format_exc
 
@@ -713,15 +593,11 @@ class EmbeddingGenerator:
 
 # Convenience functions for easy usage
 def get_embedding_generator(max_workers: int = 4, use_gpu: bool = False) -> EmbeddingGenerator:
-    """
-    Shortcut for a configured EmbeddingGenerator.
-    """
+    # Shortcut for a configured EmbeddingGenerator.
     return EmbeddingGenerator(max_workers=max_workers, use_gpu=use_gpu)
 
 
 def embed_chunks_with_models(chunks: List[Any], max_workers: int = 4, use_gpu: bool = False) -> Dict[str, Any]:
-    """
-    Quick way to embed a list of chunks using default settings.
-    """
+    # Quick helper: embed a list of chunks using default settings.
     generator = EmbeddingGenerator(max_workers=max_workers, use_gpu=use_gpu)
     return generator.generate_batch_embeddings(chunks)

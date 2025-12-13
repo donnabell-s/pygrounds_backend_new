@@ -15,7 +15,7 @@ class DocumentSerializer(serializers.ModelSerializer):
         read_only_fields = ['uploaded_at', 'title']  # Make title read-only since it's auto-generated
     
     def create(self, validated_data):
-        """Create document and auto-generate title from filename"""
+        # Auto-generate title from uploaded filename.
         import os
         
         # Extract title from filename if not provided
@@ -49,7 +49,7 @@ class DocumentChunkSerializer(serializers.ModelSerializer):
         return obj.document.title if obj.document else None
     
     def get_text_preview(self, obj):
-        """Return first 100 characters of text"""
+        # Return first 100 characters.
         return obj.text[:100] + "..." if len(obj.text) > 100 else obj.text
 
 class DocumentChunkSummarySerializer(serializers.ModelSerializer):
@@ -64,7 +64,7 @@ class DocumentChunkSummarySerializer(serializers.ModelSerializer):
         ]
     
     def get_text_preview(self, obj):
-        """Return first 100 characters of text"""
+        # Return first 100 characters.
         return obj.text[:100] + "..." if len(obj.text) > 100 else obj.text
     
     def get_book_title(self, obj):
@@ -129,8 +129,11 @@ class SubtopicSerializer(serializers.ModelSerializer):
         return obj.topic.zone.name if obj.topic and obj.topic.zone else None
         
     def get_has_embedding(self, obj):
-        # Check if either concept_intent or code_intent has an embedding
-        return bool(obj.concept_embedding or obj.code_embedding)
+        # Check embedding presence.
+        try:
+            return hasattr(obj, 'embeddings') and obj.embeddings.exists()
+        except Exception:
+            return False
         
     def update(self, instance, validated_data):
         # Ensure topic exists if provided
@@ -139,17 +142,6 @@ class SubtopicSerializer(serializers.ModelSerializer):
                 Topic.objects.get(pk=validated_data['topic'].id)
             except Topic.DoesNotExist:
                 raise serializers.ValidationError({'topic': 'Invalid topic ID provided.'})
-        return super().update(instance, validated_data)
-        return obj.topic.zone.name
-    
-    def get_has_embedding(self, obj):
-        """Check if the object has embeddings, safely handling failed/pending states."""
-        try:
-            return hasattr(obj, 'embeddings') and obj.embeddings.exists()
-        except Exception:
-            return False
-    
-    def update(self, instance, validated_data):
         # Check if intent fields are being updated
         concept_intent_changed = (
             'concept_intent' in validated_data and 
@@ -211,7 +203,7 @@ class SubtopicSerializer(serializers.ModelSerializer):
                     
                     print("\n🚀 Starting parallel embedding generation...")
                     # Execute tasks in parallel using the separate worker module
-                    from content_ingestion.embedding_worker import generate_embedding_task
+                    from content_ingestion.helpers.workers.embedding_worker import generate_embedding_task
                     with Pool(processes=max_workers) as pool:
                         results = pool.map(generate_embedding_task, tasks)
                         

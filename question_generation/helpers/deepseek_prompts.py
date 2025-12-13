@@ -1,5 +1,6 @@
 # Manages prompts for different question types in DeepSeek LLM
 
+
 class DeepSeekPromptManager:
     # Core prompt templates for different game types
 
@@ -10,10 +11,10 @@ class DeepSeekPromptManager:
             'non_coding': self.get_non_coding_prompt,
             'pre_assessment': self.get_pre_assessment_prompt
         }
-        
+
         if game_type not in prompts:
             raise ValueError(f"Unknown game_type: {game_type}")
-            
+
         return prompts[game_type](context)
 
     def get_coding_prompt(self, context):
@@ -51,9 +52,8 @@ ITEM SCHEMA (ALL FIELDS REQUIRED):
 RETURN: JSON array ONLY.
 """
 
-
     def get_non_coding_prompt(self, context):
-      return f"""
+        return f"""
 OUTPUT ONLY VALID JSON. DO NOT add explanations, markdown, or backticks.
 
 ROLE: Python concept quiz creator.
@@ -106,11 +106,8 @@ VALIDATION HINTS:
 - Keep JSON compact. Return only the JSON array.
 """
 
-
-
-
     def get_pre_assessment_prompt(self, context):
-      return f"""
+        return f"""
 OUTPUT ONLY VALID JSON. DO NOT add explanations, markdown, or backticks.
 
 ROLE: You are a Python Master and Educational Game Designer creating a welcoming pre-assessment for complete beginners with ZERO programming experience.

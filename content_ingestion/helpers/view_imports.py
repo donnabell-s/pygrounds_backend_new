@@ -1,35 +1,84 @@
-# Django core imports
-from django.http import JsonResponse, Http404, FileResponse
-from django.shortcuts import get_object_or_404
-from django.db import transaction
-from django.db.models import Count, Q
-from django.core.files.storage import default_storage
-from django.utils import timezone
+## Compatibility shim for legacy wildcard imports.
+# Views were refactored to explicit imports; keep this for any external code still relying on `import *`.
 
-# Django REST Framework
-from rest_framework import status, generics
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
-from rest_framework.views import APIView
+from __future__ import annotations
 
-# Standard library
-import json
-import logging
-import os
-from datetime import datetime
+import warnings
 
-# Models
-from ..models import (
-    GameZone, Topic, Subtopic, UploadedDocument, 
-    DocumentChunk, TOCEntry
+warnings.warn(
+    "`content_ingestion.helpers.view_imports` is deprecated; use explicit imports instead.",
+    DeprecationWarning,
+    stacklevel=2,
 )
 
-# Serializers
-from ..serializers import (
-    GameZoneSerializer, TopicSerializer, SubtopicSerializer,
-    DocumentSerializer, DocumentChunkSerializer
+# Re-export the previously provided names.
+from django.http import FileResponse, Http404, JsonResponse  # noqa: F401
+from django.shortcuts import get_object_or_404  # noqa: F401
+from django.db import transaction  # noqa: F401
+from django.db.models import Count, Q  # noqa: F401
+from django.core.files.storage import default_storage  # noqa: F401
+from django.utils import timezone  # noqa: F401
+
+from rest_framework import generics, status  # noqa: F401
+from rest_framework.decorators import api_view, permission_classes  # noqa: F401
+from rest_framework.permissions import IsAuthenticated  # noqa: F401
+from rest_framework.response import Response  # noqa: F401
+from rest_framework.views import APIView  # noqa: F401
+
+import json  # noqa: F401
+import logging  # noqa: F401
+import os  # noqa: F401
+from datetime import datetime  # noqa: F401
+
+from ..models import (  # noqa: F401
+    DocumentChunk,
+    GameZone,
+    Subtopic,
+    TOCEntry,
+    Topic,
+    UploadedDocument,
+)
+from ..serializers import (  # noqa: F401
+    DocumentChunkSerializer,
+    DocumentSerializer,
+    GameZoneSerializer,
+    SubtopicSerializer,
+    TopicSerializer,
 )
 
-# Logger
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)  # noqa: F401
+
+__all__ = [
+    "APIView",
+    "Count",
+    "DocumentChunk",
+    "DocumentChunkSerializer",
+    "DocumentSerializer",
+    "FileResponse",
+    "GameZone",
+    "GameZoneSerializer",
+    "Http404",
+    "IsAuthenticated",
+    "JsonResponse",
+    "Q",
+    "Response",
+    "Subtopic",
+    "SubtopicSerializer",
+    "TOCEntry",
+    "Topic",
+    "TopicSerializer",
+    "UploadedDocument",
+    "api_view",
+    "datetime",
+    "default_storage",
+    "generics",
+    "get_object_or_404",
+    "json",
+    "logger",
+    "logging",
+    "os",
+    "permission_classes",
+    "status",
+    "timezone",
+    "transaction",
+]

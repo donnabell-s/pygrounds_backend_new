@@ -1,8 +1,12 @@
-# Unified Embedding Views for RAG functionality
-# Includes chunk, topic, and subtopic embedding endpoints
+import logging
+from django.shortcuts import get_object_or_404
+from rest_framework import status
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
 
-from ..helpers.view_imports import *
-from ..helpers.helper_imports import *
+from ..models import UploadedDocument
+
+logger = logging.getLogger(__name__)
 
 @api_view(['POST'])
 def embed_document_chunks(request, document_id):
@@ -134,10 +138,7 @@ def embed_document_chunks(request, document_id):
 
 @api_view(['GET'])
 def get_chunk_embeddings(request, document_id):
-    """
-    Get embedding status and metadata for all chunks in a document.
-    Updated for dual vector fields (minilm_vector/codebert_vector).
-    """
+    # Return embedding coverage + metadata per chunk.
     try:
         document = get_object_or_404(UploadedDocument, id=document_id)
         from content_ingestion.models import DocumentChunk, Embedding
@@ -218,9 +219,7 @@ def get_chunk_embeddings(request, document_id):
 
 @api_view(['GET'])
 def get_chunk_embeddings_detailed(request, document_id):
-    """
-    Retrieve all chunk embeddings for a document, including actual vectors.
-    """
+    # Return embeddings including vectors (large payload).
     try:
         document = get_object_or_404(UploadedDocument, id=document_id)
         from content_ingestion.models import DocumentChunk
@@ -420,9 +419,7 @@ def generate_subtopic_embeddings(request):
 
 @api_view(['GET'])
 def get_topic_subtopic_embeddings_detailed(request):
-    """
-    Retrieve all topic/subtopic embeddings, including vectors.
-    """
+    # Retrieve topic/subtopic embeddings (including vectors).
     try:
         from content_ingestion.models import Topic, Subtopic
 

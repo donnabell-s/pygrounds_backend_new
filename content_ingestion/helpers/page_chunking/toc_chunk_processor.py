@@ -16,10 +16,8 @@ import logging
 logger = logging.getLogger(__name__)
 
 class GranularChunkProcessor:
-    """
-    Processes documents and creates granular chunks with type classification for optimal RAG performance.
-    Processes entire content area instead of specific TOC entries.
-    """
+    # Create granular chunks with type classification for RAG.
+    # Processes entire content area instead of specific TOC entries.
     
     def __init__(self, enable_embeddings: bool = True):
         self.batch_size = 50
@@ -37,16 +35,7 @@ class GranularChunkProcessor:
         ]
     
     def _get_toc_titles_for_page(self, document: UploadedDocument, page_number: int) -> tuple[str, str]:
-        """
-        Get the topic and subtopic titles for a given page based on TOC entries.
-        
-        Args:
-            document: The UploadedDocument instance
-            page_number: Page number (1-based)
-            
-        Returns:
-            Tuple of (topic_title, subtopic_title)
-        """
+        # Get (topic_title, subtopic_title) for a page using TOC entries.
         try:
             # Get all TOC entries for this document, ordered by start_page
             toc_entries = TOCEntry.objects.filter(document=document).order_by('start_page')
@@ -94,15 +83,7 @@ class GranularChunkProcessor:
             return "", ""
     
     def _clean_toc_title(self, title: str) -> str:
-        """
-        Clean TOC title by removing dots, page numbers, and formatting artifacts.
-        
-        Args:
-            title: Raw TOC title
-            
-        Returns:
-            Cleaned title string
-        """
+        # Normalize TOC title: remove dots/page numbers/format artifacts.
         if not title:
             return ""
         
@@ -119,15 +100,7 @@ class GranularChunkProcessor:
         return title
 
     def _analyze_token_distribution(self, document: UploadedDocument) -> Dict[str, Any]:
-        """
-        Analyze token distribution across all chunks for the document.
-        
-        Args:
-            document: The UploadedDocument instance
-            
-        Returns:
-            Dict with token analysis statistics
-        """
+        # Summarize token counts across all chunks for a document.
         chunks = DocumentChunk.objects.filter(document=document)
         
         if not chunks.exists():
@@ -156,10 +129,6 @@ class GranularChunkProcessor:
         total_tokens = sum(token_counts)
         avg_tokens = total_tokens / len(token_counts) if token_counts else 0
         
-        # Cost estimation for common models
-        gpt4_cost = self.token_counter.estimate_cost(total_tokens, "gpt-4")
-        gpt35_cost = self.token_counter.estimate_cost(total_tokens, "gpt-3.5-turbo")
-        
         return {
             "total_chunks": len(token_counts),
             "total_tokens": total_tokens,
@@ -172,23 +141,10 @@ class GranularChunkProcessor:
             "chunks_over_2k_tokens": len([c for c in token_counts if c > 2000]),
             "chunks_over_4k_tokens": len([c for c in token_counts if c > 4000]),
             "chunk_types_token_distribution": chunk_types,
-            "estimated_costs": {
-                "gpt_4": gpt4_cost,
-                "gpt_3_5_turbo": gpt35_cost
-            }
         }
 
     def _get_toc_content_boundaries(self, document: UploadedDocument) -> tuple[int, int]:
-        """
-        Determine content boundaries based on existing TOC entries to avoid processing
-        copyright pages, title pages, and other non-educational content.
-        
-        Args:
-            document: The UploadedDocument instance
-            
-        Returns:
-            Tuple of (first_content_page, last_content_page) (0-based)
-        """
+        # Determine content boundaries using TOC entries (skip non-educational pages).
         toc_entries = TOCEntry.objects.filter(document=document).order_by('start_page')
         
         if not toc_entries.exists():
@@ -220,16 +176,7 @@ class GranularChunkProcessor:
         return first_content_page, last_content_page
 
     def process_entire_document(self, document: UploadedDocument) -> Dict[str, Any]:
-        """
-        Process the entire document content area with granular chunking,
-        avoiding non-informational pages like covers, prefaces, etc.
-        
-        Args:
-            document: The UploadedDocument instance
-        
-        Returns:
-            Dictionary with processing results and statistics
-        """
+        # Process the document content area with granular chunking (skip covers/preface/etc.).
         results = {
             'total_chunks_created': 0,
             'total_pages_processed': 0,
@@ -312,20 +259,11 @@ class GranularChunkProcessor:
             print(f"Embeddings generated: {embedding_results.get('success', 0)}/{total_processed}")
         if 'total_tokens' in token_analysis:
             print(f"Total tokens: {token_analysis['total_tokens']} (avg: {token_analysis['avg_tokens_per_chunk']} per chunk)")
-            print(f"Estimated GPT-4 cost: ${token_analysis['estimated_costs']['gpt_4']['estimated_input_cost_usd']:.4f}")
         
         return results
 
     def _generate_embeddings_for_document(self, document: UploadedDocument) -> Dict[str, Any]:
-        """
-        Generate embeddings for all chunks in the document.
-        
-        Args:
-            document: The UploadedDocument instance
-            
-        Returns:
-            Dictionary with embedding statistics
-        """
+        # Generate embeddings for all chunks in the document.
         if not self.enable_embeddings or not self.embedding_generator:
             return {'success': 0, 'failed': 0, 'total': 0, 'status': 'disabled'}
         
@@ -353,15 +291,7 @@ class GranularChunkProcessor:
         return embedding_results
     
     def _is_sample_placeholder_content(self, text: str) -> bool:
-        """
-        Check if the content is just a sample placeholder (not actual book content).
-        
-        Args:
-            text: The text content to check
-            
-        Returns:
-            True if this appears to be sample placeholder content
-        """
+        # Detect placeholder/sample content (not actual book content).
         if not text or len(text.strip()) < 50:
             return False
             
@@ -384,19 +314,7 @@ class GranularChunkProcessor:
         return False
 
     def _extract_granular_chunks_from_range(self, doc: fitz.Document, document: UploadedDocument, start_page: int, end_page: int) -> List[Dict[str, Any]]:
-        """
-        Extract granular chunks from a page range of the document.
-        Creates smaller, type-classified chunks instead of full-page chunks.
-        
-        Args:
-            doc: The open fitz.Document object
-            document: The UploadedDocument instance
-            start_page: Starting page (0-based)
-            end_page: Ending page (0-based)
-            
-        Returns:
-            List of enhanced chunk dictionaries with granular content
-        """
+        # Extract granular chunks from a page range (smaller, type-classified chunks).
         temp_pdf = None
         temp_path = None
         
@@ -495,16 +413,7 @@ class GranularChunkProcessor:
             pass
     
     def _save_granular_chunks(self, document: UploadedDocument, chunks: List[Dict[str, Any]]) -> int:
-        """
-        Save granular chunks to the database.
-        
-        Args:
-            document: The UploadedDocument instance
-            chunks: List of chunk dictionaries to save
-            
-        Returns:
-            Number of chunks saved
-        """
+        # Save granular chunks to the database.
         saved_count = 0
         total_chunks = len(chunks)
         

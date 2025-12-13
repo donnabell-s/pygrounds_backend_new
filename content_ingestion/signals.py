@@ -13,10 +13,7 @@ _subtopic_field_tracker = {}
 
 @receiver(pre_delete, sender=Subtopic)
 def handle_subtopic_deletion(sender, instance, **kwargs):
-    """
-    Handle subtopic deletion - log what will be cascade deleted.
-    All related objects have CASCADE deletion configured, so Django will handle cleanup automatically.
-    """
+    # Log cascade-deleted related objects for a subtopic.
     logger.info(f"🗑️ Deleting subtopic '{instance.name}' (ID: {instance.pk})")
     
     # Log what will be deleted via CASCADE
@@ -62,9 +59,7 @@ def handle_subtopic_deletion(sender, instance, **kwargs):
 
 @receiver(pre_save, sender=Subtopic)
 def track_subtopic_changes(sender, instance, **kwargs):
-    """
-    Track changes to subtopic fields that require re-embedding.
-    """
+    # Track field changes to decide whether to regenerate embeddings.
     if instance.pk:  # Only track for existing objects (updates)
         try:
             old_instance = Subtopic.objects.get(pk=instance.pk)
@@ -86,13 +81,7 @@ def track_subtopic_changes(sender, instance, **kwargs):
 
 @receiver(post_save, sender=Subtopic)
 def handle_subtopic_save(sender, instance, created, **kwargs):
-    """
-    Automatically trigger embedding generation and SemanticSubtopic updates
-    when a subtopic is created or updated with relevant field changes.
-    
-    ALWAYS generates embeddings for subtopic name (required for semantic processing).
-    Intent fields are optional helpers for better embeddings.
-    """
+    # Regenerate embeddings on create or relevant field changes.
     try:
         logger.info(f"Signal triggered for subtopic '{instance.name}' (created: {created})")
         logger.info(f"Intent fields - concept: {bool(instance.concept_intent)}, code: {bool(instance.code_intent)}")

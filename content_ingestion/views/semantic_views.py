@@ -1,10 +1,9 @@
-# Semantic Similarity Views for content ingestion
-# Handles semantic similarity processing between subtopics and document chunks
 from django.shortcuts import get_object_or_404
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 import logging
+
 
 from ..models import UploadedDocument, SemanticSubtopic, Subtopic
 from ..helpers.semantic_similarity import (
@@ -98,15 +97,7 @@ def process_semantic_similarities(request, document_id):
 
 @api_view(['POST'])
 def process_all_semantic_similarities(request):
-    """
-    Process semantic similarities for all available content.
-    
-    POST /content_ingestion/semantic/all/
-    
-    Optional parameters:
-    - similarity_threshold (float): Minimum similarity score (default: 0.1)  
-    - top_k_results (int): Maximum results per subtopic (default: 10)
-    """
+    # Process semantic similarities across all subtopics/chunks.
     try:
         # Get parameters from request
         similarity_threshold = float(request.data.get('similarity_threshold', 0.1))
@@ -152,16 +143,7 @@ def process_all_semantic_similarities(request):
 
 @api_view(['GET'])
 def get_subtopic_similar_chunks(request, subtopic_id):
-    """
-    Get similar chunks for a specific subtopic based on semantic similarity.
-    
-    GET /content_ingestion/semantic/subtopic/<subtopic_id>/chunks/
-    
-    Query parameters:
-    - chunk_type: Filter by chunk type (Concept, Code, Exercise, etc.)
-    - limit: Maximum number of chunks to return (default: 5)
-    - min_similarity: Minimum similarity threshold (default: 0.5)
-    """
+    # Fetch ranked chunks for a subtopic (optionally filtered).
     try:
         subtopic = get_object_or_404(Subtopic, id=subtopic_id)
         
@@ -248,11 +230,7 @@ def get_subtopic_similar_chunks(request, subtopic_id):
 
 @api_view(['GET'])
 def get_semantic_overview(request):
-    """
-    Get overview of semantic similarity data across all subtopics.
-    
-    GET /content_ingestion/semantic/overview/
-    """
+    # Overview of semantic similarity across all subtopics.
     try:
         # Get all semantic subtopics
         semantic_subtopics = SemanticSubtopic.objects.select_related('subtopic').all()

@@ -1,8 +1,8 @@
-"""
-Token counting utilities for chunking optimization
-"""
+# Token counting helpers for chunking.
 import tiktoken
-from typing import Optional
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 
@@ -14,24 +14,8 @@ def count_tokens(text: str, encoding_name: str = "cl100k_base") -> int:
         tokens = encoding.encode(text)
         return len(tokens)
     except Exception as e:
-        print(f"Error counting tokens: {e}")
+        logger.warning("Error counting tokens with tiktoken: %s", e)
         return len(text) // 4
-
-def estimate_cost(token_count: int, model: str = "gpt-4") -> dict:
-    pricing = {
-        "gpt-4": {"input": 0.03 / 1000, "output": 0.06 / 1000},
-        "gpt-3.5-turbo": {"input": 0.001 / 1000, "output": 0.002 / 1000},
-        "text-embedding-ada-002": {"input": 0.0001 / 1000, "output": 0},
-    }
-    if model not in pricing:
-        model = "gpt-4"
-    input_cost = token_count * pricing[model]["input"]
-    return {
-        "token_count": token_count,
-        "model": model,
-        "estimated_input_cost_usd": round(input_cost, 6),
-        "cost_per_1k_tokens": pricing[model]["input"] * 1000,
-    }
 
 def analyze_chunk_sizes(chunks: list, encoding_name: str = "cl100k_base") -> dict:
     token_counts = []
@@ -74,21 +58,15 @@ def get_optimal_chunk_size(target_tokens: int = 1000, encoding_name: str = "cl10
 
 
 class TokenCounter:
-    """
-    Class-based wrapper around token counting functions for backward compatibility.
-    """
+    # Backward-compatible wrapper.
     
     def __init__(self, encoding_name: str = "cl100k_base"):
         self.encoding_name = encoding_name
     
     def count_tokens(self, text: str) -> int:
-        """Count tokens in text."""
+        # Count tokens in text.
         return count_tokens(text, self.encoding_name)
     
-    def estimate_cost(self, token_count: int, model: str = "gpt-4") -> dict:
-        """Estimate cost for token usage."""
-        return estimate_cost(token_count, model)
-    
     def analyze_chunks(self, chunks: list) -> dict:
-        """Analyze token distribution across chunks."""
+        # Summarize token distribution across chunks.
         return analyze_chunk_sizes(chunks, self.encoding_name)

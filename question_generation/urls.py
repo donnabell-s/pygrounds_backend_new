@@ -1,11 +1,3 @@
-"""
-Question Generation URL Configuration
-
-RESTful API endpoints following clean design principles:
-- Resource-based routing with clear hierarchical structure
-- Consistent naming conventions (kebab-case for URLs, underscore for view functions)
-- Logical grouping of related endpoints
-"""
 from users.jwt_views import EmailTokenObtainPairView
 from django.urls import path
 from .api import recalibrate_question 

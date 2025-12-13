@@ -1,6 +1,4 @@
-"""
-Real-time generation status tracking for frontend progress monitoring
-"""
+# Real-time generation status tracking for frontend progress monitoring.
 
 import json
 import threading
@@ -8,17 +6,16 @@ import time
 from datetime import datetime
 from typing import Dict, List, Any, Optional
 
+
 class GenerationStatusTracker:
-    """
-    Thread-safe status tracker for question generation progress
-    """
+    # Thread-safe status tracker for question generation progress.
     
     def __init__(self):
         self._lock = threading.Lock()
         self._active_sessions = {}  # session_id -> session_data
         
     def create_session(self, session_id: str, total_workers: int, zones: List[str], difficulties: List[str]) -> Dict[str, Any]:
-        """Create a new generation session"""
+        # Create a new generation session.
         with self._lock:
             session_data = {
                 'session_id': session_id,
@@ -62,7 +59,7 @@ class GenerationStatusTracker:
             return session_data
     
     def update_worker_status(self, session_id: str, worker_data: Dict[str, Any]) -> None:
-        """Update status for a specific worker"""
+        # Update status for a specific worker.
         with self._lock:
             if session_id not in self._active_sessions:
                 return
@@ -72,11 +69,21 @@ class GenerationStatusTracker:
             
             if worker_id is None or worker_id not in session['workers']:
                 return
+
+            # If the session is cancelled, keep it cancelled (do not revive it via worker updates).
+            session_cancelled = session.get('status') == 'cancelled'
             
             # Update worker data
             worker = session['workers'][worker_id]
+
+            # Preserve cancelled worker status once cancelled.
+            incoming_status = worker_data.get('status', worker['status'])
+            effective_status = worker['status'] if worker.get('status') == 'cancelled' else incoming_status
+            if session_cancelled and effective_status != 'cancelled':
+                effective_status = 'cancelled'
+
             worker.update({
-                'status': worker_data.get('status', worker['status']),
+                'status': effective_status,
                 'zone_name': worker_data.get('zone_name', worker['zone_name']),
                 'difficulty': worker_data.get('difficulty', worker['difficulty']),
                 'current_step': worker_data.get('current_step', worker['current_step']),
@@ -87,12 +94,12 @@ class GenerationStatusTracker:
             if worker_data.get('start_time') and not worker['start_time']:
                 worker['start_time'] = worker_data['start_time']
             
-            # Update overall session progress
+            # Update overall session progress (but never override cancelled status).
             self._update_overall_progress(session_id)
             session['last_updated'] = time.time()
     
     def _update_overall_progress(self, session_id: str) -> None:
-        """Calculate overall session progress based on worker statuses"""
+        # Calculate overall session progress based on worker statuses.
         session = self._active_sessions[session_id]
         
         completed_workers = 0
@@ -121,6 +128,10 @@ class GenerationStatusTracker:
             'total_combinations_processed': total_combinations,
             'completion_percentage': (completed_workers / session['total_workers']) * 100
         })
+
+        # Cancellation is terminal; do not overwrite the session status.
+        if session.get('status') == 'cancelled':
+            return
         
         # Calculate estimated completion time
         if completed_workers > 0 and active_workers > 0:
@@ -137,12 +148,12 @@ class GenerationStatusTracker:
             session['status'] = 'processing'
     
     def get_session_status(self, session_id: str) -> Optional[Dict[str, Any]]:
-        """Get current status for a session"""
+        # Get current status for a session.
         with self._lock:
             return self._active_sessions.get(session_id)
     
     def get_worker_status(self, session_id: str, worker_id: int) -> Optional[Dict[str, Any]]:
-        """Get status for a specific worker"""
+        # Get status for a specific worker.
         with self._lock:
             session = self._active_sessions.get(session_id)
             if session and worker_id in session['workers']:
@@ -150,7 +161,7 @@ class GenerationStatusTracker:
             return None
     
     def complete_session(self, session_id: str, final_stats: Dict[str, Any]) -> None:
-        """Mark session as completed with final statistics"""
+        # Mark session as completed with final statistics.
         with self._lock:
             if session_id in self._active_sessions:
                 session = self._active_sessions[session_id]
@@ -162,7 +173,7 @@ class GenerationStatusTracker:
                 session.update(final_stats)
     
     def cancel_session(self, session_id: str, cancel_reason: str = "Cancelled by user") -> bool:
-        """Cancel an active generation session"""
+        # Cancel an active generation session.
         with self._lock:
             if session_id in self._active_sessions:
                 session = self._active_sessions[session_id]
@@ -186,13 +197,13 @@ class GenerationStatusTracker:
             return False  # Session not found
     
     def is_session_cancelled(self, session_id: str) -> bool:
-        """Check if a session has been cancelled"""
+        # Check if a session has been cancelled.
         with self._lock:
             session = self._active_sessions.get(session_id)
             return session and session.get('status') == 'cancelled'
     
     def start_session(self, session_id: str, session_data: Dict[str, Any]) -> None:
-        """Start a simple session (for pre-assessment or single operations)"""
+        # Start a simple session (for pre-assessment or single operations).
         with self._lock:
             self._active_sessions[session_id] = {
                 'session_id': session_id,
@@ -203,15 +214,21 @@ class GenerationStatusTracker:
             }
     
     def update_status(self, session_id: str, status_data: Dict[str, Any]) -> None:
-        """Update session status with new data"""
+        # Update session status with new data.
         with self._lock:
             if session_id in self._active_sessions:
                 session = self._active_sessions[session_id]
+
+                # Never allow cancelled sessions to be revived by updates.
+                if session.get('status') == 'cancelled' and status_data.get('status') not in (None, 'cancelled'):
+                    status_data = dict(status_data)
+                    status_data.pop('status', None)
+
                 session.update(status_data)
                 session['last_updated'] = time.time()
     
     def cleanup_old_sessions(self, max_age_hours: int = 24) -> None:
-        """Remove sessions older than specified hours"""
+        # Remove sessions older than specified hours.
         cutoff_time = time.time() - (max_age_hours * 3600)
         
         with self._lock:

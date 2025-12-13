@@ -1,23 +1,10 @@
-"""
-Chunk classification module - determines chunk types for question generation.
-"""
+## Chunk classification: determine chunk types for question generation.
 import re
 from typing import Optional
 
 
 def infer_chunk_type(text: str, default: str = "Concept") -> str:
-    """
-    Classify chunk type distinguishing between coding-related content and pure concepts.
-    
-    Coding-related (for coding question generation):
-    - Code: Actual code snippets, interactive sessions
-    - Try_It: Hands-on coding exercises
-    - Exercise: Coding practice problems
-    - Example: Code examples and demonstrations
-    
-    Conceptual (for non-coding question generation):
-    - Concept: Definitions, explanations, theory, keywords (text-only)
-    """
+    # Classify chunk type: code-ish vs conceptual.
     text_lower = text.lower()
     text_stripped = text.strip()
     
@@ -48,7 +35,7 @@ def infer_chunk_type(text: str, default: str = "Concept") -> str:
 
 
 def _is_code_content(text: str, text_lower: str, text_stripped: str) -> bool:
-    """Check if content contains actual code."""
+    # Check if content contains actual code.
     coding_indicators = [
         text_stripped.startswith(">>>"),
         ">>>" in text,
@@ -66,7 +53,7 @@ def _is_code_content(text: str, text_lower: str, text_stripped: str) -> bool:
 
 
 def _is_try_it_content(text_lower: str) -> bool:
-    """Check if content is interactive/try-it exercise."""
+    # Check if content is interactive/try-it exercise.
     try_it_indicators = [
         "try it" in text_lower,
         "try this" in text_lower, 
@@ -81,7 +68,7 @@ def _is_try_it_content(text_lower: str) -> bool:
 
 
 def _is_exercise_content(text_lower: str) -> bool:
-    """Check if content is a coding exercise/practice."""
+    # Check if content is a coding exercise/practice.
     exercise_indicators = [
         "exercise" in text_lower and ("write" in text_lower or "code" in text_lower or "implement" in text_lower),
         "practice" in text_lower and ("coding" in text_lower or "programming" in text_lower),
@@ -95,7 +82,7 @@ def _is_exercise_content(text_lower: str) -> bool:
 
 
 def _is_example_content(text: str, text_lower: str) -> bool:
-    """Check if content is a code example/demonstration."""
+    # Check if content is a code example/demonstration.
     has_code_elements = (
         ("def " in text or "class " in text or "import " in text) or 
         (">>>" in text) or 
@@ -116,7 +103,7 @@ def _is_example_content(text: str, text_lower: str) -> bool:
 
 
 def _is_conceptual_content(text: str, text_lower: str) -> bool:
-    """Check if content is pure conceptual (definitions, theory)."""
+    # Check if content is pure conceptual (definitions, theory).
     # Look for pure conceptual indicators
     conceptual_indicators = [
         # Definitions and explanations

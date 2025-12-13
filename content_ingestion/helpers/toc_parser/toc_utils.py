@@ -12,7 +12,7 @@ warnings.filterwarnings("ignore", message=".*annot item.*")
 
 # Try to suppress PyMuPDF C-level warnings by redirecting stderr temporarily
 def suppress_stderr():
-    """Context manager to suppress stderr output temporarily."""
+    # Context manager to suppress stderr output temporarily.
     class DevNull:
         def write(self, msg):
             pass
@@ -31,7 +31,7 @@ except:
 
 @dataclass
 class TOCEntry:
-    """A single entry in the Table of Contents."""
+    # Single entry in the Table of Contents.
     title: str
     start_page: int
     end_page: Optional[int] = None
@@ -39,11 +39,8 @@ class TOCEntry:
     children: List['TOCEntry'] = field(default_factory=list)
 
 def find_content_boundaries(pdf_path: str) -> Tuple[int, int]:
-    """
-    Returns (first_content_page, last_content_page) in 0-based indexing.
-    Skips preface, TOC, and appendices by keyword.
-    More strict detection prioritizing "Chapter 1" as content start.
-    """
+    # Return (first_content_page, last_content_page) in 0-based indexing.
+    # Skips preface/TOC/appendices by keyword; prioritizes "Chapter 1" as content start.
     try:
         doc = fitz.open(pdf_path)
         total_pages = len(doc)
@@ -149,10 +146,8 @@ def find_content_boundaries(pdf_path: str) -> Tuple[int, int]:
         return 5, max(len(doc) - 10, 10)
 
 def extract_toc(pdf_path: str) -> List[List[Any]]:
-    """
-    Extracts TOC from PDF metadata if available, with fallback for bad annotations.
-    Returns list of [level, title, page].
-    """
+    # Extract TOC from PDF metadata if available; fallback to link extraction.
+    # Returns list of [level, title, page].
     try:
         doc = fitz.open(pdf_path)
         
@@ -173,10 +168,8 @@ def extract_toc(pdf_path: str) -> List[List[Any]]:
         raise Exception(f"Error reading PDF: {e}")
 
 def _extract_toc_from_links(doc: fitz.Document) -> List[List[Any]]:
-    """
-    Manual TOC extraction by scanning PDF links and annotations.
-    Fallback when standard get_toc() fails due to bad annotations.
-    """
+    # Manual TOC extraction by scanning PDF links/annotations.
+    # Used when standard `get_toc()` fails (e.g., bad annotations).
     toc_entries = []
     
     try:
@@ -220,7 +213,7 @@ def _extract_toc_from_links(doc: fitz.Document) -> List[List[Any]]:
     return toc_entries
 
 def _is_likely_toc_page(text: str) -> bool:
-    """Check if page text looks like a table of contents."""
+    # Heuristic: does this page look like a Table of Contents?
     text_lower = text.lower()
     toc_keywords = ['contents', 'table of contents', 'chapter', 'section']
     
@@ -232,7 +225,7 @@ def _is_likely_toc_page(text: str) -> bool:
     return has_toc_keyword and (has_page_numbers or has_dots)
 
 def _extract_text_at_position(page: fitz.Page, rect_dict: dict) -> str:
-    """Extract text at a specific rectangle position on the page."""
+    # Extract nearby text around a link rectangle.
     try:
         if not rect_dict:
             return ""
@@ -256,7 +249,7 @@ def _extract_text_at_position(page: fitz.Page, rect_dict: dict) -> str:
         return ""
 
 def _guess_level_from_text(text: str) -> int:
-    """Guess the hierarchical level of a TOC entry from its text."""
+    # Guess the hierarchical level of a TOC entry from its text.
     # Check for numbering patterns
     if re.match(r'^\s*\d+\.\d+\.\d+', text):
         return 2
@@ -277,7 +270,7 @@ def _guess_level_from_text(text: str) -> int:
     return 0
 
 def _clean_extracted_toc(toc_entries: List[List[Any]]) -> List[List[Any]]:
-    """Clean and deduplicate extracted TOC entries."""
+    # Clean and deduplicate extracted TOC entries.
     if not toc_entries:
         return []
     
@@ -304,11 +297,8 @@ def _clean_extracted_toc(toc_entries: List[List[Any]]) -> List[List[Any]]:
     return unique_entries
 
 def fallback_toc_text(doc: fitz.Document, page_limit: int = 15) -> List[str]:
-    """
-    Scans the first few pages for 'Contents' or TOC patterns.
-    Returns list of page texts likely containing TOC.
-    Handles bad annotations gracefully.
-    """
+    # Scan the first few pages for TOC patterns.
+    # Returns page texts likely containing TOC; handles bad annotations.
     toc_pages = []
     found_toc_start = False
 
@@ -371,14 +361,12 @@ def fallback_toc_text(doc: fitz.Document, page_limit: int = 15) -> List[str]:
     return toc_pages
 
 def detect_level(line: str) -> int:
-    """Detects hierarchy based on indentation (4 spaces per level)."""
+    # Detect hierarchy based on indentation (4 spaces per level).
     return (len(line) - len(line.lstrip())) // 4
 
 def parse_toc_text(toc_text_block: str) -> List[Dict[str, Any]]:
-    """
-    Flexible TOC parser for text blocks with multi-line, hierarchical entries.
-    Returns list of dicts: title, start_page, level, order.
-    """
+    # Flexible TOC parser for text blocks with multi-line, hierarchical entries.
+    # Returns list of dicts: title, start_page, level, order.
     entries = []
     lines = toc_text_block.split('\n')
     meta_titles = {
@@ -439,7 +427,7 @@ def parse_toc_text(toc_text_block: str) -> List[Dict[str, Any]]:
     return _clean_hierarchy(entries)
 
 def _detect_level_advanced(original_line: str, title: str) -> int:
-    """Advanced detection of TOC entry hierarchy."""
+    # Advanced detection of TOC entry hierarchy.
     # Numbering patterns (updated for 4 levels)
     if re.match(r'^\s*\d+\.\d+\.\d+\.\d+', title): return 3  # 1.2.3.4 → Level 3 (4th level)
     if re.match(r'^\s*\d+\.\d+\.\d+', title): return 2       # 1.2.3 → Level 2 (3rd level)
@@ -462,10 +450,7 @@ def _detect_level_advanced(original_line: str, title: str) -> int:
     return 0
 
 def _clean_hierarchy(entries: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-    """
-    Sorts by page, prevents level jumps >1, updates order.
-    Supports up to 4 levels (0-3).
-    """
+    # Sort by page, prevent level jumps > 1, update order (levels 0-3).
     if not entries: return entries
     entries.sort(key=lambda x: x['start_page'])
     for i in range(1, len(entries)):
@@ -479,9 +464,7 @@ def _clean_hierarchy(entries: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     return entries
 
 def assign_end_pages(toc_entries: List[Dict[str, Any]], total_pages: int) -> List[Dict[str, Any]]:
-    """
-    Adds 'end_page' to each TOC entry.
-    """
+    # Add `end_page` to each TOC entry.
     for i in range(len(toc_entries)):
         if i < len(toc_entries) - 1:
             toc_entries[i]['end_page'] = toc_entries[i + 1]['start_page'] - 1
@@ -490,9 +473,7 @@ def assign_end_pages(toc_entries: List[Dict[str, Any]], total_pages: int) -> Lis
     return toc_entries
 
 def validate_toc_structure(entries: List[TOCEntry]) -> bool:
-    """
-    Recursively checks TOC structure: page order, children validity.
-    """
+    # Recursively validate TOC structure: page ranges and child validity.
     if not entries: return False
     for entry in entries:
         if entry.start_page < 0 or (entry.end_page is not None and entry.end_page < entry.start_page):
