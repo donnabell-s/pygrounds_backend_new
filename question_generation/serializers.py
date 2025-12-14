@@ -6,7 +6,6 @@ from content_ingestion.models import Topic, Subtopic
 
 
 class TopicNestedSerializer(serializers.ModelSerializer):
-    """Nested serializer for Topic with zone information"""
     zone = serializers.SerializerMethodField()
     
     class Meta:
@@ -22,7 +21,6 @@ class TopicNestedSerializer(serializers.ModelSerializer):
 
 
 class SubtopicNestedSerializer(serializers.ModelSerializer):
-    """Nested serializer for Subtopic"""
     topic = TopicNestedSerializer(read_only=True)
     
     class Meta:
@@ -68,7 +66,6 @@ class PreAssessmentQuestionSerializer(serializers.ModelSerializer):
 
 
 class QuestionSummarySerializer(serializers.ModelSerializer):
-    """Lightweight serializer for question lists"""
     topic = TopicNestedSerializer(read_only=True)
     subtopic = SubtopicNestedSerializer(read_only=True)
     topic_name = serializers.SerializerMethodField()

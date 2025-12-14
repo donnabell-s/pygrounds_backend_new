@@ -2,17 +2,18 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Dict
 import os
+import logging
 
 
 class EmbeddingModelType(Enum):
-    """Types of embedding models for different content types"""
+    # Types of embedding models for different content types.
     CODE_BERT = "code_bert"       
     SENTENCE_TRANSFORMER = "sentence"  
 
 
 @dataclass
 class EmbeddingConfig:
-    """Configuration for different embedding models"""
+    # Configuration for an embedding model.
     model_name: str
     model_type: EmbeddingModelType
     dimension: int
@@ -24,14 +25,22 @@ class EmbeddingConfig:
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 MODELS_DIR = os.path.join(PROJECT_ROOT, 'models')
 
+logger = logging.getLogger(__name__)
+
 # Check if local models exist, otherwise use online models
 def get_model_path(model_name: str, local_folder: str) -> str:
     local_path = os.path.join(MODELS_DIR, local_folder)
     if os.path.exists(local_path):
-        print(f"🔗 Using local model: {local_path}")
+        logger.debug("Using local model: %s", local_path)
         return local_path
     else:
-        print(f"🌐 Using online model: {model_name}")
+        # Stay quiet by default; surface only when caller expects local-only.
+        # Set `PYGROUNDS_LOCAL_MODELS_ONLY=1` to fail fast if local models missing.
+        if os.environ.get("PYGROUNDS_LOCAL_MODELS_ONLY", "").strip() in {"1", "true", "True"}:
+            raise FileNotFoundError(
+                f"Local model not found at {local_path} (local-only mode enabled)."
+            )
+        logger.debug("Using online model: %s", model_name)
         return model_name
 
 # Model configurations for different content types

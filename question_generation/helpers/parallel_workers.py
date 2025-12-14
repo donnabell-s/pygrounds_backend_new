@@ -1,8 +1,4 @@
-"""
-Parallel worker utilities for handling multiple zone-difficulty combinations.
-Provides utilities for distributed question generation processing with enhanced 
-batch processing and smart subtopic combinations.
-"""
+# Parallel worker utilities
 
 import logging
 import time
@@ -24,23 +20,11 @@ from .generation_status import generation_status_tracker
 
 # Utility functions
 def extract_object_names(objects):
-    """Extract names from objects safely."""
     return [getattr(obj, 'name', str(obj)) for obj in objects]
 
 
 def create_smart_subtopic_combinations(subtopics: List, max_combinations: int = None, difficulty: str = None) -> List[List]:
-    """
-    Create smart subtopic combinations focused on 1-2 subtopics like preassessment.
-    Prioritizes individual subtopics and pairs for comprehensive coverage.
-
-    Args:
-        subtopics: List of subtopics to combine
-        max_combinations: Maximum number of combinations to generate
-        difficulty: Difficulty level (used for logging only)
-
-    Returns:
-        List of subtopic combinations (1-2 subtopics each)
-    """
+    # Prefer singles + pairs (preassessment-style)
     logger.debug(f"🔍 DEBUG: Creating 1-2 subtopic combinations for {len(subtopics)} subtopics, difficulty: {difficulty}")
     all_combinations = []
 
@@ -116,21 +100,7 @@ def calculate_questions_per_combination(num_subtopics: int,
                                        num_questions_per_subtopic: int,
                                        num_combinations: int,
                                        difficulty: str) -> int:
-    """
-    Calculate how many questions each combination should generate
-    for a specific difficulty level.
-
-    Each difficulty gets its own full budget of questions per subtopic.
-
-    Args:
-        num_subtopics: Number of individual subtopics
-        num_questions_per_subtopic: Questions requested per subtopic per difficulty
-        num_combinations: Total combinations generated for this difficulty
-        difficulty: The difficulty level being processed
-
-    Returns:
-        Questions per combination for this difficulty level
-    """
+    # Each difficulty gets its own budget
     # Each difficulty gets the full budget independently
     total_budget_per_difficulty = num_subtopics * num_questions_per_subtopic
 
@@ -148,20 +118,7 @@ def calculate_questions_per_combination(num_subtopics: int,
 def generate_questions_for_single_subtopic_batch(subtopic, difficulty_levels: List[str],
                                                 total_questions_needed: int, game_type: str,
                                                 session_id: str) -> Dict[str, Any]:
-    """
-    Generate questions for a single subtopic across multiple difficulties.
-    Distributes questions evenly across difficulties.
-
-    Args:
-        subtopic: Single subtopic to generate questions for
-        difficulty_levels: List of difficulty levels
-        total_questions_needed: Total questions to generate
-        game_type: 'coding' or 'non_coding'
-        session_id: Session ID for tracking
-
-    Returns:
-        Dict with success status and questions_saved count
-    """
+    # Single subtopic across difficulties
     try:
         # Distribute questions across difficulties
         questions_per_difficulty = total_questions_needed // len(difficulty_levels)
@@ -212,16 +169,7 @@ def run_subtopic_specific_generation(subtopic_ids: List[int],
                                    num_questions_per_subtopic: int,
                                    game_type: str,
                                    session_id: str) -> None:
-    """
-    Generate questions for specific subtopics across multiple difficulties.
-
-    Args:
-        subtopic_ids: List of subtopic IDs to generate questions for
-        difficulty_levels: List of difficulty levels to process
-        num_questions_per_subtopic: Number of questions to generate per subtopic
-        game_type: Either 'coding' or 'non_coding'
-        session_id: Session ID for tracking progress
-    """
+    # Generate for explicit subtopics (no zone-wide combinations)
     try:
         Subtopic, _ = get_models()
         
@@ -438,7 +386,7 @@ def run_subtopic_specific_generation(subtopic_ids: List[int],
             difficulty_questions = 0
 
             def process_single_combination(combination_idx, subtopic_combination):
-                """Process a single subtopic combination and return results."""
+                # Process a single subtopic combination and return results.
                 try:
                     # Check for cancellation
                     if generation_status_tracker.is_session_cancelled(session_id):
@@ -521,7 +469,7 @@ def run_subtopic_specific_generation(subtopic_ids: List[int],
 
                         # Update global counters
                         completed_tasks += 1
-                        successful_tasks += 1 if result['success'] else successful_tasks
+                        successful_tasks += 1 if result['success'] else 0
                         total_questions += result['questions_saved']
 
                         # Update status with current progress
@@ -586,17 +534,7 @@ def run_subtopic_specific_generation(subtopic_ids: List[int],
 def get_subtopic_generation_summary(subtopic_ids: List[int],
                                   difficulty_levels: List[str],
                                   num_questions_per_subtopic: int) -> Dict[str, Any]:
-    """
-    Get a summary of what will be generated for the given parameters.
-
-    Args:
-        subtopic_ids: List of subtopic IDs
-        difficulty_levels: List of difficulty levels
-        num_questions_per_subtopic: Questions per subtopic
-
-    Returns:
-        Summary dictionary with generation details
-    """
+    # Summarize planned generation for the given parameters.
     try:
         Subtopic, _ = get_models()
         
@@ -634,15 +572,7 @@ def get_subtopic_generation_summary(subtopic_ids: List[int],
 
 
 def get_worker_details(session_id: str) -> Dict[str, Any]:
-    """
-    Get detailed worker information for a generation session.
-
-    Args:
-        session_id: Session ID to get worker details for
-
-    Returns:
-        Dictionary with worker details or error
-    """
+    # Get detailed worker info for a generation session.
     try:
         session_status = generation_status_tracker.get_session_status(session_id)
 

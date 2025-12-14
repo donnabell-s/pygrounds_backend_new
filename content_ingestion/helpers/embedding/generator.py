@@ -1,14 +1,12 @@
-"""
-Embedding generator with multi-model support and parallel processing.
-"""
-
 import os
 import threading
 import time
 import logging
-from typing import List, Dict, Any, Optional
-from concurrent.futures import ThreadPoolExecutor
+import multiprocessing
+from typing import List, Dict, Any, Optional, Tuple
+from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 from django.utils import timezone
+from django.db import transaction
 
 from .models import (
     EmbeddingModelType, EmbeddingConfig, MODEL_CONFIGS, CHUNK_TYPE_TO_MODEL
@@ -17,45 +15,72 @@ from .models import (
 logger = logging.getLogger(__name__)
 
 
+def _is_in_subprocess() -> bool:
+    # Avoid nested multiprocessing when already in a worker process.
+    try:
+        # Check if current process is not the main process
+        return multiprocessing.current_process().name != 'MainProcess'
+    except Exception:
+        return False
+
+
+# Worker function for multiprocessing (must be at module level for pickling)
+def _embed_chunk_worker(chunk_id: int, text: str, chunk_type: str) -> Dict[str, Any]:
+    # Module-level worker function (required for multiprocessing pickling).
+    try:
+        # Create a fresh generator instance in this process
+        # Each process gets its own model cache
+        generator = EmbeddingGenerator(max_workers=1, use_gpu=False)
+        
+        result = generator.generate_embedding(text, chunk_type)
+        
+        if result['vector'] is None:
+            raise RuntimeError(result.get('error', 'Embedding generation failed'))
+        
+        model_type_str = result['model_type'].value if hasattr(result['model_type'], 'value') else str(result['model_type'])
+        
+        return {
+            'chunk_id': chunk_id,
+            'embedding': result['vector'],
+            'model_type': model_type_str,
+            'model_name': result['model_name'],
+            'dimension': result['dimension'],
+        }
+    except Exception as e:
+        logger.error(f"Worker failed for chunk {chunk_id}: {e}")
+        raise
+
+
 class EmbeddingGenerator:
-    """
-    Creates embeddings for different kinds of text (code vs. concepts).
-    - Picks a model per chunk type.
-    - Loads models on demand and caches them.
-    - Can run work in parallel for batches.
-    """
+    # Embedding generation for code vs concept chunks (parallel + cached models).
 
-    def __init__(self, max_workers: int = 4, use_gpu: bool = False):
-        """
-        Set up the generator.
-
-        Args:
-            max_workers: Max threads for batch work.
-            use_gpu: Use CUDA if available.
-        """
-        self.max_workers = max_workers
+    def __init__(self, max_workers: int = None, use_gpu: bool = False):
+        # Configure workers + whether to use GPU.
+        self.max_workers = max_workers or multiprocessing.cpu_count()
         self.use_gpu = use_gpu
         self.models: Dict[EmbeddingModelType, dict] = {}  # Cache loaded models
         self._model_lock = threading.Lock()
+        
+        # Detect if we're in a subprocess to avoid nested multiprocessing
+        in_subprocess = _is_in_subprocess()
+        
+        # Use ProcessPoolExecutor for CPU-bound work (unless GPU is used OR we're in a subprocess)
+        if in_subprocess:
+            # We're already in a worker process - use ThreadPool or sequential
+            self.executor_class = ThreadPoolExecutor
+            logger.info(f"Running in subprocess - using ThreadPoolExecutor to avoid nested multiprocessing")
+        else:
+            # Main process - use ProcessPool for true parallelism (unless GPU)
+            self.executor_class = ThreadPoolExecutor if use_gpu else ProcessPoolExecutor
 
-        logger.info(f"Initialized EmbeddingGenerator with {max_workers} workers, GPU: {use_gpu}")
+        logger.info(f"Initialized EmbeddingGenerator with {self.max_workers} workers, GPU: {use_gpu}, In subprocess: {in_subprocess}, Executor: {self.executor_class.__name__}")
 
     def _get_model_type_for_chunk(self, chunk_type: str) -> EmbeddingModelType:
-        """
-        Pick the model family to use for a given chunk type.
-
-        Returns:
-            An EmbeddingModelType (e.g., CODE_BERT or SENTENCE_TRANSFORMER).
-        """
+        # Map chunk types to embedding model families.
         return CHUNK_TYPE_TO_MODEL.get(chunk_type, EmbeddingModelType.SENTENCE_TRANSFORMER)
 
     def _load_model(self, model_type: EmbeddingModelType) -> Optional[dict]:
-        """
-        Load a model once and cache it.
-
-        Returns:
-            A dict with the loaded model (and tokenizer if needed), or None on error.
-        """
+        # Lazy-load and cache models per model type.
         with self._model_lock:
             if model_type in self.models:
                 return self.models[model_type]
@@ -107,12 +132,7 @@ class EmbeddingGenerator:
                 return None
 
     def _generate_codebert_embedding(self, text: str, model_data: dict) -> Optional[List[float]]:
-        """
-        Make a vector for code-like text using CodeBERT.
-
-        Returns:
-            The embedding as a list of floats, or None on error.
-        """
+        # Make a vector for code-like text using CodeBERT.
         try:
             import torch
 
@@ -143,12 +163,7 @@ class EmbeddingGenerator:
             return None
 
     def _generate_sentence_embedding(self, text: str, model_data: dict) -> Optional[List[float]]:
-        """
-        Make a vector for natural-language text using a SentenceTransformer.
-
-        Returns:
-            The embedding as a list of floats, or None on error.
-        """
+        # Make a vector for natural-language text using a SentenceTransformer.
         try:
             model = model_data['model']
             embedding = model.encode(text)
@@ -158,35 +173,12 @@ class EmbeddingGenerator:
             return None
 
     def generate_subtopic_embedding(self, subtopic_name: str, topic_name: str = "") -> Dict[str, Any]:
-        """
-        Create an embedding for a subtopic name (optionally with its topic).
-        Always uses a sentence model since this is conceptual text.
-
-        Returns:
-            A dict with the vector, model info, and dimension (or error).
-        """
+        # Embed a subtopic name (optionally prefixed by topic name).
         text = f"{topic_name} - {subtopic_name}" if topic_name else subtopic_name
         return self.generate_embedding(text, chunk_type='Concept')
 
     def generate_embedding(self, text: str, chunk_type: str) -> Dict[str, Any]:
-        """
-        Create an embedding for one piece of text.
-
-        Steps:
-          1) Pick model by chunk type.
-          2) Load model if needed.
-          3) Clean/truncate text for the model.
-          4) Encode to a vector.
-
-        Returns:
-            {
-              'vector': List[float] | None,
-              'model_name': str,
-              'model_type': EmbeddingModelType | None,
-              'dimension': int,
-              'error': str | None
-            }
-        """
+                # Embed one piece of text (pick model by chunk_type; load; clean/truncate; encode).
         try:
             model_type = self._get_model_type_for_chunk(chunk_type)
             model_data = self._load_model(model_type)
@@ -236,17 +228,7 @@ class EmbeddingGenerator:
             }
 
     def generate_subtopic_dual_embeddings(self, subtopic) -> Dict[str, Any]:
-        """
-        Generate dual embeddings for a subtopic.
-        ALWAYS creates BOTH MiniLM (concept) AND CodeBERT (code) embeddings.
-        Uses subtopic name as base, enhanced with intent fields if available.
-        
-        Args:
-            subtopic: Subtopic model instance with name (required) and optional intent fields
-            
-        Returns:
-            Dict with success status and embedding info
-        """
+        # Generate dual embeddings for a subtopic (MiniLM concept + CodeBERT code).
         from content_ingestion.models import Embedding
         
         results = {
@@ -338,12 +320,7 @@ class EmbeddingGenerator:
         return results
 
     def _prepare_text_for_embedding(self, text: str, config: 'EmbeddingConfig') -> str:
-        """
-        Light cleanup and length control for the text.
-        - Trims and normalizes whitespace.
-        - Preserves basic structure for code.
-        - Truncates to the model's token budget (rough 4 chars/token).
-        """
+        # Light cleanup + length control (normalize whitespace; preserve code lines; truncate to token budget).
         if not text:
             return ""
 
@@ -367,41 +344,36 @@ class EmbeddingGenerator:
         return clean_text
 
     def embed_chunks_batch(self, model_chunks: List[Any]) -> Dict[str, Any]:
-        """
-        Encode a list of chunks that share the same model type.
-        Returns items shaped for save_embeddings_to_db().
-
-        Each returned item:
-            {
-              'chunk': <DocumentChunk>,
-              'embedding': List[float],
-              'model_type': str,
-              'model_name': str,
-              'dimension': int
-            }
-        """
+        # Encode chunks that share the same model type.
+        # Uses processes in main process; threads in subprocess to avoid nested multiprocessing.
         success, failed, items = 0, 0, []
+        
+        # Extract serializable data from chunks (avoid passing Django ORM objects to processes)
+        chunk_data = [
+            (c.id, c.text, c.chunk_type, c.subtopic_id if hasattr(c, 'subtopic_id') else None)
+            for c in model_chunks
+        ]
+        
+        # Create chunk lookup for results
+        chunk_lookup = {c.id: c for c in model_chunks}
 
-        def _work(chunk: Any) -> Dict[str, Any]:
-            # Expect chunk to have: .text, .chunk_type, .id (and optional .subtopic_id)
-            res = self.generate_embedding(getattr(chunk, 'text', ''), getattr(chunk, 'chunk_type', ''))
-            if res['vector'] is None:
-                raise RuntimeError(res.get('error') or 'embedding failed')
-            model_type_str = res['model_type'].value if hasattr(res['model_type'], 'value') else str(res['model_type'])
-            return {
-                'chunk': chunk,
-                'embedding': res['vector'],
-                'model_type': model_type_str,
-                'model_name': res['model_name'],
-                'dimension': res['dimension'],
-            }
-
-        # Fan out in threads
-        with ThreadPoolExecutor(max_workers=self.max_workers) as ex:
-            futures = [ex.submit(_work, c) for c in model_chunks]
+        # Fan out in processes (or threads if GPU)
+        with self.executor_class(max_workers=self.max_workers) as ex:
+            futures = [ex.submit(_embed_chunk_worker, cid, text, chunk_type) for cid, text, chunk_type, _ in chunk_data]
+            
             for f in futures:
                 try:
-                    items.append(f.result())
+                    result = f.result()
+                    chunk_id = result['chunk_id']
+                    chunk = chunk_lookup[chunk_id]
+                    
+                    items.append({
+                        'chunk': chunk,
+                        'embedding': result['embedding'],
+                        'model_type': result['model_type'],
+                        'model_name': result['model_name'],
+                        'dimension': result['dimension'],
+                    })
                     success += 1
                 except Exception as e:
                     logger.error(f"Chunk embedding failed: {e}")
@@ -410,23 +382,7 @@ class EmbeddingGenerator:
         return {'success': success, 'failed': failed, 'total': success + failed, 'embeddings': items}
 
     def generate_batch_embeddings(self, chunks: List[Any]) -> Dict[str, Any]:
-        """
-        Create embeddings for many chunks.
-
-        Strategy:
-          - Group chunks by model type (fewer model switches).
-          - Process each group (in parallel within the group).
-
-        Returns:
-            {
-              'success': int,
-              'failed': int,
-              'total': int,
-              'models_used': { model_type_str: count },
-              'processing_time': float,
-              'embeddings': List[Dict]
-            }
-        """
+                # Create embeddings for many chunks by grouping per model type.
         if not chunks:
             return {
                 'success': 0,
@@ -485,12 +441,7 @@ class EmbeddingGenerator:
         return results
 
     def embed_and_save_batch(self, chunks: List[Any]) -> Dict[str, Any]:
-        """
-        Run batch embedding and write results to the database.
-
-        Returns:
-            Stats about generation and DB writes.
-        """
+        # Run batch embedding and write results to the database.
         embedding_results = self.generate_batch_embeddings(chunks)
 
         if embedding_results['embeddings']:
@@ -517,33 +468,26 @@ class EmbeddingGenerator:
         }
 
     def save_embeddings_to_db(self, embeddings: List[Dict[str, Any]]) -> Dict[str, Any]:
-        """
-        Persist embeddings to the DB using appropriate vector fields.
-
-        Expected input per item:
-          {
-            'chunk': <DocumentChunk>,
-            'embedding': List[float],
-            'model_type': str,
-            'model_name': str,
-            'dimension': int
-          }
-
-        Returns:
-            {
-              'success': int,
-              'failed': int,
-              'processing_time': float
-            }
-        """
-        from content_ingestion.models import Embedding  # your Embedding model
+        # Persist embeddings to the DB using bulk_create/bulk_update.
+        from content_ingestion.models import Embedding
         from traceback import format_exc
 
         success = 0
         failed = 0
         start_time = time.time()
 
-        logger.info(f"save_embeddings_to_db: saving {len(embeddings)} embeddings to DB")
+        logger.info(f"save_embeddings_to_db: saving {len(embeddings)} embeddings to DB using bulk operations")
+        
+        # Prepare embeddings for bulk operations
+        embeddings_to_create = []
+        embeddings_to_update = []
+        chunk_ids = [e['chunk'].id for e in embeddings]
+        
+        # Get existing embeddings in one query
+        existing_embeddings = {}
+        for emb in Embedding.objects.filter(document_chunk_id__in=chunk_ids, content_type='chunk'):
+            key = (emb.document_chunk_id, emb.model_type)
+            existing_embeddings[key] = emb
 
         for embedding_data in embeddings:
             try:
@@ -572,52 +516,39 @@ class EmbeddingGenerator:
                     failed += 1
                     continue
 
-                # Create or update embedding with correct vector field
-                try:
-                    embedding_obj, created = Embedding.objects.get_or_create(
+                # Check if embedding exists
+                key = (chunk.id, model_type)
+                existing = existing_embeddings.get(key)
+                
+                if existing:
+                    # Update existing
+                    if model_type == 'sentence' or 'minilm' in model_name.lower():
+                        existing.minilm_vector = vector
+                    elif model_type == 'code_bert' or 'codebert' in model_name.lower():
+                        existing.codebert_vector = vector
+                    
+                    existing.model_name = model_name
+                    existing.dimension = dimension
+                    existing.embedded_at = timezone.now()
+                    embeddings_to_update.append(existing)
+                else:
+                    # Create new
+                    embedding_obj = Embedding(
                         document_chunk=chunk,
                         model_type=model_type,
                         content_type='chunk',
-                        defaults=defaults
+                        model_name=model_name,
+                        dimension=dimension,
+                        embedded_at=timezone.now()
                     )
-                except Exception as e:
-                    # Log full stack for DB get_or_create failures
-                    logger.error(f"get_or_create failed for chunk {getattr(chunk, 'id', 'unknown')}: {e}\n{format_exc()}")
-                    failed += 1
-                    continue
-
-                if created:
-                    logger.debug(f"Created new Embedding id={embedding_obj.id} for chunk_id={getattr(chunk, 'id', 'unknown')}")
-                else:
-                    # Update existing embedding
-                    logger.debug(f"Updating existing Embedding id={embedding_obj.id} for chunk_id={getattr(chunk, 'id', 'unknown')}")
+                    
+                    # Set appropriate vector field
                     if model_type == 'sentence' or 'minilm' in model_name.lower():
                         embedding_obj.minilm_vector = vector
                     elif model_type == 'code_bert' or 'codebert' in model_name.lower():
                         embedding_obj.codebert_vector = vector
                     
-                    embedding_obj.model_name = model_name
-                    embedding_obj.dimension = dimension
-                    embedding_obj.embedded_at = timezone.now()
-                    try:
-                        embedding_obj.save()
-                    except Exception as e:
-                        logger.error(f"Failed to save updated embedding {embedding_obj.id} for chunk {getattr(chunk, 'id', 'unknown')}: {e}\n{format_exc()}")
-                        failed += 1
-                        continue
-
-                # Sanity check: confirm vector field exists after save
-                try:
-                    refreshed = Embedding.objects.get(id=embedding_obj.id)
-                    has_vector = bool(refreshed.minilm_vector or refreshed.codebert_vector)
-                    if not has_vector:
-                        logger.warning(f"Embedding saved but vector missing for id={embedding_obj.id} chunk_id={getattr(chunk, 'id', 'unknown')}")
-                    else:
-                        logger.debug(f"Embedding id={embedding_obj.id} contains vector(s) after save")
-                except Exception as e:
-                    logger.error(f"Failed to refresh embedding {getattr(embedding_obj, 'id', 'unknown')}: {e}\n{format_exc()}")
-
-                success += 1
+                    embeddings_to_create.append(embedding_obj)
 
             except Exception as e:
                 failed += 1
@@ -625,7 +556,33 @@ class EmbeddingGenerator:
                     cid = getattr(embedding_data.get('chunk', None), 'id', 'unknown')
                 except Exception:
                     cid = 'unknown'
-                logger.error(f"DB save failed for chunk {cid}: {e}\n{format_exc()}")
+                logger.error(f"Embedding preparation failed for chunk {cid}: {e}\n{format_exc()}")
+        
+        # Bulk insert new embeddings
+        try:
+            if embeddings_to_create:
+                with transaction.atomic():
+                    Embedding.objects.bulk_create(embeddings_to_create, batch_size=500)
+                    success += len(embeddings_to_create)
+                    logger.info(f"Bulk created {len(embeddings_to_create)} embeddings")
+        except Exception as e:
+            logger.error(f"Bulk create failed: {e}\n{format_exc()}")
+            failed += len(embeddings_to_create)
+        
+        # Bulk update existing embeddings
+        try:
+            if embeddings_to_update:
+                with transaction.atomic():
+                    Embedding.objects.bulk_update(
+                        embeddings_to_update,
+                        ['minilm_vector', 'codebert_vector', 'model_name', 'dimension', 'embedded_at'],
+                        batch_size=500
+                    )
+                    success += len(embeddings_to_update)
+                    logger.info(f"Bulk updated {len(embeddings_to_update)} embeddings")
+        except Exception as e:
+            logger.error(f"Bulk update failed: {e}\n{format_exc()}")
+            failed += len(embeddings_to_update)
 
         return {
             'success': success,
@@ -636,15 +593,11 @@ class EmbeddingGenerator:
 
 # Convenience functions for easy usage
 def get_embedding_generator(max_workers: int = 4, use_gpu: bool = False) -> EmbeddingGenerator:
-    """
-    Shortcut for a configured EmbeddingGenerator.
-    """
+    # Shortcut for a configured EmbeddingGenerator.
     return EmbeddingGenerator(max_workers=max_workers, use_gpu=use_gpu)
 
 
 def embed_chunks_with_models(chunks: List[Any], max_workers: int = 4, use_gpu: bool = False) -> Dict[str, Any]:
-    """
-    Quick way to embed a list of chunks using default settings.
-    """
+    # Quick helper: embed a list of chunks using default settings.
     generator = EmbeddingGenerator(max_workers=max_workers, use_gpu=use_gpu)
     return generator.generate_batch_embeddings(chunks)

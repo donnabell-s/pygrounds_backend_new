@@ -1,8 +1,3 @@
-"""
-CRUD operations for admin frontend.
-Handles document, zones, topics, and subtopics management.
-"""
-
 from django.core.files.storage import default_storage
 from django.shortcuts import get_object_or_404
 from django.db import transaction
@@ -446,7 +441,7 @@ class DocumentDetail(generics.RetrieveUpdateDestroyAPIView):
 
 @api_view(['GET'])
 def ZoneTopicsView(request, zone_id):
-    """Get all topics for a specific zone"""
+    # List topics for a zone.
     try:
         zone = get_object_or_404(GameZone, id=zone_id)
         topics = zone.topics.all()
@@ -460,7 +455,7 @@ def ZoneTopicsView(request, zone_id):
 
 @api_view(['GET'])
 def TopicSubtopicsView(request, topic_id):
-    """Get all subtopics for a specific topic"""
+    # List subtopics for a topic.
     try:
         topic = get_object_or_404(Topic, id=topic_id)
         subtopics = topic.subtopics.all()
@@ -476,10 +471,7 @@ def TopicSubtopicsView(request, topic_id):
 
 @api_view(['POST'])
 def upload_pdf(request):
-    """
-    Upload a PDF document - only saves the document, processing is handled separately.
-    Document starts with PENDING status.
-    """
+    # Upload PDF and create UploadedDocument (no processing).
     try:
         serializer = DocumentSerializer(data=request.data)
         if serializer.is_valid():
@@ -505,7 +497,7 @@ def upload_pdf(request):
 
 @api_view(['GET'])
 def list_documents(request):
-    """List all non-deleted uploaded documents"""
+    # List non-deleted documents.
     try:
         documents = UploadedDocument.objects.filter(is_deleted=False).order_by('-uploaded_at').annotate(
             chunk_count=Count('chunks')
@@ -535,7 +527,7 @@ def list_documents(request):
 
 @api_view(['GET'])
 def get_document_detail(request, document_id):
-    """Get detailed information about a document"""
+    # Return document + chunk details.
     try:
         document = get_object_or_404(UploadedDocument, id=document_id)
         chunks = DocumentChunk.objects.filter(document=document)
@@ -554,10 +546,7 @@ def get_document_detail(request, document_id):
 @api_view(['GET'])
 @permission_classes([AllowAny])  # Public endpoint - no authentication required
 def get_document_status(request, document_id):
-    """
-    Get document processing status without authentication.
-    Used for long-running pipeline operations where tokens might expire.
-    """
+    # Public processing status endpoint.
     try:
         document = get_object_or_404(UploadedDocument, id=document_id)
         
@@ -579,7 +568,7 @@ def get_document_status(request, document_id):
 
 @api_view(['GET'])
 def download_document(request, document_id):
-    """Download a document's PDF file"""
+    # Download the PDF file.
     try:
         document = get_object_or_404(UploadedDocument, id=document_id)
         if not document.pdf_file:
@@ -611,11 +600,7 @@ def download_document(request, document_id):
 
 @api_view(['POST', 'DELETE'])
 def delete_document(request, document_id):
-    """
-    Delete a document with comprehensive cleanup of all related data.
-    Supports both soft delete (POST) and hard delete (DELETE).
-    Query parameter 'hard_delete=true' forces hard deletion.
-    """
+    # Delete document (soft/hard) and related data.
     try:
         document = get_object_or_404(UploadedDocument, id=document_id)
         
@@ -699,10 +684,7 @@ def delete_document(request, document_id):
 
 @api_view(['POST'])
 def cleanup_failed_documents(request):
-    """
-    Bulk cleanup of all failed documents and their related data.
-    This is useful for cleaning up documents that failed during processing.
-    """
+    # Bulk cleanup for documents stuck in FAILED status.
     try:
         # Find all failed documents
         failed_documents = UploadedDocument.objects.filter(

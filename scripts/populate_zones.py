@@ -80,7 +80,7 @@ def generate_subtopic_embeddings(concept_intents_map=None, code_intents_map=None
 
         try:
             # Import the worker function from our separate module
-            from content_ingestion.embedding_worker import generate_embedding_task
+            from content_ingestion.helpers.workers.embedding_worker import generate_embedding_task
             
             print("\n🚀 Starting parallel embedding generation...")
             

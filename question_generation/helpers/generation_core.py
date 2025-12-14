@@ -1,5 +1,4 @@
-# Core question generation functionality
-# Handles generating questions for topics/subtopics with RAG context and LLM integration
+# Core generation helpers
 
 import time
 from concurrent.futures import ThreadPoolExecutor, TimeoutError
@@ -29,31 +28,32 @@ def generate_questions_for_subtopic_combination(subtopic_combination,
                                               thread_manager=None,
                                               session_id=None,
                                               rag_context=None) -> Dict[str, Any]:
-    # Generate questions for given subtopics using RAG context
-    # Parameters:
-    # - subtopic_combination: List of subtopics to combine content from
-    # - difficulty: Question difficulty level
-    # - num_questions: How many questions to generate
-    # - game_type: Either 'coding' or 'non_coding'
-    # - zone: The zone these subtopics belong to
-    # - thread_manager: Optional manager for parallel processing
-    # - session_id: Optional session ID for cancellation checking
-    # - rag_context: Optional pre-fetched RAG context (for batch processing)
+    # Generate + persist questions for a subtopic combo
+
+    def _cancelled_result():
+        return {
+            'success': False,
+            'error': 'Generation was cancelled',
+            'subtopic_names': extract_subtopic_names(subtopic_combination),
+            'difficulty': difficulty,
+            'questions_saved': 0
+        }
+
+    def _is_cancelled() -> bool:
+        if not session_id:
+            return False
+        from .generation_status import generation_status_tracker
+        return generation_status_tracker.is_session_cancelled(session_id)
 
     # Check for cancellation if session_id provided
-    if session_id:
-        from .generation_status import generation_status_tracker
-        if generation_status_tracker.is_session_cancelled(session_id):
-            return {
-                'success': False,
-                'error': 'Generation was cancelled',
-                'subtopic_names': extract_subtopic_names(subtopic_combination),
-                'difficulty': difficulty,
-                'questions_saved': 0
-            }
+    if _is_cancelled():
+        return _cancelled_result()
 
     try:
         subtopic_names = extract_subtopic_names(subtopic_combination)
+
+        if _is_cancelled():
+            return _cancelled_result()
 
         # Get RAG context (use provided context or fetch if not provided)
         if rag_context is None:
@@ -61,6 +61,9 @@ def generate_questions_for_subtopic_combination(subtopic_combination,
                 rag_context = get_rag_context_for_subtopic(subtopic_combination[0], difficulty, game_type)
             else:
                 rag_context = get_combined_rag_context(subtopic_combination, difficulty, game_type)
+
+        if _is_cancelled():
+            return _cancelled_result()
 
         # Create context for prompt generation
         context = create_generation_context(subtopic_combination, difficulty, num_questions, rag_context)
@@ -75,6 +78,9 @@ def generate_questions_for_subtopic_combination(subtopic_combination,
         temperature = CODING_TEMPERATURE if game_type == 'coding' else NON_CODING_TEMPERATURE
 
         # Call LLM
+        if _is_cancelled():
+            return _cancelled_result()
+
         llm_response = invoke_deepseek(
             prompt,
             system_prompt=system_prompt,
@@ -82,6 +88,9 @@ def generate_questions_for_subtopic_combination(subtopic_combination,
             temperature=temperature,
             max_tokens=8000  # Higher token limit for complete responses with all fields
         )
+
+        if _is_cancelled():
+            return _cancelled_result()
 
         # Parse response
         questions_json = parse_llm_json_response(llm_response, game_type)
@@ -96,6 +105,8 @@ def generate_questions_for_subtopic_combination(subtopic_combination,
         # Validate and format questions
         valid_questions = []
         for q in questions_json:
+            if _is_cancelled():
+                return _cancelled_result()
             if validate_question_data(q, game_type):
                 formatted_q = format_question_for_game_type(q, game_type)
                 valid_questions.append(formatted_q)
@@ -111,6 +122,9 @@ def generate_questions_for_subtopic_combination(subtopic_combination,
                 'subtopic_names': subtopic_names,
                 'difficulty': difficulty
             }
+
+        if _is_cancelled():
+            return _cancelled_result()
 
         # Save to database (defensive: ensure we don't persist more than requested)
         logger.info(f"Requested num_questions={num_questions}, validated_items={len(valid_questions)}")
@@ -144,19 +158,7 @@ def create_system_prompt(subtopic_names: List[str],
                         num_questions: int,
                         game_type: str,
                         zone) -> str:
-    """
-    Create system prompt based on game type and parameters.
-
-    Args:
-        subtopic_names: List of subtopic names
-        difficulty: Difficulty level
-        num_questions: Number of questions to generate
-        game_type: 'coding' or 'non_coding'
-        zone: GameZone instance
-
-    Returns:
-        System prompt string
-    """
+    # System prompt for DeepSeek
     if game_type == 'coding':
         keys = [
             "question_text", "buggy_question_text",
@@ -183,16 +185,7 @@ def create_system_prompt(subtopic_names: List[str],
 
 
 def process_zone_difficulty_combination(args) -> Dict[str, Any]:
-    """
-    Worker function to process a single zone-difficulty combination.
-    Generates questions for all subtopic combinations within this zone-difficulty pair.
-    
-    Args:
-        args: Tuple of (zone, difficulty, num_questions_per_subtopic, game_type, thread_id, session_id, max_total_questions)
-        
-    Returns:
-        Dictionary with processing results
-    """
+    # Process a single (zone, difficulty) task
     (zone, difficulty, num_questions_per_subtopic, game_type, thread_id, session_id, max_total_questions) = args
     
     result = {
@@ -206,6 +199,35 @@ def process_zone_difficulty_combination(args) -> Dict[str, Any]:
     }
     
     try:
+        worker_start_time = time.time()
+        if session_id:
+            from .generation_status import generation_status_tracker
+            generation_status_tracker.update_worker_status(session_id, {
+                'worker_id': thread_id,
+                'status': 'processing',
+                'zone_name': zone.name,
+                'difficulty': difficulty,
+                'current_step': 'starting',
+                'start_time': worker_start_time,
+                'progress': {
+                    'total_combinations': 0,
+                    'processed_combinations': 0,
+                    'successful_combinations': 0,
+                    'failed_combinations': 0,
+                    'questions_generated': 0,
+                },
+            })
+
+            # If cancelled before starting, exit early.
+            if generation_status_tracker.is_session_cancelled(session_id):
+                generation_status_tracker.update_worker_status(session_id, {
+                    'worker_id': thread_id,
+                    'status': 'cancelled',
+                    'current_step': 'cancelled',
+                })
+                result['error'] = 'cancelled'
+                return result
+
         from content_ingestion.models import Subtopic
         from itertools import combinations
         
@@ -236,17 +258,50 @@ def process_zone_difficulty_combination(args) -> Dict[str, Any]:
         for combination_size in range(1, max_combination_size + 1):
             for subtopic_combination in combinations(zone_subtopics, combination_size):
                 all_combinations.append(subtopic_combination)
+
+        if session_id:
+            from .generation_status import generation_status_tracker
+            generation_status_tracker.update_worker_status(session_id, {
+                'worker_id': thread_id,
+                'current_step': 'batch_rag_context',
+                'progress': {
+                    'total_combinations': len(all_combinations),
+                    'processed_combinations': 0,
+                    'successful_combinations': 0,
+                    'failed_combinations': 0,
+                    'questions_generated': 0,
+                },
+            })
         
         # Batch fetch RAG contexts for all combinations to reduce database connections
+        rag_contexts = {}
         if all_combinations:
+            if session_id:
+                from .generation_status import generation_status_tracker
+                if generation_status_tracker.is_session_cancelled(session_id):
+                    generation_status_tracker.update_worker_status(session_id, {
+                        'worker_id': thread_id,
+                        'status': 'cancelled',
+                        'current_step': 'cancelled',
+                    })
+                    result['error'] = 'cancelled'
+                    return result
+
             from ..helpers.rag_context import get_batched_rag_contexts
             print(f"📚 Thread {thread_id}: Batch fetching RAG contexts for {len(all_combinations)} combinations")
             rag_contexts = get_batched_rag_contexts(all_combinations, difficulty, game_type)
             print(f"✅ Thread {thread_id}: Retrieved {len(rag_contexts)} RAG contexts")
         
         # Process each combination using pre-fetched RAG contexts
+        processed = 0
         for subtopic_combination in all_combinations:
             try:
+                if session_id:
+                    from .generation_status import generation_status_tracker
+                    if generation_status_tracker.is_session_cancelled(session_id):
+                        result['error'] = 'cancelled'
+                        break
+
                 # Get pre-fetched RAG context for this combination
                 combination_key = tuple(subtopic_combination) if isinstance(subtopic_combination, (list, tuple)) else (subtopic_combination,)
                 pre_fetched_rag_context = rag_contexts.get(combination_key)
@@ -272,6 +327,12 @@ def process_zone_difficulty_combination(args) -> Dict[str, Any]:
                         # Try each subtopic individually as a fallback
                         for individual_subtopic in subtopic_combination:
                             try:
+                                if session_id:
+                                    from .generation_status import generation_status_tracker
+                                    if generation_status_tracker.is_session_cancelled(session_id):
+                                        result['error'] = 'cancelled'
+                                        break
+
                                 # Get pre-fetched RAG context for individual subtopic
                                 individual_key = (individual_subtopic,)
                                 individual_rag_context = rag_contexts.get(individual_key)
@@ -288,17 +349,75 @@ def process_zone_difficulty_combination(args) -> Dict[str, Any]:
                                     print(f"✅ Thread {thread_id}: Fallback successful for: {fallback_result['subtopic_names']}")
                             except Exception as e:
                                 print(f"❌ Thread {thread_id}: Fallback failed for subtopic: {str(e)}")
+
+                        if result.get('error') == 'cancelled':
+                            break
                     
             except Exception as e:
                 result['combination_stats']['failed'] += 1
                 print(f"❌ Thread {thread_id}: Error processing combination: {str(e)}")
+
+            processed += 1
+            if session_id:
+                from .generation_status import generation_status_tracker
+                generation_status_tracker.update_worker_status(session_id, {
+                    'worker_id': thread_id,
+                    'current_step': 'generating',
+                    'progress': {
+                        'total_combinations': len(all_combinations),
+                        'processed_combinations': processed,
+                        'successful_combinations': result['combination_stats']['successful'],
+                        'failed_combinations': result['combination_stats']['failed'],
+                        'questions_generated': result['total_generated'],
+                    },
+                })
+
+        if session_id and result.get('error') == 'cancelled':
+            from .generation_status import generation_status_tracker
+            generation_status_tracker.update_worker_status(session_id, {
+                'worker_id': thread_id,
+                'status': 'cancelled',
+                'current_step': 'cancelled',
+            })
+            result['success'] = False
+            return result
         
         result['success'] = True
         print(f"✅ Thread {thread_id}: Completed {zone.name} - {difficulty}: {result['total_generated']} questions")
+
+        if session_id:
+            from .generation_status import generation_status_tracker
+            generation_status_tracker.update_worker_status(session_id, {
+                'worker_id': thread_id,
+                'status': 'completed',
+                'current_step': 'completed',
+                'progress': {
+                    'total_combinations': len(all_combinations),
+                    'processed_combinations': len(all_combinations),
+                    'successful_combinations': result['combination_stats']['successful'],
+                    'failed_combinations': result['combination_stats']['failed'],
+                    'questions_generated': result['total_generated'],
+                },
+            })
         
     except Exception as e:
         result['error'] = f"Zone-difficulty processing failed: {str(e)}"
         print(f"❌ Thread {thread_id}: Error in {zone.name} - {difficulty}: {str(e)}")
+
+        if session_id:
+            from .generation_status import generation_status_tracker
+            generation_status_tracker.update_worker_status(session_id, {
+                'worker_id': thread_id,
+                'status': 'failed',
+                'current_step': 'error',
+                'progress': {
+                    'total_combinations': result.get('combination_stats', {}).get('successful', 0) + result.get('combination_stats', {}).get('failed', 0),
+                    'processed_combinations': result.get('combination_stats', {}).get('successful', 0) + result.get('combination_stats', {}).get('failed', 0),
+                    'successful_combinations': result.get('combination_stats', {}).get('successful', 0),
+                    'failed_combinations': result.get('combination_stats', {}).get('failed', 0),
+                    'questions_generated': result.get('total_generated', 0),
+                },
+            })
     
     return result
 
@@ -310,21 +429,7 @@ def run_multithreaded_generation(zones,
                                 session_id: str = None,
                                 max_workers: int = None,
                                 max_total_questions: int = None) -> Dict[str, Any]:
-    """
-    Run multithreaded question generation across zones and difficulties.
-    
-    Args:
-        zones: QuerySet or list of GameZone instances
-        difficulty_levels: List of difficulty levels to process
-        num_questions_per_subtopic: Number of questions to generate per subtopic
-        game_type: 'coding' or 'non_coding'
-        session_id: Optional session ID for tracking generation progress
-        max_workers: Maximum number of concurrent workers (auto-optimized by game type if None)
-        max_total_questions: Optional maximum total questions to generate (stops early if reached)
-        
-    Returns:
-        Dictionary with generation results and statistics
-    """
+    # Run generation across zones/difficulties
     import threading
     from concurrent.futures import ThreadPoolExecutor
     from django.conf import settings
@@ -395,6 +500,8 @@ def run_multithreaded_generation(zones,
                         from .generation_status import generation_status_tracker
                         if generation_status_tracker.is_session_cancelled(session_id):
                             cancelled = True
+                            for f in futures:
+                                f.cancel()
                             break
                     
                     result = future.result(timeout=None)

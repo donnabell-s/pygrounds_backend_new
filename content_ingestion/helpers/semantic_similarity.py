@@ -20,21 +20,21 @@ def process_all_subtopics(document_id: Optional[int] = None,
     # similarity_threshold: min score to store (default: 0.1)
     # top_k_results: max chunks per subtopic (default: 10)
     # use_intents: use intent-based embeddings if available
-    print(f"🔍 Starting dual-embedding semantic similarity processing...")
+    logger.info("Starting dual-embedding semantic similarity processing")
     if use_intents:
-        print(f"   Using intent-based embeddings when available")
-    print(f"   Threshold: {similarity_threshold}")
-    print(f"   Top-K results: {top_k_results}")
+        logger.info("Using intent-based embeddings when available")
+    logger.info("Threshold: %s", similarity_threshold)
+    logger.info("Top-K results: %s", top_k_results)
     
     # Get all subtopics
     subtopics = list(Subtopic.objects.all())
-    print(f"   Found {len(subtopics)} total subtopics")
+    logger.info("Found %s total subtopics", len(subtopics))
     
     # Get chunks with embeddings for both model types
     minilm_chunks = get_chunks_with_embeddings(document_id, model_type='sentence')
     codebert_chunks = get_chunks_with_embeddings(document_id, model_type='code_bert')
-    print(f"   Found {len(minilm_chunks)} chunks with MiniLM embeddings")
-    print(f"   Found {len(codebert_chunks)} chunks with CodeBERT embeddings")
+    logger.info("Found %s chunks with MiniLM embeddings", len(minilm_chunks))
+    logger.info("Found %s chunks with CodeBERT embeddings", len(codebert_chunks))
     
     if not minilm_chunks and not codebert_chunks:
         return {
@@ -91,19 +91,26 @@ def process_all_subtopics(document_id: Optional[int] = None,
                 code_count = len(code_similarities)
                 
                 intent_flag = " 🎯" if (minilm_subtopic_data and minilm_subtopic_data.get('generated_from_intent')) or (codebert_subtopic_data and codebert_subtopic_data.get('generated_from_intent')) else ""
-                print(f"   ✅ {subtopic.name}: {concept_count + code_count} chunks (Concept: {concept_count}, Code: {code_count}){intent_flag}")
+                logger.info(
+                    "Subtopic '%s': %s chunks (Concept: %s, Code: %s)%s",
+                    subtopic.name,
+                    concept_count + code_count,
+                    concept_count,
+                    code_count,
+                    intent_flag,
+                )
             else:
-                print(f"   ⚠️  {subtopic.name}: No chunks above threshold or no embeddings")
+                logger.info("Subtopic '%s': No chunks above threshold or no embeddings", subtopic.name)
                 
         except Exception as e:
             logger.error(f"Error processing subtopic {subtopic.id}: {str(e)}")
-            print(f"   ❌ {subtopic.name}: Error - {str(e)}")
+            logger.exception("Subtopic '%s': Error", subtopic.name)
     
-    print(f"🎯 Semantic similarity processing complete!")
-    print(f"   Processed subtopics: {processed_count}")
-    print(f"   Total similarities stored: {total_similarities_computed}")
+    logger.info("Semantic similarity processing complete")
+    logger.info("Processed subtopics: %s", processed_count)
+    logger.info("Total similarities stored: %s", total_similarities_computed)
     if use_intents and intent_based_count > 0:
-        print(f"   Intent-based embeddings used: {intent_based_count}")
+        logger.info("Intent-based embeddings used: %s", intent_based_count)
     
     return {
         'status': 'success',
