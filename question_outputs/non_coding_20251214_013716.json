@@ -1,0 +1,1055 @@
+[
+  {
+    "question_text": "A whole number without a decimal point in Python.",
+    "correct_answer": "integer",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "Integer and Floating-Point Numbers",
+    "game_data": {
+      "explanation": "Integers are a basic data type representing whole numbers, positive or negative, without a fractional component.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-12-13T17:37:16.060881+00:00",
+    "exported_at": "2025-12-14T01:37:16.063892"
+  },
+  {
+    "question_text": "A number with a decimal point representing real numbers.",
+    "correct_answer": "float",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "Integer and Floating-Point Numbers",
+    "game_data": {
+      "explanation": "Floats, or floating-point numbers, are used to represent real numbers and can include a fractional part.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-12-13T17:37:16.101789+00:00",
+    "exported_at": "2025-12-14T01:37:16.102791"
+  },
+  {
+    "question_text": "The general category for integer and float data.",
+    "correct_answer": "numeric",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "Integer and Floating-Point Numbers",
+    "game_data": {
+      "explanation": "Numeric types in Python include integers and floats, which are used for mathematical operations.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-12-13T17:37:16.151162+00:00",
+    "exported_at": "2025-12-14T01:37:16.152177"
+  },
+  {
+    "question_text": "A logical operator that returns True only if both conditions are true.",
+    "correct_answer": "and",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "Booleans and Logical Expressions",
+    "game_data": {
+      "explanation": "The 'and' operator is used to combine two boolean expressions, resulting in True only if both are true.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-12-13T17:37:16.544815+00:00",
+    "exported_at": "2025-12-14T01:37:16.545831"
+  },
+  {
+    "question_text": "The logical operator that reverses a truth value.",
+    "correct_answer": "not",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "Booleans and Logical Expressions",
+    "game_data": {
+      "explanation": "The 'not' operator inverts a boolean value, turning True into False and False into True.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-12-13T17:37:16.597211+00:00",
+    "exported_at": "2025-12-14T01:37:16.599219"
+  },
+  {
+    "question_text": "A value that cannot be changed after creation.",
+    "correct_answer": "immutable",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "Constants and Immutability Concepts",
+    "game_data": {
+      "explanation": "In Python, an immutable object's state cannot be modified after it is created, like a string or a tuple.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-12-13T17:37:16.673746+00:00",
+    "exported_at": "2025-12-14T01:37:16.677252"
+  },
+  {
+    "question_text": "A variable intended to hold a fixed, unchanging value.",
+    "correct_answer": "constant",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "Constants and Immutability Concepts",
+    "game_data": {
+      "explanation": "A constant is a name for a value that is not meant to be altered during the program's execution.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-12-13T17:37:16.727605+00:00",
+    "exported_at": "2025-12-14T01:37:16.728613"
+  },
+  {
+    "question_text": "The property of an object that allows its state to be changed.",
+    "correct_answer": "mutability",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "Constants and Immutability Concepts",
+    "game_data": {
+      "explanation": "Mutability describes whether an object's value can be modified after it is created, as with a list.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-12-13T17:37:16.776891+00:00",
+    "exported_at": "2025-12-14T01:37:16.777903"
+  },
+  {
+    "question_text": "A named storage location for data in a program.",
+    "correct_answer": "variable",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "Declaring and Naming Variables",
+    "game_data": {
+      "explanation": "A variable is a name that refers to a value stored in the computer's memory, allowing you to use that value in your code.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-12-13T17:37:16.872192+00:00",
+    "exported_at": "2025-12-14T01:37:16.874712"
+  },
+  {
+    "question_text": "The act of creating a variable and giving it an initial value.",
+    "correct_answer": "assignment",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "Declaring and Naming Variables",
+    "game_data": {
+      "explanation": "Assignment is the process of setting a variable to hold a specific value, often using the equals sign operator.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-12-13T17:37:16.923423+00:00",
+    "exported_at": "2025-12-14T01:37:16.924423"
+  },
+  {
+    "question_text": "Rules for what characters can be used in a variable name.",
+    "correct_answer": "identifier",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "Declaring and Naming Variables",
+    "game_data": {
+      "explanation": "An identifier is the formal name for a variable, which must follow specific rules about characters and cannot be a reserved keyword.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-12-13T17:37:16.973770+00:00",
+    "exported_at": "2025-12-14T01:37:16.975766"
+  },
+  {
+    "question_text": "A sequence of characters enclosed in quotes.",
+    "correct_answer": "string",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "Strings and String Formatting",
+    "game_data": {
+      "explanation": "In Python, a string is a data type used to represent text, created by enclosing characters in single or double quotes.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-12-13T17:37:22.440482+00:00",
+    "exported_at": "2025-12-14T01:37:22.441481"
+  },
+  {
+    "question_text": "The property of a string that prevents its characters from being changed.",
+    "correct_answer": "immutability",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "Strings and String Formatting",
+    "game_data": {
+      "explanation": "Strings in Python are immutable, meaning once created, their individual characters cannot be altered directly.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-12-13T17:37:22.494818+00:00",
+    "exported_at": "2025-12-14T01:37:22.495820"
+  },
+  {
+    "question_text": "A method to embed variables directly into a string for display.",
+    "correct_answer": "formatting",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "Strings and String Formatting",
+    "game_data": {
+      "explanation": "String formatting allows you to create strings by inserting values into placeholders within the string text.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-12-13T17:37:22.552171+00:00",
+    "exported_at": "2025-12-14T01:37:22.554171"
+  },
+  {
+    "question_text": "A type of value that can only be True or False.",
+    "correct_answer": "boolean",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "Booleans and Logical Expressions",
+    "game_data": {
+      "explanation": "In Python, a boolean is a data type representing one of two truth values, True or False.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-12-13T17:37:23.231558+00:00",
+    "exported_at": "2025-12-14T01:37:23.233566"
+  },
+  {
+    "question_text": "Changing a value from one data type to another.",
+    "correct_answer": "casting",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "Type Conversion and Casting",
+    "game_data": {
+      "explanation": "Casting is the explicit conversion of a value from one data type to another, like turning a string into an integer.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-12-13T17:37:23.282376+00:00",
+    "exported_at": "2025-12-14T01:37:23.283370"
+  },
+  {
+    "question_text": "A value that cannot be changed after it is created.",
+    "correct_answer": "immutable",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "Booleans and Logical Expressions",
+    "game_data": {
+      "explanation": "An immutable object's state cannot be modified after its creation, like a string or a tuple.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-12-13T17:37:23.307897+00:00",
+    "exported_at": "2025-12-14T01:37:23.309098"
+  },
+  {
+    "question_text": "The general process of converting data types.",
+    "correct_answer": "conversion",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "Type Conversion and Casting",
+    "game_data": {
+      "explanation": "Type conversion is the broader process of changing a value's data type, which can be implicit or explicit.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-12-13T17:37:23.345944+00:00",
+    "exported_at": "2025-12-14T01:37:23.346967"
+  },
+  {
+    "question_text": "A value that cannot be changed after it is created.",
+    "correct_answer": "immutable",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "Booleans and Logical Expressions",
+    "game_data": {
+      "explanation": "An immutable object's state cannot be modified after its creation, like a string or a tuple.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-12-13T17:37:23.307897+00:00",
+    "exported_at": "2025-12-14T01:37:23.365174"
+  },
+  {
+    "question_text": "The general practice of verifying an object's data category.",
+    "correct_answer": "checking",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "Type Checking with type() and isinstance()",
+    "game_data": {
+      "explanation": "Type checking is the process of determining the data type of a value or variable in a program.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-12-13T17:37:23.407975+00:00",
+    "exported_at": "2025-12-14T01:37:23.409992"
+  },
+  {
+    "question_text": "A data type with only two possible values.",
+    "correct_answer": "boolean",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "Booleans and Logical Expressions",
+    "game_data": {
+      "explanation": "In Python, a boolean is a data type that can only be True or False, often used in logical expressions.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-12-13T17:37:29.255439+00:00",
+    "exported_at": "2025-12-14T01:37:29.256986"
+  },
+  {
+    "question_text": "The act of creating a variable and giving it a name.",
+    "correct_answer": "declaring",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "Booleans and Logical Expressions",
+    "game_data": {
+      "explanation": "Declaring a variable is the process of creating it and assigning it a name, which is a fundamental step in programming.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-12-13T17:37:29.319770+00:00",
+    "exported_at": "2025-12-14T01:37:29.321780"
+  },
+  {
+    "question_text": "A container that holds a value which can be changed.",
+    "correct_answer": "variable",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "Booleans and Logical Expressions",
+    "game_data": {
+      "explanation": "A variable is a named storage location in memory that holds data, and its value can be modified during program execution.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-12-13T17:37:29.375274+00:00",
+    "exported_at": "2025-12-14T01:37:29.376779"
+  },
+  {
+    "question_text": "A data type representing truth values like yes or no.",
+    "correct_answer": "boolean",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "Booleans and Logical Expressions",
+    "game_data": {
+      "explanation": "Booleans are a fundamental data type in Python, representing the values True and False.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-12-13T17:37:29.428010+00:00",
+    "exported_at": "2025-12-14T01:37:29.429015"
+  },
+  {
+    "question_text": "A data type representing truth values like yes or no.",
+    "correct_answer": "boolean",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "Booleans and Logical Expressions",
+    "game_data": {
+      "explanation": "Booleans are a fundamental data type in Python, representing the values True and False.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-12-13T17:37:29.428010+00:00",
+    "exported_at": "2025-12-14T01:37:29.479762"
+  },
+  {
+    "question_text": "A number with a decimal point, like 3.14.",
+    "correct_answer": "float",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "Booleans and Logical Expressions",
+    "game_data": {
+      "explanation": "Floats are used to represent real numbers with fractional parts in Python.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-12-13T17:37:29.529872+00:00",
+    "exported_at": "2025-12-14T01:37:29.530873"
+  },
+  {
+    "question_text": "A variable intended to hold a fixed value throughout a program.",
+    "correct_answer": "constant",
+    "game_type": "non_coding",
+    "difficulty": "intermediate",
+    "subtopic": "Constants and Immutability Concepts",
+    "game_data": {
+      "explanation": "A constant is a name for a value that should not be reassigned, often written in uppercase.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-12-13T17:37:35.652134+00:00",
+    "exported_at": "2025-12-14T01:37:35.654133"
+  },
+  {
+    "question_text": "A numeric type that cannot represent fractions.",
+    "correct_answer": "integer",
+    "game_type": "non_coding",
+    "difficulty": "intermediate",
+    "subtopic": "Integer and Floating-Point Numbers",
+    "game_data": {
+      "explanation": "Integers are whole numbers without a decimal point, representing exact values in Python.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-12-13T17:37:35.792205+00:00",
+    "exported_at": "2025-12-14T01:37:35.795313"
+  },
+  {
+    "question_text": "A numeric type that includes a decimal point for precision.",
+    "correct_answer": "float",
+    "game_type": "non_coding",
+    "difficulty": "intermediate",
+    "subtopic": "Integer and Floating-Point Numbers",
+    "game_data": {
+      "explanation": "Floating-point numbers can represent fractions and real numbers, but with potential rounding errors.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-12-13T17:37:35.844676+00:00",
+    "exported_at": "2025-12-14T01:37:35.845711"
+  },
+  {
+    "question_text": "The property of a number type that prevents it from being changed after creation.",
+    "correct_answer": "immutability",
+    "game_type": "non_coding",
+    "difficulty": "intermediate",
+    "subtopic": "Integer and Floating-Point Numbers",
+    "game_data": {
+      "explanation": "Both integers and floats are immutable in Python; their values cannot be altered once assigned.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-12-13T17:37:35.895279+00:00",
+    "exported_at": "2025-12-14T01:37:35.897266"
+  },
+  {
+    "question_text": "A descriptive label for a memory location holding data.",
+    "correct_answer": "identifier",
+    "game_type": "non_coding",
+    "difficulty": "intermediate",
+    "subtopic": "Declaring and Naming Variables",
+    "game_data": {
+      "explanation": "An identifier is the name given to a variable, function, or other object in Python, following specific naming rules.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-12-13T17:37:36.126204+00:00",
+    "exported_at": "2025-12-14T01:37:36.129897"
+  },
+  {
+    "question_text": "The act of creating a variable and assigning it an initial value.",
+    "correct_answer": "declaration",
+    "game_type": "non_coding",
+    "difficulty": "intermediate",
+    "subtopic": "Declaring and Naming Variables",
+    "game_data": {
+      "explanation": "In Python, declaring a variable typically involves assigning a value to a name, which creates the variable.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-12-13T17:37:36.189431+00:00",
+    "exported_at": "2025-12-14T01:37:36.190463"
+  },
+  {
+    "question_text": "A naming convention using underscores between words for readability.",
+    "correct_answer": "snakecase",
+    "game_type": "non_coding",
+    "difficulty": "intermediate",
+    "subtopic": "Declaring and Naming Variables",
+    "game_data": {
+      "explanation": "Snake case is the preferred style in Python for naming variables and functions, like my_variable_name.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-12-13T17:37:36.246940+00:00",
+    "exported_at": "2025-12-14T01:37:36.249572"
+  },
+  {
+    "question_text": "A string method that returns a copy with all characters uppercase.",
+    "correct_answer": "upper",
+    "game_type": "non_coding",
+    "difficulty": "intermediate",
+    "subtopic": "Strings and String Formatting",
+    "game_data": {
+      "explanation": "The upper method is a built-in string function that converts all alphabetic characters in a string to uppercase, returning a new string.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-12-13T17:37:42.323263+00:00",
+    "exported_at": "2025-12-14T01:37:42.323263"
+  },
+  {
+    "question_text": "The property of strings that means they cannot be changed after creation.",
+    "correct_answer": "immutability",
+    "game_type": "non_coding",
+    "difficulty": "intermediate",
+    "subtopic": "Strings and String Formatting",
+    "game_data": {
+      "explanation": "Immutability is a core property of Python strings, meaning once a string object is created, its content cannot be altered.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-12-13T17:37:42.378412+00:00",
+    "exported_at": "2025-12-14T01:37:42.379412"
+  },
+  {
+    "question_text": "A technique to embed expressions inside string literals for formatting.",
+    "correct_answer": "fstring",
+    "game_type": "non_coding",
+    "difficulty": "intermediate",
+    "subtopic": "Strings and String Formatting",
+    "game_data": {
+      "explanation": "An f-string, or formatted string literal, allows embedding Python expressions directly inside string constants using curly braces.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-12-13T17:37:42.430826+00:00",
+    "exported_at": "2025-12-14T01:37:42.431826"
+  },
+  {
+    "question_text": "A value that cannot be altered after creation, like a tuple.",
+    "correct_answer": "immutable",
+    "game_type": "non_coding",
+    "difficulty": "intermediate",
+    "subtopic": "Booleans and Logical Expressions",
+    "game_data": {
+      "explanation": "Immutability is a property of objects whose state cannot be modified after they are created, ensuring data integrity.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-12-13T17:37:42.881824+00:00",
+    "exported_at": "2025-12-14T01:37:42.882824"
+  },
+  {
+    "question_text": "A built-in type representing truth values, either True or False.",
+    "correct_answer": "boolean",
+    "game_type": "non_coding",
+    "difficulty": "intermediate",
+    "subtopic": "Booleans and Logical Expressions",
+    "game_data": {
+      "explanation": "The boolean type is fundamental for logical expressions and control flow, with only two possible values.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-12-13T17:37:42.937159+00:00",
+    "exported_at": "2025-12-14T01:37:42.938163"
+  },
+  {
+    "question_text": "Changing a variable's data type explicitly in code.",
+    "correct_answer": "casting",
+    "game_type": "non_coding",
+    "difficulty": "intermediate",
+    "subtopic": "Type Conversion and Casting",
+    "game_data": {
+      "explanation": "Casting is the explicit conversion of one data type to another, like using int() or str() to change a value's type.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-12-13T17:37:42.983620+00:00",
+    "exported_at": "2025-12-14T01:37:42.985642"
+  },
+  {
+    "question_text": "Automatic conversion of a value to a compatible type.",
+    "correct_answer": "coercion",
+    "game_type": "non_coding",
+    "difficulty": "intermediate",
+    "subtopic": "Type Conversion and Casting",
+    "game_data": {
+      "explanation": "Coercion is implicit type conversion performed by Python, such as when an integer is used in a float operation.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-12-13T17:37:43.042478+00:00",
+    "exported_at": "2025-12-14T01:37:43.043478"
+  },
+  {
+    "question_text": "A function that converts a value to a whole number type.",
+    "correct_answer": "int",
+    "game_type": "non_coding",
+    "difficulty": "intermediate",
+    "subtopic": "Type Conversion and Casting",
+    "game_data": {
+      "explanation": "The int() function is a built-in constructor used for casting values like strings or floats into integers.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-12-13T17:37:43.096184+00:00",
+    "exported_at": "2025-12-14T01:37:43.097196"
+  },
+  {
+    "question_text": "A whole number without a fractional component in Python.",
+    "correct_answer": "integer",
+    "game_type": "non_coding",
+    "difficulty": "intermediate",
+    "subtopic": "Booleans and Logical Expressions",
+    "game_data": {
+      "explanation": "Integers are a numeric data type used for counting and precise arithmetic.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-12-13T17:37:48.144376+00:00",
+    "exported_at": "2025-12-14T01:37:48.144894"
+  },
+  {
+    "question_text": "A number with a decimal point, representing real numbers.",
+    "correct_answer": "float",
+    "game_type": "non_coding",
+    "difficulty": "intermediate",
+    "subtopic": "Booleans and Logical Expressions",
+    "game_data": {
+      "explanation": "Floating-point numbers handle approximations of real numbers for scientific calculations.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-12-13T17:37:48.206805+00:00",
+    "exported_at": "2025-12-14T01:37:48.207315"
+  },
+  {
+    "question_text": "A named storage location that can hold a truth value.",
+    "correct_answer": "boolean",
+    "game_type": "non_coding",
+    "difficulty": "intermediate",
+    "subtopic": "Booleans and Logical Expressions",
+    "game_data": {
+      "explanation": "A variable declared to store a value of either True or False, representing truth or falsity.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-12-13T17:37:48.883118+00:00",
+    "exported_at": "2025-12-14T01:37:48.885118"
+  },
+  {
+    "question_text": "The type of expression that combines booleans with and, or, or not.",
+    "correct_answer": "logical",
+    "game_type": "non_coding",
+    "difficulty": "intermediate",
+    "subtopic": "Booleans and Logical Expressions",
+    "game_data": {
+      "explanation": "An expression that uses logical operators to evaluate to a single boolean value, True or False.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-12-13T17:37:48.950494+00:00",
+    "exported_at": "2025-12-14T01:37:48.951494"
+  },
+  {
+    "question_text": "The property of a number type that determines if it can be changed after creation.",
+    "correct_answer": "immutability",
+    "game_type": "non_coding",
+    "difficulty": "advanced",
+    "subtopic": "Integer and Floating-Point Numbers",
+    "game_data": {
+      "explanation": "Both integers and floats are immutable in Python, meaning their values cannot be altered once assigned.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-12-13T17:37:55.340825+00:00",
+    "exported_at": "2025-12-14T01:37:55.342831"
+  },
+  {
+    "question_text": "A value that cannot be altered after creation.",
+    "correct_answer": "immutable",
+    "game_type": "non_coding",
+    "difficulty": "advanced",
+    "subtopic": "Constants and Immutability Concepts",
+    "game_data": {
+      "explanation": "In Python, immutable objects like tuples or strings cannot be changed after they are created, which ensures data integrity.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-12-13T17:37:55.711616+00:00",
+    "exported_at": "2025-12-14T01:37:55.713617"
+  },
+  {
+    "question_text": "A variable intended to remain unchanged throughout the program.",
+    "correct_answer": "constant",
+    "game_type": "non_coding",
+    "difficulty": "advanced",
+    "subtopic": "Constants and Immutability Concepts",
+    "game_data": {
+      "explanation": "Constants are named values that should not be reassigned, often written in uppercase letters to signal their fixed nature.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-12-13T17:37:55.770166+00:00",
+    "exported_at": "2025-12-14T01:37:55.772164"
+  },
+  {
+    "question_text": "A variable's hidden identifier in memory, unique to each object.",
+    "correct_answer": "identity",
+    "game_type": "non_coding",
+    "difficulty": "advanced",
+    "subtopic": "Declaring and Naming Variables",
+    "game_data": {
+      "explanation": "In Python, every object has a unique identity, which can be found using the id() function. It represents the object's memory address.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-12-13T17:37:55.955670+00:00",
+    "exported_at": "2025-12-14T01:37:55.957176"
+  },
+  {
+    "question_text": "The property of a variable name that determines its visibility in code.",
+    "correct_answer": "scope",
+    "game_type": "non_coding",
+    "difficulty": "advanced",
+    "subtopic": "Declaring and Naming Variables",
+    "game_data": {
+      "explanation": "Scope defines where a variable can be accessed. Variables have local, enclosing, global, or built-in scope.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-12-13T17:37:56.004671+00:00",
+    "exported_at": "2025-12-14T01:37:56.005671"
+  },
+  {
+    "question_text": "The act of linking a name to an object, creating a reference.",
+    "correct_answer": "binding",
+    "game_type": "non_coding",
+    "difficulty": "advanced",
+    "subtopic": "Declaring and Naming Variables",
+    "game_data": {
+      "explanation": "Assignment in Python binds a name to an object. The name is a reference, not the object itself.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-12-13T17:37:56.053946+00:00",
+    "exported_at": "2025-12-14T01:37:56.054951"
+  },
+  {
+    "question_text": "A value that can only be True or False.",
+    "correct_answer": "boolean",
+    "game_type": "non_coding",
+    "difficulty": "advanced",
+    "subtopic": "Booleans and Logical Expressions",
+    "game_data": {
+      "explanation": "A boolean is a data type representing one of two truth values, True or False, often used in logical expressions.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-12-13T17:37:56.223229+00:00",
+    "exported_at": "2025-12-14T01:37:56.225238"
+  },
+  {
+    "question_text": "The property where logical operators stop evaluating as soon as the outcome is known.",
+    "correct_answer": "shortcircuit",
+    "game_type": "non_coding",
+    "difficulty": "advanced",
+    "subtopic": "Booleans and Logical Expressions",
+    "game_data": {
+      "explanation": "Short-circuit evaluation means an operator like 'and' or 'or' stops processing further operands once the final result is determined.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-12-13T17:37:56.277766+00:00",
+    "exported_at": "2025-12-14T01:37:56.278768"
+  },
+  {
+    "question_text": "The process of combining boolean values using operators like and, or, and not.",
+    "correct_answer": "evaluation",
+    "game_type": "non_coding",
+    "difficulty": "advanced",
+    "subtopic": "Booleans and Logical Expressions",
+    "game_data": {
+      "explanation": "Evaluation is the act of computing the result of a logical expression based on the values and operators involved.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-12-13T17:37:56.329151+00:00",
+    "exported_at": "2025-12-14T01:37:56.330170"
+  },
+  {
+    "question_text": "A string's inability to be changed after creation.",
+    "correct_answer": "immutability",
+    "game_type": "non_coding",
+    "difficulty": "advanced",
+    "subtopic": "Strings and String Formatting",
+    "game_data": {
+      "explanation": "Strings in Python are immutable, meaning their contents cannot be altered once they are created.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-12-13T17:38:01.565658+00:00",
+    "exported_at": "2025-12-14T01:38:01.567173"
+  },
+  {
+    "question_text": "A method to embed expressions inside string literals.",
+    "correct_answer": "interpolation",
+    "game_type": "non_coding",
+    "difficulty": "advanced",
+    "subtopic": "Strings and String Formatting",
+    "game_data": {
+      "explanation": "String interpolation allows you to insert variable values directly into a string, often using f-strings.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-12-13T17:38:01.629089+00:00",
+    "exported_at": "2025-12-14T01:38:01.630601"
+  },
+  {
+    "question_text": "The property of a string that defines its sequence of characters.",
+    "correct_answer": "sequence",
+    "game_type": "non_coding",
+    "difficulty": "advanced",
+    "subtopic": "Strings and String Formatting",
+    "game_data": {
+      "explanation": "In Python, a string is a sequence type, meaning it is an ordered collection of characters.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-12-13T17:38:01.689913+00:00",
+    "exported_at": "2025-12-14T01:38:01.690918"
+  },
+  {
+    "question_text": "The concept of checking an object's class before performing an operation.",
+    "correct_answer": "typechecking",
+    "game_type": "non_coding",
+    "difficulty": "advanced",
+    "subtopic": "Type Checking with type() and isinstance()",
+    "game_data": {
+      "explanation": "Type checking is the process of verifying and enforcing the types of objects, often using type() or isinstance().",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-12-13T17:38:02.757308+00:00",
+    "exported_at": "2025-12-14T01:38:02.758691"
+  },
+  {
+    "question_text": "A built-in constant representing the logical opposite of True.",
+    "correct_answer": "False",
+    "game_type": "non_coding",
+    "difficulty": "advanced",
+    "subtopic": "Booleans and Logical Expressions",
+    "game_data": {
+      "explanation": "False is one of the two Boolean constants in Python, representing a false logical value.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-12-13T17:38:03.257037+00:00",
+    "exported_at": "2025-12-14T01:38:03.258052"
+  },
+  {
+    "question_text": "The property that determines if a type can be changed after creation.",
+    "correct_answer": "mutability",
+    "game_type": "non_coding",
+    "difficulty": "advanced",
+    "subtopic": "Type Conversion and Casting",
+    "game_data": {
+      "explanation": "Mutability refers to whether an object's state can be altered after it is created, a key concept for understanding type behavior.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-12-13T17:38:03.444716+00:00",
+    "exported_at": "2025-12-14T01:38:03.445709"
+  },
+  {
+    "question_text": "A variable that can only hold True or False values.",
+    "correct_answer": "boolean",
+    "game_type": "non_coding",
+    "difficulty": "advanced",
+    "subtopic": "Booleans and Logical Expressions",
+    "game_data": {
+      "explanation": "A boolean is a data type representing truth values, crucial for controlling program flow and logical expressions.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-12-13T17:38:07.904414+00:00",
+    "exported_at": "2025-12-14T01:38:07.906408"
+  },
+  {
+    "question_text": "The principle where logical operators stop evaluating once the outcome is determined.",
+    "correct_answer": "shortcircuit",
+    "game_type": "non_coding",
+    "difficulty": "advanced",
+    "subtopic": "Booleans and Logical Expressions",
+    "game_data": {
+      "explanation": "Short-circuit evaluation improves efficiency by not evaluating the entire expression if the result is already known.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-12-13T17:38:07.971542+00:00",
+    "exported_at": "2025-12-14T01:38:07.973535"
+  },
+  {
+    "question_text": "A naming convention using underscores between words for variables.",
+    "correct_answer": "snakecase",
+    "game_type": "non_coding",
+    "difficulty": "advanced",
+    "subtopic": "Booleans and Logical Expressions",
+    "game_data": {
+      "explanation": "Snake case is the standard Python style for variable names, enhancing readability in code.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-12-13T17:38:08.025330+00:00",
+    "exported_at": "2025-12-14T01:38:08.026848"
+  },
+  {
+    "question_text": "A value that is either true or false in Python.",
+    "correct_answer": "boolean",
+    "game_type": "non_coding",
+    "difficulty": "advanced",
+    "subtopic": "Booleans and Logical Expressions",
+    "game_data": {
+      "explanation": "A boolean is a data type representing one of two truth values, True or False, often used in logical expressions.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-12-13T17:38:08.943911+00:00",
+    "exported_at": "2025-12-14T01:38:08.944912"
+  },
+  {
+    "question_text": "A value that is either true or false in Python.",
+    "correct_answer": "boolean",
+    "game_type": "non_coding",
+    "difficulty": "advanced",
+    "subtopic": "Booleans and Logical Expressions",
+    "game_data": {
+      "explanation": "A boolean is a data type representing one of two truth values, True or False, often used in logical expressions.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-12-13T17:38:08.943911+00:00",
+    "exported_at": "2025-12-14T01:38:08.996322"
+  },
+  {
+    "question_text": "A named value intended to remain unchanged throughout a program.",
+    "correct_answer": "constant",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Constants and Immutability Concepts",
+    "game_data": {
+      "explanation": "A constant is a variable whose value is not meant to be altered after its initial assignment.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-12-13T17:38:15.130296+00:00",
+    "exported_at": "2025-12-14T01:38:15.133744"
+  },
+  {
+    "question_text": "A name bound to an object in Python's memory.",
+    "correct_answer": "identifier",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Declaring and Naming Variables",
+    "game_data": {
+      "explanation": "An identifier is the name given to a variable, function, class, or other object, serving as a reference to it in the code.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-12-13T17:38:17.195578+00:00",
+    "exported_at": "2025-12-14T01:38:17.199145"
+  },
+  {
+    "question_text": "A rule for naming variables that uses underscores between words.",
+    "correct_answer": "snakecase",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Declaring and Naming Variables",
+    "game_data": {
+      "explanation": "Snake case is a naming convention where words are separated by underscores, like 'variable_name', commonly used in Python.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-12-13T17:38:17.304958+00:00",
+    "exported_at": "2025-12-14T01:38:17.305991"
+  },
+  {
+    "question_text": "Function that returns the class of an object.",
+    "correct_answer": "type",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Type Checking with type() and isinstance()",
+    "game_data": {
+      "explanation": "The type() function is used to check the exact data type or class of a given object in Python.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-12-13T17:38:22.683797+00:00",
+    "exported_at": "2025-12-14T01:38:22.685860"
+  },
+  {
+    "question_text": "Function to check if an object is an instance of a class or subclass.",
+    "correct_answer": "isinstance",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Type Checking with type() and isinstance()",
+    "game_data": {
+      "explanation": "The isinstance() function checks if an object is an instance of a specified class or a tuple of classes, including inheritance.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-12-13T17:38:22.744516+00:00",
+    "exported_at": "2025-12-14T01:38:22.745516"
+  },
+  {
+    "question_text": "Programming style focusing on an object's behavior over its type.",
+    "correct_answer": "ducktyping",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Type Checking with type() and isinstance()",
+    "game_data": {
+      "explanation": "Duck typing is a concept where the type or class of an object is less important than the methods it defines, often making isinstance checks unnecessary.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-12-13T17:38:22.796303+00:00",
+    "exported_at": "2025-12-14T01:38:22.797294"
+  },
+  {
+    "question_text": "The automatic conversion of one data type to another by the interpreter.",
+    "correct_answer": "coercion",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Type Conversion and Casting",
+    "game_data": {
+      "explanation": "Coercion is implicit type conversion performed by Python, such as when adding an integer to a float.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-12-13T17:38:23.213958+00:00",
+    "exported_at": "2025-12-14T01:38:23.215970"
+  },
+  {
+    "question_text": "The property of logical operators to skip evaluation when the outcome is already known.",
+    "correct_answer": "shortcircuit",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Booleans and Logical Expressions",
+    "game_data": {
+      "explanation": "Short-circuit evaluation stops evaluating a logical expression as soon as the final result is determined, improving efficiency.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-12-13T17:38:23.765255+00:00",
+    "exported_at": "2025-12-14T01:38:23.767268"
+  },
+  {
+    "question_text": "A built-in object representing the logical state of false.",
+    "correct_answer": "False",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Booleans and Logical Expressions",
+    "game_data": {
+      "explanation": "False is one of the two Boolean constants in Python, representing a false condition in logical expressions.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-12-13T17:38:23.817188+00:00",
+    "exported_at": "2025-12-14T01:38:23.818203"
+  },
+  {
+    "question_text": "A built-in immutable type representing truth values.",
+    "correct_answer": "boolean",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Booleans and Logical Expressions",
+    "game_data": {
+      "explanation": "The boolean type in Python has only two possible values: True and False, which are used in logical expressions.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-12-13T17:38:28.167359+00:00",
+    "exported_at": "2025-12-14T01:38:28.168364"
+  },
+  {
+    "question_text": "The process of creating a variable by assigning a value to a name.",
+    "correct_answer": "declaration",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Booleans and Logical Expressions",
+    "game_data": {
+      "explanation": "In Python, a variable is declared when a name is first bound to an object using an assignment statement.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-12-13T17:38:28.220112+00:00",
+    "exported_at": "2025-12-14T01:38:28.221116"
+  },
+  {
+    "question_text": "An expression that evaluates to either True or False using operators like and or not.",
+    "correct_answer": "logical",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Booleans and Logical Expressions",
+    "game_data": {
+      "explanation": "A logical expression combines boolean values and other expressions to produce a final boolean result.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-12-13T17:38:28.277654+00:00",
+    "exported_at": "2025-12-14T01:38:28.278660"
+  },
+  {
+    "question_text": "A value that can only be True or False in Python.",
+    "correct_answer": "boolean",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Booleans and Logical Expressions",
+    "game_data": {
+      "explanation": "Booleans are a fundamental data type representing truth values, essential for logical expressions and control flow.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-12-13T17:38:29.024401+00:00",
+    "exported_at": "2025-12-14T01:38:29.026912"
+  },
+  {
+    "question_text": "A concise conditional expression that returns one of two values.",
+    "correct_answer": "ternary",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Ternary Operators (One-liner conditionals)",
+    "game_data": {
+      "explanation": "A ternary operator is a one-liner conditional that evaluates a condition and returns one value if true, another if false.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-12-13T18:33:28.030748+00:00",
+    "exported_at": "2025-12-14T02:33:28.033254"
+  },
+  {
+    "question_text": "A one-line conditional expression that chooses between two values.",
+    "correct_answer": "ternary",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Ternary Operators (One-liner conditionals)",
+    "game_data": {
+      "explanation": "A ternary operator provides a concise way to write an if-else statement in a single line, evaluating to one of two expressions based on a condition.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-12-13T18:33:31.350516+00:00",
+    "exported_at": "2025-12-14T02:33:31.352523"
+  },
+  {
+    "question_text": "A concise conditional expression returning one of two values.",
+    "correct_answer": "ternary",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Ternary Operators (One-liner conditionals)",
+    "game_data": {
+      "explanation": "A ternary operator is a one-liner conditional that evaluates a condition and returns one of two expressions based on its truth value.",
+      "generation_timestamp": ""
+    },
+    "created_at": "2025-12-13T18:33:34.137466+00:00",
+    "exported_at": "2025-12-14T02:33:34.138859"
+  }
+]

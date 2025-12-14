@@ -4,16 +4,7 @@ from typing import List, Dict, Any
 from content_ingestion.models import TOCEntry
 
 def generate_toc_entries_for_document(document):
-    """
-    Extract TOC entries from a PDF (using metadata or fallback to OCRed TOC pages),
-    convert them to TOCEntry objects, and bulk save to the DB.
-
-    Args:
-        document: UploadedDocument instance
-
-    Returns:
-        List of created TOCEntry objects
-    """
+    # Extract TOC entries from a PDF (metadata or fallback) and bulk save them.
     print(f"\n[TOC] Generating TOC entries for: {document.title}")
 
     try:

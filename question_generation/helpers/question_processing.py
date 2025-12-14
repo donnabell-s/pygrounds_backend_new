@@ -25,17 +25,7 @@ def generate_question_hash(question_text, subtopic_combination, game_type):
 
 
 def check_question_similarity(question_text1: str, question_text2: str, threshold: float = 0.8) -> bool:
-    """
-    Check if two questions are similar based on text analysis.
-    
-    Args:
-        question_text1: First question text
-        question_text2: Second question text  
-        threshold: Similarity threshold (0.0 to 1.0)
-        
-    Returns:
-        True if questions are similar enough to be considered duplicates
-    """
+    # Lightweight text similarity check for dedupe.
     if not question_text1 or not question_text2:
         return False
         
@@ -97,12 +87,8 @@ def parse_llm_json_response(llm_response: str, game_type: str = 'coding') -> Opt
             print(f"❌ Expected list, got {type(questions)}")
             return None
             
-        # Validate the batch of questions - COMPLETELY DISABLED TO GET GENERATION WORKING
-        # if not validate_question_batch(questions, game_type):
-        #     print("❌ Question batch validation failed")
-        #     return None
-            
-        print(f"✅ Successfully parsed {len(questions)} questions (NO validation)")
+        # Validation is applied downstream (e.g., validate_question_data + DB dedupe).
+        print(f"✅ Parsed {len(questions)} questions")
         return questions
         
     except json.JSONDecodeError as e:
@@ -141,16 +127,7 @@ def parse_llm_json_response(llm_response: str, game_type: str = 'coding') -> Opt
 
 
 def format_question_for_game_type(question_data: Dict[str, Any], game_type: str) -> Dict[str, Any]:
-    """
-    Format question data according to game type requirements.
-    
-    Args:
-        question_data: Raw question data from LLM
-        game_type: 'coding' or 'non_coding'
-        
-    Returns:
-        Formatted question dictionary
-    """
+    # Normalize LLM output into the fields we persist.
     if game_type == 'coding':
         return {
             'question_text': question_data.get('question_text', ''),
@@ -176,24 +153,21 @@ def format_question_for_game_type(question_data: Dict[str, Any], game_type: str)
 
 
 def validate_question_data(question_data: Dict[str, Any], game_type: str, seen_function_names: set = None) -> bool:
-    """
-    Validate that question data contains required fields and checks for duplicate function names.
-    
-    Args:
-        question_data: Question dictionary to validate
-        game_type: 'coding' or 'non_coding'
-        seen_function_names: Set of function names already used in the batch (optional)
-        
-    Returns:
-        bool: True if valid, False otherwise
-    """
+    # Validate required fields and (for coding) enforce unique function_name.
     required_fields = ['question_text', 'difficulty']
     
     if game_type == 'coding':
         required_fields.extend([
-            'function_name', 'sample_input', 'sample_output', 'buggy_code',
-            'explanation', 'buggy_explanation'
-            # Temporarily removed: 'correct_code', 'buggy_correct_code'
+            'buggy_question_text',
+            'function_name',
+            'sample_input',
+            'sample_output',
+            'hidden_tests',
+            'buggy_code',
+            'correct_code',
+            'buggy_correct_code',
+            'explanation',
+            'buggy_explanation',
         ])
         
         # Check for duplicate function names if we're tracking them
@@ -206,9 +180,25 @@ def validate_question_data(question_data: Dict[str, Any], game_type: str, seen_f
     else:  # non-coding questions
         required_fields.extend(['answer', 'explanation'])  # answer and explanation are required for non-coding questions
     
-    # Check required fields
+    # Check required fields (type-aware)
     for field in required_fields:
-        if not question_data.get(field):
+        if field not in question_data:
+            print(f"❌ Missing required field: {field}")
+            return False
+
+        value = question_data.get(field)
+
+        if field == 'hidden_tests':
+            if not isinstance(value, list) or len(value) == 0:
+                print("❌ Invalid hidden_tests (must be non-empty list)")
+                return False
+            continue
+
+        if isinstance(value, str):
+            if not value.strip():
+                print(f"❌ Empty required field: {field}")
+                return False
+        elif value is None:
             print(f"❌ Missing required field: {field}")
             return False
             
@@ -216,16 +206,7 @@ def validate_question_data(question_data: Dict[str, Any], game_type: str, seen_f
 
 
 def validate_question_batch(questions: List[Dict[str, Any]], game_type: str) -> bool:
-    """
-    Validate a batch of questions, ensuring no duplicate function names in coding questions.
-    
-    Args:
-        questions: List of question dictionaries to validate
-        game_type: 'coding' or 'non_coding'
-        
-    Returns:
-        bool: True if all questions are valid, False otherwise
-    """
+    # Validate a batch and ensure uniqueness constraints.
     if not questions:
         return False
         
@@ -239,15 +220,7 @@ def validate_question_batch(questions: List[Dict[str, Any]], game_type: str) -> 
 
 
 def extract_subtopic_names(subtopic_combination) -> List[str]:
-    """
-    Extract names from subtopic combination (handles both querysets and lists).
-    
-    Args:
-        subtopic_combination: Django queryset or list of subtopic objects
-        
-    Returns:
-        List of subtopic names
-    """
+    # Extract names from a queryset/list.
     try:
         return [subtopic.name for subtopic in subtopic_combination]
     except AttributeError:
@@ -256,18 +229,7 @@ def extract_subtopic_names(subtopic_combination) -> List[str]:
 
 
 def create_generation_context(subtopic_combination, difficulty: str, num_questions: int, rag_context: str = None) -> Dict[str, Any]:
-    """
-    Create standardized context dictionary for LLM prompt generation.
-    
-    Args:
-        subtopic_combination: Subtopics for the questions
-        difficulty: Difficulty level
-        num_questions: Number of questions to generate
-        rag_context: Optional RAG context
-        
-    Returns:
-        Context dictionary for prompt generation
-    """
+    # Create context dict for prompt generation.
     subtopic_names = extract_subtopic_names(subtopic_combination)
     
     # Create safe subtopic name by escaping problematic characters that could interfere with string formatting

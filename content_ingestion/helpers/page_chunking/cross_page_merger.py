@@ -1,20 +1,10 @@
-"""
-Cross-page content continuity utilities for handling content that spans multiple pages.
-"""
+## Cross-page continuity utilities for content spanning multiple pages.
 import re
 from typing import List, Dict, Any, Optional, Tuple
 
 
 def detect_split_content(chunks: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-    """
-    Detect and merge content that has been split across pages.
-    
-    Common patterns:
-    - Code blocks split across pages
-    - Class/function definitions spanning pages  
-    - Incomplete sentences at page boundaries
-    - Method explanations continued on next page
-    """
+    # Detect and merge content split across pages (code blocks, definitions, sentences, lists, etc.).
     if not chunks:
         return chunks
     
@@ -47,12 +37,7 @@ def detect_split_content(chunks: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
 
 
 def _should_merge_chunks(chunk1: Dict[str, Any], chunk2: Dict[str, Any]) -> Tuple[bool, str]:
-    """
-    Determine if two consecutive chunks should be merged and why.
-    
-    Returns:
-        (should_merge: bool, reason: str)
-    """
+    # Determine if two consecutive chunks should be merged and why.
     text1 = chunk1.get('text', '').strip()
     text2 = chunk2.get('text', '').strip()
     
@@ -87,7 +72,7 @@ def _should_merge_chunks(chunk1: Dict[str, Any], chunk2: Dict[str, Any]) -> Tupl
 
 
 def _is_split_code_block(text1: str, text2: str) -> bool:
-    """Check if code block is split across pages."""
+    # Check if a code block is split across pages.
     # Look for incomplete code structures
     code_indicators = [
         # Incomplete class definition
@@ -126,7 +111,7 @@ def _is_split_code_block(text1: str, text2: str) -> bool:
 
 
 def _is_split_class_or_function(text1: str, text2: str) -> bool:
-    """Check if class or function definition is split."""
+    # Check if class or function definition is split.
     # Class definition at end of first chunk, methods/attributes at start of second
     if (re.search(r'class\s+\w+.*:\s*$', text1, re.MULTILINE) and 
         re.search(r'^\s*(def\s+\w+|@\w+|\w+\s*=|""")', text2, re.MULTILINE)):
@@ -142,7 +127,7 @@ def _is_split_class_or_function(text1: str, text2: str) -> bool:
 
 
 def _is_incomplete_sentence(text1: str, text2: str) -> bool:
-    """Check if sentence is incomplete at page boundary."""
+    # Check if a sentence is incomplete at a page boundary.
     # First chunk ends without proper punctuation
     if not re.search(r'[.!?:]\s*$', text1.strip()):
         # Second chunk starts with lowercase (continuation)
@@ -159,7 +144,7 @@ def _is_incomplete_sentence(text1: str, text2: str) -> bool:
 
 
 def _is_method_continuation(text1: str, text2: str) -> bool:
-    """Check if method/descriptor description continues on next page."""
+    # Check if method/descriptor description continues on next page.
     # Pattern from your example: "__get__(self, obj, owner=None): This is called whenever"
     # followed by description on next page
     
@@ -187,7 +172,7 @@ def _is_method_continuation(text1: str, text2: str) -> bool:
 
 
 def _is_list_continuation(text1: str, text2: str) -> bool:
-    """Check if numbered/bulleted list continues on next page."""
+    # Check if numbered/bulleted list continues on next page.
     # First chunk ends with incomplete list item
     if re.search(r'^\s*[\d\-\*•]\s+.*[^.!?]\s*$', text1.split('\n')[-1].strip()):
         # Second chunk starts with list continuation or next item
@@ -203,7 +188,7 @@ def _is_list_continuation(text1: str, text2: str) -> bool:
 
 
 def _is_same_topic_continuation(text1: str, text2: str) -> bool:
-    """Check if content continues the same topic/section."""
+    # Check if content continues the same topic/section.
     # Extract potential section headers
     headers1 = re.findall(r'^[A-Z][A-Za-z\s]+$', text1, re.MULTILINE)
     headers2 = re.findall(r'^[A-Z][A-Za-z\s]+$', text2, re.MULTILINE)
@@ -220,9 +205,7 @@ def _is_same_topic_continuation(text1: str, text2: str) -> bool:
 
 
 def _merge_chunks(chunk1: Dict[str, Any], chunk2: Dict[str, Any], merge_type: str) -> Dict[str, Any]:
-    """
-    Merge two chunks based on the merge type.
-    """
+    # Merge two chunks based on merge_type.
     text1 = chunk1.get('text', '').strip()
     text2 = chunk2.get('text', '').strip()
     
@@ -280,12 +263,7 @@ def _merge_chunks(chunk1: Dict[str, Any], chunk2: Dict[str, Any], merge_type: st
 
 
 def enhance_cross_page_chunking(chunks: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-    """
-    Main function to enhance chunking by handling cross-page content.
-    
-    This should be called after initial chunk extraction to merge
-    content that was artificially split by page boundaries.
-    """
+    # Enhance chunking by merging content split by page boundaries.
     print(f"🔄 Processing {len(chunks)} chunks for cross-page continuity...")
     
     # Sort chunks by page and order to ensure proper sequence
@@ -308,8 +286,5 @@ def enhance_cross_page_chunking(chunks: List[Dict[str, Any]]) -> List[Dict[str, 
 
 
 def merge_cross_page_content(chunks: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-    """
-    Main function to merge content that spans across pages.
-    This is an alias for detect_split_content with a more descriptive name.
-    """
+    # Alias for `detect_split_content`.
     return detect_split_content(chunks)

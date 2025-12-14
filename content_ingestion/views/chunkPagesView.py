@@ -1,17 +1,32 @@
-from ..helpers.view_imports import *
-from ..helpers.helper_imports import *
-from content_ingestion.models import CHUNK_TYPE_CHOICES
-from multiprocessing import Pool
-import psutil
+import json
 import logging
+import os
+from datetime import datetime
+
+import psutil
+from django.core.files.storage import default_storage
+from django.db import transaction
+from django.http import FileResponse, Http404, JsonResponse
+from django.shortcuts import get_object_or_404
+from django.utils import timezone
+from rest_framework import status
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+
+from content_ingestion.models import CHUNK_TYPE_CHOICES
+from content_ingestion.serializers import DocumentSerializer
+
+from ..helpers.embedding.generator import EmbeddingGenerator
+from ..helpers.page_chunking.toc_chunk_processor import GranularChunkProcessor
+from ..helpers.semantic_similarity import compute_semantic_similarities_for_document
+from ..helpers.toc_parser import generate_toc_entries_for_document
+from ..models import DocumentChunk, TOCEntry, UploadedDocument
+from multiprocessing import Pool
 
 logger = logging.getLogger(__name__)
 
 def _run_document_pipeline_background(document_id, reprocess=False):
-    """
-    Background function to run the complete document processing pipeline using ProcessPool.
-    This runs in a separate thread to manage the ProcessPool without blocking HTTP response.
-    """
+    # Run the document pipeline in a background thread and offload each step to a process.
     try:
         document = UploadedDocument.objects.get(id=document_id)
         
@@ -45,8 +60,8 @@ def _run_document_pipeline_background(document_id, reprocess=False):
         }
         
         try:
-            # Import the worker function from our separate module
-            from content_ingestion.document_worker import process_document_task
+            # Import the worker function from the multiprocessing-safe module
+            from content_ingestion.helpers.workers.document_worker import process_document_task
             
             # Process steps sequentially (since they depend on each other)
             for step_data in processing_steps:
@@ -141,12 +156,7 @@ def _run_document_pipeline_background(document_id, reprocess=False):
 
 @api_view(['POST'])
 def process_document_pipeline(request, document_id):
-    """
-    Start processing an uploaded document through the full pipeline using ProcessPool.
-    
-    This endpoint starts the processing in a background thread that manages ProcessPool 
-    and returns immediately. Use GET /docs/<document_id>/ to check the processing status.
-    """
+    # Start full pipeline in background and return immediately.
     try:
         document = get_object_or_404(UploadedDocument, id=document_id)
         
@@ -190,14 +200,7 @@ def process_document_pipeline(request, document_id):
 
 @api_view(['POST'])
 def cancel_document_pipeline(request, document_id):
-    """
-    Cancel the document processing pipeline and clean up any partially created objects.
-    
-    This will:
-    1. Mark the document as cancelled
-    2. Delete any partially created chunks, embeddings, etc.
-    3. Reset the document to PENDING status
-    """
+    # Cancel processing and delete partially created objects.
     try:
         document = get_object_or_404(UploadedDocument, id=document_id)
         
@@ -237,10 +240,7 @@ def cancel_document_pipeline(request, document_id):
 
 
 def _cleanup_document_objects(document):
-    """
-    Clean up all objects created during document processing.
-    Returns the count of objects cleaned up.
-    """
+    # Delete chunks/TOC/embeddings created for this document.
     cleanup_count = 0
     
     try:
@@ -602,20 +602,7 @@ def _get_difficulty_distribution(chunks_data):
 
 @api_view(['POST'])
 def upload_and_process_pipeline(request):
-    """
-    Complete pipeline endpoint: Upload file + run full processing pipeline.
-    
-    Expected form data:
-    - file: PDF file to upload (required)
-    - difficulty: Document difficulty level (optional, defaults to 'intermediate')
-    
-    Processing steps:
-    1. Upload and save document (title auto-extracted from filename)
-    2. Generate TOC
-    3. Chunk pages according to TOC
-    4. Generate embeddings
-    5. Compute semantic similarities
-    """
+    # Upload a PDF and run the full pipeline (TOC -> chunk -> embed -> semantic).
     try:
         # Check if file is provided
         if 'file' not in request.FILES:

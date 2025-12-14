@@ -45,9 +45,6 @@ class GeneratedQuestion(models.Model):
 
 
 class PreAssessmentQuestion(models.Model):
-    """
-    Manually-authored pre-assessment questions for onboarding/adaptive profiling.
-    """
     # Store multiple topic and subtopic IDs that this question covers
     topic_ids = JSONField(default=list, blank=True, help_text="List of topic IDs this question covers")
     subtopic_ids = JSONField(default=list, blank=True, help_text="List of subtopic IDs this question covers")

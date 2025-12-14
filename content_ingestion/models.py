@@ -58,7 +58,7 @@ class UploadedDocument(models.Model):
     )
 
     def delete(self, *args, **kwargs):
-        """Override delete to clean up all related data comprehensively"""
+        # Delete document plus related chunks/TOC/embeddings and the file.
         import logging
         import os
         logger = logging.getLogger(__name__)
@@ -267,7 +267,7 @@ class Subtopic(models.Model):
     )
 
     def delete(self, *args, **kwargs):
-        """Override delete to clean up related embeddings (only subtopic type)"""
+        # Delete subtopic-related embeddings and relationships.
         import logging
         logger = logging.getLogger(__name__)
 
@@ -370,7 +370,7 @@ class Embedding(models.Model):
         ]
 
     def clean(self):
-        """Validate that content_type matches the related object and vectors are properly set."""
+        # Validate content_type/object relation and vector fields.
         from django.core.exceptions import ValidationError
         
         if self.content_type == 'chunk' and not self.document_chunk:
@@ -385,7 +385,7 @@ class Embedding(models.Model):
             raise ValidationError("At least one embedding vector must be provided")
 
     def get_vector_for_model(self, model_type):
-        """Get the appropriate vector based on model type."""
+        # Get vector for a model type ('sentence' vs 'code_bert').
         if model_type == 'sentence' or 'minilm' in model_type.lower():
             return self.minilm_vector
         elif model_type == 'code_bert' or 'codebert' in model_type.lower():
@@ -395,7 +395,7 @@ class Embedding(models.Model):
             return None
     
     def set_vector_for_model(self, model_type, vector):
-        """Set the appropriate vector based on model type."""
+        # Set vector for a model type ('sentence' vs 'code_bert').
         if model_type == 'sentence' or 'minilm' in model_type.lower():
             self.minilm_vector = vector
             self.dimension = 384
@@ -498,7 +498,7 @@ class SemanticSubtopic(models.Model):
         return concept_chunks + code_chunks
     
     def add_concept_ranking(self, chunk_id, similarity_score, chunk_type):
-        """Add or update a concept chunk in the ranked list, maintaining sort order by similarity."""
+        # Upsert a concept chunk ranking entry.
         if not self.ranked_concept_chunks:
             self.ranked_concept_chunks = []
         
@@ -519,7 +519,7 @@ class SemanticSubtopic(models.Model):
         self.ranked_concept_chunks = self.ranked_concept_chunks[:10]
     
     def add_code_ranking(self, chunk_id, similarity_score, chunk_type):
-        """Add or update a code chunk in the ranked list, maintaining sort order by similarity."""
+        # Upsert a code chunk ranking entry.
         if not self.ranked_code_chunks:
             self.ranked_code_chunks = []
         
@@ -540,7 +540,7 @@ class SemanticSubtopic(models.Model):
         self.ranked_code_chunks = self.ranked_code_chunks[:10]
     
     def add_chunk_ranking(self, chunk_id, similarity_score, chunk_type):
-        """Add or update a chunk in the appropriate ranked list based on chunk type."""
+        # Upsert a ranking entry into the appropriate list.
         if chunk_type == 'Concept':
             self.add_concept_ranking(chunk_id, similarity_score, chunk_type)
         elif chunk_type in ['Code', 'Example', 'Exercise', 'Try_It']:
@@ -550,7 +550,7 @@ class SemanticSubtopic(models.Model):
             self.add_concept_ranking(chunk_id, similarity_score, chunk_type)
     
     def get_chunks_by_type(self, chunk_type, limit=None):
-        """Get chunk IDs of a specific type for this subtopic."""
+        # Return ranked chunk IDs for a specific chunk type.
         if chunk_type == 'Concept':
             chunks = self.ranked_concept_chunks
         elif chunk_type in ['Code', 'Example', 'Exercise', 'Try_It']:
@@ -570,7 +570,7 @@ class SemanticSubtopic(models.Model):
         return chunk_ids[:limit] if limit else chunk_ids
     
     def get_similarity_for_chunk_type(self, chunk_type):
-        """Get highest similarity score for a specific chunk type."""
+        # Return highest similarity score for a specific chunk type.
         if chunk_type == 'Concept':
             chunks = self.ranked_concept_chunks
         elif chunk_type in ['Code', 'Example', 'Exercise', 'Try_It']:

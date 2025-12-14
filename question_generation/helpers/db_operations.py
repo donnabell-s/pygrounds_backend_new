@@ -1,7 +1,4 @@
-"""
-Database operations for saving generated questions to the Django ORM.
-Handles question creation, validation, and batch operations with JSON export.
-"""
+# DB save + JSON export helpers
 
 import json
 import os
@@ -19,15 +16,9 @@ except ImportError:
     import msvcrt
     HAS_FCNTL = False
 
+
 def write_json_safely(filepath: str, data: list, question_type: str = "question"):
-    """
-    Cross-platform safe JSON file writing with immediate disk sync.
-    
-    Args:
-        filepath: Path to JSON file
-        data: List of data to write
-        question_type: Type of question for logging
-    """
+    # Cross-platform JSON append with disk sync
     try:
         if HAS_FCNTL:
             # Unix/Linux/Mac - use fcntl
@@ -93,14 +84,7 @@ def write_json_safely(filepath: str, data: list, question_type: str = "question"
 
 
 def export_question_to_json(question_obj, game_type: str):
-    """
-    Export a single question to the appropriate JSON file in question_outputs folder.
-    Real-time appending with immediate file updates for live progress tracking.
-    
-    Args:
-        question_obj: GeneratedQuestion instance
-        game_type: 'coding' or 'non_coding'
-    """
+    # Append a saved question to question_outputs/*.json
     try:
         # Create question_outputs directory if it doesn't exist
         output_dir = os.path.join(os.path.dirname(__file__), '..', '..', 'question_outputs')
@@ -207,12 +191,7 @@ def export_question_to_json(question_obj, game_type: str):
 
 
 def export_preassessment_question_to_json(question_obj):
-    """
-    Export a single pre-assessment question to the JSON file in question_outputs folder.
-    
-    Args:
-        question_obj: PreAssessmentQuestion instance
-    """
+    # Append a pre-assessment question to question_outputs/*.json
     try:
         # Create question_outputs directory if it doesn't exist
         output_dir = os.path.join(os.path.dirname(__file__), '..', '..', 'question_outputs')
@@ -279,22 +258,7 @@ def save_minigame_questions_to_db_enhanced(questions_json: List[Dict[str, Any]],
                                          zone, 
                                          thread_manager=None,
                                          max_to_save: Optional[int] = None) -> Tuple[List, List]:
-    """
-    Enhanced save function that handles both coding and non-coding questions with proper field mapping.
-    Includes deduplication and JSON export functionality.
-    
-    Args:
-        questions_json: List of question dictionaries from LLM
-        subtopic_combination: List/queryset of subtopics
-        difficulty: Difficulty level
-        game_type: 'coding' or 'non_coding'
-        rag_context: RAG context used for generation
-        zone: GameZone instance
-        thread_manager: Optional thread manager for deduplication
-        
-    Returns:
-        Tuple of (saved_questions, duplicate_questions)
-    """
+    # Persist questions with dedupe + JSON export.
     from question_generation.models import GeneratedQuestion
     
     # Extract subtopic names and IDs for use in deduplication
@@ -359,7 +323,8 @@ def save_minigame_questions_to_db_enhanced(questions_json: List[Dict[str, Any]],
                     # Prepare data based on game type
                     if game_type == 'coding':
                         # For coding questions, extract the correct answer and coding-specific fields
-                        correct_answer = q.get('correct_answer', '')  # The working code solution
+                        # `GeneratedQuestion.correct_answer` is a legacy field; for coding it should mirror `correct_code`.
+                        correct_answer = (q.get('correct_code') or q.get('correct_answer', ''))
                         
                         # Extract coding-specific fields for game_data
                         function_name = q.get('function_name', '')
@@ -372,7 +337,7 @@ def save_minigame_questions_to_db_enhanced(questions_json: List[Dict[str, Any]],
                         buggy_question_text = q.get('buggy_question_text', '')
                         correct_code = q.get('correct_code', '')
                         buggy_correct_code = q.get('buggy_correct_code', '')
-                        buggy_code_explanation = q.get('buggy_code_explanation', '')
+                        buggy_code_explanation = q.get('buggy_code_explanation') or q.get('buggy_explanation', '')
                         
                         # Extract explanation fields from your original working code
                         explanation = q.get('explanation', '')
@@ -456,18 +421,7 @@ def save_questions_batch(questions_data: List[Dict[str, Any]],
                         subtopic, 
                         game_type: str, 
                         difficulty: str) -> List:
-    """
-    Save a batch of questions to the database (simplified version).
-    
-    Args:
-        questions_data: List of question dictionaries
-        subtopic: Subtopic instance
-        game_type: 'coding' or 'non_coding'
-        difficulty: Difficulty level
-        
-    Returns:
-        List of saved GeneratedQuestion objects
-    """
+    # Simplified batch save.
     from question_generation.models import GeneratedQuestion
     
     saved_questions = []
@@ -493,17 +447,7 @@ def save_questions_batch(questions_data: List[Dict[str, Any]],
 
 
 def get_existing_questions_count(subtopic=None, game_type: str = None, difficulty: str = None) -> int:
-    """
-    Get count of existing questions with optional filters.
-    
-    Args:
-        subtopic: Optional subtopic filter
-        game_type: Optional game type filter
-        difficulty: Optional difficulty filter
-        
-    Returns:
-        Count of matching questions
-    """
+    # Count existing questions with optional filters.
     from question_generation.models import GeneratedQuestion
     
     queryset = GeneratedQuestion.objects.all()
@@ -519,17 +463,7 @@ def get_existing_questions_count(subtopic=None, game_type: str = None, difficult
 
 
 def delete_questions_by_criteria(subtopic=None, game_type: str = None, difficulty: str = None) -> int:
-    """
-    Delete questions matching given criteria.
-    
-    Args:
-        subtopic: Optional subtopic filter
-        game_type: Optional game type filter
-        difficulty: Optional difficulty filter
-        
-    Returns:
-        Number of deleted questions
-    """
+    # Delete questions matching criteria.
     from question_generation.models import GeneratedQuestion
     
     queryset = GeneratedQuestion.objects.all()

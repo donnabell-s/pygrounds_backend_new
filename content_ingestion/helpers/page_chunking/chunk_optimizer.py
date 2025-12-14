@@ -3,9 +3,7 @@ import re
 from content_ingestion.models import DocumentChunk
 
 class ChunkOptimizer:
-    """
-    Post-processes chunks to optimize them for LLM consumption and RAG applications.
-    """
+    # Post-process chunks to optimize them for LLM consumption and RAG applications.
     
     def __init__(self):
         self.section_patterns = {
@@ -34,9 +32,7 @@ class ChunkOptimizer:
         ]
     
     def optimize_chunks(self, document_id: int) -> Dict[str, Any]:
-        """
-        Optimize all chunks for a document for better LLM consumption.
-        """
+        # Optimize all chunks for a document for better LLM consumption.
         chunks = DocumentChunk.objects.filter(document_id=document_id).order_by('page_number', 'order_in_doc')
         
         optimized_chunks = []
@@ -81,9 +77,7 @@ class ChunkOptimizer:
         }
     
     def _optimize_single_chunk(self, chunk: DocumentChunk) -> Dict[str, Any]:
-        """
-        Optimize a single chunk for LLM consumption.
-        """
+        # Optimize a single chunk for LLM consumption.
         # Extract clean title
         clean_title, title_section = self._extract_clean_title(chunk.subtopic_title)
         
@@ -129,7 +123,7 @@ class ChunkOptimizer:
         }
     
     def _extract_clean_title(self, title: str) -> tuple[str, str]:
-        """Extract clean title and section number from TOC title."""
+        # Extract clean title and section number from TOC title.
         title = title.strip()
         
         for pattern_name, pattern in self.section_patterns.items():
@@ -170,7 +164,7 @@ class ChunkOptimizer:
         return clean.strip(), ""
     
     def _clean_content(self, text: str) -> str:
-        """Clean and normalize text content."""
+        # Clean and normalize text content.
         content = text
         
         for pattern, replacement in self.cleanup_patterns:
@@ -179,7 +173,7 @@ class ChunkOptimizer:
         return content.strip()
     
     def _extract_section_from_content(self, content: str) -> str:
-        """Extract section title from the actual content."""
+        # Extract section title from the actual content.
         lines = content.split('\n')
         for line in lines[:5]:  # Check first 5 lines
             line = line.strip()
@@ -195,7 +189,7 @@ class ChunkOptimizer:
         return ""
     
     def _structure_content(self, content: str, title: str) -> str:
-        """Structure content with proper headers and formatting."""
+        # Structure content with headers/formatting.
         # Clean content without adding title headers
         paragraphs = content.split('\n\n')
         structured_paragraphs = []
@@ -230,7 +224,7 @@ class ChunkOptimizer:
         return '\n\n'.join(structured_paragraphs)
     
     def _categorize_content(self, content: str) -> str:
-        """Categorize the type of content."""
+        # Categorize the type of content.
         content_lower = content.lower()
         
         if 'challenge' in content_lower:
@@ -245,7 +239,7 @@ class ChunkOptimizer:
             return 'instructional_text'
     
     def _extract_concepts(self, content: str) -> List[str]:
-        """Extract key programming concepts from content."""
+        # Extract key programming concepts from content.
         concepts = []
         content_lower = content.lower()
         
@@ -264,7 +258,7 @@ class ChunkOptimizer:
         return list(set(concepts))  # Remove duplicates
     
     def _extract_learning_objectives(self, content: str) -> List[str]:
-        """Extract learning objectives from content."""
+        # Extract learning objectives from content.
         objectives = []
         
         # Look for objective indicators
@@ -282,7 +276,7 @@ class ChunkOptimizer:
         return objectives[:3]  # Limit to top 3
     
     def _extract_code_examples(self, content: str) -> List[str]:
-        """Extract code examples from content."""
+        # Extract code examples from content.
         code_blocks = []
         
         # Find Python code patterns
@@ -299,7 +293,7 @@ class ChunkOptimizer:
         return code_blocks[:5]  # Limit to top 5
     
     def _extract_exercises(self, content: str) -> List[str]:
-        """Extract exercise descriptions from content."""
+        # Extract exercise descriptions from content.
         exercises = []
         
         # Find numbered exercises
@@ -314,7 +308,7 @@ class ChunkOptimizer:
         return exercises
     
     def _create_llm_context(self, content: str) -> str:
-        """Create optimized context for LLM consumption without titles."""
+        # Create optimized context for LLM consumption without titles.
         # Clean content and remove any remaining section headers
         clean_content = content
         
@@ -333,7 +327,7 @@ KEY LEARNING POINTS:
         """.strip()
     
     def _extract_rag_keywords(self, title: str, content: str) -> List[str]:
-        """Extract keywords for RAG retrieval optimization."""
+        # Extract keywords for RAG retrieval optimization.
         keywords = []
         
         # Add title words
@@ -347,11 +341,11 @@ KEY LEARNING POINTS:
         return list(set(keywords))  # Remove duplicates
     
     def _assess_difficulty(self, content: str) -> str:
-        """Assess content difficulty level - REMOVED for LLM inspiration."""
+        # Assess content difficulty level (currently neutral).
         return 'info'  # Neutral level for LLM inspiration
     
     def _extract_prerequisites(self, content: str) -> List[str]:
-        """Extract prerequisite knowledge from content."""
+        # Extract prerequisite knowledge from content.
         prereqs = []
         content_lower = content.lower()
         
@@ -365,7 +359,7 @@ KEY LEARNING POINTS:
         return prereqs
     
     def _create_llm_format(self, optimized_chunks: List[Dict]) -> List[Dict]:
-        """Create final LLM-optimized format."""
+        # Create final LLM-optimized format.
         llm_chunks = []
         
         for chunk in optimized_chunks:
@@ -391,7 +385,7 @@ KEY LEARNING POINTS:
         return llm_chunks
     
     def _fallback_chunk_format(self, chunk: DocumentChunk) -> Dict[str, Any]:
-        """Fallback format if optimization fails."""
+        # Fallback format if optimization fails.
         return {
             'id': chunk.id,
             'original_title': chunk.subtopic_title,

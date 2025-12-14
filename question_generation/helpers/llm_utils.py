@@ -8,6 +8,7 @@ logger = logging.getLogger(__name__)
 
 DEEPSEEK_API_KEY = os.environ.get("DEEPSEEK_API_KEY")
 DEEPSEEK_BASE_URL = os.environ.get("DEEPSEEK_API_URL")
+DEEPSEEK_TIMEOUT_SECONDS = float(os.environ.get("DEEPSEEK_TIMEOUT_SECONDS", "180"))
 
 # Temperature settings for different question types
 CODING_TEMPERATURE = 0.0    # Very deterministic for coding questions
@@ -17,6 +18,7 @@ NON_CODING_TEMPERATURE = 0.8  # More creative for non-coding questions
 client = OpenAI(
     api_key=DEEPSEEK_API_KEY,
     base_url=DEEPSEEK_BASE_URL,
+    timeout=DEEPSEEK_TIMEOUT_SECONDS,
 )
 
 def send_llm_messages(messages, tools=None, model="deepseek-chat", **kwargs):

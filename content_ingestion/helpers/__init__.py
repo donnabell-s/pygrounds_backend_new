@@ -1,8 +1,4 @@
-"""
-Content Ingestion Helpers
-
-Organized modules for content processing, embedding generation, and utility functions.
-"""
+# Content-ingestion helper exports.
 
 # Embedding system
 from .embedding import EmbeddingGenerator, EmbeddingModelType

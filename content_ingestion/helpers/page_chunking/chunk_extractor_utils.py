@@ -13,13 +13,7 @@ logger = logging.getLogger(__name__)
 
 
 def extract_unstructured_chunks(file_path):
-    """
-    Enhanced extraction using unstructured library with improved chunking for coding vs conceptual content.
-    
-    This function processes PDFs to create contextually appropriate chunks that distinguish between:
-    - Conceptual content (for non-coding questions)
-    - Coding content (for coding questions - includes Code, Try_It, Exercise, Example)
-    """
+    # Extract chunks via `unstructured` and classify for coding vs conceptual content.
     import tempfile
     import os
     
@@ -143,17 +137,12 @@ def extract_unstructured_chunks(file_path):
 
 
 def _create_basic_context(text: str, chunk_type: str) -> str:
-    """
-    Create basic contextual enhancement when detailed subtopic info is not available.
-    Since chunk_type field already contains the type information, we just return the clean text.
-    """
+    # Basic context hook (no-op): chunk_type already carries type info.
     return text
 
 
 def get_chunk_statistics(chunks: List[Dict[str, Any]]) -> Dict[str, Any]:
-    """
-    Get statistics about the processed chunks for analysis and debugging.
-    """
+    # Stats for analysis/debugging.
     if not chunks:
         return {}
     

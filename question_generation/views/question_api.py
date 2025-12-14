@@ -1,5 +1,4 @@
-# Main API endpoints for question generation 
-# Includes bulk generation, single topic/subtopic generation, and preassessment questions
+# Question generation API endpoints
 
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -25,21 +24,7 @@ logger = logging.getLogger(__name__)
 
 @api_view(['POST'])
 def generate_questions_bulk(request):
-    # Bulk question generation endpoint
-    # Parameters:
-    # - game_type: 'coding' or 'non_coding' (required)
-    # - difficulty_levels: ['beginner', 'intermediate', etc] (required)
-    # - num_questions_per_subtopic: int (required) - questions per subtopic
-    # - zone_ids: [int] or null (optional) - specific zones to process
-    # - topic_ids: [int] or null (optional) - specific topics to process  
-    # - subtopic_ids: [int] or null (optional) - specific subtopics to process
-    # 
-    # Hierarchy: If subtopic_ids provided → use only those subtopics (NO combinations)
-    #           If topic_ids provided → use all subtopics from those topics
-    #           If zone_ids provided → use all subtopics from those zones (WITH combinations)
-    #           If none provided → use all zones (WITH combinations)
-    #
-    # Note: max_total_questions is NOT used here (it's for pre-assessment generation only)
+    # Bulk generation entrypoint
     try:
         # Extract parameters
         game_type = request.data.get('game_type', 'non_coding')
@@ -568,6 +553,32 @@ def get_generation_status(request, session_id):
             })
         
         # Handle bulk generation sessions (original structure)
+        # Some generation modes track progress via task counters instead of per-worker state.
+        if 'total_tasks' in session_status:
+            total_tasks = int(session_status.get('total_tasks') or 0)
+            completed_tasks = int(session_status.get('completed_tasks') or 0)
+            successful_tasks = int(session_status.get('successful_tasks') or 0)
+
+            failed_tasks = max(0, completed_tasks - successful_tasks)
+            remaining_tasks = max(0, total_tasks - completed_tasks)
+            active_tasks = remaining_tasks if session_status.get('status') in ['processing', 'starting', 'initializing'] else 0
+
+            return Response({
+                'session_id': session_id,
+                'status': session_status['status'],
+                'start_time': session_status['start_time'],
+                'last_updated': session_status['last_updated'],
+                'overall_progress': session_status.get('overall_progress', {}),
+                'worker_summary': {
+                    'total_workers': total_tasks,
+                    'active_workers': active_tasks,
+                    'completed_workers': completed_tasks,
+                    'failed_workers': failed_tasks
+                },
+                'zones': session_status.get('zones', []),
+                'difficulties': session_status.get('difficulties', []),
+            })
+
         return Response({
             'session_id': session_id,
             'status': session_status['status'],
