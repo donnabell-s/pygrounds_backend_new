@@ -26,8 +26,7 @@ class RegisterView(generics.CreateAPIView):
 
 
 class UserPublicProfileView(generics.RetrieveAPIView):
-    """View for accessing other users' public profiles"""
-    permission_classes = [IsAuthenticated]
+
     serializer_class = UserPublicProfileSerializer
     lookup_field = 'pk'
 
@@ -35,30 +34,26 @@ class UserPublicProfileView(generics.RetrieveAPIView):
         user_id = self.kwargs.get('pk')
         user = get_object_or_404(User, pk=user_id)
         
-        # Prevent viewing own profile through this endpoint (use UserProfileView instead)
         if user == self.request.user:
-            # raise a DRF ValidationError so DRF handles the HTTP response correctly
             raise exceptions.ValidationError({"error": "Use /api/profile/ to view your own profile"})
         
         return user
 
 
 class UserListView(generics.ListAPIView):
-    """Admin view: list all users (admin only)"""
     permission_classes = [IsAdminUser]
     serializer_class = UserSerializer
     queryset = User.objects.all()
 
 
 class UserAdminDetailView(generics.RetrieveDestroyAPIView):
-    """Admin view: retrieve or delete a user by id (admin only)"""
     permission_classes = [IsAdminUser]
     serializer_class = UserSerializer
     lookup_field = 'pk'
     queryset = User.objects.all()
 
 
-# Admin User Management Views (from merge-read/recalib-wip)
+# Admin User Management Views 
 class AdminUserListView(generics.ListCreateAPIView):
     queryset = User.objects.all()
     serializer_class = AdminUserSerializer
@@ -74,7 +69,6 @@ class AdminUserListView(generics.ListCreateAPIView):
     def perform_create(self, serializer):
         with transaction.atomic():
             user = serializer.save()
-            # Create profile based on role
             if getattr(user, 'role', None) == 'admin':
                 from .models import AdminProfile
                 AdminProfile.objects.create(user=user)
@@ -91,7 +85,6 @@ class AdminUserDetailView(generics.RetrieveUpdateDestroyAPIView):
     def perform_update(self, serializer):
         with transaction.atomic():
             user = serializer.save()
-            # Handle profile updates based on role changes
             if getattr(user, 'role', None) == 'admin':
                 from .models import AdminProfile, LearnerProfile
                 AdminProfile.objects.get_or_create(user=user)
@@ -103,7 +96,6 @@ class AdminUserDetailView(generics.RetrieveUpdateDestroyAPIView):
 
     def perform_destroy(self, instance):
         with transaction.atomic():
-            # Delete associated profiles
             from .models import AdminProfile, LearnerProfile
             AdminProfile.objects.filter(user=instance).delete()
             LearnerProfile.objects.filter(user=instance).delete()

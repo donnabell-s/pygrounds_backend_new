@@ -1,4 +1,4 @@
-# Parallel worker utilities
+# parallel worker utilities
 
 import logging
 import time
@@ -9,7 +9,7 @@ from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
-# Import models here to avoid circular imports
+# import models here to avoid circular imports
 def get_models():
     from content_ingestion.models import Subtopic
     from content_ingestion.models import GameZone  
@@ -18,24 +18,24 @@ def get_models():
 from .generation_core import generate_questions_for_subtopic_combination
 from .generation_status import generation_status_tracker
 
-# Utility functions
+# utility functions
 def extract_object_names(objects):
     return [getattr(obj, 'name', str(obj)) for obj in objects]
 
 
 def create_smart_subtopic_combinations(subtopics: List, max_combinations: int = None, difficulty: str = None) -> List[List]:
-    # Prefer singles + pairs (preassessment-style)
-    logger.debug(f"🔍 DEBUG: Creating 1-2 subtopic combinations for {len(subtopics)} subtopics, difficulty: {difficulty}")
+    # prefer singles + pairs (preassessment-style)
+    logger.debug(f"DEBUG: Creating 1-2 subtopic combinations for {len(subtopics)} subtopics, difficulty: {difficulty}")
     all_combinations = []
 
     # Special case: If only 1 subtopic is selected, use it
     if len(subtopics) == 1:
-        logger.info(f"🔄 Single subtopic selected: {subtopics[0].name}")
+        logger.info(f"Single subtopic selected: {subtopics[0].name}")
         all_combinations.append([subtopics[0]])
         return all_combinations
 
     # 1. Always include all individual subtopics (like preassessment comprehensive coverage)
-    logger.info(f"📚 Adding {len(subtopics)} individual subtopics")
+    logger.info(f"Adding {len(subtopics)} individual subtopics")
     for subtopic in subtopics:
         all_combinations.append([subtopic])
 
@@ -72,7 +72,7 @@ def create_smart_subtopic_combinations(subtopics: List, max_combinations: int = 
     max_pairs = len(subtopics) // 2
     selected_pairs = all_pairs[:max_pairs]
 
-    logger.info(f"🔗 Adding {len(selected_pairs)} subtopic pairs ({len(same_topic_pairs)} same-topic, {len(cross_topic_pairs)} cross-topic)")
+    logger.info(f"Adding {len(selected_pairs)} subtopic pairs ({len(same_topic_pairs)} same-topic, {len(cross_topic_pairs)} cross-topic)")
     all_combinations.extend(selected_pairs)
 
     # Remove duplicates while preserving order
@@ -92,7 +92,7 @@ def create_smart_subtopic_combinations(subtopics: List, max_combinations: int = 
     individuals = len([c for c in unique_combinations if len(c) == 1])
     pairs = len([c for c in unique_combinations if len(c) == 2])
 
-    logger.info(f"📊 Final combinations: {len(unique_combinations)} total ({individuals} individuals, {pairs} pairs)")
+    logger.info(f"Final combinations: {len(unique_combinations)} total ({individuals} individuals, {pairs} pairs)")
     return unique_combinations
 
 
@@ -106,12 +106,12 @@ def calculate_questions_per_combination(num_subtopics: int,
 
     # Distribute evenly among all combinations for this difficulty
     if num_combinations == 0:
-        logger.warning(f"⚠️ No combinations generated for {difficulty} difficulty with {num_subtopics} subtopics")
+        logger.warning(f"No combinations generated for {difficulty} difficulty with {num_subtopics} subtopics")
         return 0
 
     questions_per_combination = max(1, total_budget_per_difficulty // num_combinations)
 
-    logger.debug(f"📊 {difficulty.upper()} distribution: {total_budget_per_difficulty} budget ÷ {num_combinations} combinations = {questions_per_combination} questions per combination")
+    logger.debug(f"{difficulty.upper()} distribution: {total_budget_per_difficulty} budget ÷ {num_combinations} combinations = {questions_per_combination} questions per combination")
     return questions_per_combination
 
 
@@ -131,7 +131,7 @@ def generate_questions_for_single_subtopic_batch(subtopic, difficulty_levels: Li
             questions_for_this_difficulty = questions_per_difficulty + (1 if i < extra_questions else 0)
 
             if questions_for_this_difficulty > 0:
-                logger.debug(f"🎯 Generating {questions_for_this_difficulty} {difficulty} questions for {subtopic.name}")
+                logger.debug(f"Generating {questions_for_this_difficulty} {difficulty} questions for {subtopic.name}")
 
                 result = generate_questions_for_subtopic_combination(
                     subtopic_combination=[subtopic],
@@ -145,9 +145,9 @@ def generate_questions_for_single_subtopic_batch(subtopic, difficulty_levels: Li
                 if result['success']:
                     questions_saved = result.get('questions_saved', 0)
                     total_saved += questions_saved
-                    logger.debug(f"✅ Generated {questions_saved} {difficulty} questions for {subtopic.name}")
+                    logger.debug(f"Generated {questions_saved} {difficulty} questions for {subtopic.name}")
                 else:
-                    logger.warning(f"❌ Failed to generate {difficulty} questions for {subtopic.name}: {result.get('error', 'Unknown error')}")
+                    logger.warning(f"Failed to generate {difficulty} questions for {subtopic.name}: {result.get('error', 'Unknown error')}")
 
         return {
             'success': total_saved > 0,
@@ -156,7 +156,7 @@ def generate_questions_for_single_subtopic_batch(subtopic, difficulty_levels: Li
         }
 
     except Exception as e:
-        logger.error(f"❌ Error in single subtopic batch generation: {str(e)}")
+        logger.error(f"Error in single subtopic batch generation: {str(e)}")
         return {
             'success': False,
             'questions_saved': 0,
@@ -175,25 +175,25 @@ def run_subtopic_specific_generation(subtopic_ids: List[int],
         
         # Get the specific subtopics
         subtopics = list(Subtopic.objects.filter(id__in=subtopic_ids).select_related('topic__zone'))
-        logger.info(f"🔍 DEBUG: Processing {len(subtopics)} subtopics: {[s.name for s in subtopics]}")
+        logger.info(f"DEBUG: Processing {len(subtopics)} subtopics: {[s.name for s in subtopics]}")
 
         if not subtopics:
             raise ValueError("No subtopics found for the provided IDs")
 
-        logger.info(f"🚀 Starting subtopic-specific generation for {len(subtopics)} subtopics, {len(difficulty_levels)} difficulties")
-        logger.info(f"🔍 DEBUG: Difficulty levels: {difficulty_levels}")
+        logger.info(f"Starting subtopic-specific generation for {len(subtopics)} subtopics, {len(difficulty_levels)} difficulties")
+        logger.info(f"DEBUG: Difficulty levels: {difficulty_levels}")
 
         # Special handling for single subtopic: use question-based workers instead of difficulty-based
         if len(subtopics) == 1:
             single_subtopic = subtopics[0]
-            logger.info(f"🔄 Single subtopic detected: {single_subtopic.name} - switching to question-based worker allocation")
+            logger.info(f"Single subtopic detected: {single_subtopic.name} - switching to question-based worker allocation")
 
             # Calculate total questions needed across all difficulties
             total_questions_needed = len(difficulty_levels) * num_questions_per_subtopic
             questions_per_worker = max(1, total_questions_needed // settings.QUESTION_GENERATION_WORKERS)
             actual_workers = min(settings.QUESTION_GENERATION_WORKERS, total_questions_needed)
 
-            logger.info(f"📊 Single subtopic mode: {total_questions_needed} total questions, {actual_workers} workers, {questions_per_worker} questions per worker")
+            logger.info(f"Single subtopic mode: {total_questions_needed} total questions, {actual_workers} workers, {questions_per_worker} questions per worker")
 
             # Create question batches for workers
             question_batches = []
@@ -233,13 +233,13 @@ def run_subtopic_specific_generation(subtopic_ids: List[int],
                 try:
                     # Check for cancellation
                     if generation_status_tracker.is_session_cancelled(session_id):
-                        logger.info(f"📝 Session {session_id} cancelled during batch processing")
+                        logger.info(f"Session {session_id} cancelled during batch processing")
                         break
 
                     worker_id = batch['worker_id']
                     questions_needed = batch['questions_needed']
 
-                    logger.info(f"🎯 Worker {worker_id}: Generating {questions_needed} questions for {single_subtopic.name}")
+                    logger.info(f"Worker {worker_id}: Generating {questions_needed} questions for {single_subtopic.name}")
 
                     # Generate questions for this batch across all difficulties
                     batch_result = generate_questions_for_single_subtopic_batch(
@@ -254,9 +254,9 @@ def run_subtopic_specific_generation(subtopic_ids: List[int],
                         successful_tasks += 1
                         questions_generated = batch_result.get('questions_saved', 0)
                         total_questions += questions_generated
-                        logger.info(f"✅ Worker {worker_id}: Generated {questions_generated} questions")
+                        logger.info(f"Worker {worker_id}: Generated {questions_generated} questions")
                     else:
-                        logger.warning(f"❌ Worker {worker_id}: Failed to generate questions: {batch_result.get('error', 'Unknown error')}")
+                        logger.warning(f"Worker {worker_id}: Failed to generate questions: {batch_result.get('error', 'Unknown error')}")
 
                     completed_tasks += 1
 
@@ -270,7 +270,7 @@ def run_subtopic_specific_generation(subtopic_ids: List[int],
                     })
 
                 except Exception as e:
-                    logger.error(f"❌ Error in worker {batch['worker_id']}: {str(e)}")
+                    logger.error(f"Error in worker {batch['worker_id']}: {str(e)}")
                     completed_tasks += 1
 
             # Final status update
@@ -282,7 +282,7 @@ def run_subtopic_specific_generation(subtopic_ids: List[int],
             }
             generation_status_tracker.update_status(session_id, final_status)
 
-            logger.info(f"🏁 Single subtopic generation completed: {total_questions} questions generated by {successful_tasks}/{len(question_batches)} workers")
+            logger.info(f"Single subtopic generation completed: {total_questions} questions generated by {successful_tasks}/{len(question_batches)} workers")
             return
 
         # Original multi-subtopic logic continues below...
@@ -291,7 +291,7 @@ def run_subtopic_specific_generation(subtopic_ids: List[int],
         total_tasks = 0
 
         for difficulty in difficulty_levels:
-            logger.info(f"🔧 Preparing combinations for difficulty: {difficulty.upper()}")
+            logger.info(f"Preparing combinations for difficulty: {difficulty.upper()}")
             logger.info(f"   ├── Input subtopics: {len(subtopics)} total")
             logger.info(f"   ├── Subtopic IDs: {[s.id for s in subtopics]}")
 
@@ -302,10 +302,10 @@ def run_subtopic_specific_generation(subtopic_ids: List[int],
                 difficulty=difficulty
             )
 
-            logger.info(f"🔍 DEBUG: {difficulty.upper()} - {len(subtopics)} subtopics generated {len(difficulty_combinations)} combinations")
+            logger.info(f"DEBUG: {difficulty.upper()} - {len(subtopics)} subtopics generated {len(difficulty_combinations)} combinations")
 
             if len(difficulty_combinations) == 0:
-                logger.warning(f"⚠️ No combinations generated for {difficulty} with {len(subtopics)} subtopics")
+                logger.warning(f"No combinations generated for {difficulty} with {len(subtopics)} subtopics")
                 continue  # Skip this difficulty if no combinations
 
             # Log combination types
@@ -329,10 +329,10 @@ def run_subtopic_specific_generation(subtopic_ids: List[int],
             expected_questions = len(difficulty_combinations) * questions_per_combo
             budget_per_difficulty = len(subtopics) * num_questions_per_subtopic
 
-            logger.info(f"📊 {difficulty.upper()}: {len(difficulty_combinations)} combinations × {questions_per_combo} questions = {expected_questions} total")
+            logger.info(f"{difficulty.upper()}: {len(difficulty_combinations)} combinations × {questions_per_combo} questions = {expected_questions} total")
             logger.info(f"   └── Budget: {budget_per_difficulty} questions ({len(subtopics)} subtopics × {num_questions_per_subtopic})")
 
-        logger.info(f"📊 Total tasks across all difficulties: {total_tasks}")
+        logger.info(f"Total tasks across all difficulties: {total_tasks}")
 
         # Update session status with correct total_tasks
         generation_status_tracker.update_status(session_id, {
@@ -348,18 +348,18 @@ def run_subtopic_specific_generation(subtopic_ids: List[int],
         successful_tasks = 0
         total_questions = 0
 
-        logger.info(f"🎯 STARTING PARALLEL PROCESSING OF {len(difficulty_levels)} DIFFICULTY LEVELS: {difficulty_levels}")
-        logger.info(f"📋 Each difficulty uses parallel workers, then moves to next difficulty")
-        logger.info(f"⚡ ThreadPoolExecutor: {settings.QUESTION_GENERATION_WORKERS} concurrent workers per difficulty")
+        logger.info(f"STARTING PARALLEL PROCESSING OF {len(difficulty_levels)} DIFFICULTY LEVELS: {difficulty_levels}")
+        logger.info(f"Each difficulty uses parallel workers, then moves to next difficulty")
+        logger.info(f"ThreadPoolExecutor: {settings.QUESTION_GENERATION_WORKERS} concurrent workers per difficulty")
 
         for difficulty_idx, difficulty in enumerate(difficulty_levels):
             logger.info(f"")
-            logger.info(f"🎯 DIFFICULTY {difficulty_idx + 1}/{len(difficulty_levels)}: STARTING {difficulty.upper()}")
-            logger.info(f"🔄 Processing difficulty {difficulty_idx + 1}/{len(difficulty_levels)}: {difficulty.upper()}")
+            logger.info(f"DIFFICULTY {difficulty_idx + 1}/{len(difficulty_levels)}: STARTING {difficulty.upper()}")
+            logger.info(f"Processing difficulty {difficulty_idx + 1}/{len(difficulty_levels)}: {difficulty.upper()}")
 
             # Check for cancellation before processing each difficulty
             if generation_status_tracker.is_session_cancelled(session_id):
-                logger.info(f"📝 Session {session_id} cancelled during difficulty {difficulty}")
+                logger.info(f"Session {session_id} cancelled during difficulty {difficulty}")
                 break
 
             # Get the combinations and question count for this specific difficulty
@@ -373,11 +373,11 @@ def run_subtopic_specific_generation(subtopic_ids: List[int],
 
             total_questions_for_difficulty = len(subtopic_combinations) * questions_per_combo
 
-            logger.info(f"🔄 Processing {difficulty.upper()} level:")
+            logger.info(f"Processing {difficulty.upper()} level:")
             logger.info(f"   └── {len(subtopic_combinations)} combinations ({individuals} individuals, {pairs} pairs, {trios} trios)")
             logger.info(f"   └── {questions_per_combo} questions per combination = {total_questions_for_difficulty} total questions")
             logger.info(f"   └── Budget: {len(subtopics)} subtopics × {num_questions_per_subtopic} = {len(subtopics) * num_questions_per_subtopic} questions")
-            logger.info(f"⚡ Using ThreadPoolExecutor with {settings.QUESTION_GENERATION_WORKERS} workers for parallel processing")
+            logger.info(f"Using ThreadPoolExecutor with {settings.QUESTION_GENERATION_WORKERS} workers for parallel processing")
 
             # Process combinations in parallel using ThreadPoolExecutor
             import concurrent.futures
@@ -400,7 +400,7 @@ def run_subtopic_specific_generation(subtopic_ids: List[int],
                     subtopic_names = [sub.name for sub in subtopic_combination]
                     combination_type = "individual" if len(subtopic_combination) == 1 else f"{len(subtopic_combination)}-subtopic combo"
 
-                    logger.debug(f"🎯 Worker processing: {questions_per_combo} {difficulty} {game_type} questions for {combination_type}: {subtopic_names}")
+                    logger.debug(f"Worker processing: {questions_per_combo} {difficulty} {game_type} questions for {combination_type}: {subtopic_names}")
 
                     result = generate_questions_for_subtopic_combination(
                         subtopic_combination=subtopic_combination,
@@ -413,7 +413,7 @@ def run_subtopic_specific_generation(subtopic_ids: List[int],
 
                     if result['success']:
                         questions_saved = result.get('questions_saved', 0)
-                        logger.debug(f"✅ Worker completed: {questions_saved} questions for {combination_type}: {subtopic_names} - {difficulty}")
+                        logger.debug(f"Worker completed: {questions_saved} questions for {combination_type}: {subtopic_names} - {difficulty}")
 
                         return {
                             'success': True,
@@ -423,7 +423,7 @@ def run_subtopic_specific_generation(subtopic_ids: List[int],
                             'combination_type': combination_type
                         }
                     else:
-                        logger.warning(f"❌ Worker failed: {combination_type}: {subtopic_names} - {difficulty}: {result.get('error', 'Unknown error')}")
+                        logger.warning(f"Worker failed: {combination_type}: {subtopic_names} - {difficulty}: {result.get('error', 'Unknown error')}")
 
                         return {
                             'success': False,
@@ -435,7 +435,7 @@ def run_subtopic_specific_generation(subtopic_ids: List[int],
                         }
 
                 except Exception as e:
-                    logger.error(f"❌ Worker error processing combination {combination_idx}: {str(e)}")
+                    logger.error(f"Worker error processing combination {combination_idx}: {str(e)}")
                     return {
                         'success': False,
                         'combination_idx': combination_idx,
@@ -460,10 +460,10 @@ def run_subtopic_specific_generation(subtopic_ids: List[int],
                         if result['success']:
                             difficulty_successful_tasks += 1
                             difficulty_questions += result['questions_saved']
-                            logger.info(f"✅ Completed combination {combination_idx + 1}/{len(subtopic_combinations)}: {result['questions_saved']} questions")
+                            logger.info(f"Completed combination {combination_idx + 1}/{len(subtopic_combinations)}: {result['questions_saved']} questions")
                         else:
                             if result.get('error') != 'cancelled':
-                                logger.warning(f"❌ Failed combination {combination_idx + 1}/{len(subtopic_combinations)}: {result.get('error', 'Unknown error')}")
+                                logger.warning(f"Failed combination {combination_idx + 1}/{len(subtopic_combinations)}: {result.get('error', 'Unknown error')}")
 
                         difficulty_completed_tasks += 1
 
@@ -487,23 +487,23 @@ def run_subtopic_specific_generation(subtopic_ids: List[int],
                         })
 
                     except Exception as e:
-                        logger.error(f"❌ Error processing future result: {str(e)}")
+                        logger.error(f"Error processing future result: {str(e)}")
                         completed_tasks += 1
 
             # Log completion of this difficulty
-            logger.info(f"✅ DIFFICULTY {difficulty.upper()} COMPLETED:")
+            logger.info(f"DIFFICULTY {difficulty.upper()} COMPLETED:")
             logger.info(f"   └── Processed {len(subtopic_combinations)} combinations")
             logger.info(f"   └── Successful: {difficulty_successful_tasks}/{difficulty_completed_tasks}")
             logger.info(f"   └── Questions generated: {difficulty_questions}")
             logger.info(f"   └── Cumulative total: {total_questions} questions")
-            logger.info(f"🎯 DIFFICULTY {difficulty_idx + 1}/{len(difficulty_levels)}: COMPLETED {difficulty.upper()}")
+            logger.info(f"DIFFICULTY {difficulty_idx + 1}/{len(difficulty_levels)}: COMPLETED {difficulty.upper()}")
             logger.info(f"")
 
         # Final status update
         final_status = 'cancelled' if generation_status_tracker.is_session_cancelled(session_id) else 'completed'
 
-        logger.info(f"🎉 ALL DIFFICULTIES PROCESSED!")
-        logger.info(f"📊 Final Summary:")
+        logger.info(f"ALL DIFFICULTIES PROCESSED!")
+        logger.info(f"Final Summary:")
         logger.info(f"   ├── Difficulties processed: {len(difficulty_levels)} ({', '.join(difficulty_levels)})")
         logger.info(f"   ├── Total combinations: {total_tasks}")
         logger.info(f"   ├── Successful tasks: {successful_tasks}/{completed_tasks}")
@@ -518,11 +518,11 @@ def run_subtopic_specific_generation(subtopic_ids: List[int],
             'success_rate': round((successful_tasks / completed_tasks) * 100, 1) if completed_tasks > 0 else 0
         })
 
-        logger.info(f"🏁 Subtopic-specific generation {final_status} for session {session_id}: "
+        logger.info(f"Subtopic-specific generation {final_status} for session {session_id}: "
                     f"{successful_tasks}/{completed_tasks} successful tasks, {total_questions} total questions")
 
     except Exception as e:
-        logger.error(f"❌ Critical error in subtopic-specific generation for session {session_id}: {str(e)}")
+        logger.error(f"Critical error in subtopic-specific generation for session {session_id}: {str(e)}")
         generation_status_tracker.update_status(session_id, {
             'status': 'error',
             'error': str(e),

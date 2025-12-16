@@ -4,7 +4,7 @@ from typing import List, Dict, Any
 from content_ingestion.models import TOCEntry
 
 def generate_toc_entries_for_document(document):
-    # Extract TOC entries from a PDF (metadata or fallback) and bulk save them.
+    # extract toc entries from pdf and bulk save them
     print(f"\n[TOC] Generating TOC entries for: {document.title}")
 
     try:
@@ -12,10 +12,10 @@ def generate_toc_entries_for_document(document):
         total_pages = len(doc)
         print(f"[TOC] PDF has {total_pages} pages")
 
-        # 1. Try metadata-based TOC extraction
+        # 1) metadata toc
         toc_data = extract_toc(document.file.path)
         if toc_data and isinstance(toc_data[0], list):
-            # Convert [level, title, page] to dicts
+            # convert [level, title, page] rows into dicts
             toc_data = [
                 {
                     'title': item[1],
@@ -27,7 +27,7 @@ def generate_toc_entries_for_document(document):
             ]
             print(f"[TOC] Extracted {len(toc_data)} TOC entries from metadata")
         else:
-            # 2. Fallback: Manual TOC parsing from first pages
+            # 2) fallback: parse toc text from first pages
             print("[TOC] No metadata TOC, using manual extraction")
             toc_pages = fallback_toc_text(doc)
             combined_toc_text = "\n".join(toc_pages)
@@ -43,13 +43,13 @@ def generate_toc_entries_for_document(document):
             document.save()
             return []
 
-        # 3. Assign end pages for chunking
+        # 3) assign end pages for chunking
         toc_data = assign_end_pages(toc_data, total_pages)
 
-        # 4. Remove old TOC entries for this document
+        # 4) remove old toc entries for this document
         TOCEntry.objects.filter(document=document).delete()
 
-        # 5. Bulk-create new TOC entries
+        # 5) bulk-create new toc entries
         toc_entries = [
             TOCEntry(
                 document=document,
@@ -64,7 +64,7 @@ def generate_toc_entries_for_document(document):
         created = TOCEntry.objects.bulk_create(toc_entries)
         print(f"[TOC] Created {len(created)} TOC entries")
 
-        # 6. Update document meta/status
+        # 6) update document meta/status
         document.total_pages = total_pages
         document.status = 'COMPLETED'
         document.save()

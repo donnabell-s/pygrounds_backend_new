@@ -1,31 +1,18 @@
-"""
-Question management and CRUD oper        formatted = [{
-            'id': q.id,
-            'question_text': q.question_text,
-            'estimated_difficulty': q.estimated_difficulty,
-            'game_type': q.game_type,
-            'correct_answer': q.correct_answer,
-            'validation_status': q.validation_status,
-        } for q in questions]es retrieval, filtering, and statistics for generated questions.
-"""
-
 from .imports import *
 from django.db.models import Count
 
 @api_view(['GET'])
 def get_subtopic_questions(request, subtopic_id):
-    """
-    Get all generated questions for a specific subtopic, with filters.
-    Query params:
-        - difficulty: filter by difficulty (estimated_difficulty)
-        - minigame_type: filter by minigame type
-        - game_type: filter by coding/non-coding
-    """
+    # get all generated questions for a specific subtopic, with filters.
+    # query params:
+    #     - difficulty: filter by difficulty (estimated_difficulty)
+    #     - minigame_type: filter by minigame type
+    #     - game_type: filter by coding/non-coding
     try:
         subtopic = get_object_or_404(Subtopic, id=subtopic_id)
         questions_query = GeneratedQuestion.objects.filter(subtopic=subtopic)
         
-        # Filtering
+        # filtering
         difficulty = request.query_params.get('difficulty')
         if difficulty:
             questions_query = questions_query.filter(estimated_difficulty=difficulty)
@@ -41,7 +28,7 @@ def get_subtopic_questions(request, subtopic_id):
         questions_query = questions_query.order_by('-created_at')
         questions = list(questions_query)
         
-        # Prepare response data
+        # prepare response data
         questions_data = [{
             'id': q.id,
             'question_text': q.question_text,
@@ -57,7 +44,7 @@ def get_subtopic_questions(request, subtopic_id):
             'validation_status': q.validation_status,
         } for q in questions]
 
-        # Statistics
+        # statistics
         stats = {
             'total_questions': len(questions),
             'by_difficulty': dict(questions_query.values('estimated_difficulty').annotate(count=Count('estimated_difficulty')).values_list('estimated_difficulty', 'count')),
@@ -88,9 +75,7 @@ def get_subtopic_questions(request, subtopic_id):
 
 @api_view(['GET'])
 def get_topic_questions_summary(request, topic_id):
-    """
-    Get a summary of generated questions for a topic across all its subtopics.
-    """
+    # get a summary of generated questions for a topic across all its subtopics.
     try:
         topic = get_object_or_404(Topic, id=topic_id)
         subtopics = topic.subtopics.all()
@@ -161,20 +146,18 @@ def get_topic_questions_summary(request, topic_id):
 
 @api_view(['GET'])
 def get_question_by_id(request, question_id):
-    """
-    Get a specific generated question by ID with complete game data.
-    Query params:
-        - full_context: if 'true', includes full RAG context (default: false for cleaner response)
-    """
+    # get a specific generated question by id with complete game data.
+    # query params:
+    #     - full_context: if 'true', includes full rag context (default: false)
     try:
         question = get_object_or_404(GeneratedQuestion, id=question_id)
         
-        # Check if full context is requested
+        # check if full context is requested
         include_full_game_data = request.query_params.get('full_context', 'false').lower() == 'true'
         
         question_data = format_question_response(question, include_full_game_data)
         
-        # Add extra fields for single question view
+        # add extra fields for single question view
         question_data.update({
             'subtopic': {
                 'id': question.subtopic.id,
@@ -199,27 +182,24 @@ def get_question_by_id(request, question_id):
 
 @api_view(['GET'])
 def get_questions_batch(request):
-    """
-    Get multiple questions by IDs or filter criteria. 
-    Useful for frontend to fetch a batch of questions efficiently.
-    
-    Query params:
-        - ids: comma-separated question IDs (e.g., "1,2,3")
-        - subtopic_id: filter by subtopic
-        - difficulty: filter by difficulty
-        - game_type: filter by coding/non-coding
-        - limit: max number of questions to return (default: 10)
-    """
+    # get multiple questions by ids or filter criteria.
+    #
+    # query params:
+    #     - ids: comma-separated question ids (e.g., "1,2,3")
+    #     - subtopic_id: filter by subtopic
+    #     - difficulty: filter by difficulty
+    #     - game_type: filter by coding/non-coding
+    #     - limit: max number of questions to return (default: 10)
     try:
         questions_query = GeneratedQuestion.objects.all()
         
-        # Filter by IDs if provided
+        # filter by ids if provided
         question_ids = request.query_params.get('ids')
         if question_ids:
             id_list = [int(id.strip()) for id in question_ids.split(',') if id.strip().isdigit()]
             questions_query = questions_query.filter(id__in=id_list)
         
-        # Additional filters
+        # additional filters
         subtopic_id = request.query_params.get('subtopic_id')
         if subtopic_id:
             questions_query = questions_query.filter(subtopic_id=subtopic_id)
@@ -232,11 +212,11 @@ def get_questions_batch(request):
         if game_type:
             questions_query = questions_query.filter(game_type=game_type)
         
-        # Limit results
+        # limit results
         limit = int(request.query_params.get('limit', 10))
         questions_query = questions_query.order_by('-id')[:limit]
         
-        # Format response
+        # format response
         questions_data = []
         for question in questions_query:
             questions_data.append({
@@ -246,7 +226,7 @@ def get_questions_batch(request):
                 'estimated_difficulty': question.estimated_difficulty,
                 'game_type': question.game_type,
                 'validation_status': question.validation_status,
-                'game_data': question.game_data,  # Complete game data
+                'game_data': question.game_data,  # complete game data
                 'subtopic': {
                     'id': question.subtopic.id,
                     'name': question.subtopic.name,
@@ -268,16 +248,14 @@ def get_questions_batch(request):
 
 @api_view(['GET'])
 def get_questions_by_filters(request):
-    """
-    Get questions filtered by game_type and difficulty.
-    Query params:
-        - game_type: 'coding' or 'non_coding' (required)
-        - difficulty: 'beginner', 'intermediate', 'advanced', 'master' (optional)
-        - limit: max number of questions to return (optional, default 20)
-        - offset: pagination offset (optional, default 0)
-    """
+    # get questions filtered by game_type and difficulty.
+    # query params:
+    #     - game_type: 'coding' or 'non_coding' (required)
+    #     - difficulty: 'beginner', 'intermediate', 'advanced', 'master' (optional)
+    #     - limit: max number of questions to return (optional, default 20)
+    #     - offset: pagination offset (optional, default 0)
     try:
-        # Required parameter
+        # required parameter
         game_type = request.query_params.get('game_type')
         if not game_type:
             return Response({
@@ -291,10 +269,10 @@ def get_questions_by_filters(request):
                 'message': 'game_type must be either "coding" or "non_coding"'
             }, status=status.HTTP_400_BAD_REQUEST)
 
-        # Start with base query
+        # start with base query
         questions_query = GeneratedQuestion.objects.filter(game_type=game_type)
         
-        # Optional filters
+        # optional filters
         difficulty = request.query_params.get('difficulty')
         if difficulty:
             if difficulty not in ['beginner', 'intermediate', 'advanced', 'master']:
@@ -304,20 +282,20 @@ def get_questions_by_filters(request):
                 }, status=status.HTTP_400_BAD_REQUEST)
             questions_query = questions_query.filter(estimated_difficulty=difficulty)
         
-        # Pagination
+        # pagination
         limit = int(request.query_params.get('limit', 20))
         offset = int(request.query_params.get('offset', 0))
         
-        # Order by creation date (newest first)
+        # order by creation date (newest first)
         questions_query = questions_query.order_by('-id')
         
-        # Get total count before pagination
+        # get total count before pagination
         total_count = questions_query.count()
         
-        # Apply pagination
+        # apply pagination
         questions = questions_query[offset:offset + limit]
         
-        # Prepare response data
+        # prepare response data
         questions_data = []
         for question in questions:
             questions_data.append({
@@ -327,7 +305,7 @@ def get_questions_by_filters(request):
                 'estimated_difficulty': question.estimated_difficulty,
                 'game_type': question.game_type,
                 'validation_status': question.validation_status,
-                'game_data': question.game_data,  # Complete game data including buggy_code, etc.
+                'game_data': question.game_data,  # complete game data including buggy_code, etc.
                 'subtopic': {
                     'id': question.subtopic.id,
                     'name': question.subtopic.name,
@@ -364,28 +342,26 @@ def get_questions_by_filters(request):
 
 @api_view(['GET'])
 def get_all_questions(request):
-    """
-    Get all generated questions with optional pagination.
-    Returns all questions in the database with complete game data.
-    
-    Query params:
-        - limit: max number of questions to return (optional, default 50)
-        - offset: pagination offset (optional, default 0)
-        - order_by: sort field - 'id', 'created_at', 'difficulty', 'game_type' (optional, default 'id')
-        - order: 'asc' or 'desc' (optional, default 'desc' for newest first)
-    
-    Example: GET /questions/all/?limit=100&offset=0&order_by=created_at&order=desc
-    """
+    # get all generated questions with optional pagination.
+    # returns all questions in the database with complete game data.
+    #
+    # query params:
+    #     - limit: max number of questions to return (optional, default 50)
+    #     - offset: pagination offset (optional, default 0)
+    #     - order_by: sort field - 'id', 'created_at', 'difficulty', 'game_type' (optional)
+    #     - order: 'asc' or 'desc' (optional, default: 'desc')
+    #
+    # example: get /questions/all/?limit=100&offset=0&order_by=created_at&order=desc
     try:
-        # Pagination parameters
+        # pagination parameters
         limit = int(request.query_params.get('limit', 50))
         offset = int(request.query_params.get('offset', 0))
         
-        # Ordering parameters
+        # ordering parameters
         order_by = request.query_params.get('order_by', 'id')
         order = request.query_params.get('order', 'desc')
         
-        # Validate order_by field
+        # validate order_by field
         valid_order_fields = ['id', 'created_at', 'estimated_difficulty', 'game_type']
         if order_by not in valid_order_fields:
             return Response({
@@ -393,26 +369,26 @@ def get_all_questions(request):
                 'message': f'order_by must be one of: {", ".join(valid_order_fields)}'
             }, status=status.HTTP_400_BAD_REQUEST)
         
-        # Validate order direction
+        # validate order direction
         if order not in ['asc', 'desc']:
             return Response({
                 'status': 'error', 
                 'message': 'order must be either "asc" or "desc"'
             }, status=status.HTTP_400_BAD_REQUEST)
         
-        # Build order string
+        # build order string
         order_field = f"-{order_by}" if order == 'desc' else order_by
         
-        # Get all questions with ordering
+        # get all questions with ordering
         questions_query = GeneratedQuestion.objects.all().order_by(order_field)
         
-        # Get total count before pagination
+        # get total count before pagination
         total_count = questions_query.count()
         
-        # Apply pagination
+        # apply pagination
         questions = questions_query[offset:offset + limit]
         
-        # Prepare response data using the helper function
+        # prepare response data using the helper function
         questions_data = [format_question_response(q) for q in questions]
 
         return Response({
@@ -443,36 +419,27 @@ def get_all_questions(request):
 
 @api_view(['POST'])
 def get_questions_batch_filtered(request):
-    """
-    Get multiple questions by batch criteria (game_type, difficulty, etc.).
-    More flexible than get_questions_batch - instead of specific IDs, filter by criteria.
-    
-    Request body:
-    {
-        "game_type": "coding",           // optional: "coding" or "non_coding"
-        "difficulty": "beginner",        // optional: "beginner", "intermediate", "advanced", "master"
-        "minigame_type": "hangman_coding", // optional: specific minigame type
-        "limit": 20,                     // optional: max results (default 20)
-        "random": true                   // optional: randomize results (default false)
-    }
-    
-    Example: POST /questions/batch/filtered/
-    {
-        "game_type": "coding",
-        "difficulty": "beginner", 
-        "limit": 10,
-        "random": true
-    }
-    """
+    # get multiple questions by batch criteria (game_type, difficulty, etc.).
+    #
+    # request body:
+    # {
+    #     "game_type": "coding",           // optional: "coding" or "non_coding"
+    #     "difficulty": "beginner",        // optional: "beginner", "intermediate", "advanced", "master"
+    #     "minigame_type": "hangman_coding", // optional: specific minigame type
+    #     "limit": 20,                     // optional: max results (default 20)
+    #     "random": true                   // optional: randomize results (default false)
+    # }
+    #
+    # example: post /questions/batch/filtered/
     try:
-        # Get filter criteria from request body
+        # get filter criteria from request body
         game_type = request.data.get('game_type')
         difficulty = request.data.get('difficulty')
         minigame_type = request.data.get('minigame_type')
         limit = int(request.data.get('limit', 20))
         random_order = request.data.get('random', False)
         
-        # Validate parameters
+        # validate parameters
         if game_type and game_type not in ['coding', 'non_coding']:
             return Response({
                 'status': 'error', 
@@ -485,10 +452,10 @@ def get_questions_batch_filtered(request):
                 'message': 'difficulty must be one of: beginner, intermediate, advanced, master'
             }, status=status.HTTP_400_BAD_REQUEST)
         
-        # Start with base query
+        # start with base query
         questions_query = GeneratedQuestion.objects.all()
         
-        # Apply filters
+        # apply filters
         filters_applied = {}
         if game_type:
             questions_query = questions_query.filter(game_type=game_type)
@@ -502,16 +469,16 @@ def get_questions_batch_filtered(request):
             questions_query = questions_query.filter(minigame_type=minigame_type)
             filters_applied['minigame_type'] = minigame_type
         
-        # Apply ordering
+        # apply ordering
         if random_order:
-            questions_query = questions_query.order_by('?')  # Random ordering
+            questions_query = questions_query.order_by('?')  # random ordering
         else:
-            questions_query = questions_query.order_by('-id')  # Newest first
+            questions_query = questions_query.order_by('-id')  # newest first
         
-        # Apply limit
+        # apply limit
         questions = questions_query[:limit]
         
-        # Prepare response data
+        # prepare response data
         questions_data = []
         for question in questions:
             questions_data.append({
@@ -521,7 +488,7 @@ def get_questions_batch_filtered(request):
                 'estimated_difficulty': question.estimated_difficulty,
                 'game_type': question.game_type,
                 'validation_status': question.validation_status,
-                'game_data': question.game_data,  # Complete game data including buggy_code, etc.
+                'game_data': question.game_data,  # complete game data including buggy_code, etc.
                 'subtopic': {
                     'id': question.subtopic.id,
                     'name': question.subtopic.name,
@@ -552,28 +519,26 @@ def get_questions_batch_filtered(request):
 
 
 def clean_game_data_for_frontend(game_data):
-    """
-    Clean game_data by removing or truncating long fields.
-    Keeps essential game information while reducing response size.
-    """
+    # clean game_data by removing or truncating long fields.
+    # keeps essential game information while reducing response size.
     if not game_data:
         return game_data
     
-    # Create a copy to avoid modifying the original
+    # create a copy to avoid modifying the original
     cleaned_data = game_data.copy()
     
-    # Remove deprecated/unused fields from game_data
+    # remove deprecated/unused fields from game_data
     fields_to_remove = ['used', 'context', 'auto_generated', 'pipeline_version', 'is_cross_subtopic']
     for field in fields_to_remove:
         cleaned_data.pop(field, None)
     
-    # Remove deprecated fields from nested rag_context if it exists
+    # remove deprecated fields from nested rag_context if it exists
     if 'rag_context' in cleaned_data and isinstance(cleaned_data['rag_context'], dict):
         rag_context_fields_to_remove = ['used', 'context']
         for field in rag_context_fields_to_remove:
             cleaned_data['rag_context'].pop(field, None)
         
-        # Remove rag_context entirely if it's empty
+        # remove rag_context entirely if it's empty
         if not cleaned_data['rag_context']:
             cleaned_data.pop('rag_context', None)
     
@@ -581,9 +546,7 @@ def clean_game_data_for_frontend(game_data):
 
 
 def format_question_response(question, include_full_game_data=False):
-    """
-    Format a question object for API response with optional game_data cleaning.
-    """
+    # format a question object for api response with optional game_data cleaning.
     game_data = question.game_data if include_full_game_data else clean_game_data_for_frontend(question.game_data)
     
     return {
@@ -606,17 +569,15 @@ def format_question_response(question, include_full_game_data=False):
 
 @api_view(['GET'])
 def get_all_coding_questions(request):
-    """
-    Get all coding questions with pagination.
-    Query params: limit, offset, order_by, order
-    """
+    # get all coding questions with pagination.
+    # query params: limit, offset, order_by, order
     try:
         limit = int(request.query_params.get('limit', 50))
         offset = int(request.query_params.get('offset', 0))
         order_by = request.query_params.get('order_by', 'id')
         order = request.query_params.get('order', 'desc')
         
-        # Validate parameters
+        # validate parameters
         valid_order_fields = ['id', 'created_at', 'estimated_difficulty']
         if order_by not in valid_order_fields:
             return Response({
@@ -630,7 +591,7 @@ def get_all_coding_questions(request):
                 'message': 'order must be either "asc" or "desc"'
             }, status=status.HTTP_400_BAD_REQUEST)
         
-        # Build query
+        # build query
         order_field = f"-{order_by}" if order == 'desc' else order_by
         questions_query = GeneratedQuestion.objects.filter(game_type='coding').order_by(order_field)
         
@@ -661,17 +622,15 @@ def get_all_coding_questions(request):
 
 @api_view(['GET'])
 def get_all_non_coding_questions(request):
-    """
-    Get all non-coding questions with pagination.
-    Query params: limit, offset, order_by, order
-    """
+    # get all non-coding questions with pagination.
+    # query params: limit, offset, order_by, order
     try:
         limit = int(request.query_params.get('limit', 50))
         offset = int(request.query_params.get('offset', 0))
         order_by = request.query_params.get('order_by', 'id')
         order = request.query_params.get('order', 'desc')
         
-        # Validate parameters
+        # validate parameters
         valid_order_fields = ['id', 'created_at', 'estimated_difficulty']
         if order_by not in valid_order_fields:
             return Response({
@@ -685,7 +644,7 @@ def get_all_non_coding_questions(request):
                 'message': 'order must be either "asc" or "desc"'
             }, status=status.HTTP_400_BAD_REQUEST)
         
-        # Build query
+        # build query
         order_field = f"-{order_by}" if order == 'desc' else order_by
         questions_query = GeneratedQuestion.objects.filter(game_type='non_coding').order_by(order_field)
         
@@ -716,17 +675,15 @@ def get_all_non_coding_questions(request):
 
 @api_view(['GET'])
 def get_all_beginner_questions(request):
-    """
-    Get all beginner difficulty questions with pagination.
-    Query params: limit, offset, order_by, order
-    """
+    # get all beginner difficulty questions with pagination.
+    # query params: limit, offset, order_by, order
     try:
         limit = int(request.query_params.get('limit', 50))
         offset = int(request.query_params.get('offset', 0))
         order_by = request.query_params.get('order_by', 'id')
         order = request.query_params.get('order', 'desc')
         
-        # Validate parameters
+        # validate parameters
         valid_order_fields = ['id', 'created_at', 'game_type']
         if order_by not in valid_order_fields:
             return Response({
@@ -740,7 +697,7 @@ def get_all_beginner_questions(request):
                 'message': 'order must be either "asc" or "desc"'
             }, status=status.HTTP_400_BAD_REQUEST)
         
-        # Build query
+        # build query
         order_field = f"-{order_by}" if order == 'desc' else order_by
         questions_query = GeneratedQuestion.objects.filter(estimated_difficulty='beginner').order_by(order_field)
         
@@ -771,17 +728,15 @@ def get_all_beginner_questions(request):
 
 @api_view(['GET'])
 def get_all_intermediate_questions(request):
-    """
-    Get all intermediate difficulty questions with pagination.
-    Query params: limit, offset, order_by, order
-    """
+    # get all intermediate difficulty questions with pagination.
+    # query params: limit, offset, order_by, order
     try:
         limit = int(request.query_params.get('limit', 50))
         offset = int(request.query_params.get('offset', 0))
         order_by = request.query_params.get('order_by', 'id')
         order = request.query_params.get('order', 'desc')
         
-        # Validate parameters
+        # validate parameters
         valid_order_fields = ['id', 'created_at', 'game_type']
         if order_by not in valid_order_fields:
             return Response({
@@ -795,7 +750,7 @@ def get_all_intermediate_questions(request):
                 'message': 'order must be either "asc" or "desc"'
             }, status=status.HTTP_400_BAD_REQUEST)
         
-        # Build query
+        # build query
         order_field = f"-{order_by}" if order == 'desc' else order_by
         questions_query = GeneratedQuestion.objects.filter(estimated_difficulty='intermediate').order_by(order_field)
         
@@ -826,17 +781,15 @@ def get_all_intermediate_questions(request):
 
 @api_view(['GET'])
 def get_all_advanced_questions(request):
-    """
-    Get all advanced difficulty questions with pagination.
-    Query params: limit, offset, order_by, order
-    """
+    # get all advanced difficulty questions with pagination.
+    # query params: limit, offset, order_by, order
     try:
         limit = int(request.query_params.get('limit', 50))
         offset = int(request.query_params.get('offset', 0))
         order_by = request.query_params.get('order_by', 'id')
         order = request.query_params.get('order', 'desc')
         
-        # Validate parameters
+        # validate parameters
         valid_order_fields = ['id', 'created_at', 'game_type']
         if order_by not in valid_order_fields:
             return Response({
@@ -850,7 +803,7 @@ def get_all_advanced_questions(request):
                 'message': 'order must be either "asc" or "desc"'
             }, status=status.HTTP_400_BAD_REQUEST)
         
-        # Build query
+        # build query
         order_field = f"-{order_by}" if order == 'desc' else order_by
         questions_query = GeneratedQuestion.objects.filter(estimated_difficulty='advanced').order_by(order_field)
         
@@ -881,17 +834,15 @@ def get_all_advanced_questions(request):
 
 @api_view(['GET'])
 def get_all_master_questions(request):
-    """
-    Get all master difficulty questions with pagination.
-    Query params: limit, offset, order_by, order
-    """
+    # get all master difficulty questions with pagination.
+    # query params: limit, offset, order_by, order
     try:
         limit = int(request.query_params.get('limit', 50))
         offset = int(request.query_params.get('offset', 0))
         order_by = request.query_params.get('order_by', 'id')
         order = request.query_params.get('order', 'desc')
         
-        # Validate parameters
+        # validate parameters
         valid_order_fields = ['id', 'created_at', 'game_type']
         if order_by not in valid_order_fields:
             return Response({
@@ -905,7 +856,7 @@ def get_all_master_questions(request):
                 'message': 'order must be either "asc" or "desc"'
             }, status=status.HTTP_400_BAD_REQUEST)
         
-        # Build query
+        # build query
         order_field = f"-{order_by}" if order == 'desc' else order_by
         questions_query = GeneratedQuestion.objects.filter(estimated_difficulty='master').order_by(order_field)
         

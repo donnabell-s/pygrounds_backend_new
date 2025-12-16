@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
 from .models import GeneratedQuestion, PreAssessmentQuestion
-from content_ingestion.models import SemanticSubtopic  # Moved to content_ingestion
+from content_ingestion.models import SemanticSubtopic  # moved to content_ingestion
 from content_ingestion.models import Topic, Subtopic
 
 

@@ -17,19 +17,18 @@ logger = logging.getLogger(__name__)
 
 @api_view(['POST'])
 def process_semantic_similarities(request, document_id):
-    # Process semantic similarities for a specific document
-    # POST /content_ingestion/semantic/<document_id>/
-    # Optional:
-    # - similarity_threshold (float): Min score (default: 0.1)
-    # - top_k_results (int): Max results per subtopic (default: 10)
+    # process semantic similarities for a specific document
+    # optional:
+    # - similarity_threshold (float): min score (default: 0.1)
+    # - top_k_results (int): max results per subtopic (default: 10)
     try:
         document = get_object_or_404(UploadedDocument, id=document_id)
         
-        # Get parameters from request
+        # get parameters
         similarity_threshold = float(request.data.get('similarity_threshold', 0.1))
         top_k_results = int(request.data.get('top_k_results', 10))
         
-        # Validate parameters
+        # validate parameters
         if not 0.0 <= similarity_threshold <= 1.0:
             return Response({
                 'status': 'error',
@@ -42,12 +41,12 @@ def process_semantic_similarities(request, document_id):
                 'message': 'top_k_results must be between 1 and 50'
             }, status=status.HTTP_400_BAD_REQUEST)
         
-        # Update document status
+        # update document status
         document.processing_status = 'PROCESSING'
         document.processing_message = 'Computing semantic similarities between document chunks and subtopics...'
         document.save()
         
-        # Process semantic similarities
+        # process semantic similarities
         result = compute_semantic_similarities_for_document(
             document_id=document_id,
             similarity_threshold=similarity_threshold,
@@ -55,7 +54,7 @@ def process_semantic_similarities(request, document_id):
         )
         
         if result['status'] == 'success':
-            # Update success status
+            # update success status
             document.processing_status = 'COMPLETED'
             document.processing_message = f'Successfully processed semantic similarities for {result.get("processed_subtopics", 0)} subtopics'
             document.save()
@@ -97,13 +96,13 @@ def process_semantic_similarities(request, document_id):
 
 @api_view(['POST'])
 def process_all_semantic_similarities(request):
-    # Process semantic similarities across all subtopics/chunks.
+    # process semantic similarities across all subtopics/chunks
     try:
-        # Get parameters from request
+        # get parameters
         similarity_threshold = float(request.data.get('similarity_threshold', 0.1))
         top_k_results = int(request.data.get('top_k_results', 10))
         
-        # Validate parameters
+        # validate parameters
         if not 0.0 <= similarity_threshold <= 1.0:
             return Response({
                 'status': 'error',
@@ -116,7 +115,7 @@ def process_all_semantic_similarities(request):
                 'message': 'top_k_results must be between 1 and 50'
             }, status=status.HTTP_400_BAD_REQUEST)
         
-        # Process semantic similarities for all content
+        # process semantic similarities for all content
         result = compute_semantic_similarities_all(
             similarity_threshold=similarity_threshold,
             top_k_results=top_k_results
@@ -143,16 +142,16 @@ def process_all_semantic_similarities(request):
 
 @api_view(['GET'])
 def get_subtopic_similar_chunks(request, subtopic_id):
-    # Fetch ranked chunks for a subtopic (optionally filtered).
+    # fetch ranked chunks for a subtopic (optionally filtered)
     try:
         subtopic = get_object_or_404(Subtopic, id=subtopic_id)
         
-        # Get query parameters
+        # get query parameters
         chunk_type = request.GET.get('chunk_type')
         limit = int(request.GET.get('limit', 5))
         min_similarity = float(request.GET.get('min_similarity', 0.5))
         
-        # Validate parameters
+        # validate parameters
         if not 1 <= limit <= 20:
             return Response({
                 'status': 'error',
@@ -165,7 +164,7 @@ def get_subtopic_similar_chunks(request, subtopic_id):
                 'message': 'min_similarity must be between 0.0 and 1.0'
             }, status=status.HTTP_400_BAD_REQUEST)
         
-        # Get similar chunks
+        # get similar chunks
         chunk_ids = get_similar_chunks_for_subtopic(
             subtopic_id=subtopic_id,
             chunk_type=chunk_type,
@@ -173,20 +172,20 @@ def get_subtopic_similar_chunks(request, subtopic_id):
             min_similarity=min_similarity
         )
         
-        # Get semantic data for additional info
+        # fetch semantic data for additional info
         try:
             semantic_data = SemanticSubtopic.objects.get(subtopic=subtopic)
             
-            # Get chunks based on type
+            # get chunks based on type
             if chunk_type == 'Concept':
                 ranked_chunks = semantic_data.ranked_concept_chunks
             elif chunk_type in ['Code', 'Example', 'Exercise', 'Try_It']:
                 ranked_chunks = semantic_data.ranked_code_chunks
             else:
-                # Combine both lists for general queries
+                # combine both lists for general queries
                 ranked_chunks = (semantic_data.ranked_concept_chunks or []) + (semantic_data.ranked_code_chunks or [])
             
-            # Filter and format results
+            # filter and format results
             filtered_chunks = []
             for chunk_info in ranked_chunks:
                 if chunk_info['chunk_id'] in chunk_ids:
@@ -194,7 +193,7 @@ def get_subtopic_similar_chunks(request, subtopic_id):
                         if chunk_info.get('similarity', 0) >= min_similarity:
                             filtered_chunks.append(chunk_info)
             
-            # Sort by similarity and limit
+            # sort by similarity and limit
             filtered_chunks.sort(key=lambda x: x.get('similarity', 0), reverse=True)
             filtered_chunks = filtered_chunks[:limit]
             

@@ -1,4 +1,4 @@
-# Token counting helpers for chunking.
+# token counting helpers for chunking
 import tiktoken
 import logging
 
@@ -58,15 +58,15 @@ def get_optimal_chunk_size(target_tokens: int = 1000, encoding_name: str = "cl10
 
 
 class TokenCounter:
-    # Backward-compatible wrapper.
+    # backward-compatible wrapper
     
     def __init__(self, encoding_name: str = "cl100k_base"):
         self.encoding_name = encoding_name
     
     def count_tokens(self, text: str) -> int:
-        # Count tokens in text.
+        # count tokens in text
         return count_tokens(text, self.encoding_name)
     
     def analyze_chunks(self, chunks: list) -> dict:
-        # Summarize token distribution across chunks.
+        # summarize token distribution across chunks
         return analyze_chunk_sizes(chunks, self.encoding_name)

@@ -52,7 +52,7 @@ class PDFTestAnalysisView(APIView):
             try:
                 # Step 1: TOC Analysis
                 from content_ingestion.helpers.toc_parser.toc_utils import extract_toc_with_unstructured
-                print("\n📚 ANALYZING TOC STRUCTURE")
+                print("\n ANALYZING TOC STRUCTURE")
                 
                 toc_entries = extract_toc_with_unstructured(temp_file_path)
                 toc_analysis = {
@@ -62,7 +62,7 @@ class PDFTestAnalysisView(APIView):
                 }
                 
                 # Step 2: Content Structure Analysis  
-                print("\n🔍 ANALYZING CONTENT STRUCTURE")
+                print("\n ANALYZING CONTENT STRUCTURE")
                 from content_ingestion.helpers.page_chunking.chunk_extractor_utils import process_with_unstructured
                 
                 try:
@@ -90,7 +90,7 @@ class PDFTestAnalysisView(APIView):
                     structure_analysis = {'error': str(e)}
 
                 # Step 3: Test Embeddings (without saving)
-                print("\n🔗 TESTING EMBEDDING GENERATION")
+                print("\n TESTING EMBEDDING GENERATION")
                 try:
                     from content_ingestion.helpers.embedding import EmbeddingGenerator
                     embedding_generator = EmbeddingGenerator()
@@ -173,7 +173,7 @@ class PDFTestChunkingView(APIView):
 
             try:
                 # Process the PDF to generate chunks (without saving to DB)
-                print("\n🔍 ANALYZING PDF CHUNKING QUALITY")
+                print("\n ANALYZING PDF CHUNKING QUALITY")
                 
                 from content_ingestion.helpers.page_chunking.chunk_extractor_utils import process_with_unstructured
                 from content_ingestion.helpers.page_chunking.toc_chunk_processor import GranularChunkProcessor

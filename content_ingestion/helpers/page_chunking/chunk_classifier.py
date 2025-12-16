@@ -1,59 +1,53 @@
-## Chunk classification: determine chunk types for question generation.
 import re
 from typing import Optional
 
 
 def infer_chunk_type(text: str, default: str = "Concept") -> str:
-    # Classify chunk type: code-ish vs conceptual.
     text_lower = text.lower()
     text_stripped = text.strip()
     
-    # CODING-RELATED CONTENT (highest priority)
+    # CODING-RELATED CONTENT header names
     
-    # 1. Code - Actual code snippets and interactive sessions
+    # 1. if header code
     if _is_code_content(text, text_lower, text_stripped):
         return "Code"
     
-    # 2. Try_It - Interactive coding exercises
+    # 2. Try_It 
     if _is_try_it_content(text_lower):
         return "Try_It"
     
-    # 3. Exercise - Coding practice and challenges
+    # 3. Exercise 
     if _is_exercise_content(text_lower):
         return "Exercise"
     
-    # 4. Example - Code examples and demonstrations
+    # 4. Example
     if _is_example_content(text, text_lower):
         return "Example"
     
-    # CONCEPTUAL CONTENT (pure text for non-coding questions)
+    # CONCEPTUAL CONTENT (paragraphs)
     if _is_conceptual_content(text, text_lower):
         return "Concept"
-    
-    # Default fallback
     return "Concept"
 
-
+#check for type indicators
 def _is_code_content(text: str, text_lower: str, text_stripped: str) -> bool:
-    # Check if content contains actual code.
     coding_indicators = [
         text_stripped.startswith(">>>"),
         ">>>" in text,
         "..." in text and (">>>" in text or "def " in text),
         text_stripped.startswith(("import ", "from ", "def ", "class ", "if __name__")),
         re.search(r'^\s*(def|class|import|from)\s+\w+', text, re.MULTILINE),
-        re.search(r'[a-zA-Z_]\w*\s*=\s*[^=]', text),  # Assignment statements
+        re.search(r'[a-zA-Z_]\w*\s*=\s*[^=]', text), 
         re.search(r'print\s*\(.*\)', text),
         re.search(r'return\s+\w+', text),
-        text.count('{') > 0 and text.count('}') > 0,  # Curly braces (dicts, sets)
-        text.count('[') > 1 and text.count(']') > 1,  # Multiple brackets (lists, indexing)
+        text.count('{') > 0 and text.count('}') > 0,  
+        text.count('[') > 1 and text.count(']') > 1,  
     ]
     
     return any(coding_indicators)
 
 
 def _is_try_it_content(text_lower: str) -> bool:
-    # Check if content is interactive/try-it exercise.
     try_it_indicators = [
         "try it" in text_lower,
         "try this" in text_lower, 
@@ -68,7 +62,6 @@ def _is_try_it_content(text_lower: str) -> bool:
 
 
 def _is_exercise_content(text_lower: str) -> bool:
-    # Check if content is a coding exercise/practice.
     exercise_indicators = [
         "exercise" in text_lower and ("write" in text_lower or "code" in text_lower or "implement" in text_lower),
         "practice" in text_lower and ("coding" in text_lower or "programming" in text_lower),
@@ -82,7 +75,6 @@ def _is_exercise_content(text_lower: str) -> bool:
 
 
 def _is_example_content(text: str, text_lower: str) -> bool:
-    # Check if content is a code example/demonstration.
     has_code_elements = (
         ("def " in text or "class " in text or "import " in text) or 
         (">>>" in text) or 
@@ -103,10 +95,7 @@ def _is_example_content(text: str, text_lower: str) -> bool:
 
 
 def _is_conceptual_content(text: str, text_lower: str) -> bool:
-    # Check if content is pure conceptual (definitions, theory).
-    # Look for pure conceptual indicators
     conceptual_indicators = [
-        # Definitions and explanations
         " is defined as " in text_lower,
         " refers to " in text_lower,
         " means " in text_lower,
@@ -118,20 +107,20 @@ def _is_conceptual_content(text: str, text_lower: str) -> bool:
         "principle" in text_lower,
         "theory" in text_lower,
         
-        # Keywords and terminology
+     
         "key term" in text_lower,
         "important to note" in text_lower,
         "terminology" in text_lower,
         "glossary" in text_lower,
         
-        # Explanatory content without code
+      
         "explanation" in text_lower and not any(code_word in text_lower for code_word in ["code", "implementation", "write", "program"]),
-        "why" in text_lower and "?" in text,  # Questions about concepts
+        "why" in text_lower and "?" in text, 
         "what" in text_lower and "?" in text,
         "when" in text_lower and "?" in text,
         "how" in text_lower and "?" in text and not ("code" in text_lower or "implement" in text_lower),
         
-        # Introduction and background
+        
         "introduction" in text_lower,
         "background" in text_lower,
         "overview" in text_lower,
@@ -139,22 +128,21 @@ def _is_conceptual_content(text: str, text_lower: str) -> bool:
         "evolution" in text_lower,
     ]
     
-    # Check if this has no coding elements
+   
     has_no_code = not any([
         "def " in text,
         "class " in text,
         "import " in text,
         ">>>" in text,
-        re.search(r'[a-zA-Z_]\w*\s*=\s*[^=]', text),  # Assignments
+        re.search(r'[a-zA-Z_]\w*\s*=\s*[^=]', text),  
         re.search(r'print\s*\(', text),
-        text.count('(') > 3 and text.count(')') > 3,  # Multiple function calls
+        text.count('(') > 3 and text.count(')') > 3,  
     ])
     
-    # If it has conceptual indicators AND no code elements, it's definitely a Concept
+   
     if any(conceptual_indicators) and has_no_code:
         return True
     
-    # Check for technical terms but no actual code (still conceptual)
     technical_terms_count = sum(1 for term in [
         "algorithm", "data structure", "variable", "function", "method", "object", "class",
         "inheritance", "polymorphism", "encapsulation", "abstraction", "module", "library",

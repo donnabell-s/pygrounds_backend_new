@@ -1,4 +1,4 @@
-# Worker entrypoints for subprocess-safe document processing.
+# worker entrypoints for subprocess-safe document processing
 
 import os
 import django
@@ -8,7 +8,7 @@ _DJANGO_READY = False
 
 
 def setup_django() -> None:
-    # Initialize Django once per worker process.
+    # initialize django once per worker process
     global _DJANGO_READY
     if _DJANGO_READY:
         return
@@ -19,7 +19,7 @@ def setup_django() -> None:
 
 
 def process_document_task(task_data):
-    # Process one pipeline step for a document.
+    # process one pipeline step for a document
     try:
         setup_django()
 

@@ -218,7 +218,7 @@ def process_zone_difficulty_combination(args) -> Dict[str, Any]:
                 },
             })
 
-            # If cancelled before starting, exit early.
+            # if cancelled before starting, exit early
             if generation_status_tracker.is_session_cancelled(session_id):
                 generation_status_tracker.update_worker_status(session_id, {
                     'worker_id': thread_id,
@@ -231,7 +231,7 @@ def process_zone_difficulty_combination(args) -> Dict[str, Any]:
         from content_ingestion.models import Subtopic
         from itertools import combinations
         
-        print(f"🚀 Thread {thread_id}: Processing Zone {zone.order}: {zone.name} - {difficulty}")
+        print(f"Thread {thread_id}: Processing Zone {zone.order}: {zone.name} - {difficulty}")
         
         # Get all subtopics in this zone
         zone_subtopics = list(Subtopic.objects.filter(topic__zone=zone).select_related('topic'))
@@ -244,11 +244,11 @@ def process_zone_difficulty_combination(args) -> Dict[str, Any]:
         # prefer single-subtopic generation to avoid producing cross-subtopic combinations.
         if num_questions_per_subtopic == 1:
             max_combination_size = 1
-            print(f"🔧 Thread {thread_id}: Limiting to single subtopics only (num_questions_per_subtopic={num_questions_per_subtopic})")
+            print(f"Thread {thread_id}: Limiting to single subtopics only (num_questions_per_subtopic={num_questions_per_subtopic})")
         elif max_total_questions and max_total_questions <= 1:
             # For very small total limits, only generate single subtopic questions to avoid combinatorial explosion
             max_combination_size = 1
-            print(f"🔧 Thread {thread_id}: Limiting to single subtopics only (max_total_questions={max_total_questions})")
+            print(f"Thread {thread_id}: Limiting to single subtopics only (max_total_questions={max_total_questions})")
         else:
             # Normal behavior: singles, pairs, and trios
             max_combination_size = min(3, len(zone_subtopics))
@@ -288,9 +288,9 @@ def process_zone_difficulty_combination(args) -> Dict[str, Any]:
                     return result
 
             from ..helpers.rag_context import get_batched_rag_contexts
-            print(f"📚 Thread {thread_id}: Batch fetching RAG contexts for {len(all_combinations)} combinations")
+            print(f"Thread {thread_id}: Batch fetching RAG contexts for {len(all_combinations)} combinations")
             rag_contexts = get_batched_rag_contexts(all_combinations, difficulty, game_type)
-            print(f"✅ Thread {thread_id}: Retrieved {len(rag_contexts)} RAG contexts")
+            print(f"Thread {thread_id}: Retrieved {len(rag_contexts)} RAG contexts")
         
         # Process each combination using pre-fetched RAG contexts
         processed = 0
@@ -319,11 +319,11 @@ def process_zone_difficulty_combination(args) -> Dict[str, Any]:
                     result['combination_stats']['failed'] += 1
                     subtopic_names = generation_result['subtopic_names']
                     combination_type = "single subtopic" if len(subtopic_combination) == 1 else f"{len(subtopic_combination)}-subtopic combination"
-                    print(f"❌ Thread {thread_id}: Failed {combination_type}: {subtopic_names}")
+                    print(f"Thread {thread_id}: Failed {combination_type}: {subtopic_names}")
                     
                     # Only try fallback for combinations of size > 1
                     if len(subtopic_combination) > 1 and 'error' in generation_result:
-                        print(f"🔄 Thread {thread_id}: Attempting fallback to individual subtopics")
+                        print(f"Thread {thread_id}: Attempting fallback to individual subtopics")
                         # Try each subtopic individually as a fallback
                         for individual_subtopic in subtopic_combination:
                             try:
@@ -346,16 +346,16 @@ def process_zone_difficulty_combination(args) -> Dict[str, Any]:
                                 if fallback_result['success']:
                                     result['total_generated'] += fallback_result['questions_saved']
                                     result['combination_stats']['successful'] += 1
-                                    print(f"✅ Thread {thread_id}: Fallback successful for: {fallback_result['subtopic_names']}")
+                                    print(f"Thread {thread_id}: Fallback successful for: {fallback_result['subtopic_names']}")
                             except Exception as e:
-                                print(f"❌ Thread {thread_id}: Fallback failed for subtopic: {str(e)}")
+                                print(f"Thread {thread_id}: Fallback failed for subtopic: {str(e)}")
 
                         if result.get('error') == 'cancelled':
                             break
                     
             except Exception as e:
                 result['combination_stats']['failed'] += 1
-                print(f"❌ Thread {thread_id}: Error processing combination: {str(e)}")
+                print(f"Thread {thread_id}: Error processing combination: {str(e)}")
 
             processed += 1
             if session_id:
@@ -383,7 +383,7 @@ def process_zone_difficulty_combination(args) -> Dict[str, Any]:
             return result
         
         result['success'] = True
-        print(f"✅ Thread {thread_id}: Completed {zone.name} - {difficulty}: {result['total_generated']} questions")
+        print(f"Thread {thread_id}: Completed {zone.name} - {difficulty}: {result['total_generated']} questions")
 
         if session_id:
             from .generation_status import generation_status_tracker
@@ -402,7 +402,7 @@ def process_zone_difficulty_combination(args) -> Dict[str, Any]:
         
     except Exception as e:
         result['error'] = f"Zone-difficulty processing failed: {str(e)}"
-        print(f"❌ Thread {thread_id}: Error in {zone.name} - {difficulty}: {str(e)}")
+        print(f"Thread {thread_id}: Error in {zone.name} - {difficulty}: {str(e)}")
 
         if session_id:
             from .generation_status import generation_status_tracker
@@ -458,8 +458,8 @@ def run_multithreaded_generation(zones,
             difficulties=difficulty_levels
         )
 
-    print(f"🎯 Starting {game_type} question generation with {max_workers} workers (optimized for {game_type} database patterns)")
-    print(f"⚙️ Worker scaling: Coding={getattr(settings, 'CODING_QUESTION_WORKERS', 3)}, Non-coding={getattr(settings, 'NON_CODING_QUESTION_WORKERS', 6)}, Pre-assessment={getattr(settings, 'PRE_ASSESSMENT_WORKERS', 6)}")
+    print(f"Starting {game_type} question generation with {max_workers} workers (optimized for {game_type} database patterns)")
+    print(f"Worker scaling: Coding={getattr(settings, 'CODING_QUESTION_WORKERS', 3)}, Non-coding={getattr(settings, 'NON_CODING_QUESTION_WORKERS', 6)}, Pre-assessment={getattr(settings, 'PRE_ASSESSMENT_WORKERS', 6)}")
     
     # Prepare tasks: each task is a (zone, difficulty) combination
     tasks = []
@@ -477,7 +477,7 @@ def run_multithreaded_generation(zones,
     cancelled = False
     start_time = time.time()
 
-    print(f"🚀 ThreadPoolExecutor starting with {max_workers} workers for {len(tasks)} tasks")
+    print(f"ThreadPoolExecutor starting with {max_workers} workers for {len(tasks)} tasks")
     
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
         try:

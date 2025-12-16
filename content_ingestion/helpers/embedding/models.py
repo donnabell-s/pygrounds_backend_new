@@ -6,14 +6,12 @@ import logging
 
 
 class EmbeddingModelType(Enum):
-    # Types of embedding models for different content types.
     CODE_BERT = "code_bert"       
     SENTENCE_TRANSFORMER = "sentence"  
 
 
 @dataclass
 class EmbeddingConfig:
-    # Configuration for an embedding model.
     model_name: str
     model_type: EmbeddingModelType
     dimension: int
@@ -21,21 +19,19 @@ class EmbeddingConfig:
     batch_size: int
 
 
-# Get the project root directory
+#set root dir
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 MODELS_DIR = os.path.join(PROJECT_ROOT, 'models')
 
 logger = logging.getLogger(__name__)
 
-# Check if local models exist, otherwise use online models
+# check if local models exist
 def get_model_path(model_name: str, local_folder: str) -> str:
     local_path = os.path.join(MODELS_DIR, local_folder)
     if os.path.exists(local_path):
         logger.debug("Using local model: %s", local_path)
         return local_path
     else:
-        # Stay quiet by default; surface only when caller expects local-only.
-        # Set `PYGROUNDS_LOCAL_MODELS_ONLY=1` to fail fast if local models missing.
         if os.environ.get("PYGROUNDS_LOCAL_MODELS_ONLY", "").strip() in {"1", "true", "True"}:
             raise FileNotFoundError(
                 f"Local model not found at {local_path} (local-only mode enabled)."
@@ -43,7 +39,7 @@ def get_model_path(model_name: str, local_folder: str) -> str:
         logger.debug("Using online model: %s", model_name)
         return model_name
 
-# Model configurations for different content types
+#config for models
 MODEL_CONFIGS = {
     EmbeddingModelType.CODE_BERT: EmbeddingConfig(
         model_name=get_model_path("microsoft/codebert-base", "codebert-base"),
@@ -61,11 +57,10 @@ MODEL_CONFIGS = {
     )
 }
 
-# Mapping chunk types to embedding models
 CHUNK_TYPE_TO_MODEL = {
     'Code': EmbeddingModelType.CODE_BERT,
     'Exercise': EmbeddingModelType.CODE_BERT,
     'Try_It': EmbeddingModelType.CODE_BERT,
-    'Example': EmbeddingModelType.CODE_BERT,  # Examples often contain code
+    'Example': EmbeddingModelType.CODE_BERT,
     'Concept': EmbeddingModelType.SENTENCE_TRANSFORMER,
 }

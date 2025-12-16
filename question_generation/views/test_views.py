@@ -1,8 +1,3 @@
-"""
-Test and Debug API Views.
-Simple endpoints for testing LLM functionality and debugging.
-"""
-
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
@@ -14,37 +9,35 @@ from ..helpers.deepseek_prompts import deepseek_prompt_manager
 
 @api_view(['POST'])
 def deepseek_test_view(request):
-    """
-    Test DeepSeek API connectivity and functionality.
-    
-    POST {
-        "prompt": "your prompt here",
-        "system_prompt": "...",
-        "model": "deepseek-chat",
-        "temperature": 0.7 (optional)
-    }
-    
-    Returns: { "result": "...DeepSeek reply..." }
-    """
+    # test deepseek api connectivity and functionality.
+    #
+    # post {
+    #     "prompt": "your prompt here",
+    #     "system_prompt": "...",
+    #     "model": "deepseek-chat",
+    #     "temperature": 0.7 (optional)
+    # }
+    #
+    # returns: { "result": "...DeepSeek reply..." }
     try:
-        # Extract parameters
+        # extract parameters
         prompt = request.data.get("prompt")
         system_prompt = request.data.get("system_prompt", "You are a helpful assistant.")
         model = request.data.get("model", "deepseek-chat")
-        temperature = request.data.get("temperature")  # Optional temperature parameter
+        temperature = request.data.get("temperature")  # optional temperature parameter
         
-        # Validation
+        # validation
         if not prompt:
             return Response({
                 "error": "Prompt required."
             }, status=status.HTTP_400_BAD_REQUEST)
         
-        # Prepare kwargs
+        # prepare kwargs
         kwargs = {}
         if temperature is not None:
             kwargs['temperature'] = temperature
             
-        # Call LLM
+        # call llm
         result = invoke_deepseek(
             prompt, 
             system_prompt=system_prompt, 
@@ -68,19 +61,17 @@ def deepseek_test_view(request):
 
 @api_view(['GET'])
 def test_prompt_generation(request):
-    """
-    Test prompt generation for different game types.
-    
-    GET /api/questions/test-prompts/?game_type=coding&subtopic=Variables&difficulty=beginner
-    """
+    # test prompt generation for different game types.
+    #
+    # get /api/questions/test-prompts/?game_type=coding&subtopic=Variables&difficulty=beginner
     try:
-        # Get parameters
+        # get parameters
         game_type = request.GET.get('game_type', 'non_coding')
         subtopic_name = request.GET.get('subtopic', 'Python Basics')
         difficulty = request.GET.get('difficulty', 'beginner')
         num_questions = int(request.GET.get('num_questions', 2))
         
-        # Create test context
+        # create test context
         context = {
             'subtopic_name': subtopic_name,
             'difficulty': difficulty,
@@ -88,7 +79,7 @@ def test_prompt_generation(request):
             'rag_context': f"Test RAG context for {subtopic_name} at {difficulty} level."
         }
         
-        # Generate prompt
+        # generate prompt
         prompt = deepseek_prompt_manager.get_prompt_for_minigame(game_type, context)
         
         return Response({
@@ -107,9 +98,7 @@ def test_prompt_generation(request):
 
 @api_view(['GET'])
 def health_check(request):
-    """
-    Simple health check endpoint.
-    """
+    # simple health check endpoint.
     return Response({
         'status': 'healthy',
         'service': 'question_generation',
@@ -120,9 +109,7 @@ def health_check(request):
 
 @api_view(['GET'])
 def get_generation_stats(request):
-    """
-    Get basic statistics about generated questions.
-    """
+    # get basic statistics about generated questions.
     try:
         from question_generation.models import GeneratedQuestion
         

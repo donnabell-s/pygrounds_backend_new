@@ -10,8 +10,8 @@ logger = logging.getLogger(__name__)
 
 @api_view(['POST'])
 def embed_document_chunks(request, document_id):
-    # Generate embeddings for all document chunks for RAG retrieval
-    # Uses dual embedding system: Concept chunks -> MiniLM, others -> CodeBERT
+    # generate embeddings for all document chunks for rag retrieval
+    # concept chunks -> minilm, others -> codebert
     try:
         from content_ingestion.helpers.embedding import EmbeddingGenerator
         from content_ingestion.models import DocumentChunk, Embedding
@@ -20,7 +20,7 @@ def embed_document_chunks(request, document_id):
 
         all_chunks = DocumentChunk.objects.filter(document=document)
         
-        # Check for existing embeddings in the new vector fields
+        # check for existing embeddings in the new vector fields
         chunks_with_embeddings = []
         chunks_to_embed = []
         
@@ -36,7 +36,7 @@ def embed_document_chunks(request, document_id):
                 codebert_vector__isnull=False
             ).exists()
             
-            # Chunk needs embedding if it doesn't have the appropriate vector for its type
+            # chunk needs embedding if it doesn't have the appropriate vector for its type
             if chunk.chunk_type == 'Concept':
                 if not has_minilm:
                     chunks_to_embed.append(chunk)
@@ -62,16 +62,16 @@ def embed_document_chunks(request, document_id):
                 }
             })
 
-        print(f"📝 Found {len(chunks_to_embed)} chunks to embed")
+        print(f" Found {len(chunks_to_embed)} chunks to embed")
         
-        # Generate embeddings using the updated generator
+        # generate embeddings using the updated generator
         embedding_generator = EmbeddingGenerator()
         embedding_results = embedding_generator.embed_and_save_batch(chunks_to_embed)
 
-        # Log chunk embedding status with new vector fields
+        # log chunk embedding status with new vector fields
         chunk_logs = []
         for chunk in all_chunks:
-            # Check both vector types for this chunk
+            # check both vector types for this chunk
             minilm_embedding = Embedding.objects.filter(
                 document_chunk=chunk, 
                 content_type='chunk',
@@ -129,7 +129,7 @@ def embed_document_chunks(request, document_id):
 
     except Exception as e:
         import traceback
-        print(f"❌ Error in embed_document_chunks: {str(e)}")
+        print(f" Error in embed_document_chunks: {str(e)}")
         print(traceback.format_exc())
         return Response({
             'status': 'error',
@@ -138,7 +138,7 @@ def embed_document_chunks(request, document_id):
 
 @api_view(['GET'])
 def get_chunk_embeddings(request, document_id):
-    # Return embedding coverage + metadata per chunk.
+    # return embedding coverage + metadata per chunk
     try:
         document = get_object_or_404(UploadedDocument, id=document_id)
         from content_ingestion.models import DocumentChunk, Embedding
@@ -410,7 +410,7 @@ def generate_subtopic_embeddings(request):
 
     except Exception as e:
         import traceback
-        print(f"❌ Error in generate_subtopic_embeddings: {str(e)}")
+        print(f" Error in generate_subtopic_embeddings: {str(e)}")
         print(traceback.format_exc())
         return Response({
             'status': 'error',
@@ -419,7 +419,7 @@ def generate_subtopic_embeddings(request):
 
 @api_view(['GET'])
 def get_topic_subtopic_embeddings_detailed(request):
-    # Retrieve topic/subtopic embeddings (including vectors).
+    # retrieve topic/subtopic embeddings (including vectors)
     try:
         from content_ingestion.models import Topic, Subtopic
 
