@@ -10,6 +10,8 @@ from rest_framework.views import APIView
 
 from question_generation.models import PreAssessmentQuestion
 from user_learning.adaptive_engine import recalibrate_topic_proficiency
+from analytics.models import QuestionResponse as AnalyticsResponse
+
 
 from .game_logic.crossword import CrosswordGenerator
 from .game_logic.wordsearch import WordSearchGenerator
@@ -188,6 +190,16 @@ class SubmitAnswers(APIView):
                 user_answer=ua,
                 is_correct=ok,
             )
+            AnalyticsResponse.objects.create(
+                question=q,
+                score=1 if ok else 0,
+                user_id=request.user.id,
+                response_time=0
+            )
+            from analytics.helpers.theta_updater import update_user_theta
+            update_user_theta(request.user.id)
+
+
 
             # Extract topic and subtopic IDs
             topic_ids, subtopic_ids = extract_topic_subtopic_ids(q)
@@ -514,6 +526,18 @@ class SubmitHangmanCode(APIView):
             user_answer=user_code,
             is_correct=passed,
         )
+     
+        AnalyticsResponse.objects.create(
+            question=question,
+            score=1 if passed else 0,
+            user_id=request.user.id,
+            response_time=0
+        )
+        from analytics.helpers.theta_updater import update_user_theta
+        update_user_theta(request.user.id)
+
+
+
 
         wrong_after = QuestionResponse.objects.filter(
             question=game_q, user=request.user, is_correct=False
@@ -654,6 +678,17 @@ class SubmitDebugGame(APIView):
             user_answer=user_code,
             is_correct=passed,
         )
+        # --- ANALYTICS LOGGING ---
+        AnalyticsResponse.objects.create(
+            question=question,
+            score=1 if passed else 0,
+            user_id=request.user.id,
+            response_time=0
+        )
+        from analytics.helpers.theta_updater import update_user_theta
+        update_user_theta(request.user.id)
+
+
 
         wrong_after = QuestionResponse.objects.filter(
             question=game_q, user=request.user, is_correct=False

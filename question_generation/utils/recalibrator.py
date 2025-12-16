@@ -1,16 +1,17 @@
 from django.db.models import Avg
 from django.apps import apps
 
+# NEW: import IRT utilities
+from analytics.irt_utils import recalibrate_item_irt
+
 LEVELS = ["beginner", "intermediate", "advanced", "master"]
 
 
+# -----------------------------------------------------------
+#  Resolve Question + Response Models
+# -----------------------------------------------------------
+
 def _get_question_model():
-    """
-    Resolve a Question-like model in this order:
-      1) question_generation.GeneratedQuestion
-      2) question_generation.Question
-      3) minigames.Question
-    """
     candidates = [
         ("question_generation", "GeneratedQuestion"),
         ("question_generation", "Question"),
@@ -23,34 +24,23 @@ def _get_question_model():
                 return model
         except LookupError:
             continue
-    raise LookupError(
-        "No suitable Question model found "
-        "(tried question_generation.GeneratedQuestion / Question / minigames.Question)."
-    )
+    raise LookupError("No suitable Question model found.")
 
 
 def _get_question_response_model():
-    """
-    Try to load analytics.QuestionResponse (optional app).
-    Returns None if analytics is not installed.
-    """
     try:
-        return apps.get_model("analytics", "QuestionResponse")
+        return apps.get_model("minigames", "QuestionResponse")
     except LookupError:
         return None
 
 
+
+#  OLD METHOD (Score-based recalibration)
+#  – still used as fallback
+
 def recalibrate_difficulty_for_question(question_id: int) -> str:
     """
-    Score-based recalibration (expects analytics.QuestionResponse.score in [0,1]):
-
-      avg_score < 0.30  -> 'master'
-      avg_score < 0.60  -> 'advanced'
-      avg_score < 0.80  -> 'intermediate'
-      else              -> 'beginner'
-
-    Requires at least 5 responses. If the analytics app is not present,
-    we skip recalibration gracefully.
+    Simple score-based recalibration. Kept for fallback use.
     """
     Question = _get_question_model()
 
@@ -63,12 +53,13 @@ def recalibrate_difficulty_for_question(question_id: int) -> str:
     if QuestionResponse is None:
         return "Analytics app not installed; cannot recalibrate."
 
-    qs = QuestionResponse.objects.filter(question=q)
-    total = qs.count()
+    responses = QuestionResponse.objects.filter(question=q)
+    total = responses.count()
+
     if total < 5:
         return "Not enough responses to recalibrate (need ≥5)."
 
-    avg_score = qs.aggregate(val=Avg("score"))["val"] or 0.0
+    avg_score = responses.aggregate(val=Avg("score"))["val"] or 0
 
     if avg_score < 0.30:
         new_diff = "master"
@@ -79,12 +70,55 @@ def recalibrate_difficulty_for_question(question_id: int) -> str:
     else:
         new_diff = "beginner"
 
-    prev = getattr(q, "difficulty", None)
+    prev = getattr(q, "estimated_difficulty", None)
     if prev != new_diff:
-        q.difficulty = new_diff
-        try:
-            q.save(update_fields=["difficulty"])
-        except Exception:
-            q.save()
-        return f"Recalibrated to {new_diff.capitalize()}."
-    return "No recalibration needed."
+        q.estimated_difficulty = new_diff
+        q.save(update_fields=["estimated_difficulty"])
+        return f"[Simple] Recalibrated to {new_diff.capitalize()}."
+
+    return "[Simple] No recalibration needed."
+
+
+#  ** NEW — IRT RECALIBRATION 
+
+def recalibrate_irt_for_question(question_id: int) -> str:
+    """
+    Calls the 2PL IRT recalibration logic.
+    Returns human-readable result message.
+    """
+    try:
+        msg = recalibrate_item_irt(question_id)
+        return f"[IRT] {msg}"
+    except Exception as e:
+        return f"[IRT ERROR] {str(e)}"
+
+
+#  ** NEW — Bulk IRT Recalibration for all minigames **
+
+def recalibrate_irt_bulk() -> str:
+    """
+    Recalibrate ALL GeneratedQuestion items using IRT.
+    Only applies to coding/non_coding items.
+    """
+    Question = _get_question_model()
+
+    questions = Question.objects.filter(game_type__in=["coding", "non_coding"])
+    total = questions.count()
+
+    success = 0
+    skipped = 0
+
+    for q in questions:
+        result = recalibrate_item_irt(q.id)
+
+        if "not enough responses" in result.lower():
+            skipped += 1
+        elif "done" in result.lower():
+            success += 1
+
+    return (
+        f"IRT recalibration completed.\n"
+        f"Successfully updated: {success}\n"
+        f"Skipped (insufficient data): {skipped}\n"
+        f"Total items: {total}"
+    )
