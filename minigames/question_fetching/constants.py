@@ -15,7 +15,9 @@ DIFF_LOW  = ["beginner", "intermediate"]
 DIFF_HIGH = ["advanced", "master"]
 DIFF_ALL  = ["beginner", "intermediate", "advanced", "master"]
 
-EVAL_CANDIDATES_PER_BUCKET = 80
-SOFTMAX_TEMPERATURE         = 0.20
-
 DIFF_LEVELS = {"beginner": 0, "intermediate": 1, "advanced": 2, "master": 3}
+
+# Goldilocks acceptable difficulty bands (filter, not target)
+# Format: (low, high) for predicted success probability
+GOLDILOCKS_BAND_PRACTICE = (0.65, 0.85)      # practice-heavy games (hangman, debugging)
+GOLDILOCKS_BAND_CONCEPTUAL = (0.55, 0.80)    # conceptual/assessment games (crossword, wordsearch)

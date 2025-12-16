@@ -1,171 +1,184 @@
 import math
 from typing import Dict, List
-from .bkt_models import BKTParams, PFACoeffs, bkt_update_once, bkt_update_fractional, pfa_prob, _observe_params_with_difficulty
-from .utils import _mistakes_from_entry, _get_mapping_from_question, _norm_diff, _diff_level, _impact_with_difficulty, _game_weight, _time_multiplier
-from .config import MASTERY_BANDS, MASTERY_THRESHOLD, CONVERGENCE_EPS, CONVERGENCE_K
-from .persistence import _ema_update, _load_pT_scale, _save_pT_scale, _pfa_seed_prior_or_default, _lr_mult_from_practice
 from django.db import transaction
 from django.db.models import Avg
-from user_learning.models import UserZoneProgress, UserTopicProficiency, UserSubtopicMastery, UserSubtopicLearningRate
+from user_learning.models import UserZoneProgress, UserTopicProficiency, UserSubtopicMastery, UserAbility
 from content_ingestion.models import Topic, Subtopic, GameZone
 
-def _band_of(p: float) -> str:
-    if p >= MASTERY_BANDS["master_min"]:
-        return "mastered"
-    if p >= MASTERY_BANDS["review_min"]:
-        return "review"
-    return "weak"
 
+# ──────────────────────────────────────────────────────────────────────────────
+# Helper functions
+# ──────────────────────────────────────────────────────────────────────────────
+
+def clamp(x: float, min_val: float, max_val: float) -> float:
+    """Clamp x to [min_val, max_val]."""
+    return max(min_val, min(max_val, x))
+
+
+def extract_subtopic_ids(entry: dict) -> List[int]:
+    """
+    Extract subtopic IDs from a result entry.
+    Supports:
+      - subtopic_id (int)
+      - subtopic_ids (list)
+      - subtopics: [{id: ...}, ...]
+      - mapping: {subtopic_ids: [...]}
+    """
+    # Direct subtopic_id
+    if "subtopic_id" in entry and entry["subtopic_id"]:
+        return [int(entry["subtopic_id"])]
+    
+    # Direct subtopic_ids list
+    if "subtopic_ids" in entry and entry["subtopic_ids"]:
+        return [int(sid) for sid in entry["subtopic_ids"]]
+    
+    # subtopics array of dicts
+    if "subtopics" in entry and isinstance(entry["subtopics"], list):
+        ids = []
+        for s in entry["subtopics"]:
+            if isinstance(s, dict) and "id" in s:
+                ids.append(int(s["id"]))
+        if ids:
+            return ids
+    
+    # mapping.subtopic_ids
+    if "mapping" in entry and isinstance(entry["mapping"], dict):
+        if "subtopic_ids" in entry["mapping"]:
+            return [int(sid) for sid in entry["mapping"]["subtopic_ids"]]
+    
+    return []
+
+
+def aggregate_by_subtopic(results: List[dict]) -> Dict[int, Dict[str, float]]:
+    """
+    Aggregate results by subtopic_id.
+    Returns: {subtopic_id: {attempts, correct, accuracy}}
+    """
+    agg = {}
+    for entry in results:
+        is_correct = bool(entry.get("is_correct", False))
+        subtopic_ids = extract_subtopic_ids(entry)
+        for sid in subtopic_ids:
+            if sid not in agg:
+                agg[sid] = {"attempts": 0.0, "correct": 0.0, "accuracy": 0.0}
+            agg[sid]["attempts"] += 1.0
+            if is_correct:
+                agg[sid]["correct"] += 1.0
+    
+    # Compute accuracy
+    for sid, stats in agg.items():
+        if stats["attempts"] > 0:
+            stats["accuracy"] = stats["correct"] / stats["attempts"]
+        else:
+            stats["accuracy"] = 0.0
+    
+    return agg
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Paper-aligned adaptive pipeline
+# ──────────────────────────────────────────────────────────────────────────────
+
+@transaction.atomic
 def recalibrate_topic_proficiency(user, results: list) -> dict:
     """
-    Individualized-BKT core (thesis‑aligned):
-      - PFA-like signals seed p(L0) and modulate p(T) per student.
-      - Final mastery is BKT-only (no blending with PFA output).
-      - Time/game weights remain in effect (session-level time multiplier).
-      - Difficulty influences impact sizing, slip/guess, and wrong-answer decay.
-      - Persist per-user×subtopic learning rate with EMA for stability across sessions.
-      - Returns per‑subtopic summary including convergence and threshold flags for MCT-support.
+    Paper-aligned adaptive pipeline using UserAbility as student-level prior.
+    
+    Process:
+    1. Load or create UserAbility (global ability score)
+    2. Aggregate results by subtopic
+    3. For each subtopic:
+       - Load or create UserSubtopicMastery
+       - Convert mastery_level (0-100) to K_old (0-1)
+       - Compute personalized prior: prior = 0.7*K_old + 0.3*ability_old
+       - Update mastery using EMA: K_new = (1 - alpha)*prior + alpha*subtopic_accuracy
+       - Save mastery_level = K_new * 100
+    4. Update global ability after subtopic updates:
+       - beta = 0.10
+       - ability_new = (1 - beta)*ability_old + beta*session_accuracy
+       - clamp ability_score to 0.05..0.95
+    5. Rollup to topics and zones
+    
+    Returns: summary dict with session, ability, updated_subtopics, touched_topics
     """
-    per_subtopic_state = {}
-
-    # Load existing mastery (used to seed priors when available)
-    existing_mastery = {
-        m.subtopic_id: (m.mastery_level or 0.0)
-        for m in UserSubtopicMastery.objects.filter(user=user).only("subtopic_id", "mastery_level")
-    }
-
-    base_bkt = BKTParams()
-    pfa = PFACoeffs()
-
-    for entry in results or []:
-        is_correct = bool(entry.get("is_correct", False))
-        difficulty = _norm_diff(entry.get("estimated_difficulty"))
-        diff_level = _diff_level(difficulty)
-
-        mistakes = _mistakes_from_entry(entry)
-        base_weight = float(_game_weight(entry))
-        time_mult = _time_multiplier(entry, is_correct)
-        impact_raw = base_weight * time_mult
-
-        # Difficulty-aware impact
-        impact = _impact_with_difficulty(impact_raw, is_correct, diff_level)
-
-        subtopic_ids, _topic_ids = _get_mapping_from_question(entry)
-        if not subtopic_ids:
+    if not results:
+        return {
+            "session": {"total_attempts": 0, "correct": 0, "accuracy": 0.0},
+            "ability": {"old": 0.5, "new": 0.5},
+            "updated_subtopics": [],
+            "touched_topics": [],
+        }
+    
+    # 1. Load or create UserAbility
+    ability, _ = UserAbility.objects.get_or_create(
+        user=user,
+        defaults={"ability_score": 0.5}
+    )
+    ability_old = float(ability.ability_score)
+    
+    # 2. Aggregate by subtopic
+    subtopic_agg = aggregate_by_subtopic(results)
+    
+    # Compute overall session accuracy
+    total_attempts = sum(entry.get("is_correct") is not None for entry in results)
+    total_correct = sum(1 for entry in results if entry.get("is_correct", False))
+    session_accuracy = total_correct / total_attempts if total_attempts > 0 else 0.0
+    
+    # EMA parameters
+    alpha = 0.25  # subtopic mastery update rate
+    beta = 0.10   # ability update rate
+    
+    updated_subtopics = []
+    touched_topic_ids = set()
+    
+    # 3. Update each touched subtopic
+    for subtopic_id, stats in subtopic_agg.items():
+        subtopic_obj = Subtopic.objects.filter(id=subtopic_id).first()
+        if not subtopic_obj:
             continue
-
-        # If an item maps to multiple subtopics, distribute impact to avoid over-updating
-        k = max(1, len(subtopic_ids))
-        impact_each = impact / k
-
-        extra_fails = mistakes  # already capped in _mistakes_from_entry
-
-        for s_id in subtopic_ids:
-            st = per_subtopic_state.get(s_id)
-            if st is None:
-                subtopic_obj = Subtopic.objects.filter(id=s_id).first()
-                if not subtopic_obj:
-                    continue
-                # Build the state once per subtopic for this batch
-                st = per_subtopic_state[s_id] = {
-                    "wins": 0.0,
-                    "fails": 0.0,
-                    "attempts": 0.0,
-                    "p_bkt": None,            # initialized after we have (wins/fails) seed
-                    "p_prev": None,           # previous step value for delta tracking
-                    "last_deltas": [],        # trailing window of |Δp|
-                    "p_L0_seeded": False,     # whether we've seeded p(L0) explicitly
-                    "subtopic_obj": subtopic_obj,
-                    # persisted long-term scale loaded once per batch
-                    "pT_scale_persisted": _load_pT_scale(user, subtopic_obj),
-                }
-
-            # Update PFA-like counters first (so seeding/tuning can see prior practice)
-            st["attempts"] = float(st["attempts"]) + impact_each
-            if is_correct:
-                st["wins"] = float(st["wins"]) + impact_each
-                st["fails"] = float(st["fails"]) + impact_each * extra_fails
-            else:
-                st["fails"] = float(st["fails"]) + impact_each * (1 + extra_fails)
-
-            # Seed p(L0) once: prefer existing mastery, else PFA signal, else base prior
-            if not st["p_L0_seeded"]:
-                seeded = _pfa_seed_prior_or_default(
-                    existing_mastery_pct=existing_mastery.get(s_id),
-                    wins=float(st["wins"]),
-                    fails=float(st["fails"]),
-                    difficulty=difficulty,
-                    pfa=pfa,
-                    base_prior=base_bkt.p_L0,
-                )
-                st["p_bkt"] = float(seeded)
-                st["p_prev"] = float(seeded)
-                st["p_L0_seeded"] = True
-
-            # Build individualized BKT params for this learner & subtopic step
-            # - combine persisted pT scale with within-batch multiplier (geometric mean)
-            lr_mult_batch = _lr_mult_from_practice(float(st["wins"]), float(st["fails"]))
-            lr_mult_persisted = max(0.5, min(1.5, float(st["pT_scale_persisted"])))
-            lr_mult_combined = math.sqrt(lr_mult_persisted * lr_mult_batch)
-
-            # Difficulty-aware observation parameters
-            p_S_eff, p_G_eff, decay_eff = _observe_params_with_difficulty(base_bkt, diff_level)
-
-            p_step = BKTParams(
-                p_L0=float(st["p_bkt"]),   # doc only; running value used below
-                p_T=max(1e-4, min(0.95, base_bkt.p_T * lr_mult_combined)),
-                p_T_wrong=base_bkt.p_T_wrong,
-                p_S=p_S_eff,
-                p_G=p_G_eff,
-                decay_wrong=decay_eff,
-                min_floor=base_bkt.min_floor,
-                max_ceiling=base_bkt.max_ceiling,
-            )
-
-            # Smooth BKT update (fractional impact) + delta tracking
-            new_p = bkt_update_fractional(float(st["p_bkt"]), is_correct, p_step, impact_each)
-            if st["p_prev"] is not None:
-                st["last_deltas"].append(abs(new_p - float(st["p_prev"])) )
-                # keep only last K deltas for convergence check
-                if len(st["last_deltas"]) > CONVERGENCE_K:
-                    st["last_deltas"] = st["last_deltas"][-CONVERGENCE_K:]
-            st["p_prev"] = new_p
-            st["p_bkt"] = new_p
-
-    # Persist subtopic masteries (BKT only) + update EMA of pT_scale
-    summary: Dict[int, Dict[str, float]] = {}
-
-    for s_id, st in per_subtopic_state.items():
-        p_mastery = float(st["p_bkt"]) if st["p_bkt"] is not None else base_bkt.p_L0
-        pct = max(0.0, min(100.0, 100.0 * p_mastery))
-
-        subtopic_obj: Subtopic = st["subtopic_obj"]  # already fetched
-        # session-level recommended scale from observed batch
-        session_scale = _lr_mult_from_practice(float(st["wins"]), float(st["fails"]))
-        combined = math.sqrt(max(0.5, min(1.5, float(st["pT_scale_persisted"])) ) * session_scale)
-        _save_pT_scale(user, subtopic_obj, combined, alpha=0.2)
-
-        UserSubtopicMastery.objects.update_or_create(
+        
+        touched_topic_ids.add(subtopic_obj.topic_id)
+        
+        # Load or create mastery
+        mastery_obj, _ = UserSubtopicMastery.objects.get_or_create(
             user=user,
             subtopic=subtopic_obj,
-            defaults={"mastery_level": pct},
+            defaults={"mastery_level": 0.0}
         )
-
-        # MCT-support flags for the caller (UI/session controller)
-        deltas: List[float] = list(st.get("last_deltas", []))
-        converged = len(deltas) >= CONVERGENCE_K and all(d <= CONVERGENCE_EPS for d in deltas)
-        threshold_reached = p_mastery >= MASTERY_THRESHOLD
-
-        summary[s_id] = {
-            "p_mastery": p_mastery,
-            "mastery_pct": pct,
-            "band": _band_of(p_mastery),
-            "converged": 1.0 if converged else 0.0,
-            "threshold_reached": 1.0 if threshold_reached else 0.0,
-        }
-
-    # Roll up to topics
-    for topic in Topic.objects.all():
+        
+        K_old = mastery_obj.mastery_level / 100.0  # convert percent to 0-1
+        K_old = clamp(K_old, 0.0, 1.0)
+        
+        # Personalized prior (from paper)
+        prior = 0.7 * K_old + 0.3 * ability_old
+        
+        # EMA update with subtopic accuracy
+        subtopic_accuracy = stats["accuracy"]
+        K_new = (1 - alpha) * prior + alpha * subtopic_accuracy
+        K_new = clamp(K_new, 0.0, 1.0)
+        
+        # Save mastery
+        mastery_obj.mastery_level = K_new * 100.0
+        mastery_obj.save(update_fields=["mastery_level"])
+        
+        updated_subtopics.append({
+            "subtopic_id": subtopic_id,
+            "subtopic_name": subtopic_obj.name,
+            "old_mastery": K_old,
+            "new_mastery": K_new,
+            "accuracy": subtopic_accuracy,
+            "attempts": stats["attempts"],
+        })
+    
+    # 4. Update global ability
+    ability_new = (1 - beta) * ability_old + beta * session_accuracy
+    ability_new = clamp(ability_new, 0.05, 0.95)
+    
+    ability.ability_score = ability_new
+    ability.save(update_fields=["ability_score"])
+    
+    # 5. Rollup to topics
+    for topic in Topic.objects.filter(id__in=touched_topic_ids):
         topic_subtopics = Subtopic.objects.filter(topic=topic)
         avg_mastery = (
             UserSubtopicMastery.objects
@@ -177,8 +190,8 @@ def recalibrate_topic_proficiency(user, results: list) -> dict:
             topic=topic,
             defaults={"proficiency_percent": avg_mastery},
         )
-
-    # Roll up to zones
+    
+    # 6. Rollup to zones
     for zone in GameZone.objects.all().order_by("order"):
         zone_topics = Topic.objects.filter(zone=zone)
         avg_proficiency = (
@@ -191,5 +204,17 @@ def recalibrate_topic_proficiency(user, results: list) -> dict:
             zone=zone,
             defaults={"completion_percent": avg_proficiency},
         )
-
-    return summary
+    
+    return {
+        "session": {
+            "total_attempts": total_attempts,
+            "correct": total_correct,
+            "accuracy": session_accuracy,
+        },
+        "ability": {
+            "old": ability_old,
+            "new": ability_new,
+        },
+        "updated_subtopics": updated_subtopics,
+        "touched_topics": list(touched_topic_ids),
+    }
