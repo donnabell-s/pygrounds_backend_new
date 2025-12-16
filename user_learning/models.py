@@ -51,3 +51,16 @@ class UserSubtopicLearningRate(models.Model):
 
     class Meta:
         unique_together = ('user', 'subtopic')
+
+
+class UserAbility(models.Model):
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        related_name="ability"
+    )
+    ability_score = models.FloatField(default=0.5)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.user.username} ability: {self.ability_score:.3f}"

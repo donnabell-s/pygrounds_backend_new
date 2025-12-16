@@ -116,7 +116,7 @@ class SubmitAnswers(APIView):
             return Response({"error": "Invalid or inactive session"}, status=400)
 
         submitted_map = {int(a.get("question_id")): a for a in answers if "question_id" in a}
-        session_gqs = list(GameQuestion.objects.filter(session=session).select_related("question"))
+        session_gqs = list(GameQuestion.objects.filter(session=session).select_related("question", "question__topic", "question__subtopic"))
 
         eligible_ids = set()
 
@@ -545,6 +545,10 @@ class SubmitHangmanCode(APIView):
                 total_elapsed = (session.end_time - session.start_time).total_seconds()
 
             for idx, att in enumerate(attempts):
+                # Calculate lives at this attempt
+                wrong_at_attempt = sum(1 for i in range(idx + 1) if not attempts[i]["is_correct"])
+                lives_at_attempt = max(0, 3 - wrong_at_attempt)
+                
                 entry = {
                     "question_id": question.id,
                     "question_text": question.question_text,
@@ -556,6 +560,8 @@ class SubmitHangmanCode(APIView):
                     "estimated_difficulty": getattr(question, "estimated_difficulty", None),
                     "game_type": "coding",
                     "minigame_type": "hangman",
+                    "lives_remaining": lives_at_attempt,
+                    "max_lives": 3,
                 }
                 if idx == len(attempts) - 1:
                     entry["minigame_time_taken"] = total_elapsed
@@ -685,6 +691,10 @@ class SubmitDebugGame(APIView):
                 total_elapsed = (session.end_time - session.start_time).total_seconds()
 
             for idx, att in enumerate(attempts):
+                # Calculate lives at this attempt
+                wrong_at_attempt = sum(1 for i in range(idx + 1) if not attempts[i]["is_correct"])
+                lives_at_attempt = max(0, 3 - wrong_at_attempt)
+                
                 entry = {
                     "question_id": question.id,
                     "question_text": question.question_text,
@@ -696,6 +706,8 @@ class SubmitDebugGame(APIView):
                     "estimated_difficulty": getattr(question, "estimated_difficulty", None),
                     "game_type": "coding",
                     "minigame_type": "debugging",
+                    "lives_remaining": lives_at_attempt,
+                    "max_lives": 3,
                 }
                 if idx == len(attempts) - 1:
                     entry["minigame_time_taken"] = total_elapsed
@@ -749,7 +761,9 @@ class SubmitPreAssessmentAnswers(APIView):
                     "question_text": q.question_text,
                     "user_answer": ans["user_answer"],
                     "correct_answer": q.correct_answer,
-                    "is_correct": is_correct
+                    "is_correct": is_correct,
+                    "topic_ids": q.topic_ids or [],
+                    "subtopic_ids": q.subtopic_ids or []
                 })
                 if is_correct:
                     correct_count += 1
