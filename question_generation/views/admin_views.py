@@ -1,6 +1,3 @@
-# Admin interface views for managing generated questions and preassessment questions
-# Includes CRUD operations, bulk actions, and dashboard statistics
-
 from rest_framework import generics, status, filters
 from rest_framework.decorators import api_view
 from rest_framework.response import Response

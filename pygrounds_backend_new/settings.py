@@ -86,6 +86,7 @@ INSTALLED_APPS = [
     'minigames',
     'reading',
     'achievements',
+    'analytics',
 ]
 
 MIDDLEWARE = [
