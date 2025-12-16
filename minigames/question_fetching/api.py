@@ -10,7 +10,7 @@ from .helpers import (
     game_type_of, pick_one_random, fetch_objects_preserve_order_by_id, current_zone, zone_subtopics,
     weak_subtopics_in_zone, review_subtopics_in_zone, maintenance_subtopics_in_zone, mastery_map
 )
-from .goldilocks import pick_questions_by_subtopic
+from .bws import bws_pick_ids_by_eig
 
 def fetch_questions_for_game(
     user,
@@ -39,7 +39,7 @@ def fetch_questions_for_game(
     )
     if exclude_ids:
         base_qs = base_qs.exclude(id__in=list(exclude_ids))
-    # CODING: exactly 1 item using Goldilocks filter + constrained random
+    # CODING: exactly 1 item using EIG + BWS
     if gtype == 'coding':
         weak_qs  = base_qs.filter(subtopic_id__in=weak_subs.values_list('id', flat=True))
         maint_qs = base_qs.filter(subtopic_id__in=maint_subs.values_list('id', flat=True))
@@ -50,10 +50,9 @@ def fetch_questions_for_game(
         if choice_qs.count() == 0:
             choice_qs = weak_qs
         
-        # Use Goldilocks filter + constrained random to select question
-        chosen_ids = pick_questions_by_subtopic(
-            user, choice_qs, take=1, mastery_by_sub=mastery_by_sub, 
-            game_type=game_type, exclude_ids=exclude_ids
+        # Use EIG + BWS to select question
+        chosen_ids = bws_pick_ids_by_eig(
+            user, choice_qs.only('id'), take=1, mastery_by_sub=mastery_by_sub
         )
         
         if not chosen_ids:
@@ -98,18 +97,22 @@ def fetch_questions_for_game(
     k1_low  = int(round(k1 * 0.55))
     k1_mid  = int(round(k1 * 0.35))
     k1_high = max(0, k1 - k1_low - k1_mid)
-    # NON-CODING: stratified selection using Goldilocks filter + constrained random
+    # NON-CODING: stratified selection using EIG + BWS with subtopic diversity
     chosen_ids: List[int] = []
     chosen_set = set(exclude_ids)
     
-    def extend_from_goldilocks_filter(qs, take):
-        """Helper to extend chosen_ids using Goldilocks filter + constrained random."""
+    def extend_from_bws(qs, take):
+        """Helper to extend chosen_ids using EIG + BWS with subtopic diversity."""
         if take <= 0:
             return
         
-        # Apply Goldilocks filter and randomly sample from acceptable candidates
-        ids = pick_questions_by_subtopic(
-            user, qs, take, mastery_by_sub, game_type, exclude_ids=chosen_set
+        # Use BWS with subtopic diversity constraint
+        ids = bws_pick_ids_by_eig(
+            user, 
+            qs.exclude(id__in=chosen_set).only('id'), 
+            take, 
+            mastery_by_sub,
+            constrain_subtopics=True  # Enforce max 1 per subtopic
         )
         
         for qid in ids:
@@ -118,18 +121,18 @@ def fetch_questions_for_game(
                 chosen_set.add(qid)
     
     # Select from weak buckets (prioritize learning needs)
-    extend_from_goldilocks_filter(weak_low_qs,  k1_low)
-    extend_from_goldilocks_filter(weak_mid_qs,  k1_mid)
-    extend_from_goldilocks_filter(weak_high_qs, k1_high)
+    extend_from_bws(weak_low_qs,  k1_low)
+    extend_from_bws(weak_mid_qs,  k1_mid)
+    extend_from_bws(weak_high_qs, k1_high)
     
     # Mix in review and maintenance questions
-    extend_from_goldilocks_filter(review_all_qs, k2)
-    extend_from_goldilocks_filter(maint_high_qs, k3)
+    extend_from_bws(review_all_qs, k2)
+    extend_from_bws(maint_high_qs, k3)
     
     # Backfill if we're still short
     if len(chosen_ids) < limit:
         need = limit - len(chosen_ids)
         backfill_qs = base_nc.exclude(id__in=chosen_set)
-        extend_from_goldilocks_filter(backfill_qs, need)
+        extend_from_bws(backfill_qs, need)
     
     return fetch_objects_preserve_order_by_id(GeneratedQuestion, chosen_ids[:limit])

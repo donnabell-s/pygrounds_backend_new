@@ -1,29 +1,18 @@
-import math
 from typing import Dict, List
 from django.db import transaction
 from django.db.models import Avg
 from user_learning.models import UserZoneProgress, UserTopicProficiency, UserSubtopicMastery, UserAbility
 from content_ingestion.models import Topic, Subtopic, GameZone
+from .adaptive_weights import compute_effective_correctness
 
-
-# ──────────────────────────────────────────────────────────────────────────────
-# Helper functions
-# ──────────────────────────────────────────────────────────────────────────────
 
 def clamp(x: float, min_val: float, max_val: float) -> float:
-    """Clamp x to [min_val, max_val]."""
+
     return max(min_val, min(max_val, x))
 
 
 def extract_subtopic_ids(entry: dict) -> List[int]:
-    """
-    Extract subtopic IDs from a result entry.
-    Supports:
-      - subtopic_id (int)
-      - subtopic_ids (list)
-      - subtopics: [{id: ...}, ...]
-      - mapping: {subtopic_ids: [...]}
-    """
+
     # Direct subtopic_id
     if "subtopic_id" in entry and entry["subtopic_id"]:
         return [int(entry["subtopic_id"])]
@@ -50,57 +39,36 @@ def extract_subtopic_ids(entry: dict) -> List[int]:
 
 
 def aggregate_by_subtopic(results: List[dict]) -> Dict[int, Dict[str, float]]:
-    """
-    Aggregate results by subtopic_id.
-    Returns: {subtopic_id: {attempts, correct, accuracy}}
-    """
+
     agg = {}
     for entry in results:
-        is_correct = bool(entry.get("is_correct", False))
+        # Compute effective correctness incorporating difficulty, time, lives
+        effective = compute_effective_correctness(entry)
+        
         subtopic_ids = extract_subtopic_ids(entry)
         for sid in subtopic_ids:
             if sid not in agg:
-                agg[sid] = {"attempts": 0.0, "correct": 0.0, "accuracy": 0.0}
+                agg[sid] = {
+                    "attempts": 0.0,
+                    "weighted_sum": 0.0,
+                    "accuracy": 0.0
+                }
             agg[sid]["attempts"] += 1.0
-            if is_correct:
-                agg[sid]["correct"] += 1.0
+            agg[sid]["weighted_sum"] += effective
     
-    # Compute accuracy
+    # Compute weighted accuracy
     for sid, stats in agg.items():
         if stats["attempts"] > 0:
-            stats["accuracy"] = stats["correct"] / stats["attempts"]
+            stats["accuracy"] = stats["weighted_sum"] / stats["attempts"]
         else:
             stats["accuracy"] = 0.0
     
     return agg
 
 
-# ──────────────────────────────────────────────────────────────────────────────
-# Paper-aligned adaptive pipeline
-# ──────────────────────────────────────────────────────────────────────────────
-
 @transaction.atomic
 def recalibrate_topic_proficiency(user, results: list) -> dict:
-    """
-    Paper-aligned adaptive pipeline using UserAbility as student-level prior.
-    
-    Process:
-    1. Load or create UserAbility (global ability score)
-    2. Aggregate results by subtopic
-    3. For each subtopic:
-       - Load or create UserSubtopicMastery
-       - Convert mastery_level (0-100) to K_old (0-1)
-       - Compute personalized prior: prior = 0.7*K_old + 0.3*ability_old
-       - Update mastery using EMA: K_new = (1 - alpha)*prior + alpha*subtopic_accuracy
-       - Save mastery_level = K_new * 100
-    4. Update global ability after subtopic updates:
-       - beta = 0.10
-       - ability_new = (1 - beta)*ability_old + beta*session_accuracy
-       - clamp ability_score to 0.05..0.95
-    5. Rollup to topics and zones
-    
-    Returns: summary dict with session, ability, updated_subtopics, touched_topics
-    """
+
     if not results:
         return {
             "session": {"total_attempts": 0, "correct": 0, "accuracy": 0.0},
@@ -125,8 +93,8 @@ def recalibrate_topic_proficiency(user, results: list) -> dict:
     session_accuracy = total_correct / total_attempts if total_attempts > 0 else 0.0
     
     # EMA parameters
-    alpha = 0.25  # subtopic mastery update rate
-    beta = 0.10   # ability update rate
+    alpha = 0.45  # subtopic mastery update rate
+    beta = 0.20   # ability update rate
     
     updated_subtopics = []
     touched_topic_ids = set()
