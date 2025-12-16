@@ -1,5 +1,3 @@
-# Expected Information Gain (EIG) computation using BKT framework
-
 import math
 from typing import Dict
 
@@ -10,21 +8,7 @@ def eig_for_question(
     guess: float = 0.25,
     slip: float = 0.15
 ) -> float:
-    """
-    Compute Expected Information Gain (EIG) for a question using BKT parameters.
-    
-    EIG measures how much a question reduces uncertainty about student knowledge.
-    Higher EIG = more informative question.
-    
-    Args:
-        prior_knowledge: Prior probability student knows the concept (0-1)
-        question_difficulty: Difficulty of the question (0=easy, 1=hard)
-        guess: Probability of guessing correctly when don't know (default 0.25)
-        slip: Probability of making mistake when do know (default 0.15)
-    
-    Returns:
-        EIG value (typically 0-1 range, higher = more informative)
-    """
+
     # Clamp inputs
     K = max(0.0, min(1.0, prior_knowledge))
     d = max(0.0, min(1.0, question_difficulty))
@@ -71,18 +55,7 @@ def compute_eig_scores(
     question_subtopic_map: Dict[int, int],
     question_difficulty_map: Dict[int, float]
 ) -> Dict[int, float]:
-    """
-    Compute EIG scores for multiple questions.
-    
-    Args:
-        user_ability: Global ability score (0-1)
-        mastery_map: Dict mapping subtopic_id -> mastery_level (0-100)
-        question_subtopic_map: Dict mapping question_id -> subtopic_id
-        question_difficulty_map: Dict mapping question_id -> difficulty (0-1)
-    
-    Returns:
-        Dict mapping question_id -> eig_score
-    """
+
     eig_scores = {}
     
     for q_id, subtopic_id in question_subtopic_map.items():

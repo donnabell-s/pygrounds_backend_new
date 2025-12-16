@@ -1,5 +1,4 @@
 
-# Public API for question fetching
 import random
 from typing import Iterable, Optional, List, Dict
 from django.db.models import QuerySet

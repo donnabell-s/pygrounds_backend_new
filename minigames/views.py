@@ -116,7 +116,7 @@ class SubmitAnswers(APIView):
             return Response({"error": "Invalid or inactive session"}, status=400)
 
         submitted_map = {int(a.get("question_id")): a for a in answers if "question_id" in a}
-        session_gqs = list(GameQuestion.objects.filter(session=session).select_related("question"))
+        session_gqs = list(GameQuestion.objects.filter(session=session).select_related("question", "question__topic", "question__subtopic"))
 
         eligible_ids = set()
 

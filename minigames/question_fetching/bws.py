@@ -1,5 +1,3 @@
-# Bayesian Weighted Sampling (BWS) for question selection using EIG
-
 import random
 import math
 from typing import List, Dict
@@ -8,18 +6,11 @@ from question_generation.models import GeneratedQuestion
 from user_learning.models import UserAbility
 from .eig_bkt import compute_eig_scores
 from .helpers import sample_random_by_offsets
-from .constants import CODING_MINIGAMES
-
-
-# BWS sampling parameters
-EVAL_CANDIDATES_PER_BUCKET = 50  # Sample size for EIG evaluation
-SOFTMAX_TEMPERATURE = 0.3  # Controls exploration vs exploitation
+from .constants import CODING_MINIGAMES, EVAL_CANDIDATES_PER_BUCKET, SOFTMAX_TEMPERATURE
 
 
 def normalize_difficulty_to_01(est_diff) -> float:
-    """
-    Normalize difficulty to [0, 1] range for EIG computation.
-    """
+
     if est_diff is None:
         return 0.5
     
@@ -49,27 +40,7 @@ def bws_pick_ids_by_eig(
     mastery_by_sub: Dict[int, float],
     constrain_subtopics: bool = True
 ) -> List[int]:
-    """
-    Select question IDs using Expected Information Gain (EIG) + Bayesian Weighted Sampling.
-    
-    Process:
-    1. Load user ability
-    2. Sample candidate pool from QuerySet
-    3. Compute EIG scores for all candidates
-    4. Apply softmax to EIG scores to get sampling probabilities
-    5. Sample questions using weighted probabilities
-    6. Optional: Enforce subtopic diversity (max 1 per subtopic when possible)
-    
-    Args:
-        user: User object
-        qs: QuerySet of candidate questions
-        take: Number of questions to select
-        mastery_by_sub: Dict mapping subtopic_id -> mastery_level (0-100)
-        constrain_subtopics: If True, limit to 1 question per subtopic when possible
-    
-    Returns:
-        List of selected question IDs
-    """
+
     if take <= 0:
         return []
     
@@ -87,7 +58,8 @@ def bws_pick_ids_by_eig(
     
     # Sample candidate pool (more than needed for better coverage)
     sample_size = min(count, max(take * 10, EVAL_CANDIDATES_PER_BUCKET))
-    cand_ids = list(qs.values_list('id', flat=True)[:sample_size])
+    # Use true random sampling to avoid DB-order bias
+    cand_ids = sample_random_by_offsets(qs.only('id'), sample_size)
     
     if not cand_ids:
         return []
@@ -111,6 +83,30 @@ def bws_pick_ids_by_eig(
     if not question_subtopic_map:
         # Fallback to random if no valid candidates
         return random.sample(cand_ids, min(take, len(cand_ids)))
+    
+    # Diversity retry: if candidate pool has too few unique subtopics, resample once
+    unique_subtopics = len(set(question_subtopic_map.values()))
+    min_diversity = min(6, take * 3)
+    if unique_subtopics < min_diversity and count > sample_size:
+        # Resample with larger pool (one-time retry)
+        larger_sample_size = min(count, sample_size * 2)
+        cand_ids = sample_random_by_offsets(qs.only('id'), larger_sample_size)
+        
+        if cand_ids:
+            # Rebuild maps with new candidates
+            questions = list(GeneratedQuestion.objects.filter(id__in=cand_ids).select_related('subtopic'))
+            question_subtopic_map = {}
+            question_difficulty_map = {}
+            
+            for q in questions:
+                if not hasattr(q, 'subtopic_id') or q.subtopic_id is None:
+                    continue
+                question_subtopic_map[q.id] = q.subtopic_id
+                est_diff = getattr(q, 'estimated_difficulty', None)
+                question_difficulty_map[q.id] = normalize_difficulty_to_01(est_diff)
+            
+            if not question_subtopic_map:
+                return random.sample(cand_ids, min(take, len(cand_ids)))
     
     # Compute EIG scores
     eig_scores = compute_eig_scores(
