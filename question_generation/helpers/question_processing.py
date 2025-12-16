@@ -1,4 +1,4 @@
-# Question processing utilities for formatting, validation, and deduplication
+# question processing utilities for formatting, validation, and deduplication
 
 import hashlib
 import json
@@ -6,47 +6,47 @@ from typing import List, Dict, Any, Optional
 
 
 def generate_question_hash(question_text, subtopic_combination, game_type):
-    # Create a unique hash for a question to prevent duplicates
-    # Uses first 5 meaningful words from question + subtopic IDs + game type
-    # Extract key words from question text (remove common words)
+    # create a unique hash for a question to prevent duplicates
+    # uses first 5 meaningful words from question + subtopic ids + game type
+    # extract key words from question text (remove common words)
     common_words = {'a', 'an', 'the', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by', 'is', 'are', 'was', 'were', 'be', 'been', 'being', 'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could', 'should'}
     
-    # Clean and extract meaningful words
+    # clean and extract meaningful words
     words = question_text.lower().split()
     meaningful_words = [w.strip('.,!?()[]{}";:') for w in words if w.strip('.,!?()[]{}";:') not in common_words and len(w) > 2]
-    question_essence = ' '.join(sorted(meaningful_words[:5]))  # First 5 meaningful words, sorted
+    question_essence = ' '.join(sorted(meaningful_words[:5]))  # first 5 meaningful words, sorted
     
-    # Create combination signature
+    # create combination signature
     subtopic_ids = tuple(sorted([s.id for s in subtopic_combination]))
     
-    # Generate hash
+    # generate hash
     hash_input = f"{question_essence}|{subtopic_ids}|{game_type}"
     return hashlib.md5(hash_input.encode()).hexdigest()[:12]
 
 
 def check_question_similarity(question_text1: str, question_text2: str, threshold: float = 0.8) -> bool:
-    # Lightweight text similarity check for dedupe.
+    # lightweight text similarity check for dedupe
     if not question_text1 or not question_text2:
         return False
         
-    # Normalize texts
+    # normalize texts
     text1 = question_text1.lower().strip()
     text2 = question_text2.lower().strip()
     
-    # Exact match
+    # exact match
     if text1 == text2:
         return True
     
-    # Length similarity check
+    # length similarity check
     len1, len2 = len(text1), len(text2)
-    if min(len1, len2) / max(len1, len2) < 0.7:  # Length difference too big
+    if min(len1, len2) / max(len1, len2) < 0.7:  # length difference too big
         return False
     
-    # Word-based similarity
+    # word-based similarity
     words1 = set(text1.split())
     words2 = set(text2.split())
     
-    # Jaccard similarity of word sets
+    # jaccard similarity of word sets
     intersection = len(words1 & words2)
     union = len(words1 | words2)
     
@@ -59,48 +59,48 @@ def check_question_similarity(question_text1: str, question_text2: str, threshol
 
 
 def parse_llm_json_response(llm_response: str, game_type: str = 'coding') -> Optional[List[Dict[str, Any]]]:
-    # Extract and parse JSON array of questions from LLM response
-    # Returns None if parsing fails
+    # extract and parse json array of questions from llm response
+    # returns None if parsing fails
     try:
         clean_resp = llm_response.strip()
         
-        # Handle code block extraction
+        # handle code block extraction
         if "```json" in clean_resp:
             start_idx = clean_resp.find("```json") + 7
             end_idx = clean_resp.find("```", start_idx)
             if end_idx != -1:
                 clean_resp = clean_resp[start_idx:end_idx].strip()
         
-        # Parse JSON
+        # parse json
         parsed_data = json.loads(clean_resp)
         
-        # Check if it's wrapped in a container with generation_info
+        # check if it's wrapped in a container with generation_info
         if isinstance(parsed_data, dict) and 'questions' in parsed_data:
             questions = parsed_data['questions']
         else:
             questions = parsed_data
             
-        # Ensure it's a list
+        # ensure it's a list
         if isinstance(questions, dict):
             questions = [questions]
         elif not isinstance(questions, list):
-            print(f"❌ Expected list, got {type(questions)}")
+            print(f"Expected list, got {type(questions)}")
             return None
             
         # Validation is applied downstream (e.g., validate_question_data + DB dedupe).
-        print(f"✅ Parsed {len(questions)} questions")
+        print(f"Parsed {len(questions)} questions")
         return questions
         
     except json.JSONDecodeError as e:
-        print(f"❌ JSON parse error at position {e.pos}: {str(e)}")
+        print(f"JSON parse error at position {e.pos}: {str(e)}")
         print(f"Response preview: {llm_response[:300]}...")
         
-        # Try to find and parse partial JSON array
+        # try to find and parse partial json array
         try:
-            # Look for opening bracket
+            # look for opening bracket
             start_idx = llm_response.find('[')
             if start_idx != -1:
-                # Try to find matching closing bracket
+                # try to find matching closing bracket
                 bracket_count = 0
                 end_idx = -1
                 for i, char in enumerate(llm_response[start_idx:], start_idx):
@@ -115,19 +115,19 @@ def parse_llm_json_response(llm_response: str, game_type: str = 'coding') -> Opt
                 if end_idx != -1:
                     partial_json = llm_response[start_idx:end_idx]
                     questions = json.loads(partial_json)
-                    print(f"✅ Recovered {len(questions)} questions from partial response")
+                    print(f"Recovered {len(questions)} questions from partial response")
                     return questions if isinstance(questions, list) else [questions]
         except:
             pass
             
         return None
     except Exception as e:
-        print(f"❌ Error parsing LLM response: {str(e)}")
+        print(f"Error parsing LLM response: {str(e)}")
         return None
 
 
 def format_question_for_game_type(question_data: Dict[str, Any], game_type: str) -> Dict[str, Any]:
-    # Normalize LLM output into the fields we persist.
+    # normalize llm output into the fields we persist
     if game_type == 'coding':
         return {
             'question_text': question_data.get('question_text', ''),
@@ -153,7 +153,7 @@ def format_question_for_game_type(question_data: Dict[str, Any], game_type: str)
 
 
 def validate_question_data(question_data: Dict[str, Any], game_type: str, seen_function_names: set = None) -> bool:
-    # Validate required fields and (for coding) enforce unique function_name.
+    # validate required fields and (for coding) enforce unique function_name
     required_fields = ['question_text', 'difficulty']
     
     if game_type == 'coding':
@@ -170,43 +170,43 @@ def validate_question_data(question_data: Dict[str, Any], game_type: str, seen_f
             'buggy_explanation',
         ])
         
-        # Check for duplicate function names if we're tracking them
+        # check for duplicate function names if we're tracking them
         if seen_function_names is not None:
             function_name = question_data.get('function_name')
             if function_name in seen_function_names:
-                print(f"❌ Duplicate function name detected: {function_name}")
+                print(f"Duplicate function name detected: {function_name}")
                 return False
             seen_function_names.add(function_name)
     else:  # non-coding questions
         required_fields.extend(['answer', 'explanation'])  # answer and explanation are required for non-coding questions
     
-    # Check required fields (type-aware)
+    # check required fields (type-aware)
     for field in required_fields:
         if field not in question_data:
-            print(f"❌ Missing required field: {field}")
+            print(f"Missing required field: {field}")
             return False
 
         value = question_data.get(field)
 
         if field == 'hidden_tests':
             if not isinstance(value, list) or len(value) == 0:
-                print("❌ Invalid hidden_tests (must be non-empty list)")
+                print("Invalid hidden_tests (must be non-empty list)")
                 return False
             continue
 
         if isinstance(value, str):
             if not value.strip():
-                print(f"❌ Empty required field: {field}")
+                print(f"Empty required field: {field}")
                 return False
         elif value is None:
-            print(f"❌ Missing required field: {field}")
+            print(f"Missing required field: {field}")
             return False
             
     return True
 
 
 def validate_question_batch(questions: List[Dict[str, Any]], game_type: str) -> bool:
-    # Validate a batch and ensure uniqueness constraints.
+    # validate a batch and ensure uniqueness constraints
     if not questions:
         return False
         
@@ -220,19 +220,19 @@ def validate_question_batch(questions: List[Dict[str, Any]], game_type: str) -> 
 
 
 def extract_subtopic_names(subtopic_combination) -> List[str]:
-    # Extract names from a queryset/list.
+    # extract names from a queryset/list
     try:
         return [subtopic.name for subtopic in subtopic_combination]
     except AttributeError:
-        # Handle case where it might be a list of strings already
+        # handle case where it might be a list of strings already
         return list(subtopic_combination) if isinstance(subtopic_combination, (list, tuple)) else []
 
 
 def create_generation_context(subtopic_combination, difficulty: str, num_questions: int, rag_context: str = None) -> Dict[str, Any]:
-    # Create context dict for prompt generation.
+    # create context dict for prompt generation
     subtopic_names = extract_subtopic_names(subtopic_combination)
     
-    # Create safe subtopic name by escaping problematic characters that could interfere with string formatting
+    # create safe subtopic name by escaping characters that could interfere with string formatting
     safe_subtopic_name = ' + '.join(subtopic_names) if len(subtopic_names) > 1 else subtopic_names[0] if subtopic_names else ''
     
     context = {

@@ -1,5 +1,3 @@
-# Question generation API endpoints
-
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
@@ -24,9 +22,9 @@ logger = logging.getLogger(__name__)
 
 @api_view(['POST'])
 def generate_questions_bulk(request):
-    # Bulk generation entrypoint
+    # bulk generation entrypoint
     try:
-        # Extract parameters
+        # extract parameters
         game_type = request.data.get('game_type', 'non_coding')
         difficulty_levels = request.data.get('difficulty_levels', ['beginner', 'intermediate', 'advanced', 'master'])
         num_questions_per_subtopic = int(request.data.get('num_questions_per_subtopic', 2))
@@ -35,8 +33,8 @@ def generate_questions_bulk(request):
         topic_ids = request.data.get('topic_ids')
         subtopic_ids = request.data.get('subtopic_ids')
         
-        # Debug logging to understand what parameters are being received
-        print(f"🔍 BULK GENERATION REQUEST DEBUG:")
+        # debug logging to understand what parameters are being received
+        print(f"BULK GENERATION REQUEST DEBUG:")
         print(f"   ├── game_type: {game_type}")
         print(f"   ├── difficulty_levels: {difficulty_levels}")
         print(f"   ├── num_questions_per_subtopic: {num_questions_per_subtopic}")
@@ -44,15 +42,15 @@ def generate_questions_bulk(request):
         print(f"   ├── topic_ids: {topic_ids} ({'MISSING - should specify selected topic' if not topic_ids and not subtopic_ids else 'OK' if topic_ids else 'Not needed if subtopic_ids provided'})")
         print(f"   └── subtopic_ids: {subtopic_ids} ({'OK - specific subtopic selected' if subtopic_ids else 'Not provided'})")
         
-        # Note: max_total_questions is for pre-assessment only, not regular minigame generation
+        # max_total_questions is for pre-assessment only, not regular minigame generation
         if max_total_questions:
-            print(f"   ⚠️  max_total_questions: {max_total_questions} (NOTE: This is for pre-assessment only, not minigame generation)")
+            print(f"   max_total_questions: {max_total_questions} (NOTE: This is for pre-assessment only, not minigame generation)")
         
-        # Validate hierarchical selection
+        # validate hierarchical selection
         if subtopic_ids and not zone_ids and not topic_ids:
-            print(f"   ℹ️  INFO: Subtopic selected without zone/topic context (this is OK for specific subtopic generation)")
+            print(f"   INFO: Subtopic selected without zone/topic context (this is OK for specific subtopic generation)")
         
-        # Validate parameters
+        # validate parameters
         valid_game_types = ['coding', 'non_coding']
         valid_difficulties = ['beginner', 'intermediate', 'advanced', 'master']
         
@@ -66,19 +64,19 @@ def generate_questions_bulk(request):
                 'error': f'Invalid difficulty levels. Must be from: {valid_difficulties}'
             }, status=status.HTTP_400_BAD_REQUEST)
         
-        # Check if specific subtopics are requested
+        # check if specific subtopics are requested
         if subtopic_ids:
-            # SPECIFIC SUBTOPIC GENERATION - NO COMBINATIONS
+            # specific subtopic generation (no combinations)
             from ..helpers.parallel_workers import run_subtopic_specific_generation
             
-            print(f"🎯 Specific subtopic generation requested: {len(subtopic_ids)} subtopics")
-            print(f"🔍 Subtopic IDs: {subtopic_ids}")
+            print(f"Specific subtopic generation requested: {len(subtopic_ids)} subtopics")
+            print(f"Subtopic IDs: {subtopic_ids}")
             
-            # Create session for tracking
+            # create session for tracking
             session_id = str(uuid.uuid4())
             total_workers = len(subtopic_ids) * len(difficulty_levels)
             
-            # Initialize status tracking for specific subtopics
+            # initialize status tracking for specific subtopics
             generation_status_tracker.create_session(
                 session_id=session_id,
                 total_workers=total_workers,
@@ -86,7 +84,7 @@ def generate_questions_bulk(request):
                 difficulties=difficulty_levels
             )
             
-            # Start subtopic-specific generation in background thread
+            # start subtopic-specific generation in background thread
             import threading
             def run_specific_generation():
                 try:
@@ -104,7 +102,7 @@ def generate_questions_bulk(request):
                         'error': str(e)
                     })
             
-            # Start the background thread
+            # start the background thread
             thread = threading.Thread(target=run_specific_generation)
             thread.daemon = True
             thread.start()
@@ -119,10 +117,10 @@ def generate_questions_bulk(request):
                 'difficulties': difficulty_levels
             })
         
-        # BULK ZONE/TOPIC GENERATION - WITH COMBINATIONS
-        # Handle topic_ids if provided (but no specific subtopics)
+        # bulk zone/topic generation (with combinations)
+        # handle topic_ids if provided (but no specific subtopics)
         if topic_ids and not subtopic_ids:
-            # Get all subtopics from specified topics
+            # get all subtopics from specified topics
             topic_subtopics = list(Subtopic.objects.filter(topic_id__in=topic_ids).select_related('topic__zone'))
             
             if not topic_subtopics:
@@ -130,9 +128,9 @@ def generate_questions_bulk(request):
                     'error': 'No subtopics found for the specified topics'
                 }, status=status.HTTP_404_NOT_FOUND)
             
-            print(f"🎯 Topic-specific generation requested: {len(topic_ids)} topics, {len(topic_subtopics)} subtopics")
+            print(f"Topic-specific generation requested: {len(topic_ids)} topics, {len(topic_subtopics)} subtopics")
             
-            # Use subtopic-specific generation for topic subtopics
+            # use subtopic-specific generation for topic subtopics
             session_id = str(uuid.uuid4())
             total_workers = len(topic_subtopics) * len(difficulty_levels)
             
@@ -176,7 +174,7 @@ def generate_questions_bulk(request):
                 'difficulties': difficulty_levels
             })
         
-        # Get zones to process
+        # get zones to process
         if zone_ids:
             zones = GameZone.objects.filter(id__in=zone_ids).order_by('order')
         else:
@@ -187,11 +185,11 @@ def generate_questions_bulk(request):
                 'error': 'No zones found for processing'
             }, status=status.HTTP_404_NOT_FOUND)
         
-        # Create a unique session ID for tracking
+        # create a unique session ID for tracking
         session_id = str(uuid.uuid4())
         total_workers = len(zones) * len(difficulty_levels)
         
-        # Initialize status tracking
+        # initialize status tracking
         generation_status_tracker.create_session(
             session_id=session_id,
             total_workers=total_workers,
@@ -199,10 +197,10 @@ def generate_questions_bulk(request):
             difficulties=difficulty_levels
         )
         
-        print(f"🚀 Starting bulk generation: {game_type}, {len(zones)} zones, {len(difficulty_levels)} difficulties")
-        print(f"📊 Session ID: {session_id}, Total workers: {total_workers}")
+        print(f"Starting bulk generation: {game_type}, {len(zones)} zones, {len(difficulty_levels)} difficulties")
+        print(f"Session ID: {session_id}, Total workers: {total_workers}")
         
-        # Start generation in background thread
+        # start generation in background thread
         import threading
         def run_generation():
             try:
@@ -221,12 +219,12 @@ def generate_questions_bulk(request):
                     'error': str(e)
                 })
         
-        # Start the background thread and return immediately
+        # start the background thread and return immediately
         thread = threading.Thread(target=run_generation)
         thread.daemon = True
         thread.start()
         
-        # Return session ID immediately for polling
+        # return session ID immediately for polling
         return Response({
             'status': 'initializing',
             'session_id': session_id,
@@ -245,22 +243,20 @@ def generate_questions_bulk(request):
 
 @api_view(['POST'])
 def generate_pre_assessment(request):
-    """
-    Generate pre-assessment questions covering multiple topics asynchronously.
-    
-    POST {
-        "topic_ids": [1, 2, 3] (optional - if not provided, uses all topics),
-        "total_questions": 20
-    }
-    
-    Returns session_id for tracking progress.
-    """
+    # generate pre-assessment questions covering multiple topics asynchronously.
+    #
+    # post {
+    #     "topic_ids": [1, 2, 3] (optional - if not provided, uses all topics),
+    #     "total_questions": 20
+    # }
+    #
+    # returns session_id for tracking progress.
     try:
-        # Get parameters
+        # get parameters
         topic_ids = request.data.get('topic_ids')
         total_questions = int(request.data.get('total_questions', 20))
         
-        # Get topics
+        # get topics
         if topic_ids:
             topics = Topic.objects.filter(id__in=topic_ids)
         else:
@@ -318,7 +314,7 @@ def generate_pre_assessment(request):
                     'num_questions': total_questions
                 }
                 
-                # Create system prompt
+                # create system prompt
                 system_prompt = (
                     f"You are a Python assessment expert creating a concise pre-assessment for users. "
                     f"Ensure that all listed topics and their subtopics are comprehensively covered within the total of {total_questions} questions. "
@@ -326,7 +322,7 @@ def generate_pre_assessment(request):
                     f"Cover various difficulty levels and always use the exact subtopic names from the provided list."
                 )
                 
-                # Get prompt and call LLM
+                # get prompt and call llm
                 prompt = deepseek_prompt_manager.get_prompt_for_minigame("pre_assessment", context)
                 
                 llm_response = invoke_deepseek(
@@ -487,11 +483,9 @@ def generate_pre_assessment(request):
 
 @api_view(['GET'])
 def get_rag_context(request, subtopic_id):
-    """
-    Get RAG context for a specific subtopic (for testing/debugging).
-    
-    GET /api/questions/rag-context/{subtopic_id}/?difficulty=beginner
-    """
+    # get rag context for a specific subtopic (for testing/debugging).
+    #
+    # get /api/questions/rag-context/{subtopic_id}/?difficulty=beginner
     try:
         subtopic = get_object_or_404(Subtopic, id=subtopic_id)
         difficulty = request.GET.get('difficulty', 'beginner')
@@ -518,11 +512,9 @@ def get_rag_context(request, subtopic_id):
 
 @api_view(['GET'])
 def get_generation_status(request, session_id):
-    """
-    Get real-time status for a generation session (bulk or pre-assessment).
-    
-    GET /api/generate/status/{session_id}/
-    """
+    # get real-time status for a generation session (bulk or pre-assessment).
+    #
+    # get /api/generate/status/{session_id}/
     try:
         session_status = generation_status_tracker.get_session_status(session_id)
         
@@ -603,11 +595,9 @@ def get_generation_status(request, session_id):
 
 @api_view(['GET'])
 def get_worker_details(request, session_id):
-    """
-    Get detailed worker information for a generation session.
-    
-    GET /api/generate/workers/{session_id}/
-    """
+    # get detailed worker information for a generation session.
+    #
+    # get /api/generate/workers/{session_id}/
     try:
         session_status = generation_status_tracker.get_session_status(session_id)
         
@@ -656,15 +646,13 @@ def get_worker_details(request, session_id):
 
 @api_view(['POST'])
 def cancel_generation(request, session_id):
-    """
-    Cancel an active question generation session.
-    
-    This endpoint:
-    1. Marks the session as cancelled in the status tracker
-    2. Keeps successfully saved questions intact
-    3. Cleans up incomplete/malformed questions from the current session
-    4. Returns cancellation statistics
-    """
+    # cancel an active question generation session.
+    #
+    # this endpoint:
+    # 1. marks the session as cancelled in the status tracker
+    # 2. keeps successfully saved questions intact
+    # 3. cleans up incomplete/malformed questions from the current session
+    # 4. returns cancellation statistics
     try:
         from ..models import GeneratedQuestion
         from django.utils import timezone
@@ -748,13 +736,13 @@ def cancel_generation(request, session_id):
             else:
                 cleanup_stats['valid_questions_kept'] += 1
         
-        # Remove malformed questions
+        # remove malformed questions
         if questions_to_remove:
             with transaction.atomic():
                 removed_count = GeneratedQuestion.objects.filter(id__in=questions_to_remove).delete()[0]
                 logger.info(f"Removed {removed_count} incomplete/malformed questions for session {session_id}")
         
-        # Get final session status
+        # get final session status
         final_session_status = generation_status_tracker.get_session_status(session_id)
         
         logger.info(f"Successfully cancelled session {session_id}. Cleaned up {len(questions_to_remove)} questions.")

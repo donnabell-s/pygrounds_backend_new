@@ -7,7 +7,7 @@ class GeneratedQuestion(models.Model):
     topic = models.ForeignKey(Topic, on_delete=models.CASCADE, related_name='generated_questions')
     subtopic = models.ForeignKey(Subtopic, on_delete=models.CASCADE, related_name='generated_questions')
 
-    question_text = models.TextField(blank=True)  # Could be clue, prompt, description, etc.
+    question_text = models.TextField(blank=True)  # could be clue, prompt, description, etc.
     correct_answer = models.TextField(blank=True)
 
     estimated_difficulty = models.CharField(
@@ -19,17 +19,17 @@ class GeneratedQuestion(models.Model):
     
     game_type = models.CharField(max_length=20, choices=[('coding','Coding'), ('non_coding','Non-Coding')], default='non_coding')
 
-    # Flexible field for storing game-specific data:
+    # flexible field for storing game-specific data
     game_data = JSONField(default=dict, blank=True)
 
-    # Metadata & tracking
+    # metadata and tracking
     validation_status = models.CharField(
         max_length=20,
         choices=[('pending', 'Pending Validation'), ('processing', 'Processing')],
         default='pending'
     )
     
-    # Timestamp
+    # timestamp
     created_at = models.DateTimeField(auto_now_add=True)
    
     class Meta:
@@ -45,12 +45,12 @@ class GeneratedQuestion(models.Model):
 
 
 class PreAssessmentQuestion(models.Model):
-    # Store multiple topic and subtopic IDs that this question covers
+    # store multiple topic and subtopic ids that this question covers
     topic_ids = JSONField(default=list, blank=True, help_text="List of topic IDs this question covers")
     subtopic_ids = JSONField(default=list, blank=True, help_text="List of subtopic IDs this question covers")
 
     question_text = models.TextField()
-    # No question_type field
+    # no question_type field
 
     answer_options = JSONField(default=list, blank=True)
     correct_answer = models.TextField()
@@ -71,7 +71,7 @@ class PreAssessmentQuestion(models.Model):
         ordering = ['order']
 
     def __str__(self):
-        # Get first topic name if available, otherwise show question text
+        # get first topic name if available; otherwise show question text
         try:
             if self.topic_ids:
                 first_topic = Topic.objects.get(id=self.topic_ids[0])

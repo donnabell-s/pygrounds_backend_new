@@ -21,7 +21,7 @@ from ..serializers import (
 import logging
 logger = logging.getLogger(__name__)
 
-# ==================== ADMIN CRUD VIEWS ====================
+# admin crud views
 
 class ZoneList(generics.ListCreateAPIView):
     queryset = GameZone.objects.all()
@@ -36,7 +36,7 @@ class ZoneList(generics.ListCreateAPIView):
     
     def create(self, request, *args, **kwargs):
         try:
-            # Check required fields
+            # check required fields
             required_fields = ['name', 'description', 'order']
             missing_fields = [field for field in required_fields if not request.data.get(field)]
             if missing_fields:
@@ -45,7 +45,7 @@ class ZoneList(generics.ListCreateAPIView):
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
-            # Check for duplicate zone name
+            # check for duplicate zone name
             name = request.data.get('name')
             if GameZone.objects.filter(name=name).exists():
                 return Response(
@@ -53,7 +53,7 @@ class ZoneList(generics.ListCreateAPIView):
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
-            # Check if order is already taken
+            # check if order is already taken
             order = request.data.get('order')
             if GameZone.objects.filter(order=order).exists():
                 return Response(
@@ -78,7 +78,7 @@ class ZoneDetail(generics.RetrieveUpdateDestroyAPIView):
         try:
             instance = self.get_object()
 
-            # Check for duplicate zone name if name is being changed
+            # check for duplicate zone name if name is being changed
             name = request.data.get('name')
             if name and name != instance.name:
                 if GameZone.objects.filter(name=name).exists():
@@ -87,7 +87,7 @@ class ZoneDetail(generics.RetrieveUpdateDestroyAPIView):
                         status=status.HTTP_400_BAD_REQUEST
                     )
 
-            # Check for duplicate order if order is being changed
+            # check for duplicate order if order is being changed
             order = request.data.get('order')
             if order and order != instance.order:
                 if GameZone.objects.filter(order=order).exists():
@@ -96,7 +96,7 @@ class ZoneDetail(generics.RetrieveUpdateDestroyAPIView):
                         status=status.HTTP_400_BAD_REQUEST
                     )
             
-            # Check if anything is being changed
+            # check if anything is being changed
             changed_fields = []
             for field in ['name', 'description', 'order']:
                 new_value = request.data.get(field)
@@ -124,10 +124,10 @@ class ZoneDetail(generics.RetrieveUpdateDestroyAPIView):
         try:
             instance = self.get_object()
             
-            # Check for force delete parameter
+            # check for force delete parameter
             force_delete = request.query_params.get('force', 'false').lower() == 'true'
             
-            # Check if zone has any topics and warn user unless force delete
+            # check if zone has any topics and warn user unless force delete
             if instance.topics.exists() and not force_delete:
                 topic_count = instance.topics.count()
                 return Response(
@@ -139,13 +139,13 @@ class ZoneDetail(generics.RetrieveUpdateDestroyAPIView):
                     status=status.HTTP_400_BAD_REQUEST
                 )
             
-            # Log the deletion for audit purposes
+            # log the deletion for audit purposes
             topic_count = instance.topics.count()
             zone_name = instance.name
             if topic_count > 0:
                 logger.warning(f"Deleting zone '{zone_name}' with {topic_count} topics (CASCADE)")
             
-            instance.delete()  # CASCADE will automatically delete related topics
+            instance.delete()  # cascade will automatically delete related topics
             
             return Response(
                 {
@@ -177,7 +177,7 @@ class TopicList(generics.ListCreateAPIView):
     
     def create(self, request, *args, **kwargs):
         try:
-            # Check required fields
+            # check required fields
             required_fields = ['name', 'description', 'zone']
             missing_fields = [field for field in required_fields if not request.data.get(field)]
             if missing_fields:
@@ -186,7 +186,7 @@ class TopicList(generics.ListCreateAPIView):
                     status=status.HTTP_400_BAD_REQUEST
                 )
             
-            # Verify zone exists
+            # verify zone exists
             zone_id = request.data.get('zone')
             try:
                 GameZone.objects.get(pk=zone_id)
@@ -196,7 +196,7 @@ class TopicList(generics.ListCreateAPIView):
                     status=status.HTTP_400_BAD_REQUEST
                 )
             
-            # Check for duplicate topic name in zone
+            # check for duplicate topic name in zone
             zone_id = request.data.get('zone')
             name = request.data.get('name')
             if Topic.objects.filter(zone_id=zone_id, name=name).exists():
@@ -222,7 +222,7 @@ class TopicDetail(generics.RetrieveUpdateDestroyAPIView):
         try:
             instance = self.get_object()
             
-            # Verify zone exists if zone is being updated
+            # verify zone exists if zone is being updated
             zone_id = request.data.get('zone')
             if zone_id:
                 try:
@@ -233,7 +233,7 @@ class TopicDetail(generics.RetrieveUpdateDestroyAPIView):
                         status=status.HTTP_400_BAD_REQUEST
                     )
 
-            # Check for duplicate topic name in zone if name is being updated
+            # check for duplicate topic name in zone if name is being updated
             name = request.data.get('name')
             if name and name != instance.name:
                 zone_id = zone_id or instance.zone.id
@@ -256,7 +256,7 @@ class TopicDetail(generics.RetrieveUpdateDestroyAPIView):
         try:
             instance = self.get_object()
             
-            # Check if topic has any subtopics
+            # check if topic has any subtopics
             if instance.subtopics.exists():
                 return Response(
                     {'error': 'Cannot delete topic with existing subtopics. Delete subtopics first.'},
@@ -287,7 +287,7 @@ class SubtopicList(generics.ListCreateAPIView):
 
     def create(self, request, *args, **kwargs):
         try:
-            # Check required fields
+            # check required fields
             required_fields = ['name', 'topic']
             missing_fields = [field for field in required_fields if not request.data.get(field)]
             if missing_fields:
@@ -296,7 +296,7 @@ class SubtopicList(generics.ListCreateAPIView):
                     status=status.HTTP_400_BAD_REQUEST
                 )
             
-            # Verify topic exists
+            # verify topic exists
             topic_id = request.data.get('topic')
             try:
                 Topic.objects.get(pk=topic_id)
@@ -306,7 +306,7 @@ class SubtopicList(generics.ListCreateAPIView):
                     status=status.HTTP_400_BAD_REQUEST
                 )
             
-            # Check for duplicate subtopic name in topic
+            # check for duplicate subtopic name in topic
             topic_id = request.data.get('topic')
             name = request.data.get('name')
             if Subtopic.objects.filter(topic_id=topic_id, name=name).exists():
@@ -315,7 +315,7 @@ class SubtopicList(generics.ListCreateAPIView):
                     status=status.HTTP_400_BAD_REQUEST
                 )
             
-            # Log intent fields for debugging
+            # log intent fields for debugging
             concept_intent = request.data.get('concept_intent')
             code_intent = request.data.get('code_intent')
             logger.info(f"Creating subtopic '{name}' with concept_intent: {bool(concept_intent)}, code_intent: {bool(code_intent)}")
@@ -335,15 +335,15 @@ class SubtopicDetail(generics.RetrieveUpdateDestroyAPIView):
 
     def perform_destroy(self, instance):
         try:
-            # Delete related embeddings first
+            # delete related embeddings first
             from content_ingestion.models import Embedding
             Embedding.objects.filter(subtopic=instance).delete()
             
-            # Delete related semantic data (this will be cascade deleted, but explicit is clearer)
+            # delete related semantic data (cascade will delete too, but explicit is clearer)
             from content_ingestion.models import SemanticSubtopic
             SemanticSubtopic.objects.filter(subtopic=instance).delete()
             
-            # Then delete the subtopic
+            # then delete the subtopic
             instance.delete()
             
         except Exception as e:
@@ -356,7 +356,7 @@ class SubtopicDetail(generics.RetrieveUpdateDestroyAPIView):
         try:
             instance = self.get_object()
             
-            # Verify topic exists if topic is being updated
+            # verify topic exists if topic is being updated
             topic_id = request.data.get('topic')
             if topic_id:
                 try:
@@ -367,7 +367,7 @@ class SubtopicDetail(generics.RetrieveUpdateDestroyAPIView):
                         status=status.HTTP_400_BAD_REQUEST
                     )
 
-            # Check for duplicate subtopic name in topic if name is being updated
+            # check for duplicate subtopic name in topic if name is being updated
             name = request.data.get('name')
             if name and name != instance.name:
                 topic_id = topic_id or instance.topic.id
@@ -390,7 +390,7 @@ class SubtopicDetail(generics.RetrieveUpdateDestroyAPIView):
         try:
             instance = self.get_object()
             
-            # Check if subtopic has any document chunks
+            # check if subtopic has any document chunks
             if instance.document_chunks.exists():
                 return Response(
                     {
@@ -400,7 +400,7 @@ class SubtopicDetail(generics.RetrieveUpdateDestroyAPIView):
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
-            # Proceed with deletion
+            # proceed with deletion
             instance.delete()
             
             return Response(
@@ -437,11 +437,11 @@ class DocumentDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = UploadedDocument.objects.all()
     serializer_class = DocumentSerializer
 
-# ==================== GETTER BY OBJECT ====================
+# getters by object
 
 @api_view(['GET'])
 def ZoneTopicsView(request, zone_id):
-    # List topics for a zone.
+    # list topics for a zone
     try:
         zone = get_object_or_404(GameZone, id=zone_id)
         topics = zone.topics.all()
@@ -455,7 +455,7 @@ def ZoneTopicsView(request, zone_id):
 
 @api_view(['GET'])
 def TopicSubtopicsView(request, topic_id):
-    # List subtopics for a topic.
+    # list subtopics for a topic
     try:
         topic = get_object_or_404(Topic, id=topic_id)
         subtopics = topic.subtopics.all()
@@ -467,16 +467,16 @@ def TopicSubtopicsView(request, topic_id):
             status=status.HTTP_400_BAD_REQUEST
         )
 
-# ==================== DOCUMENT OPERATIONS ====================
+# document operations
 
 @api_view(['POST'])
 def upload_pdf(request):
-    # Upload PDF and create UploadedDocument (no processing).
+    # upload pdf and create UploadedDocument (no processing)
     try:
         serializer = DocumentSerializer(data=request.data)
         if serializer.is_valid():
             document = serializer.save()
-            # Set initial status - processing will be handled by separate endpoint
+            # set initial status; processing is handled by a separate endpoint
             document.processing_status = 'PENDING'
             document.processing_message = 'Document uploaded successfully. Ready for processing.'
             document.save()
@@ -497,14 +497,14 @@ def upload_pdf(request):
 
 @api_view(['GET'])
 def list_documents(request):
-    # List non-deleted documents.
+    # list non-deleted documents
     try:
         documents = UploadedDocument.objects.filter(is_deleted=False).order_by('-uploaded_at').annotate(
             chunk_count=Count('chunks')
         )
         serializer = DocumentSerializer(documents, many=True)
         
-        # Structure the response for frontend
+        # structure the response for frontend
         return Response({
             'status': 'success',
             'message': 'Documents retrieved successfully',
@@ -527,7 +527,7 @@ def list_documents(request):
 
 @api_view(['GET'])
 def get_document_detail(request, document_id):
-    # Return document + chunk details.
+    # return document + chunk details
     try:
         document = get_object_or_404(UploadedDocument, id=document_id)
         chunks = DocumentChunk.objects.filter(document=document)
@@ -544,9 +544,9 @@ def get_document_detail(request, document_id):
         )
 
 @api_view(['GET'])
-@permission_classes([AllowAny])  # Public endpoint - no authentication required
+@permission_classes([AllowAny])  # public endpoint; no authentication required
 def get_document_status(request, document_id):
-    # Public processing status endpoint.
+    # public processing status endpoint
     try:
         document = get_object_or_404(UploadedDocument, id=document_id)
         
@@ -568,7 +568,7 @@ def get_document_status(request, document_id):
 
 @api_view(['GET'])
 def download_document(request, document_id):
-    # Download the PDF file.
+    # download the pdf file
     try:
         document = get_object_or_404(UploadedDocument, id=document_id)
         if not document.pdf_file:
@@ -600,33 +600,33 @@ def download_document(request, document_id):
 
 @api_view(['POST', 'DELETE'])
 def delete_document(request, document_id):
-    # Delete document (soft/hard) and related data.
+    # delete document (soft/hard) and related data
     try:
         document = get_object_or_404(UploadedDocument, id=document_id)
         
-        # Check if hard delete is requested
+        # check if hard delete is requested
         hard_delete = (
             request.method == 'DELETE' or 
             request.query_params.get('hard_delete', '').lower() == 'true' or
             request.data.get('hard_delete', False)
         )
         
-        # Always hard delete failed documents for cleanup
+        # always hard delete failed documents for cleanup
         if document.processing_status == 'FAILED':
             hard_delete = True
             logger.info(f"Forcing hard delete for failed document: {document.title}")
         
         if hard_delete:
-            # Hard delete - permanently remove document and all related data
+            # hard delete: permanently remove document and all related data
             document_title = document.title
             document_status = document.processing_status
             
-            # Count related objects before deletion for logging
+            # count related objects before deletion for logging
             chunk_count = document.chunks.count() if hasattr(document, 'chunks') else 0
             toc_count = document.tocentry_set.count() if hasattr(document, 'tocentry_set') else 0
             
             try:
-                # Count embeddings
+                # count embeddings
                 from content_ingestion.models import Embedding
                 embedding_count = Embedding.objects.filter(
                     document_chunk__document=document,
@@ -639,7 +639,7 @@ def delete_document(request, document_id):
             logger.info(f"  Status: {document_status}")
             logger.info(f"  Related data: {chunk_count} chunks, {toc_count} TOC entries, {embedding_count} embeddings")
             
-            # Use our custom delete method which handles all cleanup
+            # use our custom delete method which handles all cleanup
             document.delete()
             
             logger.info(f"Document hard deleted successfully: {document_title}")
@@ -654,7 +654,7 @@ def delete_document(request, document_id):
                 }
             }, status=status.HTTP_200_OK)
         else:
-            # Soft delete - mark as deleted but keep data
+            # soft delete: mark as deleted but keep data
             document.is_deleted = True
             document.save()
             
@@ -684,9 +684,9 @@ def delete_document(request, document_id):
 
 @api_view(['POST'])
 def cleanup_failed_documents(request):
-    # Bulk cleanup for documents stuck in FAILED status.
+    # bulk cleanup for documents stuck in FAILED status
     try:
-        # Find all failed documents
+        # find all failed documents
         failed_documents = UploadedDocument.objects.filter(
             processing_status='FAILED'
         )
@@ -698,7 +698,7 @@ def cleanup_failed_documents(request):
                 'deleted_count': 0
             }, status=status.HTTP_200_OK)
         
-        # Count related data before deletion
+        # count related data before deletion
         total_chunks = 0
         total_toc_entries = 0
         total_embeddings = 0
@@ -724,8 +724,8 @@ def cleanup_failed_documents(request):
         logger.info(f"Starting bulk cleanup of {failed_count} failed documents")
         logger.info(f"Related data to clean: {total_chunks} chunks, {total_toc_entries} TOC entries, {total_embeddings} embeddings")
         
-        # Delete all failed documents (this will trigger our custom delete method)
-        deleted_titles = list(document_titles)  # Copy before deletion
+        # delete all failed documents (triggers our custom delete method)
+        deleted_titles = list(document_titles)  # copy before deletion
         failed_documents.delete()
         
         logger.info(f"Bulk cleanup completed: {failed_count} failed documents deleted")

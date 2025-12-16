@@ -1,5 +1,5 @@
-## Compatibility shim for legacy wildcard imports.
-# Views were refactored to explicit imports; keep this for any external code still relying on `import *`.
+## compatibility shim for legacy wildcard imports
+# views were refactored to explicit imports; keep this for any external code still relying on `import *`
 
 from __future__ import annotations
 
@@ -11,7 +11,7 @@ warnings.warn(
     stacklevel=2,
 )
 
-# Re-export the previously provided names.
+# re-export the previously provided names
 from django.http import FileResponse, Http404, JsonResponse  # noqa: F401
 from django.shortcuts import get_object_or_404  # noqa: F401
 from django.db import transaction  # noqa: F401

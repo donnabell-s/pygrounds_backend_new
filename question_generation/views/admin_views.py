@@ -1,6 +1,3 @@
-# Admin interface views for managing generated questions and preassessment questions
-# Includes CRUD operations, bulk actions, and dashboard statistics
-
 from rest_framework import generics, status, filters
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -27,11 +24,11 @@ class StandardResultsSetPagination(PageNumberPagination):
     max_page_size = 100
 
 
-# Generated question management views
+# generated question management views
 
 class AdminGeneratedQuestionListView(generics.ListAPIView):
-    # List and filter generated questions for admin interface
-    # Supports filtering by status, difficulty, type, and hierarchy (zone/topic/subtopic)
+    # list and filter generated questions for admin interface
+    # supports filtering by status, difficulty, type, and hierarchy (zone/topic/subtopic)
     serializer_class = QuestionSummarySerializer
     pagination_class = StandardResultsSetPagination
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
@@ -40,12 +37,12 @@ class AdminGeneratedQuestionListView(generics.ListAPIView):
     ordering = ['-id']
 
     def get_queryset(self):
-        # Get questions with related entities to minimize DB queries
+        # get questions with related entities to minimize db queries
         queryset = GeneratedQuestion.objects.select_related(
             'topic', 'subtopic', 'subtopic__topic__zone'
         ).all()
         
-        # Apply filters from query parameters
+        # apply filters from query parameters
         filters = {
             'validation_status': ('validation_status', None),
             'difficulty': ('estimated_difficulty', None),
@@ -55,7 +52,7 @@ class AdminGeneratedQuestionListView(generics.ListAPIView):
             'zone_id': ('topic__zone_id', None)
         }
         
-        # Apply each filter if its parameter exists in the request
+        # apply each filter if its parameter exists in the request
         for param, (field, transform) in filters.items():
             value = self.request.query_params.get(param)
             if value:
@@ -64,21 +61,21 @@ class AdminGeneratedQuestionListView(generics.ListAPIView):
         return queryset
 
     def get_serializer_class(self):
-        # Return detailed serializer for individual question views, summary for lists
+        # return detailed serializer for individual question views, summary for lists
         return (GeneratedQuestionSerializer 
                 if self.request.query_params.get('detailed') == 'true'
                 else QuestionSummarySerializer)
 
 
 class AdminGeneratedQuestionDetailView(generics.RetrieveUpdateDestroyAPIView):
-    # Handle individual question operations (view/update/delete)
+    # handle individual question operations (view/update/delete)
     queryset = GeneratedQuestion.objects.select_related('topic', 'subtopic').all()
     serializer_class = GeneratedQuestionSerializer
 
 
 @api_view(['GET'])
 def question_statistics(request):
-    # Get statistics about generated questions
+    # get statistics about generated questions
     stats = {
         'total_questions': GeneratedQuestion.objects.count(),
         'by_validation_status': dict(
@@ -105,13 +102,11 @@ def question_statistics(request):
 
 @api_view(['POST'])
 def bulk_update_validation_status(request):
-    """
-    Bulk update validation status for questions.
-    Expected payload: {
-        "question_ids": [1, 2, 3],
-        "validation_status": "approved"
-    }
-    """
+    # bulk update validation status for questions.
+    # expected payload: {
+    #     "question_ids": [1, 2, 3],
+    #     "validation_status": "approved"
+    # }
     question_ids = request.data.get('question_ids', [])
     new_status = request.data.get('validation_status')
     
@@ -120,7 +115,7 @@ def bulk_update_validation_status(request):
             'error': 'question_ids and validation_status are required'
         }, status=status.HTTP_400_BAD_REQUEST)
     
-    # Validate status
+    # validate status
     valid_statuses = ['pending', 'approved', 'rejected', 'needs_review']
     if new_status not in valid_statuses:
         return Response({
@@ -140,13 +135,11 @@ def bulk_update_validation_status(request):
 
 @api_view(['DELETE'])
 def bulk_delete_questions(request):
-    """
-    Bulk delete questions.
-    Expected payload: {
-        "question_ids": [1, 2, 3],
-        "confirm": true
-    }
-    """
+    # bulk delete questions.
+    # expected payload: {
+    #     "question_ids": [1, 2, 3],
+    #     "confirm": true
+    # }
     question_ids = request.data.get('question_ids', [])
     confirm = request.data.get('confirm', False)
     
@@ -168,11 +161,11 @@ def bulk_delete_questions(request):
     })
 
 
-# Preassessment question management
+# preassessment question management
 
 class AdminPreAssessmentQuestionListView(generics.ListCreateAPIView):
-    # List and filter preassessment questions
-    # Supports manual creation by admins and filtering by difficulty
+    # list and filter preassessment questions
+    # supports manual creation by admins and filtering by difficulty
     queryset = PreAssessmentQuestion.objects.all()
     serializer_class = PreAssessmentQuestionSerializer
     pagination_class = StandardResultsSetPagination
@@ -184,32 +177,30 @@ class AdminPreAssessmentQuestionListView(generics.ListCreateAPIView):
     def get_queryset(self):
         queryset = super().get_queryset()
         
-        # Filter by difficulty if specified
+        # filter by difficulty if specified
         difficulty = self.request.query_params.get('difficulty')
         if difficulty:
             queryset = queryset.filter(estimated_difficulty=difficulty)
             
-        # Filter by topic_id if specified
+        # filter by topic_id if specified
         topic_id = self.request.query_params.get('topic_id')
         if topic_id:
-            # Use contains lookup since topic_ids is a JSONField list
+            # use contains lookup since topic_ids is a jsonfield list
             queryset = queryset.filter(topic_ids__contains=[topic_id])
             
         return queryset.order_by('order')
 
 
 class AdminPreAssessmentQuestionDetailView(generics.RetrieveUpdateDestroyAPIView):
-    # Handle individual preassessment question operations
+    # handle individual preassessment question operations
     queryset = PreAssessmentQuestion.objects.all()
     serializer_class = PreAssessmentQuestionSerializer
 
 
-# ==================== SEMANTIC SUBTOPICS ====================
+# ==================== semantic subtopics ====================
 
 class AdminSemanticSubtopicListView(generics.ListAPIView):
-    """
-    Admin view for listing semantic subtopic data.
-    """
+    # admin view for listing semantic subtopic data.
     queryset = SemanticSubtopic.objects.select_related('subtopic__topic').all()
     serializer_class = SemanticSubtopicSerializer
     pagination_class = StandardResultsSetPagination
@@ -221,15 +212,15 @@ class AdminSemanticSubtopicListView(generics.ListAPIView):
     def get_queryset(self):
         queryset = super().get_queryset()
         
-        # Filter by topic
+        # filter by topic
         topic_id = self.request.query_params.get('topic_id')
         if topic_id:
             queryset = queryset.filter(subtopic__topic_id=topic_id)
         
-        # Filter by chunk count
+        # filter by chunk count
         min_chunks = self.request.query_params.get('min_chunks')
         if min_chunks:
-            # Filter based on total chunks (concept + code)
+            # filter based on total chunks (concept + code)
             queryset = [obj for obj in queryset if 
                        (len(obj.ranked_concept_chunks) if obj.ranked_concept_chunks else 0) + 
                        (len(obj.ranked_code_chunks) if obj.ranked_code_chunks else 0) >= int(min_chunks)]
@@ -239,8 +230,8 @@ class AdminSemanticSubtopicListView(generics.ListAPIView):
 
 @api_view(['GET'])
 def semantic_statistics(request):
-    """Get semantic analysis statistics."""
-    # For now, calculate this manually since JSON array length queries are complex
+    # get semantic analysis statistics.
+    # for now, calculate this manually since json array length queries are complex
     semantic_subtopics = SemanticSubtopic.objects.all()
     subtopics_with_chunks = sum(
         1 for s in semantic_subtopics 
@@ -257,7 +248,7 @@ def semantic_statistics(request):
         )
     }
     
-    # Calculate average chunks per subtopic
+    # calculate average chunks per subtopic
     if semantic_subtopics:
         total_chunks = sum(
             (len(s.ranked_concept_chunks) if s.ranked_concept_chunks else 0) + 
@@ -269,11 +260,11 @@ def semantic_statistics(request):
     return Response(stats)
 
 
-# ==================== CROSS-SYSTEM VIEWS ====================
+# ==================== cross-system views ====================
 
 @api_view(['GET'])
 def admin_dashboard_stats(request):
-    """Get comprehensive dashboard statistics for admin."""
+    # get comprehensive dashboard statistics for admin.
     from content_ingestion.models import GameZone, Topic, Subtopic, Embedding
     
     stats = {

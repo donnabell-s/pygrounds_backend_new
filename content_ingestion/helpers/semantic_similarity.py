@@ -9,28 +9,24 @@ from content_ingestion.models import Subtopic, DocumentChunk, Embedding
 logger = logging.getLogger(__name__)
 
 
-# === MAIN PROCESSING FUNCTIONS ===
+# main processing functions
 
 def process_all_subtopics(document_id: Optional[int] = None, 
                          similarity_threshold: float = 0.1,
                          top_k_results: int = 10,
                          use_intents: bool = True) -> Dict[str, Any]:
-    # Process semantic similarity for all subtopics using dual embeddings
-    # document_id: optional - limit to specific document
-    # similarity_threshold: min score to store (default: 0.1)
-    # top_k_results: max chunks per subtopic (default: 10)
-    # use_intents: use intent-based embeddings if available
+    # process semantic similarity for all subtopics using dual embeddings
     logger.info("Starting dual-embedding semantic similarity processing")
     if use_intents:
         logger.info("Using intent-based embeddings when available")
     logger.info("Threshold: %s", similarity_threshold)
     logger.info("Top-K results: %s", top_k_results)
     
-    # Get all subtopics
+    # fetch all subtopics
     subtopics = list(Subtopic.objects.all())
     logger.info("Found %s total subtopics", len(subtopics))
     
-    # Get chunks with embeddings for both model types
+    # fetch chunks with embeddings for both model types
     minilm_chunks = get_chunks_with_embeddings(document_id, model_type='sentence')
     codebert_chunks = get_chunks_with_embeddings(document_id, model_type='code_bert')
     logger.info("Found %s chunks with MiniLM embeddings", len(minilm_chunks))
@@ -43,7 +39,7 @@ def process_all_subtopics(document_id: Optional[int] = None,
             'processed_subtopics': 0
         }
     
-    # Process each subtopic with dual embeddings
+    # process each subtopic with dual embeddings
     processed_count = 0
     total_similarities_computed = 0
     intent_based_count = 0
@@ -56,7 +52,7 @@ def process_all_subtopics(document_id: Optional[int] = None,
             concept_similarities = []
             code_similarities = []
             
-            # Process concept chunks separately with MiniLM embedding
+            # process concept chunks separately with minilm embedding
             if minilm_chunks:
                 minilm_subtopic_data = get_subtopic_embedding(subtopic, model_type='sentence', use_intents=use_intents)
                 if minilm_subtopic_data:
@@ -66,9 +62,9 @@ def process_all_subtopics(document_id: Optional[int] = None,
                         minilm_subtopic_data, minilm_chunks, similarity_threshold
                     )
                     concept_similarities.sort(key=lambda x: x['similarity'], reverse=True)
-                    concept_similarities = concept_similarities[:top_k_results]  # Top K concept chunks
+                    concept_similarities = concept_similarities[:top_k_results]  # top-k concept chunks
             
-            # Process code chunks separately with CodeBERT embedding  
+            # process code chunks separately with codebert embedding
             if codebert_chunks:
                 codebert_subtopic_data = get_subtopic_embedding(subtopic, model_type='code_bert', use_intents=use_intents)
                 if codebert_subtopic_data:
@@ -78,19 +74,19 @@ def process_all_subtopics(document_id: Optional[int] = None,
                         codebert_subtopic_data, codebert_chunks, similarity_threshold
                     )
                     code_similarities.sort(key=lambda x: x['similarity'], reverse=True)
-                    code_similarities = code_similarities[:top_k_results]  # Top K code chunks
+                    code_similarities = code_similarities[:top_k_results]  # top-k code chunks
             
-            # Store results separately in their respective fields
+            # store results separately in their respective fields
             if concept_similarities or code_similarities:
                 store_semantic_results_separate(subtopic, concept_similarities, code_similarities)
                 processed_count += 1
                 total_similarities_computed += len(concept_similarities) + len(code_similarities)
                 
-                # Count by chunk type for reporting
+                # count by chunk type for reporting
                 concept_count = len(concept_similarities)
                 code_count = len(code_similarities)
                 
-                intent_flag = " 🎯" if (minilm_subtopic_data and minilm_subtopic_data.get('generated_from_intent')) or (codebert_subtopic_data and codebert_subtopic_data.get('generated_from_intent')) else ""
+                intent_flag = " " if (minilm_subtopic_data and minilm_subtopic_data.get('generated_from_intent')) or (codebert_subtopic_data and codebert_subtopic_data.get('generated_from_intent')) else ""
                 logger.info(
                     "Subtopic '%s': %s chunks (Concept: %s, Code: %s)%s",
                     subtopic.name,

@@ -1,5 +1,5 @@
-# Content Ingestion Signals
-# Automatic processing when models are saved
+# content ingestion signals
+# automatic processing when models are saved
 
 import logging
 from django.db.models.signals import post_save, pre_save, pre_delete
@@ -8,34 +8,34 @@ from .models import Subtopic, SemanticSubtopic
 
 logger = logging.getLogger(__name__)
 
-# Global dictionary to track field changes
+# global dictionary to track field changes
 _subtopic_field_tracker = {}
 
 @receiver(pre_delete, sender=Subtopic)
 def handle_subtopic_deletion(sender, instance, **kwargs):
-    # Log cascade-deleted related objects for a subtopic.
-    logger.info(f"🗑️ Deleting subtopic '{instance.name}' (ID: {instance.pk})")
+    # log cascade-deleted related objects for a subtopic
+    logger.info(f" Deleting subtopic '{instance.name}' (ID: {instance.pk})")
     
-    # Log what will be deleted via CASCADE
+    # log what will be deleted via cascade
     try:
         from content_ingestion.models import Embedding
         from question_generation.models import GeneratedQuestion
         
-        # Count related objects that will be cascade deleted
+        # count related objects that will be cascade deleted
         embeddings_count = Embedding.objects.filter(subtopic=instance).count()
         questions_count = GeneratedQuestion.objects.filter(subtopic=instance).count()
         
         logger.info(f"  - Will cascade delete {embeddings_count} embeddings")
         logger.info(f"  - Will cascade delete {questions_count} generated questions")
         
-        # Check for SemanticSubtopic
+        # check for semantic subtopic
         try:
             semantic_subtopic = SemanticSubtopic.objects.get(subtopic=instance)
             logger.info(f"  - Will cascade delete SemanticSubtopic record")
         except SemanticSubtopic.DoesNotExist:
             logger.info(f"  - No SemanticSubtopic record to delete")
             
-        # Check user learning data
+        # check user learning data
         try:
             from user_learning.models import SubtopicMastery
             mastery_count = SubtopicMastery.objects.filter(subtopic=instance).count()
@@ -43,7 +43,7 @@ def handle_subtopic_deletion(sender, instance, **kwargs):
         except ImportError:
             pass  # user_learning app might not be available
             
-        # Check reading materials
+        # check reading materials
         try:
             from reading.models import ReadingMaterial
             reading_count = ReadingMaterial.objects.filter(subtopic_ref=instance).count()
@@ -54,13 +54,13 @@ def handle_subtopic_deletion(sender, instance, **kwargs):
     except Exception as e:
         logger.warning(f"Error counting related objects for subtopic deletion: {e}")
     
-    logger.info(f"🔥 All related objects will be automatically cascade deleted by Django")
+    logger.info(f" All related objects will be automatically cascade deleted by Django")
 
 
 @receiver(pre_save, sender=Subtopic)
 def track_subtopic_changes(sender, instance, **kwargs):
-    # Track field changes to decide whether to regenerate embeddings.
-    if instance.pk:  # Only track for existing objects (updates)
+    # track field changes to decide whether to regenerate embeddings
+    if instance.pk:  # only track for existing objects (updates)
         try:
             old_instance = Subtopic.objects.get(pk=instance.pk)
             _subtopic_field_tracker[instance.pk] = {
@@ -75,26 +75,26 @@ def track_subtopic_changes(sender, instance, **kwargs):
             logger.info(f"  - Concept intent changed: {_subtopic_field_tracker[instance.pk]['concept_intent_changed']}")
             logger.info(f"  - Code intent changed: {_subtopic_field_tracker[instance.pk]['code_intent_changed']}")
         except Subtopic.DoesNotExist:
-            # Object doesn't exist yet, this is a creation
+            # object doesn't exist yet, this is a creation
             _subtopic_field_tracker[instance.pk] = None
 
 
 @receiver(post_save, sender=Subtopic)
 def handle_subtopic_save(sender, instance, created, **kwargs):
-    # Regenerate embeddings on create or relevant field changes.
+    # regenerate embeddings on create or relevant field changes
     try:
         logger.info(f"Signal triggered for subtopic '{instance.name}' (created: {created})")
         logger.info(f"Intent fields - concept: {bool(instance.concept_intent)}, code: {bool(instance.code_intent)}")
 
-        # Determine if we should regenerate embeddings
+        # determine whether to regenerate embeddings
         should_generate = False
         
         if created:
-            # Always generate for new subtopics (name is always descriptive)
+            # always generate for new subtopics (name is always descriptive)
             should_generate = True
             logger.info(f"Processing newly created subtopic '{instance.name}' - will generate embeddings from name")
         else:
-            # For updates, check if relevant fields changed
+            # for updates, check whether relevant fields changed
             changes = _subtopic_field_tracker.get(instance.pk)
             if changes:
                 field_changed = (
@@ -112,11 +112,11 @@ def handle_subtopic_save(sender, instance, created, **kwargs):
                 else:
                     logger.info(f"No relevant field changes for subtopic '{instance.name}' - skipping embedding regeneration")
             else:
-                # No tracking data, assume we should generate (safe fallback)
+                # no tracking data, assume we should generate (safe fallback)
                 should_generate = True
                 logger.info(f"No change tracking data for subtopic '{instance.name}' - will generate embeddings")
 
-        # Clean up tracker
+        # clean up tracker
         if instance.pk in _subtopic_field_tracker:
             del _subtopic_field_tracker[instance.pk]
 
@@ -126,14 +126,14 @@ def handle_subtopic_save(sender, instance, created, **kwargs):
 
         logger.info(f"Processing embeddings and semantic similarities for subtopic '{instance.name}'")
 
-        # Check if subtopic has embeddings
+        # check if subtopic has embeddings
         from content_ingestion.models import Embedding
         has_embeddings = Embedding.objects.filter(subtopic=instance).exists()
         
-        # ALWAYS generate dual embeddings (MiniLM + CodeBERT)
+        # always generate dual embeddings (minilm + codebert)
         logger.info(f"Generating dual embeddings for subtopic '{instance.name}'")
         
-        # Determine what content we're using for embedding messages
+        # determine what content we're using for embedding messages
         embedding_sources = ['name']  # Always include name
         if instance.concept_intent:
             embedding_sources.append('concept_intent')
@@ -142,26 +142,26 @@ def handle_subtopic_save(sender, instance, created, **kwargs):
         
         source_description = ' + '.join(embedding_sources)
         
-        # Update status to processing with descriptive message
+        # update status to processing with descriptive message
         Subtopic.objects.filter(pk=instance.pk).update(
             embedding_status='processing',
             embedding_error=f'Generating dual embeddings (MiniLM + CodeBERT) from {source_description} for: {instance.name}'
         )
-        logger.info(f"📊 Status updated: Processing dual embeddings from {source_description}")
+        logger.info(f" Status updated: Processing dual embeddings from {source_description}")
         
-        # Generate and save embeddings using the proper database-saving method
+        # generate and save embeddings using the proper database-saving method
         from content_ingestion.helpers.embedding.generator import EmbeddingGenerator
         
-        # Clean up old embeddings if they exist
+        # clean up old embeddings if they exist
         if has_embeddings:
             from content_ingestion.models import Embedding
             Embedding.objects.filter(subtopic=instance).delete()
-            logger.info(f"🧹 Cleaned up old embeddings for subtopic '{instance.name}'")
+            logger.info(f" Cleaned up old embeddings for subtopic '{instance.name}'")
         
         try:
-            logger.info(f"🔄 Starting dual embedding generation from: {source_description}")
+            logger.info(f" Starting dual embedding generation from: {source_description}")
             
-            # Small delay to ensure status is visible in frontend
+            # small delay to ensure status is visible in frontend
             import time
             time.sleep(0.5)  # 500ms delay to make processing status visible
             
@@ -174,27 +174,27 @@ def handle_subtopic_save(sender, instance, created, **kwargs):
                     embedding_status='completed',
                     embedding_error=None
                 )
-                logger.info(f"✅ {success_msg} for subtopic '{instance.name}'")
-                # Continue to semantic processing below
+                logger.info(f" {success_msg} for subtopic '{instance.name}'")
+                # continue to semantic processing below
             else:
                 error_msg = '; '.join(result['errors']) if result['errors'] else 'No embeddings were created'
                 Subtopic.objects.filter(pk=instance.pk).update(
                     embedding_status='failed',
                     embedding_error=f"Failed: {error_msg}"
                 )
-                logger.error(f"❌ Failed to generate embeddings for subtopic '{instance.name}': {error_msg}")
+                logger.error(f" Failed to generate embeddings for subtopic '{instance.name}': {error_msg}")
                 return
                     
         except Exception as e:
             error_msg = f"Exception during embedding generation: {str(e)}"
-            logger.error(f"❌ Error generating embeddings for subtopic '{instance.name}': {e}")
+            logger.error(f" Error generating embeddings for subtopic '{instance.name}': {e}")
             Subtopic.objects.filter(pk=instance.pk).update(
                 embedding_status='failed',
                 embedding_error=error_msg
             )
             return
 
-        # Ensure SemanticSubtopic record exists for this subtopic (even without chunks)
+        # ensure semantic subtopic record exists (even without chunks)
         semantic_subtopic, semantic_created = SemanticSubtopic.objects.get_or_create(
             subtopic=instance,
             defaults={
@@ -206,58 +206,58 @@ def handle_subtopic_save(sender, instance, created, **kwargs):
         if semantic_created:
             logger.info(f"Created SemanticSubtopic record for '{instance.name}'")
 
-        # Check if there are any document chunks with embeddings before processing
+        # check if there are any document chunks with embeddings before processing
         from .models import DocumentChunk
         chunks_with_embeddings = DocumentChunk.objects.filter(embeddings__isnull=False).exists()
         if not chunks_with_embeddings:
-            logger.info(f"📋 No document chunks with embeddings yet - SemanticSubtopic record exists but rankings remain empty for '{instance.name}'")
-            # Update status to completed since embedding generation is done and semantic record exists
+            logger.info(f" No document chunks with embeddings yet - SemanticSubtopic record exists but rankings remain empty for '{instance.name}'")
+            # update status to completed since embedding generation is done and semantic record exists
             Subtopic.objects.filter(pk=instance.pk).update(
                 embedding_status='completed',
                 embedding_error=None
             )
-            logger.info(f"✅ Subtopic '{instance.name}' processing completed (no chunks to rank)")
+            logger.info(f" Subtopic '{instance.name}' processing completed (no chunks to rank)")
             return
 
-        # Update status for semantic processing
+        # update status for semantic processing
         Subtopic.objects.filter(pk=instance.pk).update(
             embedding_status='processing',
             embedding_error='Processing semantic similarities with document chunks'
         )
-        logger.info(f"🔍 Starting semantic similarity processing for '{instance.name}'")
+        logger.info(f" Starting semantic similarity processing for '{instance.name}'")
 
-        # Lazy import to avoid sklearn loading during Django setup
+        # lazy import to avoid sklearn loading during django setup
         from .helpers.semantic_similarity import process_single_subtopic
 
-        # Process semantic similarities for this subtopic
+        # process semantic similarities for this subtopic
         result = process_single_subtopic(
             subtopic_id=instance.id,
             similarity_threshold=0.1,
             top_k_results=15  # Match the RAG system's top_k
         )
 
-        logger.info(f"📊 Semantic processing result for subtopic '{instance.name}': {result}")
+        logger.info(f" Semantic processing result for subtopic '{instance.name}': {result}")
 
         if result.get('status') == 'success':
-            # Update status to completed with success message
+            # update status to completed with success message
             similar_chunks = result.get('similar_chunks', 0)
             Subtopic.objects.filter(pk=instance.pk).update(
                 embedding_status='completed',
                 embedding_error=None
             )
-            logger.info(f"✅ Successfully processed semantic similarities for subtopic '{instance.name}' - found {similar_chunks} related chunks")
+            logger.info(f" Successfully processed semantic similarities for subtopic '{instance.name}' - found {similar_chunks} related chunks")
         else:
-            # Update status to failed with error message
+            # update status to failed with error message
             error_msg = f"Semantic processing failed: {result.get('message', 'Unknown error')}"
             Subtopic.objects.filter(pk=instance.pk).update(
                 embedding_status='failed',
                 embedding_error=error_msg
             )
-            logger.error(f"❌ Failed to process semantic similarities for subtopic '{instance.name}': {result.get('message')}")
+            logger.error(f" Failed to process semantic similarities for subtopic '{instance.name}': {result.get('message')}")
 
     except Exception as e:
-        logger.error(f"💥 Error in subtopic save signal for '{instance.name}': {str(e)}")
-        # Update status to failed with exception message
+        logger.error(f" Error in subtopic save signal for '{instance.name}': {str(e)}")
+        # update status to failed with exception message
         Subtopic.objects.filter(pk=instance.pk).update(
             embedding_status='failed',
             embedding_error=f"Signal processing error: {str(e)}"

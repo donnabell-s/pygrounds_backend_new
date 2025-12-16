@@ -1,4 +1,4 @@
-# Worker entrypoints for subprocess-safe embedding generation.
+# worker entrypoints for subprocess-safe embedding generation
 
 import os
 import logging
@@ -10,7 +10,7 @@ _DJANGO_READY = False
 
 
 def setup_django() -> None:
-    # Initialize Django once per worker process.
+    # initialize django once per worker process
     global _DJANGO_READY
     if _DJANGO_READY:
         return
@@ -20,7 +20,7 @@ def setup_django() -> None:
 
 
 def generate_embedding_task(args):
-    # Generate a subtopic embedding inside a worker process.
+    # generate a subtopic embedding inside a worker process
     setup_django()
 
     subtopic_id, model_type = args

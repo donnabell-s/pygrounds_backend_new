@@ -1,7 +1,6 @@
 import json
 import logging
 from pathlib import Path
-
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from rest_framework import status

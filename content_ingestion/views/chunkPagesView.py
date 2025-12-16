@@ -647,7 +647,7 @@ def upload_and_process_pipeline(request):
         document.processing_message = 'Starting document processing pipeline...'
         document.save()
         
-        print(f"🚀 Starting pipeline processing for document: {document.title}")
+        print(f" Starting pipeline processing for document: {document.title}")
         
         # Initialize pipeline results
         pipeline_results = {
@@ -659,8 +659,8 @@ def upload_and_process_pipeline(request):
         }
         
         try:
-            # Step 1: Generate TOC
-            print("📋 Step 1: Generating table of contents...")
+            # step 1: generate toc
+            print(" Step 1: Generating table of contents...")
             document.processing_message = 'Generating table of contents...'
             document.save()
             
@@ -670,15 +670,15 @@ def upload_and_process_pipeline(request):
                 'status': 'success',
                 'entries_count': entries_count
             }
-            print(f"✅ TOC generated with {entries_count} entries")
+            print(f" TOC generated with {entries_count} entries")
             
         except Exception as e:
-            print(f"❌ TOC generation failed: {str(e)}")
+            print(f" TOC generation failed: {str(e)}")
             pipeline_results['pipeline_steps']['toc'] = {'status': 'error', 'error': str(e)}
         
         try:
-            # Step 2: Chunk document pages according to TOC
-            print("📄 Step 2: Chunking document content...")
+            # step 2: chunk document content
+            print(" Step 2: Chunking document content...")
             document.processing_message = 'Chunking document content...'
             document.save()
             
@@ -689,15 +689,15 @@ def upload_and_process_pipeline(request):
                 'status': 'success',
                 'chunks_created': chunks_created
             }
-            print(f"✅ Document chunked into {chunks_created} chunks")
+            print(f" Document chunked into {chunks_created} chunks")
             
         except Exception as e:
-            print(f"❌ Chunking failed: {str(e)}")
+            print(f" Chunking failed: {str(e)}")
             pipeline_results['pipeline_steps']['chunking'] = {'status': 'error', 'error': str(e)}
         
         try:
-            # Step 3: Generate embeddings
-            print("🔮 Step 3: Generating embeddings...")
+            # step 3: generate embeddings
+            print(" Step 3: Generating embeddings...")
             document.processing_message = 'Generating embeddings for content chunks...'
             document.save()
             
@@ -710,15 +710,15 @@ def upload_and_process_pipeline(request):
                 'embeddings_generated': embeddings_generated,
                 'database_saves': embedding_result.get('database_saves', 0)
             }
-            print(f"✅ Generated {embeddings_generated} embeddings")
+            print(f" Generated {embeddings_generated} embeddings")
             
         except Exception as e:
-            print(f"❌ Embedding generation failed: {str(e)}")
+            print(f" Embedding generation failed: {str(e)}")
             pipeline_results['pipeline_steps']['embeddings'] = {'status': 'error', 'error': str(e)}
         
         try:
-            # Step 4: Semantic Similarity Processing
-            print("🔗 Step 4: Computing semantic similarities...")
+            # step 4: compute semantic similarities
+            print(" Step 4: Computing semantic similarities...")
             document.processing_message = 'Computing semantic similarities...'
             document.save()
             
@@ -734,10 +734,10 @@ def upload_and_process_pipeline(request):
                 'processed_subtopics': processed_subtopics,
                 'total_similarities': total_similarities
             }
-            print(f"✅ Processed {processed_subtopics} subtopics with {total_similarities} similarities")
+            print(f" Processed {processed_subtopics} subtopics with {total_similarities} similarities")
             
         except Exception as e:
-            print(f"❌ Semantic similarity computation failed: {str(e)}")
+            print(f" Semantic similarity computation failed: {str(e)}")
             pipeline_results['pipeline_steps']['semantic_similarity'] = {'status': 'error', 'error': str(e)}
         
         # Update final document status based on results
@@ -749,9 +749,9 @@ def upload_and_process_pipeline(request):
             document.processing_message = f'Processing failed at steps: {", ".join(failed_steps)}'
             pipeline_results['status'] = 'partial_success'
             pipeline_results['failed_steps'] = failed_steps
-            print(f"⚠️  Pipeline completed with failures: {failed_steps}")
+            print(f"  Pipeline completed with failures: {failed_steps}")
         else:
-            # Verify critical steps completed successfully
+            # verify critical steps completed successfully
             toc_result = pipeline_results['pipeline_steps'].get('toc', {})
             chunking_result = pipeline_results['pipeline_steps'].get('chunking', {})
             
@@ -759,12 +759,12 @@ def upload_and_process_pipeline(request):
                 chunking_result.get('chunks_created', 0) > 0):
                 document.processing_status = 'COMPLETED'
                 document.processing_message = 'Document processing completed successfully'
-                print(f"🎉 Pipeline completed successfully for: {document.title}")
+                print(f" Pipeline completed successfully for: {document.title}")
             else:
                 document.processing_status = 'COMPLETED_WITH_WARNINGS'
                 document.processing_message = 'Processing completed but with potential issues (low TOC entries or chunks)'
                 pipeline_results['status'] = 'completed_with_warnings'
-                print(f"⚠️  Pipeline completed with warnings for: {document.title}")
+                print(f"  Pipeline completed with warnings for: {document.title}")
         
         document.save()
         
@@ -775,15 +775,15 @@ def upload_and_process_pipeline(request):
         return Response(pipeline_results, status=status.HTTP_201_CREATED)
         
     except Exception as e:
-        # Update document status if it was created
+        # update document status if it was created
         error_message = f'Pipeline processing failed: {str(e)}'
-        print(f"💥 Critical pipeline error: {error_message}")
+        print(f" Critical pipeline error: {error_message}")
         
         if 'document' in locals():
             document.processing_status = 'FAILED'
             document.processing_message = error_message
             document.save()
-            print(f"📝 Updated document {document.id} status to FAILED")
+            print(f" Updated document {document.id} status to FAILED")
         
         logger.error(f"Critical error in upload_and_process_pipeline: {str(e)}")
         return Response({

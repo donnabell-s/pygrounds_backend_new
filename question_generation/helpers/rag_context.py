@@ -7,22 +7,22 @@ logger = logging.getLogger(__name__)
 
 
 def get_rag_context_for_subtopic(subtopic, difficulty: str, game_type: str = 'non_coding') -> str:
-    # Get relevant content chunks for question generation
-    # Uses semantic similarity to fetch best matching content based on game type
+    # get relevant content chunks for question generation
+    # uses semantic similarity to fetch best matching content based on game type
     #
-    # Process:
-    # 1. Get semantic subtopic data
-    # 2. Select chunks based on game_type (coding prioritizes code chunks, non_coding prioritizes concept chunks)
-    # 3. Format context for LLM
+    # process:
+    # 1. get semantic subtopic data
+    # 2. select chunks based on game_type (coding prioritizes code chunks, non_coding prioritizes concept chunks)
+    # 3. format context for llm
     try:
         from content_ingestion.models import DocumentChunk
-        from content_ingestion.models import SemanticSubtopic  # Moved to content_ingestion
+        from content_ingestion.models import SemanticSubtopic  # moved to content_ingestion
 
-        # Try to get pre-computed semantic analysis for this subtopic
+        # try to get pre-computed semantic analysis for this subtopic
         try:
             semantic_subtopic = SemanticSubtopic.objects.get(subtopic=subtopic)
         except SemanticSubtopic.DoesNotExist:
-            # Fallback: Generate basic context from subtopic metadata
+            # fallback: generate basic context from subtopic metadata
             return f"""
 Topic: {subtopic.topic.name}
 Subtopic: {subtopic.name}
@@ -33,32 +33,32 @@ Please generate {game_type} questions based on the subtopic name.
 Focus on {game_type}-appropriate content related to {subtopic.name}.
 """
 
-        # Chunk retrieval configuration
+        # chunk retrieval configuration
         config = {
             'top_k': 15,                    # Retrieve at most 15 chunks
             'min_similarity': 0.5,          # 50% minimum similarity threshold
         }
 
-        # Get ranked chunk IDs based on game type
+        # get ranked chunk ids based on game type
         if game_type == 'coding':
-            # For coding questions, prioritize code chunks (CodeBERT rankings)
+            # for coding questions, prioritize code chunks (codebert rankings)
             chunk_ids = semantic_subtopic.get_code_chunk_ids(
                 limit=config['top_k'],
                 min_similarity=config['min_similarity']
             )
-            # If no code chunks found, fallback to concept chunks
+            # if no code chunks found, fallback to concept chunks
             if not chunk_ids:
                 chunk_ids = semantic_subtopic.get_concept_chunk_ids(
                     limit=config['top_k'] // 2,
                     min_similarity=config['min_similarity']
                 )
         else:  # non_coding
-            # For non-coding questions, prioritize concept chunks (MiniLM rankings)
+            # for non-coding questions, prioritize concept chunks (minilm rankings)
             chunk_ids = semantic_subtopic.get_concept_chunk_ids(
                 limit=config['top_k'],
                 min_similarity=config['min_similarity']
             )
-            # If no concept chunks found, fallback to code chunks
+            # if no concept chunks found, fallback to code chunks
             if not chunk_ids:
                 chunk_ids = semantic_subtopic.get_code_chunk_ids(
                     limit=config['top_k'] // 2,
@@ -76,21 +76,21 @@ Please generate {game_type} questions based on the subtopic name.
 Focus on {game_type}-appropriate content related to {subtopic.name}.
 """
 
-        # Fetch actual chunks from database
+        # fetch actual chunks from database
         chunks = DocumentChunk.objects.filter(id__in=chunk_ids).order_by(
             models.Case(
                 *[models.When(id=chunk_id, then=idx) for idx, chunk_id in enumerate(chunk_ids)]
             )
         )
 
-        # Build context from chunks
+        # build context from chunks
         context_parts = []
         chunk_types_found = set()
 
         for chunk in chunks:
             chunk_types_found.add(chunk.chunk_type or 'Unknown')
 
-            # Format chunk with metadata
+            # format chunk with metadata
             chunk_context = f"""
 --- {chunk.chunk_type or 'Content'} ---
 {chunk.text.strip()}
@@ -99,7 +99,7 @@ Document: {chunk.document.title}
 """
             context_parts.append(chunk_context.strip())
 
-        # Create final context with metadata
+        # create final context with metadata
         context = f"""
 Topic: {subtopic.topic.name}
 Subtopic: {subtopic.name}
@@ -113,7 +113,7 @@ LEARNING CONTENT:
         return context.strip()
 
     except Exception as e:
-        print(f"⚠️ Error retrieving RAG context for {subtopic.name}: {str(e)}")
+        print(f"Error retrieving RAG context for {subtopic.name}: {str(e)}")
         return f"""
 Topic: {subtopic.topic.name}
 Subtopic: {subtopic.name}
@@ -125,7 +125,7 @@ Please generate {game_type} questions based on the subtopic name.
 
 
 def get_combined_rag_context(subtopic_combination, difficulty: str, game_type: str = 'non_coding') -> str:
-    # Combine RAG context for multiple subtopics.
+    # combine rag context for multiple subtopics
     try:
         combined_contexts = []
         subtopic_names = []
@@ -134,7 +134,7 @@ def get_combined_rag_context(subtopic_combination, difficulty: str, game_type: s
             subtopic_names.append(subtopic.name)
             context = get_rag_context_for_subtopic(subtopic, difficulty, game_type)
 
-            # Extract just the learning content part
+            # extract just the learning content part
             if "LEARNING CONTENT:" in context:
                 content_part = context.split("LEARNING CONTENT:")[1].strip()
                 combined_contexts.append(f"=== {subtopic.name} ===\n{content_part}")
@@ -162,7 +162,7 @@ SUBTOPIC COMBINATION: {' + '.join(subtopic_names)}
         return combined_context
 
     except Exception as e:
-        print(f"⚠️ Error combining RAG contexts: {str(e)}")
+        print(f"Error combining RAG contexts: {str(e)}")
         return f"""
 Error retrieving combined context: {str(e)}
 Please generate {game_type} questions for: {', '.join([s.name for s in subtopic_combination])}
@@ -171,7 +171,7 @@ Focus on {game_type}-appropriate content.
 
 
 def format_rag_context_for_prompt(rag_context: str, subtopic_names: list, difficulty: str, game_type: str = 'non_coding') -> str:
-    # Format RAG context for prompt consumption.
+    # format rag context for prompt consumption
     if "No semantic analysis available" in rag_context or "No relevant chunks found" in rag_context:
         return f"""
 FALLBACK MODE: No semantic content chunks were found for these subtopics.
@@ -187,27 +187,27 @@ Create {game_type} questions that would be appropriate for learners.
 
 
 def get_batched_rag_contexts(all_combinations, difficulty: str, game_type: str = 'non_coding'):
-    # Batch fetch RAG contexts for multiple subtopic combinations.
+    # batch fetch rag contexts for multiple subtopic combinations
     rag_contexts = {}
 
     try:
         for combination in all_combinations:
-            # Ensure combination is a tuple for dictionary key
+            # ensure combination is a tuple for dictionary key
             combination_key = (
                 tuple(combination) if isinstance(combination, (list, tuple)) else (combination,)
             )
 
             if len(combination) == 1:
-                # Single subtopic
+                # single subtopic
                 context = get_rag_context_for_subtopic(combination[0], difficulty, game_type)
             else:
-                # Multiple subtopics
+                # multiple subtopics
                 context = get_combined_rag_context(combination, difficulty, game_type)
 
             rag_contexts[combination_key] = context
 
     except Exception as e:
-        print(f"⚠️ Error in batch RAG context retrieval: {str(e)}")
-        # Return empty dict if there's an error - individual calls will handle fallbacks
+        print(f"Error in batch RAG context retrieval: {str(e)}")
+        # return empty dict if there's an error; individual calls handle fallbacks
 
     return rag_contexts
