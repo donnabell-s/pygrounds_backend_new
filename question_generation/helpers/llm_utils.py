@@ -1,5 +1,3 @@
-# llm_utils.py
-
 from openai import OpenAI
 import os
 import logging

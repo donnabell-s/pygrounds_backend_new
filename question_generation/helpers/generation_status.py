@@ -1,5 +1,3 @@
-# Real-time generation status tracking for frontend progress monitoring.
-
 import json
 import threading
 import time

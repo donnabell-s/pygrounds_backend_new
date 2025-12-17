@@ -86,7 +86,6 @@ def create_smart_subtopic_combinations(subtopics: List, max_combinations: int = 
     if max_combinations and len(unique_combinations) > max_combinations:
         unique_combinations = unique_combinations[:max_combinations]
 
-    # Log final combination breakdown
     individuals = len([c for c in unique_combinations if len(c) == 1])
     pairs = len([c for c in unique_combinations if len(c) == 2])
 
@@ -98,8 +97,7 @@ def calculate_questions_per_combination(num_subtopics: int,
                                        num_questions_per_subtopic: int,
                                        num_combinations: int,
                                        difficulty: str) -> int:
-    # Each difficulty gets its own budget
-    # Each difficulty gets the full budget independently
+ 
     total_budget_per_difficulty = num_subtopics * num_questions_per_subtopic
 
     # Distribute evenly among all combinations for this difficulty

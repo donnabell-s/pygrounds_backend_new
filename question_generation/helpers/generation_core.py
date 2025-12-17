@@ -1,5 +1,3 @@
-# Core generation helpers
-
 import time
 from concurrent.futures import ThreadPoolExecutor, TimeoutError
 from typing import List, Dict, Any, Tuple, Optional
