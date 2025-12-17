@@ -8,7 +8,7 @@ class WordPlacement:
     word: str
     row: int
     col: int
-    direction: str  # 'across', 'down', 'diagonal'
+    direction: str  
 
 class WordSearchGenerator:
     def __init__(self, size=13):
@@ -55,7 +55,7 @@ class WordSearchGenerator:
                     self.matrix[r][c] = random.choice(string.ascii_uppercase)
 
     def generate(self, words):
-        words.sort(key=lambda w: -len(w))  # place longest first
+        words.sort(key=lambda w: -len(w))  
         for word in words:
             self.place_word(word)
         self.fill_random_letters()

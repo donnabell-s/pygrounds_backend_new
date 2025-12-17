@@ -5,7 +5,7 @@ class WordPlacement:
         self.word = word
         self.row = row
         self.col = col
-        self.direction = direction  # 'across' or 'down'
+        self.direction = direction  
 
 class CrosswordGenerator:
     def __init__(self, size=15):
@@ -23,7 +23,7 @@ class CrosswordGenerator:
                 cell = self.grid[r][c]
                 if cell != ' ' and cell != letter:
                     return False
-                # Optional: block side touching
+
                 if cell == ' ':
                     if r > 0 and self.grid[r - 1][c] != ' ':
                         return False
@@ -74,11 +74,11 @@ class CrosswordGenerator:
                         col = existing.col - j
 
                     if self.fits(word, row, col, direction):
-                        # Score: count how many letters overlap
+
                         score = self.count_intersections(word, row, col, direction)
                         options.append((score, row, col, direction))
 
-        options.sort(reverse=True)  # higher score = more intersecting letters
+        options.sort(reverse=True)  
         return options
 
     def count_intersections(self, word, row, col, direction):
@@ -96,19 +96,19 @@ class CrosswordGenerator:
         word = word.upper()
 
         if not self.placements:
-            # Place first word at center
+
             row = self.size // 2
             col = (self.size - len(word)) // 2
             if self.fits(word, row, col, 'across'):
                 self.place_at(word, row, col, 'across')
                 return True
 
-        # Try intersecting
+
         options = self.find_best_intersections(word)
-        # Only keep intersecting placements (score >= 1)
+
         options = [opt for opt in options if opt[0] >= 1]
 
-        # Sort options by score and proximity to center
+ 
         def distance_to_center(row, col):
             center = self.size // 2
             return abs(row - center) + abs(col - center)
@@ -119,7 +119,6 @@ class CrosswordGenerator:
             self.place_at(word, row, col, direction)
             return True
 
-        # Fallback: try random but bias toward center
         for _ in range(100):
             direction = random.choice(['across', 'down'])
             mid = self.size // 2
@@ -134,7 +133,7 @@ class CrosswordGenerator:
 
 
     def generate(self, words):
-        words.sort(key=lambda w: -len(w))  # longest first
+        words.sort(key=lambda w: -len(w))  
         for word in words:
             self.place_word(word)
         return self.grid, self.placements
