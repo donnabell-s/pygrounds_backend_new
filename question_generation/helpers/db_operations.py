@@ -1,5 +1,3 @@
-# db save + json export helpers
-
 import json
 import os
 from datetime import datetime
@@ -7,12 +5,10 @@ from django.db import transaction
 from typing import List, Dict, Any, Optional, Tuple
 from .question_processing import generate_question_hash, check_question_similarity
 
-# cross-platform file locking
 try:
     import fcntl
     HAS_FCNTL = True
 except ImportError:
-    # windows doesn't have fcntl; use an alternative approach
     import msvcrt
     HAS_FCNTL = False
 

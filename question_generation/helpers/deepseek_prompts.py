@@ -1,6 +1,3 @@
-# Manages prompts for different question types in DeepSeek LLM
-
-
 class DeepSeekPromptManager:
     # Core prompt templates for different game types
 
