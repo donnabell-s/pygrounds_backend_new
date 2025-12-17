@@ -24,10 +24,14 @@ class GeneratedQuestion(models.Model):
 
     # metadata and tracking
     validation_status = models.CharField(
-        max_length=20,
-        choices=[('pending', 'Pending Validation'), ('processing', 'Processing')],
-        default='pending'
-    )
+    max_length=20,
+    choices=[
+        ('pending', 'Pending'),
+        ('processed', 'Processed'),
+    ],
+    default='pending'
+)
+
     
     # timestamp
     created_at = models.DateTimeField(auto_now_add=True)

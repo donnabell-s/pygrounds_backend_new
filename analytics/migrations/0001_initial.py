@@ -11,7 +11,7 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name="UserSubtopicLearningRate",
+            name="ItemIRTParameters",
             fields=[
                 (
                     "id",
@@ -22,13 +22,13 @@ class Migration(migrations.Migration):
                         verbose_name="ID",
                     ),
                 ),
-                ("pT_scale", models.FloatField(default=1.0)),
-                ("count", models.PositiveIntegerField(default=0)),
+                ("a", models.FloatField(default=1.0)),
+                ("b", models.FloatField(default=0.0)),
                 ("updated_at", models.DateTimeField(auto_now=True)),
             ],
         ),
         migrations.CreateModel(
-            name="UserSubtopicMastery",
+            name="QuestionResponse",
             fields=[
                 (
                     "id",
@@ -39,11 +39,15 @@ class Migration(migrations.Migration):
                         verbose_name="ID",
                     ),
                 ),
-                ("mastery_level", models.FloatField(default=0.0)),
+                ("score", models.FloatField(default=0)),
+                ("response_time", models.IntegerField(blank=True, null=True)),
+                ("user_id", models.IntegerField(blank=True, null=True)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
             ],
+            options={"ordering": ["-created_at"],},
         ),
         migrations.CreateModel(
-            name="UserTopicProficiency",
+            name="UserAbility",
             fields=[
                 (
                     "id",
@@ -54,24 +58,8 @@ class Migration(migrations.Migration):
                         verbose_name="ID",
                     ),
                 ),
-                ("proficiency_percent", models.FloatField(default=0.0)),
+                ("theta", models.FloatField(default=0.0)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
             ],
-        ),
-        migrations.CreateModel(
-            name="UserZoneProgress",
-            fields=[
-                (
-                    "id",
-                    models.BigAutoField(
-                        auto_created=True,
-                        primary_key=True,
-                        serialize=False,
-                        verbose_name="ID",
-                    ),
-                ),
-                ("unlocked_at", models.DateTimeField(auto_now_add=True)),
-                ("completion_percent", models.FloatField(default=0.0)),
-            ],
-            options={"ordering": ["zone__order"],},
         ),
     ]

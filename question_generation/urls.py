@@ -1,3 +1,11 @@
+"""
+Question Generation URL Configuration
+
+RESTful API endpoints following clean design principles:
+- Resource-based routing with clear hierarchical structure
+- Consistent naming conventions (kebab-case for URLs, underscore for view functions)
+- Logical grouping of related endpoints
+"""
 from users.jwt_views import EmailTokenObtainPairView
 from django.urls import path
 from .api import recalibrate_question 
@@ -40,6 +48,12 @@ from .views.admin_views import (
 )
 
 from .views.getQuestions import (PreAssessmentQuestionListView)
+
+from question_generation.views.difficulty_ml_views import (
+    ml_bulk_predict_difficulty
+)
+
+
 
 urlpatterns = [
     # ========== QUESTION GENERATION API ==========
@@ -89,8 +103,8 @@ urlpatterns = [
     path('test/stats/', get_generation_stats, name='generation-stats'),
 
      # ========== RECALBIRATE QUESTIONS ==========
-     path('recalibrate-question/<int:question_id>/', recalibrate_question, name='recalibrate_question'),
-     
+     path("ml/check-difficulty/<str:question_type>/", ml_bulk_predict_difficulty),
+
      path('api/token/', EmailTokenObtainPairView.as_view(), name='token_obtain_pair'),
 
 ]

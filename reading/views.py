@@ -54,21 +54,15 @@ class TopicViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class SubtopicViewSet(viewsets.ReadOnlyModelViewSet):
-    """
-    Public endpoint to list subtopics by topic (with reading material count).
-    """
-    queryset = Subtopic.objects.select_related("topic").order_by("topic__id", "order_in_topic")
     serializer_class = SubtopicAdminSerializer
+    pagination_class = None   
 
-    def get_queryset(self):
-        qs = super().get_queryset()
-        topic_param = self.request.query_params.get("topic")  
-        if topic_param:
-            qs = qs.filter(Q(topic__slug=topic_param) | Q(topic__name=topic_param))
-        return (
-            qs.annotate(materials_count=Count("materials"))
-            .order_by("topic__id", "order_in_topic", "name")
-        )
+    queryset = (
+        Subtopic.objects
+        .select_related("topic")
+        .annotate(materials_count=Count("materials"))
+        .order_by("topic__id", "order_in_topic", "name")
+    )
 
 
 
