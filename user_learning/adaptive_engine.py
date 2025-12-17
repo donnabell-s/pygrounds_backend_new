@@ -13,15 +13,12 @@ def clamp(x: float, min_val: float, max_val: float) -> float:
 
 def extract_subtopic_ids(entry: dict) -> List[int]:
 
-    # Direct subtopic_id
     if "subtopic_id" in entry and entry["subtopic_id"]:
         return [int(entry["subtopic_id"])]
     
-    # Direct subtopic_ids list
     if "subtopic_ids" in entry and entry["subtopic_ids"]:
         return [int(sid) for sid in entry["subtopic_ids"]]
-    
-    # subtopics array of dicts
+
     if "subtopics" in entry and isinstance(entry["subtopics"], list):
         ids = []
         for s in entry["subtopics"]:
@@ -30,7 +27,6 @@ def extract_subtopic_ids(entry: dict) -> List[int]:
         if ids:
             return ids
     
-    # mapping.subtopic_ids
     if "mapping" in entry and isinstance(entry["mapping"], dict):
         if "subtopic_ids" in entry["mapping"]:
             return [int(sid) for sid in entry["mapping"]["subtopic_ids"]]
@@ -42,7 +38,6 @@ def aggregate_by_subtopic(results: List[dict]) -> Dict[int, Dict[str, float]]:
 
     agg = {}
     for entry in results:
-        # Compute effective correctness incorporating difficulty, time, lives
         effective = compute_effective_correctness(entry)
         
         subtopic_ids = extract_subtopic_ids(entry)
@@ -56,7 +51,6 @@ def aggregate_by_subtopic(results: List[dict]) -> Dict[int, Dict[str, float]]:
             agg[sid]["attempts"] += 1.0
             agg[sid]["weighted_sum"] += effective
     
-    # Compute weighted accuracy
     for sid, stats in agg.items():
         if stats["attempts"] > 0:
             stats["accuracy"] = stats["weighted_sum"] / stats["attempts"]
@@ -77,29 +71,26 @@ def recalibrate_topic_proficiency(user, results: list) -> dict:
             "touched_topics": [],
         }
     
-    # 1. Load or create UserAbility
     ability, _ = UserAbility.objects.get_or_create(
         user=user,
         defaults={"ability_score": 0.5}
     )
     ability_old = float(ability.ability_score)
     
-    # 2. Aggregate by subtopic
     subtopic_agg = aggregate_by_subtopic(results)
     
-    # Compute overall session accuracy
+    #compute user's performance this session (how accurate, ect)
     total_attempts = sum(entry.get("is_correct") is not None for entry in results)
     total_correct = sum(1 for entry in results if entry.get("is_correct", False))
     session_accuracy = total_correct / total_attempts if total_attempts > 0 else 0.0
     
-    # EMA parameters
-    alpha = 0.45  # subtopic mastery update rate
-    beta = 0.20   # ability update rate
+    alpha = 0.45  #subtopicmastery update rate
+    beta = 0.20   #userability update rate
     
     updated_subtopics = []
     touched_topic_ids = set()
     
-    # 3. Update each touched subtopic
+    #update each used subtopic's mastery
     for subtopic_id, stats in subtopic_agg.items():
         subtopic_obj = Subtopic.objects.filter(id=subtopic_id).first()
         if not subtopic_obj:
@@ -107,7 +98,6 @@ def recalibrate_topic_proficiency(user, results: list) -> dict:
         
         touched_topic_ids.add(subtopic_obj.topic_id)
         
-        # Load or create mastery
         mastery_obj, _ = UserSubtopicMastery.objects.get_or_create(
             user=user,
             subtopic=subtopic_obj,
@@ -117,15 +107,13 @@ def recalibrate_topic_proficiency(user, results: list) -> dict:
         K_old = mastery_obj.mastery_level / 100.0  # convert percent to 0-1
         K_old = clamp(K_old, 0.0, 1.0)
         
-        # Personalized prior (from paper)
         prior = 0.7 * K_old + 0.3 * ability_old
         
-        # EMA update with subtopic accuracy
+        #update ema
         subtopic_accuracy = stats["accuracy"]
         K_new = (1 - alpha) * prior + alpha * subtopic_accuracy
         K_new = clamp(K_new, 0.0, 1.0)
         
-        # Save mastery
         mastery_obj.mastery_level = K_new * 100.0
         mastery_obj.save(update_fields=["mastery_level"])
         
@@ -138,14 +126,14 @@ def recalibrate_topic_proficiency(user, results: list) -> dict:
             "attempts": stats["attempts"],
         })
     
-    # 4. Update global ability
+    #update userability
     ability_new = (1 - beta) * ability_old + beta * session_accuracy
     ability_new = clamp(ability_new, 0.05, 0.95)
     
     ability.ability_score = ability_new
     ability.save(update_fields=["ability_score"])
     
-    # 5. Rollup to topics
+   #update topic
     for topic in Topic.objects.filter(id__in=touched_topic_ids):
         topic_subtopics = Subtopic.objects.filter(topic=topic)
         avg_mastery = (
@@ -159,7 +147,7 @@ def recalibrate_topic_proficiency(user, results: list) -> dict:
             defaults={"proficiency_percent": avg_mastery},
         )
     
-    # 6. Rollup to zones
+    #update zone
     for zone in GameZone.objects.all().order_by("order"):
         zone_topics = Topic.objects.filter(zone=zone)
         avg_proficiency = (

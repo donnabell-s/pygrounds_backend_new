@@ -1,4 +1,3 @@
-# File: <your_game_app>/views.py
 import uuid
 import re
 from django.utils import timezone
@@ -27,27 +26,18 @@ from .serializers import LeaderboardEntrySerializer
 from django.db.models import F, Min, Max, Count, Avg, Sum, Q
 
 
-# -----------------------------------------------------------------------------
-# Helpers
-# -----------------------------------------------------------------------------
-
 def extract_topic_subtopic_ids(question):
-    """
-    Extract topic and subtopic IDs from different question model types.
-    
-    Returns:
-        tuple: (topic_ids, subtopic_ids) as lists
-    """
+
     if hasattr(question, 'topic_ids') and hasattr(question, 'subtopic_ids'):
-        # PreAssessmentQuestion: has topic_ids and subtopic_ids as JSONField arrays
+
         topic_ids = list(question.topic_ids) if question.topic_ids else []
         subtopic_ids = list(question.subtopic_ids) if question.subtopic_ids else []
     elif hasattr(question, 'topic') and hasattr(question, 'subtopic'):
-        # GeneratedQuestion: has topic and subtopic as ForeignKey relationships
+
         topic_ids = [question.topic.id] if question.topic else []
         subtopic_ids = [question.subtopic.id] if question.subtopic else []
     else:
-        # Fallback: try to extract from game_data (legacy)
+ 
         gd = getattr(question, "game_data", {}) or {}
         subtopic_ids = [s.get("id") for s in gd.get("subtopic_combination", []) if "id" in s]
         from content_ingestion.models import Subtopic
@@ -60,10 +50,6 @@ def sanitize_word_for_grid(word: str) -> str:
         return ""
     return re.sub(r'[^A-Za-z]', '', word).upper()
 
-
-# -----------------------------------------------------------------------------
-# Generic Session Views
-# -----------------------------------------------------------------------------
 
 class StartGameSession(APIView):
     permission_classes = [IsAuthenticated]
@@ -103,7 +89,7 @@ class SubmitAnswers(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, session_id):
-        print(f"🎮 SubmitAnswers called for session {session_id}")
+        print(f"SubmitAnswers called for session {session_id}")
         print(f"User: {request.user}")
         print(f"Request data: {request.data}")
         
@@ -220,14 +206,14 @@ class SubmitAnswers(APIView):
             results[0]["time_limit"] = session.time_limit
 
         try:
-            print(f"🚀 Attempting to recalibrate topic proficiency for crossword...")
+            print(f"Attempting to recalibrate topic proficiency for crossword...")
             print(f"User: {request.user}")
             print(f"Results data: {results}")
             recalibrate_topic_proficiency(request.user, results)
-            print("✅ Recalibration completed successfully!")
+            print("Recalibration completed successfully!")
         except Exception as e:
             import traceback
-            print(f"❌ Recalibration error (crossword): {e}")
+            print(f"Recalibration error (crossword): {e}")
             print(f"Error type: {type(e)}")
             print(f"Traceback:")
             traceback.print_exc()
@@ -268,10 +254,6 @@ class GetSessionResponses(APIView):
         )
         return Response(QuestionResponseSerializer(responses, many=True).data)
 
-
-# -----------------------------------------------------------------------------
-# Crossword Game
-# -----------------------------------------------------------------------------
 
 class StartCrosswordGame(APIView):
     permission_classes = [IsAuthenticated]
@@ -359,10 +341,6 @@ class GetCrosswordGrid(APIView):
         })
 
 
-# -----------------------------------------------------------------------------
-# WordSearch Game
-# -----------------------------------------------------------------------------
-
 class StartWordSearchGame(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -446,10 +424,6 @@ class GetWordSearchMatrix(APIView):
             "questions":  LightweightQuestionSerializer(placed_questions, many=True).data
         })
 
-
-# -----------------------------------------------------------------------------
-# Hangman Game (coding)
-# -----------------------------------------------------------------------------
 
 class StartHangmanGame(APIView):
     permission_classes = [IsAuthenticated]
@@ -569,14 +543,14 @@ class SubmitHangmanCode(APIView):
                 results.append(entry)
 
             try:
-                print(f"🚀 Attempting to recalibrate topic proficiency for hangman...")
+                print(f"Attempting to recalibrate topic proficiency for hangman...")
                 print(f"User: {request.user}")
                 print(f"Results data: {results}")
                 recalibrate_topic_proficiency(request.user, results)
-                print("✅ Recalibration completed successfully!")
+                print("Recalibration completed successfully!")
             except Exception as e:
                 import traceback
-                print(f"❌ Recalibration error (hangman): {e}")
+                print(f"Recalibration error (hangman): {e}")
                 print(f"Error type: {type(e)}")
                 print(f"Traceback:")
                 traceback.print_exc()
@@ -591,10 +565,6 @@ class SubmitHangmanCode(APIView):
             **({"traceback": trace} if not passed else {})
         })
 
-
-# -----------------------------------------------------------------------------
-# Debugging Game (coding)
-# -----------------------------------------------------------------------------
 
 class StartDebugGame(APIView):
     permission_classes = [IsAuthenticated]
@@ -715,14 +685,14 @@ class SubmitDebugGame(APIView):
                 results.append(entry)
 
             try:
-                print(f"🚀 Attempting to recalibrate topic proficiency for debugging...")
+                print(f"Attempting to recalibrate topic proficiency for debugging...")
                 print(f"User: {request.user}")
                 print(f"Results data: {results}")
                 recalibrate_topic_proficiency(request.user, results)
-                print("✅ Recalibration completed successfully!")
+                print("Recalibration completed successfully!")
             except Exception as e:
                 import traceback
-                print(f"❌ Recalibration error (debugging): {e}")
+                print(f"Recalibration error (debugging): {e}")
                 print(f"Error type: {type(e)}")
                 print(f"Traceback:")
                 traceback.print_exc()
@@ -737,10 +707,6 @@ class SubmitDebugGame(APIView):
             **({"traceback": traceback_str} if not passed else {})
         })
 
-
-# -----------------------------------------------------------------------------
-# PreAssessment Submission
-# -----------------------------------------------------------------------------
 
 class SubmitPreAssessmentAnswers(APIView):
     permission_classes = [AllowAny]
@@ -772,14 +738,14 @@ class SubmitPreAssessmentAnswers(APIView):
 
         if request.user.is_authenticated:
             try:
-                print(f"🚀 Attempting to recalibrate topic proficiency for wordsearch...")
+                print(f"Attempting to recalibrate topic proficiency for wordsearch...")
                 print(f"User: {request.user}")
                 print(f"Results data: {results}")
                 recalibrate_topic_proficiency(request.user, results)
                 print("✅ Recalibration completed successfully!")
             except Exception as e:
                 import traceback
-                print(f"❌ Recalibration error (wordsearch): {e}")
+                print(f"Recalibration error (wordsearch): {e}")
                 print(f"Error type: {type(e)}")
                 print(f"Traceback:")
                 traceback.print_exc()
@@ -794,15 +760,7 @@ class SubmitPreAssessmentAnswers(APIView):
 
 
 class GameLeaderboardView(APIView):
-    """
-    Returns leaderboard entries for a given game_type.
-
-    Behavior:
-    - Considers completed GameSession rows (status='completed') filtered by game_type.
-    - For each user, picks the session with the highest total_score. If there are multiple
-      sessions with the same score, picks the one with the shortest elapsed time (end_time - start_time).
-    - Returns a list sorted by score desc, time asc.
-    """
+ 
     permission_classes = [AllowAny]
 
     def get(self, request, game_type):

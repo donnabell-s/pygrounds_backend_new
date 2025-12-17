@@ -25,7 +25,7 @@ class AchievementDetailView(generics.RetrieveAPIView):
 
 
 class UnlockedAchievementListView(generics.ListAPIView):
-	"""List unlocked achievements for the requesting user."""
+
 	serializer_class = UserAchievementSerializer
 	permission_classes = [permissions.IsAuthenticated]
 
@@ -35,7 +35,7 @@ class UnlockedAchievementListView(generics.ListAPIView):
 
 
 class UserUnlockedAchievementListView(generics.ListAPIView):
-	"""List unlocked achievements for a specific user id (public read)."""
+
 	serializer_class = UserAchievementSerializer
 	permission_classes = [permissions.AllowAny]
 
@@ -50,11 +50,7 @@ class UserUnlockedAchievementListView(generics.ListAPIView):
 
 
 class AchievementProgressListView(APIView):
-	"""Return all achievements with per-user progress and unlocked flag.
 
-	Query params:
-	  - user_id (optional): id of user to show progress for. If omitted, uses request.user when authenticated; otherwise progress counts are zero.
-	"""
 	permission_classes = [permissions.AllowAny]
 
 	def get(self, request, *args, **kwargs):
@@ -82,11 +78,10 @@ class AchievementProgressListView(APIView):
 					is_unlocked = True
 					unlocked_at = ua.unlocked_at
 
-			# default progress
 			current = 0
 			target = 1
 
-			# zone-based achievements: progress from UserZoneProgress.completion_percent
+
 			if ach.unlocked_zone is not None:
 				target = 100
 				if user:
@@ -96,7 +91,6 @@ class AchievementProgressListView(APIView):
 					else:
 						current = 0
 
-			# game-related achievements
 			elif ach.code == 'game_enthusiast':
 				target = 20
 				if user:
@@ -105,7 +99,7 @@ class AchievementProgressListView(APIView):
 			elif ach.code == 'perfection_seeker':
 				target = 5
 				if user:
-					# count perfect completed sessions
+	
 					perfect = 0
 					sessions = GameSession.objects.filter(user=user, status='completed')
 					for s in sessions:
@@ -128,17 +122,17 @@ class AchievementProgressListView(APIView):
 					current = speed_count
 
 			else:
-				# default: treat as unlocked or not
+
 				current = 1 if is_unlocked else 0
 				target = 1
 
-			# cap current to target for UI cleanliness, but keep raw value to decide unlock
+
 			raw_current = current
 			capped_current = min(raw_current, target)
 
-			# Consider achievement unlocked if UserAchievement exists or raw_current >= target
+	
 			if not is_unlocked and raw_current >= target:
-				# Only persist the unlocked record if the requester is the same user or is staff
+
 				create_allowed = False
 				try:
 					if request.user and request.user.is_authenticated:
@@ -148,11 +142,11 @@ class AchievementProgressListView(APIView):
 					create_allowed = False
 
 				if create_allowed and user:
-					# create a persistent UserAchievement if it does not already exist
+	
 					ua, created = UserAchievement.objects.get_or_create(user=user, achievement=ach)
 					is_unlocked = True
 				else:
-					# mark as unlocked for reporting, but don't persist
+		
 					is_unlocked = True
 
 			results.append({

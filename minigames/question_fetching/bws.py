@@ -48,7 +48,6 @@ def bws_pick_ids_by_eig(
     if count == 0:
         return []
     
-    # Load user ability
     try:
         ability_obj = UserAbility.objects.get(user=user)
         ability_score = float(ability_obj.ability_score)
@@ -56,18 +55,15 @@ def bws_pick_ids_by_eig(
     except UserAbility.DoesNotExist:
         ability_score = 0.5
     
-    # Sample candidate pool (more than needed for better coverage)
     sample_size = min(count, max(take * 10, EVAL_CANDIDATES_PER_BUCKET))
-    # Use true random sampling to avoid DB-order bias
+
     cand_ids = sample_random_by_offsets(qs.only('id'), sample_size)
     
     if not cand_ids:
         return []
     
-    # Fetch question details
     questions = list(GeneratedQuestion.objects.filter(id__in=cand_ids).select_related('subtopic'))
     
-    # Build maps for EIG computation
     question_subtopic_map = {}
     question_difficulty_map = {}
     
@@ -76,24 +72,21 @@ def bws_pick_ids_by_eig(
             continue
         question_subtopic_map[q.id] = q.subtopic_id
         
-        # Normalize difficulty
         est_diff = getattr(q, 'estimated_difficulty', None)
         question_difficulty_map[q.id] = normalize_difficulty_to_01(est_diff)
     
     if not question_subtopic_map:
-        # Fallback to random if no valid candidates
         return random.sample(cand_ids, min(take, len(cand_ids)))
     
-    # Diversity retry: if candidate pool has too few unique subtopics, resample once
+    #if question pool lacks diverse subtopics, resample
     unique_subtopics = len(set(question_subtopic_map.values()))
     min_diversity = min(6, take * 3)
     if unique_subtopics < min_diversity and count > sample_size:
-        # Resample with larger pool (one-time retry)
+
         larger_sample_size = min(count, sample_size * 2)
         cand_ids = sample_random_by_offsets(qs.only('id'), larger_sample_size)
         
         if cand_ids:
-            # Rebuild maps with new candidates
             questions = list(GeneratedQuestion.objects.filter(id__in=cand_ids).select_related('subtopic'))
             question_subtopic_map = {}
             question_difficulty_map = {}
@@ -108,7 +101,6 @@ def bws_pick_ids_by_eig(
             if not question_subtopic_map:
                 return random.sample(cand_ids, min(take, len(cand_ids)))
     
-    # Compute EIG scores
     eig_scores = compute_eig_scores(
         ability_score,
         mastery_by_sub,
@@ -119,11 +111,11 @@ def bws_pick_ids_by_eig(
     if not eig_scores:
         return random.sample(cand_ids, min(take, len(cand_ids)))
     
-    # Apply softmax to get sampling probabilities
+    #apply softmax
     valid_ids = list(eig_scores.keys())
     eig_values = [eig_scores[qid] for qid in valid_ids]
     
-    # Softmax with temperature
+    #softmax with temp
     max_eig = max(eig_values) if eig_values else 0.0
     exp_values = [math.exp((eig - max_eig) / SOFTMAX_TEMPERATURE) for eig in eig_values]
     sum_exp = sum(exp_values)
@@ -133,7 +125,7 @@ def bws_pick_ids_by_eig(
     else:
         probabilities = [e / sum_exp for e in exp_values]
     
-    # Sample questions using weighted probabilities
+    #sample q with weighted probabilities
     selected_ids = []
     picked_subtopics = set()
     remaining_pool = list(zip(valid_ids, probabilities))
@@ -142,21 +134,19 @@ def bws_pick_ids_by_eig(
         if not remaining_pool:
             break
         
-        # Filter by subtopic diversity if enabled
+
         if constrain_subtopics and picked_subtopics:
-            # Try to pick from unpicked subtopics first
             available = [(qid, prob) for qid, prob in remaining_pool 
                         if question_subtopic_map.get(qid) not in picked_subtopics]
             
             if available:
                 pool_to_use = available
             else:
-                # All subtopics picked, allow repeats
                 pool_to_use = remaining_pool
         else:
             pool_to_use = remaining_pool
         
-        # Normalize probabilities for current pool
+        #normalize probability
         pool_ids, pool_probs = zip(*pool_to_use)
         prob_sum = sum(pool_probs)
         if prob_sum > 0:
@@ -164,17 +154,15 @@ def bws_pick_ids_by_eig(
         else:
             normalized_probs = [1.0 / len(pool_probs)] * len(pool_probs)
         
-        # Sample one question
         chosen_id = random.choices(pool_ids, weights=normalized_probs, k=1)[0]
         selected_ids.append(chosen_id)
         
-        # Track picked subtopic
         if constrain_subtopics:
             subtopic_id = question_subtopic_map.get(chosen_id)
             if subtopic_id:
                 picked_subtopics.add(subtopic_id)
         
-        # Remove chosen question from pool
+        #remove q from pool
         remaining_pool = [(qid, prob) for qid, prob in remaining_pool if qid != chosen_id]
     
     return selected_ids
