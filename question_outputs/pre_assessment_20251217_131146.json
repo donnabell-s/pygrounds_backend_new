@@ -1,0 +1,624 @@
+[
+  {
+    "id": 31,
+    "question_text": "You want to display 'Hello, World!' on the screen. Which line of Python code should you write?",
+    "answer_options": [
+      "print(Hello, World!)",
+      "print('Hello, World!')",
+      "display('Hello, World!')",
+      "write 'Hello, World!'"
+    ],
+    "correct_answer": "print('Hello, World!')",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      3
+    ],
+    "subtopic_ids": [
+      13,
+      9
+    ],
+    "order": 0,
+    "created_at": null
+  },
+  {
+    "id": 32,
+    "question_text": "You want to store your age, 25, in the computer's memory. Which line correctly creates a variable named 'age' for this?",
+    "answer_options": [
+      "age = '25'",
+      "age = 25",
+      "25 = age",
+      "create age 25"
+    ],
+    "correct_answer": "age = 25",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      4
+    ],
+    "subtopic_ids": [
+      15,
+      16
+    ],
+    "order": 1,
+    "created_at": null
+  },
+  {
+    "id": 33,
+    "question_text": "You ask a user for their name and want to greet them. Which code snippet correctly asks for input and then prints a greeting?",
+    "answer_options": [
+      "name = input() print('Hello', name)",
+      "name = input('Enter your name: ') print('Hello ' + name)",
+      "print('Hello', input('Enter your name: '))",
+      "input('Enter your name: ') print('Hello')"
+    ],
+    "correct_answer": "name = input('Enter your name: ') print('Hello ' + name)",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      5
+    ],
+    "subtopic_ids": [
+      22,
+      23,
+      24
+    ],
+    "order": 2,
+    "created_at": null
+  },
+  {
+    "id": 34,
+    "question_text": "You have the numbers 10 and 3. In Python, what is the result of 10 // 3?",
+    "answer_options": [
+      "3.333...",
+      "3",
+      "1",
+      "30"
+    ],
+    "correct_answer": "3",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      6
+    ],
+    "subtopic_ids": [
+      29
+    ],
+    "order": 3,
+    "created_at": null
+  },
+  {
+    "id": 35,
+    "question_text": "You want to add a note in your code to remind yourself what a variable does, without affecting the program. Which symbol(s) do you use for a single-line comment?",
+    "answer_options": [
+      "// This is a note",
+      "# This is a note",
+      "/* This is a note */",
+      "-- This is a note"
+    ],
+    "correct_answer": "# This is a note",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      7
+    ],
+    "subtopic_ids": [
+      36
+    ],
+    "order": 4,
+    "created_at": null
+  },
+  {
+    "id": 36,
+    "question_text": "You are checking if a user's score is high enough to pass. If the passing score is 50, which condition correctly checks if 'score' is at least 50?",
+    "answer_options": [
+      "if score > 50:",
+      "if score >= 50:",
+      "if score == 50:",
+      "if score <= 50:"
+    ],
+    "correct_answer": "if score >= 50:",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      8,
+      6
+    ],
+    "subtopic_ids": [
+      43,
+      30
+    ],
+    "order": 5,
+    "created_at": null
+  },
+  {
+    "id": 37,
+    "question_text": "Your program asks for a number, but the user types letters. This causes the program to crash. What is the main purpose of a 'try-except' block?",
+    "answer_options": [
+      "To make the code run faster",
+      "To prevent the program from crashing when an error occurs",
+      "To skip parts of the code you don't like",
+      "To create a new type of error"
+    ],
+    "correct_answer": "To prevent the program from crashing when an error occurs",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      9
+    ],
+    "subtopic_ids": [
+      51,
+      50
+    ],
+    "order": 6,
+    "created_at": null
+  },
+  {
+    "id": 38,
+    "question_text": "You need to print the numbers 1, 2, and 3, each on a new line. Which loop structure is most appropriate?",
+    "answer_options": [
+      "for i in [1, 2, 3]: print(i)",
+      "while True: print(1) print(2) print(3)",
+      "if 1: print(1) if 2: print(2) if 3: print(3)",
+      "loop i from 1 to 3: print(i)"
+    ],
+    "correct_answer": "for i in [1, 2, 3]: print(i)",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      10
+    ],
+    "subtopic_ids": [
+      57,
+      58
+    ],
+    "order": 7,
+    "created_at": null
+  },
+  {
+    "id": 39,
+    "question_text": "You are writing a program to draw a simple 2x2 grid of stars. Which concept involves using one loop inside another?",
+    "answer_options": [
+      "Conditional Statements",
+      "Nested Loops",
+      "String Formatting",
+      "Error Handling"
+    ],
+    "correct_answer": "Nested Loops",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      11
+    ],
+    "subtopic_ids": [
+      64
+    ],
+    "order": 8,
+    "created_at": null
+  },
+  {
+    "id": 40,
+    "question_text": "You have a string 'Python' and want to get just the first three letters 'Pyt'. What is this operation called?",
+    "answer_options": [
+      "Indexing",
+      "Slicing",
+      "Concatenating",
+      "Formatting"
+    ],
+    "correct_answer": "Slicing",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      12
+    ],
+    "subtopic_ids": [
+      71
+    ],
+    "order": 9,
+    "created_at": null
+  },
+  {
+    "id": 41,
+    "question_text": "You need to store a collection of unique student ID numbers where order doesn't matter and you need to check membership quickly. Which data type is best?",
+    "answer_options": [
+      "List",
+      "Tuple",
+      "Set",
+      "Dictionary"
+    ],
+    "correct_answer": "Set",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      14
+    ],
+    "subtopic_ids": [
+      85,
+      90,
+      88
+    ],
+    "order": 10,
+    "created_at": null
+  },
+  {
+    "id": 42,
+    "question_text": "You are writing a piece of code that calculates the area of a rectangle. To make this reusable, you should wrap this logic inside a...",
+    "answer_options": [
+      "Loop",
+      "Variable",
+      "Function",
+      "Comment"
+    ],
+    "correct_answer": "Function",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      15
+    ],
+    "subtopic_ids": [
+      92,
+      93
+    ],
+    "order": 11,
+    "created_at": null
+  },
+  {
+    "id": 43,
+    "question_text": "You want to store a person's first name, last name, and age together in a way that lets you access values by a label like 'first_name'. Which data type should you use?",
+    "answer_options": [
+      "A list like ['John', 'Doe', 30]",
+      "A tuple like ('John', 'Doe', 30)",
+      "A dictionary like {'first_name': 'John', 'last_name': 'Doe', 'age': 30}",
+      "A set like {'John', 'Doe', 30}"
+    ],
+    "correct_answer": "A dictionary like {'first_name': 'John', 'last_name': 'Doe', 'age': 30}",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      16
+    ],
+    "subtopic_ids": [
+      99,
+      104
+    ],
+    "order": 12,
+    "created_at": null
+  },
+  {
+    "id": 44,
+    "question_text": "In your code, you see the line: x = 5. What is the name of the '=' symbol in this context?",
+    "answer_options": [
+      "Comparison operator",
+      "Arithmetic operator",
+      "Assignment operator",
+      "Logical operator"
+    ],
+    "correct_answer": "Assignment operator",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      6
+    ],
+    "subtopic_ids": [
+      32
+    ],
+    "order": 13,
+    "created_at": null
+  },
+  {
+    "id": 45,
+    "question_text": "You want to check if a user's input is either 'yes' or 'YES'. Which logical operator connects two conditions where only one needs to be true?",
+    "answer_options": [
+      "and",
+      "or",
+      "not",
+      "is"
+    ],
+    "correct_answer": "or",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      6,
+      8
+    ],
+    "subtopic_ids": [
+      31,
+      46
+    ],
+    "order": 14,
+    "created_at": null
+  },
+  {
+    "id": 46,
+    "question_text": "You have a list of scores: [85, 92, 78]. You want to add a new score, 95, to the end. Which list method should you use?",
+    "answer_options": [
+      ".add(95)",
+      ".insert(95)",
+      ".append(95)",
+      ".push(95)"
+    ],
+    "correct_answer": ".append(95)",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      13
+    ],
+    "subtopic_ids": [
+      79,
+      78
+    ],
+    "order": 15,
+    "created_at": null
+  },
+  {
+    "id": 47,
+    "question_text": "You are writing a function that might not receive an argument. To give it a default value if none is provided, you use...",
+    "answer_options": [
+      "Variable Scope",
+      "Lambda Functions",
+      "Default Arguments",
+      "Assert Statements"
+    ],
+    "correct_answer": "Default Arguments",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      15
+    ],
+    "subtopic_ids": [
+      95
+    ],
+    "order": 16,
+    "created_at": null
+  },
+  {
+    "id": 48,
+    "question_text": "You need to write a program that keeps asking for a password until the user enters 'secret'. Which loop type is designed for this 'repeat until condition is met' scenario?",
+    "answer_options": [
+      "for loop",
+      "while loop",
+      "nested loop",
+      "infinite loop"
+    ],
+    "correct_answer": "while loop",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      10
+    ],
+    "subtopic_ids": [
+      59,
+      63
+    ],
+    "order": 17,
+    "created_at": null
+  },
+  {
+    "id": 49,
+    "question_text": "You have a string with extra spaces at the end: 'Hello World    '. Which string method would you use to clean it up?",
+    "answer_options": [
+      ".lower()",
+      ".strip()",
+      ".replace()",
+      ".split()"
+    ],
+    "correct_answer": ".strip()",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      12
+    ],
+    "subtopic_ids": [
+      76
+    ],
+    "order": 18,
+    "created_at": null
+  },
+  {
+    "id": 50,
+    "question_text": "You want to combine your first and last name into a full name. If first='Ada' and last='Lovelace', what does first + ' ' + last produce?",
+    "answer_options": [
+      "'AdaLovelace'",
+      "'Ada Lovelace'",
+      "An error",
+      "'Ada 'Lovelace'"
+    ],
+    "correct_answer": "'Ada Lovelace'",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      5
+    ],
+    "subtopic_ids": [
+      24
+    ],
+    "order": 19,
+    "created_at": null
+  },
+  {
+    "id": 51,
+    "question_text": "You see the code: if not is_weekend: go_to_work(). When will go_to_work() be called?",
+    "answer_options": [
+      "When is_weekend is True",
+      "When is_weekend is False",
+      "Always",
+      "Never"
+    ],
+    "correct_answer": "When is_weekend is False",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      6,
+      4
+    ],
+    "subtopic_ids": [
+      31,
+      18
+    ],
+    "order": 20,
+    "created_at": null
+  },
+  {
+    "id": 52,
+    "question_text": "You are processing items in a list but want to skip to the next item if a certain condition is met, without leaving the loop. Which statement should you use?",
+    "answer_options": [
+      "break",
+      "continue",
+      "pass",
+      "return"
+    ],
+    "correct_answer": "continue",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      10
+    ],
+    "subtopic_ids": [
+      60
+    ],
+    "order": 21,
+    "created_at": null
+  },
+  {
+    "id": 53,
+    "question_text": "You have a tuple: colors = ('red', 'green', 'blue'). You try to do colors[0] = 'yellow'. What will happen?",
+    "answer_options": [
+      "It changes the first item to 'yellow'",
+      "It creates a new tuple",
+      "It causes an error because tuples can't be changed",
+      "Nothing happens"
+    ],
+    "correct_answer": "It causes an error because tuples can't be changed",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      13,
+      4
+    ],
+    "subtopic_ids": [
+      81,
+      21
+    ],
+    "order": 22,
+    "created_at": null
+  },
+  {
+    "id": 54,
+    "question_text": "You want to check if the letter 'a' is in the word 'banana'. Which operator is perfect for this?",
+    "answer_options": [
+      "==",
+      "is",
+      "in",
+      "&"
+    ],
+    "correct_answer": "in",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      6
+    ],
+    "subtopic_ids": [
+      34
+    ],
+    "order": 23,
+    "created_at": null
+  },
+  {
+    "id": 55,
+    "question_text": "You are writing code that others will read. To explain what a complex function does, you should write a multi-line description right after its definition called a...",
+    "answer_options": [
+      "Comment",
+      "Print statement",
+      "Docstring",
+      "Variable"
+    ],
+    "correct_answer": "Docstring",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      7
+    ],
+    "subtopic_ids": [
+      37,
+      42
+    ],
+    "order": 24,
+    "created_at": null
+  },
+  {
+    "id": 56,
+    "question_text": "You need to handle two different types of errors separately: one if a file is not found, and another if it can't be read. How can you structure your try-except block?",
+    "answer_options": [
+      "Use one except block for all errors",
+      "Use multiple except blocks for different errors",
+      "Use an if-else statement instead",
+      "Put the try block inside a loop"
+    ],
+    "correct_answer": "Use multiple except blocks for different errors",
+    "estimated_difficulty": "advanced",
+    "topic_ids": [
+      9
+    ],
+    "subtopic_ids": [
+      52
+    ],
+    "order": 25,
+    "created_at": null
+  },
+  {
+    "id": 57,
+    "question_text": "You have two lists: names = ['Alice', 'Bob'] and scores = [95, 87]. You want to pair them together to process. Which function is useful for this?",
+    "answer_options": [
+      "enumerate()",
+      "zip()",
+      "range()",
+      "len()"
+    ],
+    "correct_answer": "zip()",
+    "estimated_difficulty": "advanced",
+    "topic_ids": [
+      10
+    ],
+    "subtopic_ids": [
+      61
+    ],
+    "order": 26,
+    "created_at": null
+  },
+  {
+    "id": 58,
+    "question_text": "You are designing a program's flow. In Python, how does the computer know which lines of code belong inside an 'if' statement or a 'for' loop?",
+    "answer_options": [
+      "Using curly braces { }",
+      "Using parentheses ( )",
+      "Using indentation (spaces or tabs)",
+      "Using keywords like 'begin' and 'end'"
+    ],
+    "correct_answer": "Using indentation (spaces or tabs)",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      7
+    ],
+    "subtopic_ids": [
+      38
+    ],
+    "order": 27,
+    "created_at": null
+  },
+  {
+    "id": 59,
+    "question_text": "You want to quickly create a new list containing the squares of numbers from 0 to 4. Which line uses a 'list comprehension'?",
+    "answer_options": [
+      "squares = list(range(5))",
+      "squares = [0, 1, 4, 9, 16]",
+      "squares = [x**2 for x in range(5)]",
+      "for x in range(5): squares.append(x**2)"
+    ],
+    "correct_answer": "squares = [x**2 for x in range(5)]",
+    "estimated_difficulty": "advanced",
+    "topic_ids": [
+      13
+    ],
+    "subtopic_ids": [
+      80
+    ],
+    "order": 28,
+    "created_at": null
+  },
+  {
+    "id": 60,
+    "question_text": "Imagine you could write a single line of Python code that captures the essence of solving a problem clearly and beautifully. This pursuit of elegant, effective code is the heart of being a Python...",
+    "answer_options": [
+      "Beginner",
+      "Programmer",
+      "Master",
+      "Tester"
+    ],
+    "correct_answer": "Master",
+    "estimated_difficulty": "master",
+    "topic_ids": [
+      18
+    ],
+    "subtopic_ids": [
+      110,
+      109
+    ],
+    "order": 29,
+    "created_at": null
+  }
+]

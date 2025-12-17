@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 @api_view(['POST'])
 def embed_document_chunks(request, document_id):
     # generate embeddings for all document chunks for rag retrieval
-    # concept chunks -> minilm, others -> codebert
+    # concept chunks -> minilm -> codebert
     try:
         from content_ingestion.helpers.embedding import EmbeddingGenerator
         from content_ingestion.models import DocumentChunk, Embedding

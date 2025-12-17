@@ -32,7 +32,7 @@ class ZoneList(generics.ListCreateAPIView):
         return queryset.annotate(
             topic_count=Count('topics'),
             subtopic_count=Count('topics__subtopics')
-        )
+        ).order_by('id')
     
     def create(self, request, *args, **kwargs):
         try:
@@ -173,7 +173,7 @@ class TopicList(generics.ListCreateAPIView):
         zone_id = self.request.query_params.get('zone_id')
         if zone_id:
             queryset = queryset.filter(zone_id=zone_id)
-        return queryset.annotate(subtopic_count=Count('subtopics'))
+        return queryset.annotate(subtopic_count=Count('subtopics')).order_by('id')
     
     def create(self, request, *args, **kwargs):
         try:
@@ -283,7 +283,7 @@ class SubtopicList(generics.ListCreateAPIView):
         topic_id = self.request.query_params.get('topic_id')
         if topic_id:
             queryset = queryset.filter(topic_id=topic_id)
-        return queryset
+        return queryset.order_by('id')
 
     def create(self, request, *args, **kwargs):
         try:

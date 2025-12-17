@@ -26,26 +26,25 @@ from multiprocessing import Pool
 logger = logging.getLogger(__name__)
 
 def _run_document_pipeline_background(document_id, reprocess=False):
-    # Run the document pipeline in a background thread and offload each step to a process.
+    # run the pipeline in a background thread, one step at a time
     try:
         document = UploadedDocument.objects.get(id=document_id)
         
-        # Set processing status
+        # mark as processing
         document.processing_status = 'PROCESSING'
         document.processing_message = 'Starting document processing pipeline...'
         document.save()
         
-        # Determine optimal number of processes (use fewer since each step is sequential)
         cpu_count = psutil.cpu_count(logical=True)
-        max_workers = min(2, max(1, cpu_count - 2))  # Use up to 2 processes for document pipeline
+        max_workers = min(2, max(1, cpu_count - 2))  # up to 2 processes
         
-        # Prepare processing tasks in order
+        # build the step list
         processing_steps = []
         
         if reprocess:
             processing_steps.append((document_id, reprocess, 'cleanup'))
         
-        # Add the main processing steps
+        # main steps
         processing_steps.extend([
             (document_id, reprocess, 'toc'),
             (document_id, reprocess, 'chunking'),
@@ -60,20 +59,18 @@ def _run_document_pipeline_background(document_id, reprocess=False):
         }
         
         try:
-            # Import the worker function from the multiprocessing-safe module
             from content_ingestion.helpers.workers.document_worker import process_document_task
             
-            # Process steps sequentially (since they depend on each other)
+            # steps depend on each other, so run them in order
             for step_data in processing_steps:
                 step_name = step_data[2]
-                
-                # Check if processing was cancelled before each step
+            
                 document.refresh_from_db()
                 if document.processing_status == 'PENDING':
                     logger.info(f"Processing cancelled for document {document_id} before step {step_name}")
-                    return  # Exit early if cancelled
+                    return
                 
-                # Update status message
+                # update the status message for the ui
                 status_messages = {
                     'cleanup': 'Cleaning up previous processing artifacts...',
                     'toc': 'Parsing document structure and generating table of contents...',
@@ -85,14 +82,14 @@ def _run_document_pipeline_background(document_id, reprocess=False):
                 document.processing_message = status_messages.get(step_name, f'Processing {step_name}...')
                 document.save()
                 
-                # Execute single step in process pool
-                with Pool(processes=1) as pool:  # Use single process for sequential steps
+                # run the step in its own process
+                with Pool(processes=1) as pool:  # single process since steps are sequential
                     result = pool.apply(process_document_task, (step_data,))
                 
                 step_result_name, step_result = result
                 pipeline_results['pipeline_steps'][step_result_name] = step_result
                 
-                # Stop if any step fails critically
+                # stop early if a critical step fails
                 if step_result['status'] == 'error' and step_name in ['toc', 'chunking']:
                     logger.error(f"Critical step {step_name} failed for document {document_id}: {step_result['message']}")
                     break
@@ -105,7 +102,7 @@ def _run_document_pipeline_background(document_id, reprocess=False):
                 'error': str(e)
             }
         
-        # Update final status based on pipeline results
+        # set final status
         failed_steps = [step for step, result in pipeline_results['pipeline_steps'].items() 
                        if result.get('status') == 'error']
         
@@ -113,15 +110,15 @@ def _run_document_pipeline_background(document_id, reprocess=False):
             document.processing_status = 'FAILED'
             document.processing_message = f'Processing failed at steps: {", ".join(failed_steps)}'
         else:
-            # Check critical steps completed successfully and produced results
+            # double-check that the critical stuff actually produced output
             toc_result = pipeline_results['pipeline_steps'].get('toc', {})
             chunking_result = pipeline_results['pipeline_steps'].get('chunking', {})
             
-            # Verify TOC was generated successfully
+            # toc must exist
             toc_success = (toc_result.get('status') == 'success' and 
                           toc_result.get('entries_count', 0) > 0)
             
-            # Verify chunks were created successfully  
+            # chunks must exist
             chunking_success = (chunking_result.get('status') == 'success' and 
                               chunking_result.get('chunks_created', 0) > 0)
             
@@ -156,7 +153,7 @@ def _run_document_pipeline_background(document_id, reprocess=False):
 
 @api_view(['POST'])
 def process_document_pipeline(request, document_id):
-    # Start full pipeline in background and return immediately.
+    # kick off the full pipeline and return right away
     try:
         document = get_object_or_404(UploadedDocument, id=document_id)
         
@@ -169,10 +166,10 @@ def process_document_pipeline(request, document_id):
                 'current_message': document.processing_message
             }, status=status.HTTP_400_BAD_REQUEST)
         
-        # Get reprocess flag from request
+        # reprocess flag
         reprocess = request.data.get('reprocess', False)
         
-        # Start background processing with ProcessPool
+        # start background work
         import threading
         thread = threading.Thread(
             target=_run_document_pipeline_background,
@@ -181,7 +178,7 @@ def process_document_pipeline(request, document_id):
         )
         thread.start()
         
-        # Return immediately while processing continues in background
+        # return while it keeps running
         return Response({
             'status': 'success',
             'message': f'Document processing started in background using ProcessPool for "{document.title}"',
@@ -200,7 +197,7 @@ def process_document_pipeline(request, document_id):
 
 @api_view(['POST'])
 def cancel_document_pipeline(request, document_id):
-    # Cancel processing and delete partially created objects.
+    # cancel processing and cleanup partial data
     try:
         document = get_object_or_404(UploadedDocument, id=document_id)
         
@@ -213,10 +210,10 @@ def cancel_document_pipeline(request, document_id):
         
         logger.info(f"Cancelling pipeline for document {document_id}: {document.title}")
         
-        # Clean up any partially created objects
+        # cleanup whatever got created so far
         cleanup_count = _cleanup_document_objects(document)
         
-        # Reset document status
+        # reset status
         document.processing_status = 'PENDING'
         document.processing_message = 'Processing cancelled by user. Ready to restart.'
         document.save()
@@ -240,11 +237,11 @@ def cancel_document_pipeline(request, document_id):
 
 
 def _cleanup_document_objects(document):
-    # Delete chunks/TOC/embeddings created for this document.
+    # delete chunks/toc/embeddings created for this doc
     cleanup_count = 0
     
     try:
-        # Delete document chunks
+        # chunks
         chunks = document.chunks.all()
         chunk_count = chunks.count()
         if chunk_count > 0:
@@ -252,7 +249,7 @@ def _cleanup_document_objects(document):
             cleanup_count += chunk_count
             logger.info(f"Deleted {chunk_count} document chunks")
         
-        # Delete TOC entries
+        # toc entries
         toc_entries = document.toc_entries.all()
         toc_count = toc_entries.count()
         if toc_count > 0:
@@ -260,7 +257,7 @@ def _cleanup_document_objects(document):
             cleanup_count += toc_count
             logger.info(f"Deleted {toc_count} TOC entries")
         
-        # Delete any document-related embeddings
+        # embeddings
         from content_ingestion.models import Embedding
         embeddings = Embedding.objects.filter(document_chunk__document=document)
         embedding_count = embeddings.count()
@@ -269,7 +266,7 @@ def _cleanup_document_objects(document):
             cleanup_count += embedding_count
             logger.info(f"Deleted {embedding_count} embeddings")
         
-        # Clear parsed pages tracking
+        # clear parsed pages
         document.parsed_pages = []
         document.save()
         
@@ -602,16 +599,16 @@ def _get_difficulty_distribution(chunks_data):
 
 @api_view(['POST'])
 def upload_and_process_pipeline(request):
-    # Upload a PDF and run the full pipeline (TOC -> chunk -> embed -> semantic).
+    # upload a pdf and run the full pipeline (toc -> chunk -> embed -> semantic)
     try:
-        # Check if file is provided
+        # need a file
         if 'file' not in request.FILES:
             return Response({
                 'status': 'error',
                 'message': 'No file provided. Please upload a PDF file.'
             }, status=status.HTTP_400_BAD_REQUEST)
         
-        # Import necessary modules
+        # local imports
         from content_ingestion.serializers import DocumentSerializer
         from content_ingestion.helpers.toc_parser import generate_toc_entries_for_document
         from content_ingestion.helpers.page_chunking.toc_chunk_processor import GranularChunkProcessor
@@ -619,11 +616,11 @@ def upload_and_process_pipeline(request):
         from content_ingestion.helpers.semantic_similarity import compute_semantic_similarities_for_document
         import os
         
-        # Prepare document data
+        # build document payload
         uploaded_file = request.FILES['file']
         difficulty = request.data.get('difficulty', 'intermediate')
         
-        # Auto-extract title from filename (remove extension)
+        # default title from filename
         title = os.path.splitext(uploaded_file.name)[0]
         
         document_data = {
@@ -632,7 +629,7 @@ def upload_and_process_pipeline(request):
             'difficulty': difficulty
         }
         
-        # Validate and save uploaded document
+        # validate + save
         serializer = DocumentSerializer(data=document_data)
         if not serializer.is_valid():
             return Response({
@@ -641,7 +638,7 @@ def upload_and_process_pipeline(request):
                 'errors': serializer.errors
             }, status=status.HTTP_400_BAD_REQUEST)
         
-        # Save document and set processing status
+        # save and mark as processing
         document = serializer.save()
         document.processing_status = 'PROCESSING'
         document.processing_message = 'Starting document processing pipeline...'
@@ -649,7 +646,7 @@ def upload_and_process_pipeline(request):
         
         print(f" Starting pipeline processing for document: {document.title}")
         
-        # Initialize pipeline results
+        # track results
         pipeline_results = {
             'document_id': document.id,
             'document_title': document.title,
@@ -659,7 +656,7 @@ def upload_and_process_pipeline(request):
         }
         
         try:
-            # step 1: generate toc
+            # step 1: toc
             print(" Step 1: Generating table of contents...")
             document.processing_message = 'Generating table of contents...'
             document.save()
@@ -677,7 +674,7 @@ def upload_and_process_pipeline(request):
             pipeline_results['pipeline_steps']['toc'] = {'status': 'error', 'error': str(e)}
         
         try:
-            # step 2: chunk document content
+            # step 2: chunking
             print(" Step 2: Chunking document content...")
             document.processing_message = 'Chunking document content...'
             document.save()
@@ -696,7 +693,7 @@ def upload_and_process_pipeline(request):
             pipeline_results['pipeline_steps']['chunking'] = {'status': 'error', 'error': str(e)}
         
         try:
-            # step 3: generate embeddings
+            # step 3: embeddings
             print(" Step 3: Generating embeddings...")
             document.processing_message = 'Generating embeddings for content chunks...'
             document.save()
@@ -717,7 +714,7 @@ def upload_and_process_pipeline(request):
             pipeline_results['pipeline_steps']['embeddings'] = {'status': 'error', 'error': str(e)}
         
         try:
-            # step 4: compute semantic similarities
+            # step 4: semantic similarity
             print(" Step 4: Computing semantic similarities...")
             document.processing_message = 'Computing semantic similarities...'
             document.save()
@@ -740,7 +737,7 @@ def upload_and_process_pipeline(request):
             print(f" Semantic similarity computation failed: {str(e)}")
             pipeline_results['pipeline_steps']['semantic_similarity'] = {'status': 'error', 'error': str(e)}
         
-        # Update final document status based on results
+        # set final status
         failed_steps = [step for step, data in pipeline_results['pipeline_steps'].items() 
                        if data.get('status') == 'error']
         
@@ -751,7 +748,7 @@ def upload_and_process_pipeline(request):
             pipeline_results['failed_steps'] = failed_steps
             print(f"  Pipeline completed with failures: {failed_steps}")
         else:
-            # verify critical steps completed successfully
+            # sanity check critical outputs
             toc_result = pipeline_results['pipeline_steps'].get('toc', {})
             chunking_result = pipeline_results['pipeline_steps'].get('chunking', {})
             
@@ -768,14 +765,14 @@ def upload_and_process_pipeline(request):
         
         document.save()
         
-        # Return appropriate response based on status
+        # return response
         if failed_steps:
             return Response(pipeline_results, status=status.HTTP_207_MULTI_STATUS)
         
         return Response(pipeline_results, status=status.HTTP_201_CREATED)
         
     except Exception as e:
-        # update document status if it was created
+        # update document status if it exists
         error_message = f'Pipeline processing failed: {str(e)}'
         print(f" Critical pipeline error: {error_message}")
         
