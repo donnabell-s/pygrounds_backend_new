@@ -12,7 +12,6 @@ from sklearn.metrics import accuracy_score, classification_report, f1_score
 from sklearn.naive_bayes import ComplementNB
 from sklearn.svm import LinearSVC
 from sklearn.ensemble import RandomForestClassifier
-
 from sklearn.utils.class_weight import compute_sample_weight
 
 from xgboost import XGBClassifier
@@ -20,6 +19,9 @@ from xgboost import XGBClassifier
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
 import nltk
+
+# ✅ NEW: oversampling
+from imblearn.over_sampling import RandomOverSampler
 
 nltk.download("stopwords")
 nltk.download("wordnet")
@@ -45,9 +47,7 @@ def clean_text(text):
 def norm_label(x):
     return str(x).strip().lower()
 
-# =========================
 # LOAD DATASET
-# =========================
 for filename in coding_files:
     path = os.path.join(DATA_DIR, filename)
     with open(path, "r") as f:
@@ -65,12 +65,10 @@ df = pd.DataFrame(dataset)
 df = df[df["text"].str.len() > 0].copy()
 df = df[df["difficulty"].isin(["beginner", "intermediate", "advanced", "master"])].copy()
 
-print("\nCODING LABEL DISTRIBUTION")
+print("\nCODING LABEL DISTRIBUTION (BEFORE)")
 print(df["difficulty"].value_counts(dropna=False))
 
-# =========================
 # ENCODE + VECTORIZER
-# =========================
 label_encoder = LabelEncoder()
 y = label_encoder.fit_transform(df["difficulty"])
 X = df["text"]
@@ -80,8 +78,10 @@ vectorizer = TfidfVectorizer(
     ngram_range=(1, 2),
     sublinear_tf=True
 )
+
 X_vec = vectorizer.fit_transform(X)
 
+# SPLIT (keep stratify for test set fairness)
 X_train, X_test, y_train, y_test = train_test_split(
     X_vec, y,
     test_size=0.2,
@@ -89,12 +89,18 @@ X_train, X_test, y_train, y_test = train_test_split(
     stratify=y
 )
 
-# ✅ compute weights AFTER y_train exists
-train_weights = compute_sample_weight(class_weight="balanced", y=y_train)
+# ✅ OVERSAMPLE TRAINING ONLY (never touch test set)
+ros = RandomOverSampler(random_state=42)
+X_train_res, y_train_res = ros.fit_resample(X_train, y_train)
 
-# =========================
-# MODELS
-# =========================
+print("\nCODING LABEL DISTRIBUTION (TRAIN AFTER OVERSAMPLING)")
+vals, counts = pd.Series(y_train_res).value_counts().sort_index(), pd.Series(y_train_res).value_counts().sort_index()
+for i, cls in enumerate(label_encoder.classes_):
+    print(cls, ":", (y_train_res == i).sum())
+
+# compute weights (still ok even after oversampling)
+train_weights = compute_sample_weight(class_weight="balanced", y=y_train_res)
+
 num_classes = len(label_encoder.classes_)
 
 models = {
@@ -118,15 +124,15 @@ models = {
 
 results = {}
 
-print("\nTRAINING CODING MINIGAME MODELS")
+print("\nTRAINING CODING MINIGAME MODELS (BALANCED TRAIN)")
 for model_name, model in models.items():
     print(f"\nTraining {model_name}...")
 
-    # ✅ try using sample_weight (works for most models)
+    # try sample_weight
     try:
-        model.fit(X_train, y_train, sample_weight=train_weights)
+        model.fit(X_train_res, y_train_res, sample_weight=train_weights)
     except TypeError:
-        model.fit(X_train, y_train)
+        model.fit(X_train_res, y_train_res)
 
     preds = model.predict(X_test)
 
@@ -143,9 +149,7 @@ best_model = models[best_model_name]
 
 print(f"\nBEST CODING MODEL (Macro-F1): {best_model_name}")
 
-OUTPUT_PATH = os.path.join(
-    BASE_DIR, "question_generation", "models", "minigame_coding_model.pkl"
-)
+OUTPUT_PATH = os.path.join(BASE_DIR, "question_generation", "models", "minigame_coding_model.pkl")
 
 joblib.dump({
     "model": best_model,

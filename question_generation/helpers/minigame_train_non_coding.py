@@ -20,6 +20,9 @@ from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
 import nltk
 
+# ✅ NEW: oversampling
+from imblearn.over_sampling import RandomOverSampler
+
 nltk.download("stopwords")
 nltk.download("wordnet")
 
@@ -29,10 +32,7 @@ stop_words = set(stopwords.words("english"))
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 DATA_DIR = os.path.join(BASE_DIR, "question_outputs")
 
-noncoding_files = [
-    f for f in os.listdir(DATA_DIR)
-    if f.startswith("non_coding") and f.endswith(".json")
-]
+noncoding_files = [f for f in os.listdir(DATA_DIR) if f.startswith("non_coding") and f.endswith(".json")]
 
 dataset = []
 
@@ -47,9 +47,7 @@ def clean_text(text):
 def norm_label(x):
     return str(x).strip().lower()
 
-# =========================
 # LOAD DATASET
-# =========================
 for filename in noncoding_files:
     path = os.path.join(DATA_DIR, filename)
     with open(path, "r") as f:
@@ -64,17 +62,12 @@ for filename in noncoding_files:
             continue
 
 df = pd.DataFrame(dataset)
-
-# drop empty + invalid labels
 df = df[df["text"].str.len() > 0].copy()
 df = df[df["difficulty"].isin(["beginner", "intermediate", "advanced", "master"])].copy()
 
-print("\nNON-CODING LABEL DISTRIBUTION")
+print("\nNON-CODING LABEL DISTRIBUTION (BEFORE)")
 print(df["difficulty"].value_counts(dropna=False))
 
-# =========================
-# ENCODE + VECTORIZER
-# =========================
 label_encoder = LabelEncoder()
 y = label_encoder.fit_transform(df["difficulty"])
 X = df["text"]
@@ -84,6 +77,7 @@ vectorizer = TfidfVectorizer(
     ngram_range=(1, 2),
     sublinear_tf=True
 )
+
 X_vec = vectorizer.fit_transform(X)
 
 X_train, X_test, y_train, y_test = train_test_split(
@@ -93,14 +87,18 @@ X_train, X_test, y_train, y_test = train_test_split(
     stratify=y
 )
 
-# ✅ imbalance weights (recommended)
-train_weights = compute_sample_weight(class_weight="balanced", y=y_train)
+# ✅ OVERSAMPLE TRAINING ONLY
+ros = RandomOverSampler(random_state=42)
+X_train_res, y_train_res = ros.fit_resample(X_train, y_train)
+
+print("\nNON-CODING LABEL DISTRIBUTION (TRAIN AFTER OVERSAMPLING)")
+for i, cls in enumerate(label_encoder.classes_):
+    print(cls, ":", (y_train_res == i).sum())
+
+train_weights = compute_sample_weight(class_weight="balanced", y=y_train_res)
 
 num_classes = len(label_encoder.classes_)
 
-# =========================
-# MODELS
-# =========================
 models = {
     "Naive Bayes": ComplementNB(),
     "SVM": LinearSVC(class_weight="balanced", random_state=42),
@@ -123,15 +121,14 @@ models = {
 
 results = {}
 
-print("\nTRAINING NON-CODING MINIGAME MODELS")
+print("\nTRAINING NON-CODING MINIGAME MODELS (BALANCED TRAIN)")
 for model_name, model in models.items():
     print(f"\nTraining {model_name}...")
 
-    # ✅ try sample_weight (works for most)
     try:
-        model.fit(X_train, y_train, sample_weight=train_weights)
+        model.fit(X_train_res, y_train_res, sample_weight=train_weights)
     except TypeError:
-        model.fit(X_train, y_train)
+        model.fit(X_train_res, y_train_res)
 
     preds = model.predict(X_test)
 
@@ -141,7 +138,6 @@ for model_name, model in models.items():
     print(f"Accuracy: {acc:.4f} | Macro-F1: {f1m:.4f}")
     print(classification_report(y_test, preds, target_names=label_encoder.classes_))
 
-    # choose best by macro-f1
     results[model_name] = f1m
 
 best_model_name = max(results, key=results.get)
@@ -149,9 +145,7 @@ best_model = models[best_model_name]
 
 print(f"\nBEST NON-CODING MODEL (Macro-F1): {best_model_name}")
 
-OUTPUT_PATH = os.path.join(
-    BASE_DIR, "question_generation", "models", "minigame_non_coding_model.pkl"
-)
+OUTPUT_PATH = os.path.join(BASE_DIR, "question_generation", "models", "minigame_non_coding_model.pkl")
 
 joblib.dump({
     "model": best_model,
