@@ -620,5 +620,682 @@
     ],
     "order": 29,
     "created_at": null
+  },
+  {
+    "id": 61,
+    "question_text": "You want to display a friendly greeting message on the screen when your program runs. Which Python function should you use?",
+    "answer_options": [
+      "greet()",
+      "show()",
+      "print()",
+      "display()"
+    ],
+    "correct_answer": "print()",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      3,
+      5
+    ],
+    "subtopic_ids": [
+      13,
+      23
+    ],
+    "order": 0,
+    "created_at": null
+  },
+  {
+    "id": 62,
+    "question_text": "You are creating a program to store a person's age. Which of these is the correct way to name a variable for this?",
+    "answer_options": [
+      "1age",
+      "person age",
+      "age",
+      "Age of Person"
+    ],
+    "correct_answer": "age",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      4,
+      7
+    ],
+    "subtopic_ids": [
+      15,
+      39
+    ],
+    "order": 1,
+    "created_at": null
+  },
+  {
+    "id": 63,
+    "question_text": "In Python, what is the main purpose of adding a '#' symbol at the start of a line in your code?",
+    "answer_options": [
+      "To make the computer run the code faster",
+      "To create a title for your program",
+      "To write a note that the computer ignores",
+      "To connect to the internet"
+    ],
+    "correct_answer": "To write a note that the computer ignores",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      3,
+      7
+    ],
+    "subtopic_ids": [
+      11,
+      36
+    ],
+    "order": 2,
+    "created_at": null
+  },
+  {
+    "id": 64,
+    "question_text": "You need to perform a simple calculation: 5 plus 3. Which line of Python code correctly does this and shows the result?",
+    "answer_options": [
+      "result = 5 + 3\nshow(result)",
+      "print(5 + 3)",
+      "calculate 5 add 3",
+      "5 + 3 = result"
+    ],
+    "correct_answer": "print(5 + 3)",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      6,
+      5
+    ],
+    "subtopic_ids": [
+      29,
+      23
+    ],
+    "order": 3,
+    "created_at": null
+  },
+  {
+    "id": 65,
+    "question_text": "A user types '25' when your program asks for their age. By default, what data type is this input?",
+    "answer_options": [
+      "It is a number (integer)",
+      "It is text (a string)",
+      "It is a decimal (float)",
+      "It is a boolean (True/False)"
+    ],
+    "correct_answer": "It is text (a string)",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      5,
+      4
+    ],
+    "subtopic_ids": [
+      22,
+      17,
+      20
+    ],
+    "order": 4,
+    "created_at": null
+  },
+  {
+    "id": 66,
+    "question_text": "You want to check if a variable 'score' is greater than or equal to 50. Which comparison operator should you use?",
+    "answer_options": [
+      "score > 50",
+      "score => 50",
+      "score >= 50",
+      "score != 50"
+    ],
+    "correct_answer": "score >= 50",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      6,
+      8
+    ],
+    "subtopic_ids": [
+      30,
+      46
+    ],
+    "order": 5,
+    "created_at": null
+  },
+  {
+    "id": 67,
+    "question_text": "Your code needs to decide what to do based on the weather. If it's 'sunny', print 'Wear sunglasses'. What is the basic structure for this decision?",
+    "answer_options": [
+      "loop weather == 'sunny': print('Wear sunglasses')",
+      "if weather == 'sunny': print('Wear sunglasses')",
+      "def weather == 'sunny': print('Wear sunglasses')",
+      "when weather == 'sunny' then print('Wear sunglasses')"
+    ],
+    "correct_answer": "if weather == 'sunny': print('Wear sunglasses')",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      8
+    ],
+    "subtopic_ids": [
+      43,
+      46
+    ],
+    "order": 6,
+    "created_at": null
+  },
+  {
+    "id": 68,
+    "question_text": "You have a list of friend names: friends = ['Alex', 'Jamie', 'Taylor']. How do you get the first name from this list?",
+    "answer_options": [
+      "friends.first",
+      "friends(0)",
+      "friends[0]",
+      "friends.get(1)"
+    ],
+    "correct_answer": "friends[0]",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      13
+    ],
+    "subtopic_ids": [
+      80,
+      78
+    ],
+    "order": 7,
+    "created_at": null
+  },
+  {
+    "id": 69,
+    "question_text": "You need to repeat an action, like printing 'Hello' exactly 5 times. Which Python tool is best for this?",
+    "answer_options": [
+      "An if-statement",
+      "A for-loop",
+      "A variable",
+      "A comment"
+    ],
+    "correct_answer": "A for-loop",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      10
+    ],
+    "subtopic_ids": [
+      57,
+      63
+    ],
+    "order": 8,
+    "created_at": null
+  },
+  {
+    "id": 70,
+    "question_text": "You wrote: message = 'Python is fun!'. Which method would you use to make the text all uppercase?",
+    "answer_options": [
+      "message.capitalize()",
+      "message.uppercase()",
+      "message.upper()",
+      "message.bigger()"
+    ],
+    "correct_answer": "message.upper()",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      12
+    ],
+    "subtopic_ids": [
+      72,
+      73
+    ],
+    "order": 9,
+    "created_at": null
+  },
+  {
+    "id": 71,
+    "question_text": "You want to combine your first name and last name into a full name with a space. Which method uses the modern, preferred Python style?",
+    "answer_options": [
+      "full_name = first_name + ' ' + last_name",
+      "full_name = f'{first_name} {last_name}'",
+      "full_name = '{0} {1}'.format(first_name, last_name)",
+      "full_name = first_name & last_name"
+    ],
+    "correct_answer": "full_name = f'{first_name} {last_name}'",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      5,
+      7
+    ],
+    "subtopic_ids": [
+      24,
+      42
+    ],
+    "order": 10,
+    "created_at": null
+  },
+  {
+    "id": 72,
+    "question_text": "What is the key difference between a list like [1, 2, 3] and a tuple like (1, 2, 3) in Python?",
+    "answer_options": [
+      "Tuples can hold more items",
+      "Lists are faster",
+      "Tuples cannot be changed after creation",
+      "Lists use parentheses"
+    ],
+    "correct_answer": "Tuples cannot be changed after creation",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      13,
+      4
+    ],
+    "subtopic_ids": [
+      81,
+      21,
+      84
+    ],
+    "order": 11,
+    "created_at": null
+  },
+  {
+    "id": 73,
+    "question_text": "You are counting votes. Which data structure is ideal for storing unique candidate names to avoid duplicates?",
+    "answer_options": [
+      "A List",
+      "A Dictionary",
+      "A Set",
+      "A Tuple"
+    ],
+    "correct_answer": "A Set",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      14
+    ],
+    "subtopic_ids": [
+      85,
+      88,
+      90
+    ],
+    "order": 12,
+    "created_at": null
+  },
+  {
+    "id": 74,
+    "question_text": "In the code 'x = 10', what is the name of the '=' symbol and what is its action?",
+    "answer_options": [
+      "It's a comparison operator, checking if x equals 10.",
+      "It's an assignment operator, giving the value 10 to x.",
+      "It's a mathematical operator, meaning 'plus-equals'.",
+      "It's a logical operator, meaning 'is the same as'."
+    ],
+    "correct_answer": "It's an assignment operator, giving the value 10 to x.",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      6,
+      4
+    ],
+    "subtopic_ids": [
+      32,
+      15
+    ],
+    "order": 13,
+    "created_at": null
+  },
+  {
+    "id": 75,
+    "question_text": "You want to create a reusable piece of code that greets a person by name. What Python feature do you define?",
+    "answer_options": [
+      "A Loop",
+      "A Variable",
+      "A Function",
+      "A String"
+    ],
+    "correct_answer": "A Function",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      15
+    ],
+    "subtopic_ids": [
+      92,
+      93
+    ],
+    "order": 14,
+    "created_at": null
+  },
+  {
+    "id": 76,
+    "question_text": "You are reading a user's age with input(). To use it in a math problem, you must first convert it. What function do you use?",
+    "answer_options": [
+      "str()",
+      "float()",
+      "int()",
+      "text()"
+    ],
+    "correct_answer": "int()",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      5,
+      4,
+      9
+    ],
+    "subtopic_ids": [
+      25,
+      19,
+      50
+    ],
+    "order": 15,
+    "created_at": null
+  },
+  {
+    "id": 77,
+    "question_text": "You need to store a collection of items where each item has a unique label, like 'username' and 'score'. What is the best Python data type?",
+    "answer_options": [
+      "A List",
+      "A Set",
+      "A Dictionary",
+      "A Tuple"
+    ],
+    "correct_answer": "A Dictionary",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      16
+    ],
+    "subtopic_ids": [
+      99,
+      104
+    ],
+    "order": 16,
+    "created_at": null
+  },
+  {
+    "id": 78,
+    "question_text": "What does the 'elif' keyword do in an if-statement?",
+    "answer_options": [
+      "It ends the if-statement.",
+      "It means 'else if', checking another condition if the first was false.",
+      "It makes the code loop back.",
+      "It is a shortcut for printing."
+    ],
+    "correct_answer": "It means 'else if', checking another condition if the first was false.",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      8
+    ],
+    "subtopic_ids": [
+      44,
+      45
+    ],
+    "order": 17,
+    "created_at": null
+  },
+  {
+    "id": 79,
+    "question_text": "You see the code: while True: print('Looping'). What is a major concern with this code?",
+    "answer_options": [
+      "It uses the wrong keyword.",
+      "It will print only once.",
+      "It might create an infinite loop that never stops.",
+      "The print statement is formatted wrong."
+    ],
+    "correct_answer": "It might create an infinite loop that never stops.",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      10
+    ],
+    "subtopic_ids": [
+      59,
+      62
+    ],
+    "order": 18,
+    "created_at": null
+  },
+  {
+    "id": 80,
+    "question_text": "You want to handle a potential error, like dividing by zero, so your program doesn't crash. What Python structure do you use?",
+    "answer_options": [
+      "An if-else check",
+      "A try-except block",
+      "A for-loop",
+      "A function definition"
+    ],
+    "correct_answer": "A try-except block",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      9
+    ],
+    "subtopic_ids": [
+      51,
+      50
+    ],
+    "order": 19,
+    "created_at": null
+  },
+  {
+    "id": 81,
+    "question_text": "Which of these best describes the purpose of proper indentation (the spaces at the start of lines) in Python?",
+    "answer_options": [
+      "It makes the code look pretty but doesn't affect how it runs.",
+      "It is required to show which lines of code belong inside a loop or if-statement.",
+      "It is only needed for very long programs.",
+      "It tells the computer which comments to read."
+    ],
+    "correct_answer": "It is required to show which lines of code belong inside a loop or if-statement.",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      7
+    ],
+    "subtopic_ids": [
+      38,
+      40
+    ],
+    "order": 20,
+    "created_at": null
+  },
+  {
+    "id": 82,
+    "question_text": "You have a string 'Hello\\nWorld'. What will the '\\n' do when you print it?",
+    "answer_options": [
+      "Print the literal characters '\\n'",
+      "Create a new line between Hello and World",
+      "Make the text bold",
+      "Cause an error"
+    ],
+    "correct_answer": "Create a new line between Hello and World",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      5,
+      12
+    ],
+    "subtopic_ids": [
+      26,
+      77
+    ],
+    "order": 21,
+    "created_at": null
+  },
+  {
+    "id": 83,
+    "question_text": "The expression 'apple' in ['banana', 'apple', 'orange'] will evaluate to what?",
+    "answer_options": [
+      "True",
+      "False",
+      "It will cause an error.",
+      "'apple'"
+    ],
+    "correct_answer": "True",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      6
+    ],
+    "subtopic_ids": [
+      34,
+      31
+    ],
+    "order": 22,
+    "created_at": null
+  },
+  {
+    "id": 84,
+    "question_text": "You want to add a new item 'grape' to the end of a list called 'fruits'. Which method do you use?",
+    "answer_options": [
+      "fruits.add('grape')",
+      "fruits.insert('grape')",
+      "fruits.append('grape')",
+      "fruits.end('grape')"
+    ],
+    "correct_answer": "fruits.append('grape')",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      13
+    ],
+    "subtopic_ids": [
+      79,
+      78
+    ],
+    "order": 23,
+    "created_at": null
+  },
+  {
+    "id": 85,
+    "question_text": "What is the primary goal of writing 'self-documenting code'?",
+    "answer_options": [
+      "To write code so fast that documentation isn't needed.",
+      "To use variable and function names that are so clear they reduce the need for extra comments.",
+      "To write all documentation before any code.",
+      "To use only single-letter variable names for speed."
+    ],
+    "correct_answer": "To use variable and function names that are so clear they reduce the need for extra comments.",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      7
+    ],
+    "subtopic_ids": [
+      42,
+      39,
+      41
+    ],
+    "order": 24,
+    "created_at": null
+  },
+  {
+    "id": 86,
+    "question_text": "In the calculation 2 + 3 * 4, what result does Python give, and why?",
+    "answer_options": [
+      "20, because it calculates from left to right.",
+      "14, because multiplication (*) happens before addition (+).",
+      "24, because it calculates 2+3 first then multiplies.",
+      "An error, because you need parentheses."
+    ],
+    "correct_answer": "14, because multiplication (*) happens before addition (+).",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      6
+    ],
+    "subtopic_ids": [
+      33,
+      29
+    ],
+    "order": 25,
+    "created_at": null
+  },
+  {
+    "id": 87,
+    "question_text": "You need to process each character in a string 'hello'. Which loop structure is most direct?",
+    "answer_options": [
+      "for i in range(len('hello')):",
+      "for char in 'hello':",
+      "while char in 'hello':",
+      "if char in 'hello':"
+    ],
+    "correct_answer": "for char in 'hello':",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      10
+    ],
+    "subtopic_ids": [
+      58,
+      57
+    ],
+    "order": 26,
+    "created_at": null
+  },
+  {
+    "id": 88,
+    "question_text": "You want to create a simple function that always returns the number 5, no matter what. How do you write the return statement?",
+    "answer_options": [
+      "return 5",
+      "output 5",
+      "result = 5",
+      "give 5"
+    ],
+    "correct_answer": "return 5",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      15
+    ],
+    "subtopic_ids": [
+      93,
+      92
+    ],
+    "order": 27,
+    "created_at": null
+  },
+  {
+    "id": 89,
+    "question_text": "What does the 'break' statement do inside a loop?",
+    "answer_options": [
+      "It pauses the loop for a moment.",
+      "It skips the rest of the current loop iteration and continues to the next.",
+      "It stops the entire loop immediately.",
+      "It creates a new loop."
+    ],
+    "correct_answer": "It stops the entire loop immediately.",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      10
+    ],
+    "subtopic_ids": [
+      60,
+      62
+    ],
+    "order": 28,
+    "created_at": null
+  },
+  {
+    "id": 90,
+    "question_text": "Imagine you are writing a program that simulates a simple card game. You need to store a fixed set of possible suits ('Hearts', 'Diamonds', 'Clubs', 'Spades') that should never change during the game. Which data structure is most appropriate and why?",
+    "answer_options": [
+      "A list, because you can easily add new suits later.",
+      "A tuple, because it is immutable and protects the fixed data.",
+      "A dictionary, to assign a number to each suit.",
+      "A set, to ensure there are no duplicate suits (even though there aren't any)."
+    ],
+    "correct_answer": "A tuple, because it is immutable and protects the fixed data.",
+    "estimated_difficulty": "advanced",
+    "topic_ids": [
+      13,
+      4,
+      7
+    ],
+    "subtopic_ids": [
+      81,
+      21,
+      84,
+      40
+    ],
+    "order": 29,
+    "created_at": null
+  },
+  {
+    "id": 91,
+    "question_text": "You are designing a function to calculate the area of a rectangle. To make it robust, you want to ensure the width and height are positive numbers before calculating. If they are not, the function should raise a clear, custom error message. Which combination of Python features best achieves this?",
+    "answer_options": [
+      "Use a try-except block to catch any math error and print a message.",
+      "Use an if-statement to check the values, and if invalid, use the 'raise' keyword with a custom exception.",
+      "Use a while-loop to keep asking the user until they enter valid numbers.",
+      "Use the 'assert' statement only during testing, but remove it for the final program."
+    ],
+    "correct_answer": "Use an if-statement to check the values, and if invalid, use the 'raise' keyword with a custom exception.",
+    "estimated_difficulty": "master",
+    "topic_ids": [
+      9,
+      8,
+      15
+    ],
+    "subtopic_ids": [
+      54,
+      46,
+      56,
+      96,
+      92
+    ],
+    "order": 30,
+    "created_at": null
   }
 ]

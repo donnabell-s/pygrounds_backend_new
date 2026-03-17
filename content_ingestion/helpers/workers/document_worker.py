@@ -31,8 +31,10 @@ def process_document_task(task_data):
 
         if step == 'cleanup' and reprocess:
             try:
-                document.toc_entry_set.all().delete()
-                document.documentchunk_set.all().delete()
+                # TOCEntry has no related_name → Django auto-generates tocentry_set
+                document.tocentry_set.all().delete()
+                # DocumentChunk has related_name='chunks'
+                document.chunks.all().delete()
 
                 return ('cleanup', {
                     'status': 'success',

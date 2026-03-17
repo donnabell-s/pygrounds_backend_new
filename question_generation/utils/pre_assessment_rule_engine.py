@@ -49,7 +49,7 @@ INTERMEDIATE_KEYWORDS = [
     r"\blist\b",
     r"\brange\b",
     r"\bfor\b",
-    r"\bloop\b",
+    r"\blo=op\b",
 ]
 
 ADVANCED_KEYWORDS = [
