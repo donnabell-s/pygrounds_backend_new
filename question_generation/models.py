@@ -31,6 +31,7 @@ class GeneratedQuestion(models.Model):
     ],
     default='pending'
 )
+    flagged = models.BooleanField(default=False, help_text="Flag question for review by users during minigames")
 
     
     # timestamp

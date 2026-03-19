@@ -883,3 +883,31 @@ def get_all_master_questions(request):
     except Exception as e:
         logger.error(f"Failed to retrieve master questions: {str(e)}")
         return Response({'status': 'error', 'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['POST'])
+def toggle_question_flag(request, question_id):
+    """
+    Toggle the flagged status of a question.
+    Automatically flips the boolean value without requiring frontend to specify.
+    """
+    try:
+        question = get_object_or_404(GeneratedQuestion, id=question_id)
+        
+        # Toggle the flagged field
+        question.flagged = not question.flagged
+        question.save()
+        
+        return Response({
+            'status': 'success',
+            'message': f"Question {'flagged' if question.flagged else 'unflagged'} successfully",
+            'question_id': question.id,
+            'flagged': question.flagged
+        }, status=status.HTTP_200_OK)
+        
+    except Exception as e:
+        logger.error(f"Failed to toggle flag for question {question_id}: {str(e)}")
+        return Response({
+            'status': 'error',
+            'message': str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
