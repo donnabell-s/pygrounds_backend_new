@@ -299,20 +299,24 @@ def get_questions_by_filters(request):
         questions_data = []
         for question in questions:
             questions_data.append({
-                'id': question.id,
-                'question_text': question.question_text,
-                'correct_answer': question.correct_answer,
-                'estimated_difficulty': question.estimated_difficulty,
-                'game_type': question.game_type,
-                'validation_status': question.validation_status,
-                'game_data': question.game_data,  # complete game data including buggy_code, etc.
-                'subtopic': {
-                    'id': question.subtopic.id,
-                    'name': question.subtopic.name,
-                    'topic_name': question.topic.name,
-                    'zone_name': question.topic.zone.name
-                },
-            })
+    'id': question.id,
+    'question_text': question.question_text,
+    'flagged': question.flagged,
+    'flag_reason': question.flag_reason,
+    'flag_notes': question.flag_notes,
+    'flagged_by': question.flagged_by,
+    'flag_created_at': question.flag_created_at.isoformat() if question.flag_created_at else None,
+    'game_type': question.game_type,
+    'estimated_difficulty': question.estimated_difficulty,
+    'correct_answer': question.correct_answer,      # ← ADD
+    'answer_options': question.answer_options,       # ← ADD
+    'game_data': clean_game_data_for_frontend(question.game_data),  # ← ADD
+    'subtopic': {
+        'id': question.subtopic.id,
+        'name': question.subtopic.name,
+        'topic_name': question.topic.name
+    }
+})
 
         return Response({
             'status': 'success',
@@ -889,25 +893,290 @@ def get_all_master_questions(request):
 def toggle_question_flag(request, question_id):
     """
     Toggle the flagged status of a question.
-    Automatically flips the boolean value without requiring frontend to specify.
+    Can optionally include reason and notes in request body:
+    {
+        "reason": "Question has incorrect answer",
+        "note": "The correct answer should be B, not C"
+    }
+    
+    Note: For multi-question games (word search, crossword), this flags the entire game.
     """
     try:
-        question = get_object_or_404(GeneratedQuestion, id=question_id)
+        try:
+            question = GeneratedQuestion.objects.get(id=question_id)
+        except GeneratedQuestion.DoesNotExist:
+            # Question ID doesn't exist - might be part of a multi-question game
+            # Try to find if this is a game ID or needs special handling
+            return Response({
+                'status': 'error',
+                'message': f'Question with ID {question_id} not found. For multi-question games (word search, crossword), please use the game ID instead.',
+                'type': 'QUESTION_NOT_FOUND'
+            }, status=status.HTTP_404_NOT_FOUND)
         
         # Toggle the flagged field
         question.flagged = not question.flagged
+        
+        # If flagging (not unflagging), store reason and notes
+        if question.flagged:
+            reason = request.data.get('reason', '') if isinstance(request.data, dict) else ''
+            note = request.data.get('note', '') if isinstance(request.data, dict) else ''
+            flagged_by = request.data.get('flagged_by') if isinstance(request.data, dict) else None
+            
+            question.flag_reason = reason if reason else None
+            question.flag_notes = note if note else None
+            question.flagged_by = flagged_by or getattr(request.user, 'username', 'anonymous')
+            question.flag_created_at = timezone.now()
+        else:
+            # Clear flag-related fields when unflagging
+            question.flag_reason = None
+            question.flag_notes = None
+            question.flagged_by = None
+            question.flag_created_at = None
+        
         question.save()
         
         return Response({
             'status': 'success',
             'message': f"Question {'flagged' if question.flagged else 'unflagged'} successfully",
             'question_id': question.id,
-            'flagged': question.flagged
+            'flagged': question.flagged,
+            'flag_reason': question.flag_reason,
+            'flag_notes': question.flag_notes,
+            'flagged_by': question.flagged_by,
+            'flag_created_at': question.flag_created_at.isoformat() if question.flag_created_at else None
         }, status=status.HTTP_200_OK)
         
     except Exception as e:
         logger.error(f"Failed to toggle flag for question {question_id}: {str(e)}")
         return Response({
             'status': 'error',
+            'message': f'Internal server error: {str(e)}'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
+def get_flagged_questions(request):
+    # get all flagged questions with pagination and optional filters.
+    # query params:
+    #     - page: page number (default: 1)
+    #     - page_size: items per page (default: 10)
+    #     - reason: filter by flag reason
+    #     - game_type: filter by game type (coding/non_coding)
+    try:
+        # pagination parameters
+        page = int(request.query_params.get('page', 1))
+        page_size = int(request.query_params.get('page_size', 10))
+        
+        # start with flagged questions
+        questions_query = GeneratedQuestion.objects.filter(flagged=True)
+        
+        # optional filters
+        reason = request.query_params.get('reason')
+        if reason:
+            questions_query = questions_query.filter(flag_reason__icontains=reason)
+        
+        game_type = request.query_params.get('game_type')
+        if game_type:
+            questions_query = questions_query.filter(game_type=game_type)
+        
+        # order by most recently flagged
+        questions_query = questions_query.order_by('-flag_created_at')
+        
+        # get total count
+        total_count = questions_query.count()
+        
+        # pagination
+        offset = (page - 1) * page_size
+        questions = questions_query[offset:offset + page_size]
+        
+        # prepare response data
+        questions_data = []
+        for question in questions:
+            questions_data.append({
+                'id': question.id,
+                'question_text': question.question_text,
+                'flagged': question.flagged,
+                'flag_reason': question.flag_reason,
+                'flag_notes': question.flag_notes,
+                'flagged_by': question.flagged_by,
+                'flag_created_at': question.flag_created_at.isoformat() if question.flag_created_at else None,
+                'game_type': question.game_type,
+                'estimated_difficulty': question.estimated_difficulty,
+                'subtopic': {
+                    'id': question.subtopic.id,
+                    'name': question.subtopic.name,
+                    'topic_name': question.topic.name
+                }
+            })
+        
+        # calculate pagination info
+        has_more = offset + page_size < total_count
+        next_page = page + 1 if has_more else None
+        previous_page = page - 1 if page > 1 else None
+        
+        return Response({
+            'status': 'success',
+            'count': total_count,
+            'next': f"?page={next_page}&page_size={page_size}" if next_page else None,
+            'previous': f"?page={previous_page}&page_size={page_size}" if previous_page else None,
+            'results': questions_data
+        })
+        
+    except ValueError as e:
+        return Response({
+            'status': 'error', 
+            'message': 'Invalid page or page_size parameter'
+        }, status=status.HTTP_400_BAD_REQUEST)
+    except Exception as e:
+        logger.error(f"Failed to retrieve flagged questions: {str(e)}")
+        return Response({
+            'status': 'error', 
+            'message': str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['POST'])
+def regenerate_flagged_question(request, question_id):
+    """
+    Regenerate a flagged question using an LLM prompt.
+    This creates a new question based on the admin-provided instructions.
+    
+    request body:
+    {
+        "llm_prompt": "Please regenerate this question with these improvements...",
+        "game_type": "coding" or "non_coding"  (optional - inferred from original)
+    }
+    """
+    try:
+        # Get the original flagged question
+        try:
+            original_question = GeneratedQuestion.objects.get(id=question_id)
+        except GeneratedQuestion.DoesNotExist:
+            return Response({
+                'status': 'error',
+                'message': f'Question with ID {question_id} not found'
+            }, status=status.HTTP_404_NOT_FOUND)
+        
+        # Get the LLM prompt from request
+        llm_prompt = request.data.get('llm_prompt', '') if isinstance(request.data, dict) else ''
+        if not llm_prompt or not llm_prompt.strip():
+            return Response({
+                'status': 'error',
+                'message': 'llm_prompt is required'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Store the regeneration request/context in game_data
+        regen_context = {
+            'flag_reason': original_question.flag_reason,
+            'flag_notes': original_question.flag_notes,
+            'llm_regeneration_prompt': llm_prompt,
+            'regenerated_at': timezone.now().isoformat(),
+            'regenerated_by': getattr(request.user, 'username', 'system')
+        }
+        
+        # Update the original question directly
+        # The actual new question content will be generated and updated by a separate process
+        game_data = original_question.game_data or {}
+        game_data['_regeneration_context'] = regen_context
+        original_question.game_data = game_data
+        original_question.validation_status = 'pending_regeneration'
+        
+        # Unflag the original question
+        original_question.flagged = False
+        original_question.flag_reason = None
+        original_question.flag_notes = None
+        original_question.flagged_by = None
+        original_question.flag_created_at = None
+        original_question.save()
+        
+        return Response({
+            'status': 'success',
+            'message': 'Question regeneration queued successfully',
+            'question_id': question_id,
+            'regenerated_question_id': question_id, # Sent back so frontend can still query it if needed
+            'regeneration_context': regen_context
+        }, status=status.HTTP_200_OK)
+        
+    except Exception as e:
+        logger.error(f"Failed to regenerate question {question_id}: {str(e)}")
+        return Response({
+            'status': 'error',
+            'message': f'Internal server error: {str(e)}'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    # get all flagged questions with pagination and optional filters.
+    # query params:
+    #     - page: page number (default: 1)
+    #     - page_size: items per page (default: 10)
+    #     - reason: filter by flag reason
+    #     - game_type: filter by game type (coding/non_coding)
+    try:
+        # pagination parameters
+        page = int(request.query_params.get('page', 1))
+        page_size = int(request.query_params.get('page_size', 10))
+        
+        # start with flagged questions
+        questions_query = GeneratedQuestion.objects.filter(flagged=True)
+        
+        # optional filters
+        reason = request.query_params.get('reason')
+        if reason:
+            questions_query = questions_query.filter(flag_reason__icontains=reason)
+        
+        game_type = request.query_params.get('game_type')
+        if game_type:
+            questions_query = questions_query.filter(game_type=game_type)
+        
+        # order by most recently flagged
+        questions_query = questions_query.order_by('-flag_created_at')
+        
+        # get total count
+        total_count = questions_query.count()
+        
+        # pagination
+        offset = (page - 1) * page_size
+        questions = questions_query[offset:offset + page_size]
+        
+        # prepare response data
+        questions_data = []
+        for question in questions:
+            questions_data.append({
+                'id': question.id,
+                'question_text': question.question_text,
+                'flagged': question.flagged,
+                'flag_reason': question.flag_reason,
+                'flag_notes': question.flag_notes,
+                'flagged_by': question.flagged_by,
+                'flag_created_at': question.flag_created_at.isoformat() if question.flag_created_at else None,
+                'game_type': question.game_type,
+                'estimated_difficulty': question.estimated_difficulty,
+                'subtopic': {
+                    'id': question.subtopic.id,
+                    'name': question.subtopic.name,
+                    'topic_name': question.topic.name
+                }
+            })
+        
+        # calculate pagination info
+        has_more = offset + page_size < total_count
+        next_page = page + 1 if has_more else None
+        previous_page = page - 1 if page > 1 else None
+        
+        return Response({
+            'status': 'success',
+            'count': total_count,
+            'next': f"?page={next_page}&page_size={page_size}" if next_page else None,
+            'previous': f"?page={previous_page}&page_size={page_size}" if previous_page else None,
+            'results': questions_data
+        })
+        
+    except ValueError as e:
+        return Response({
+            'status': 'error', 
+            'message': 'Invalid page or page_size parameter'
+        }, status=status.HTTP_400_BAD_REQUEST)
+    except Exception as e:
+        logger.error(f"Failed to retrieve flagged questions: {str(e)}")
+        return Response({
+            'status': 'error', 
             'message': str(e)
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

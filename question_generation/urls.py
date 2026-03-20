@@ -16,6 +16,8 @@ from .views.questionManagement import (
     get_question_by_id,
     get_all_questions,
     toggle_question_flag,
+    get_flagged_questions,
+    regenerate_flagged_question,
 )
 
 from .views.question_generators import (
@@ -82,6 +84,8 @@ urlpatterns = [
     path('preassessment/', PreAssessmentQuestionListView.as_view(), name='preassessment-questions'),
     path('question/<int:question_id>/', get_question_by_id, name='get-question-by-id'),
     path('question/<int:question_id>/toggle-flag/', toggle_question_flag, name='toggle-question-flag'),
+    path('question/<int:question_id>/regenerate/', regenerate_flagged_question, name='regenerate-flagged-question'),
+    path('question/flagged/', get_flagged_questions, name='get-flagged-questions'),
     path('subtopic/<int:subtopic_id>/', get_subtopic_questions, name='get-subtopic-questions'),
     path('topic/<int:topic_id>/summary/', get_topic_questions_summary, name='get-topic-summary'),
     path('all/', get_all_questions, name='get-all-questions'),
