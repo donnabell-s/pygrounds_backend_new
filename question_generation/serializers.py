@@ -41,7 +41,7 @@ class GeneratedQuestionSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'topic', 'subtopic', 'topic_name', 'subtopic_name', 'zone_name',
             'question_text', 'correct_answer', 'estimated_difficulty', 'game_type',
-            'game_data', 'validation_status', 'created_at'
+            'game_data', 'validation_status', 'flagged', 'created_at'
         ]
         read_only_fields = ['id', 'created_at']
     
