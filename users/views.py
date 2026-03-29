@@ -12,9 +12,10 @@ from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
-class UserProfileView(generics.RetrieveAPIView):
+class UserProfileView(generics.RetrieveUpdateAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = UserSerializer
+    http_method_names = ['get', 'patch']
 
     def get_object(self):
         return self.request.user
