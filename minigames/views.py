@@ -9,7 +9,9 @@ from rest_framework.views import APIView
 
 from question_generation.models import PreAssessmentQuestion
 from user_learning.adaptive_engine import recalibrate_topic_proficiency
-from analytics.models import QuestionResponse as AnalyticsResponse
+from user_learning.clustering import assign_learner_cluster, get_cluster_name
+from user_learning.models import UserAbility
+from analytics.event_logger import log_question_event
 
 
 from .game_logic.crossword import CrosswordGenerator
@@ -20,7 +22,8 @@ from .models import (
     GameQuestion,
     QuestionResponse,
     WordSearchData,
-    CrosswordData
+    CrosswordData,
+    PreAssessmentResponse,
 )
 from .serializers import GameSessionSerializer, QuestionResponseSerializer, LightweightQuestionSerializer
 from .question_fetching import fetch_questions_for_game
@@ -170,17 +173,12 @@ class SubmitAnswers(APIView):
             if ok:
                 correct_count += 1
 
-            QuestionResponse.objects.create(
-                question=gq,
+            log_question_event(
                 user=request.user,
+                game_question=gq,
                 user_answer=ua,
                 is_correct=ok,
-            )
-            AnalyticsResponse.objects.create(
-                question=q,
-                score=1 if ok else 0,
-                user_id=request.user.id,
-                response_time=0
+                time_taken=0,
             )
             from analytics.helpers.theta_updater import update_user_theta
             update_user_theta(request.user.id)
@@ -494,18 +492,14 @@ class SubmitHangmanCode(APIView):
             question.game_data.get("hidden_tests", [])
         )
 
-        QuestionResponse.objects.create(
-            question=game_q,
+        attempt_number = wrong_before + 1
+        log_question_event(
             user=request.user,
+            game_question=game_q,
             user_answer=user_code,
             is_correct=passed,
-        )
-     
-        AnalyticsResponse.objects.create(
-            question=question,
-            score=1 if passed else 0,
-            user_id=request.user.id,
-            response_time=0
+            time_taken=0,
+            attempt_number=attempt_number,
         )
         from analytics.helpers.theta_updater import update_user_theta
         update_user_theta(request.user.id)
@@ -648,18 +642,14 @@ class SubmitDebugGame(APIView):
             question.game_data.get("hidden_tests", [])
         )
 
-        QuestionResponse.objects.create(
-            question=game_q,
+        attempt_number = wrong_before + 1
+        log_question_event(
             user=request.user,
+            game_question=game_q,
             user_answer=user_code,
             is_correct=passed,
-        )
-        # --- ANALYTICS LOGGING ---
-        AnalyticsResponse.objects.create(
-            question=question,
-            score=1 if passed else 0,
-            user_id=request.user.id,
-            response_time=0
+            time_taken=0,
+            attempt_number=attempt_number,
         )
         from analytics.helpers.theta_updater import update_user_theta
         update_user_theta(request.user.id)
@@ -744,54 +734,101 @@ class SubmitDebugGame(APIView):
 
 
 class SubmitPreAssessmentAnswers(APIView):
+    """
+    Accepts one pre-assessment answer at a time (one question per page).
+
+    Request body (all questions):
+        question_id  (int)   – ID of the PreAssessmentQuestion
+        user_answer  (str)   – the learner's answer
+        time_taken   (int)   – seconds spent on this question (client-side timer)
+
+    Request body (final question only — same endpoint, extra field):
+        is_final     (bool)  – true when submitting the last question
+
+    Response (all questions):
+        question_id, is_correct, correct_answer
+
+    Response (final question, authenticated user only):
+        + cluster, cluster_name
+
+    Each submission writes one PreAssessmentResponse row for authenticated users.
+    On is_final, cluster assignment aggregates server-side from those rows.
+    Minimum threshold: fewer than 3 rows → cluster defaults to 1 (mid), K-Means skipped.
+    event_logger is not used here — PreAssessmentQuestion has no GameQuestion FK.
+    """
     permission_classes = [AllowAny]
 
     def post(self, request):
-        data = request.data
-        answers = data if isinstance(data, list) else data.get("answers", [])
+        question_id = request.data.get("question_id")
+        user_answer = request.data.get("user_answer", "")
+        time_taken = int(request.data.get("time_taken", 0))
+        is_final = bool(request.data.get("is_final", False))
 
-        results = []
-        correct_count = 0
+        if not question_id:
+            return Response({"error": "question_id is required."}, status=400)
 
-        for ans in answers:
-            try:
-                q = PreAssessmentQuestion.objects.get(id=ans["question_id"])
-                is_correct = q.correct_answer.strip().lower() == ans["user_answer"].strip().lower()
-                results.append({
-                    "question_id": q.id,
-                    "question_text": q.question_text,
-                    "user_answer": ans["user_answer"],
-                    "correct_answer": q.correct_answer,
-                    "is_correct": is_correct,
-                    "topic_ids": q.topic_ids or [],
-                    "subtopic_ids": q.subtopic_ids or []
-                })
-                if is_correct:
-                    correct_count += 1
-            except PreAssessmentQuestion.DoesNotExist:
-                continue
+        try:
+            q = PreAssessmentQuestion.objects.get(id=question_id)
+        except PreAssessmentQuestion.DoesNotExist:
+            return Response({"error": "Question not found."}, status=404)
+
+        is_correct = q.correct_answer.strip().lower() == user_answer.strip().lower()
+
+        if request.user.is_authenticated:
+            PreAssessmentResponse.objects.create(
+                user=request.user,
+                question_id=q.id,
+                is_correct=is_correct,
+                time_taken=time_taken,
+            )
+
+        result = {
+            "question_id": q.id,
+            "question_text": q.question_text,
+            "user_answer": user_answer,
+            "correct_answer": q.correct_answer,
+            "is_correct": is_correct,
+            "topic_ids": q.topic_ids or [],
+            "subtopic_ids": q.subtopic_ids or [],
+            "minigame_time_taken": time_taken,
+        }
 
         if request.user.is_authenticated:
             try:
-                print(f"Attempting to recalibrate topic proficiency for wordsearch...")
-                print(f"User: {request.user}")
-                print(f"Results data: {results}")
-                recalibrate_topic_proficiency(request.user, results)
-                print("✅ Recalibration completed successfully!")
-            except Exception as e:
+                recalibrate_topic_proficiency(request.user, [result])
+            except Exception:
                 import traceback
-                print(f"Recalibration error (wordsearch): {e}")
-                print(f"Error type: {type(e)}")
-                print(f"Traceback:")
                 traceback.print_exc()
-                print(f"User data: {request.user}")
-                print(f"Results data: {results}")
 
-        return Response({
-            "total": len(answers),
-            "correct": correct_count,
-            "results": results
-        })
+        response_data = {
+            "question_id": q.id,
+            "is_correct": is_correct,
+            "correct_answer": q.correct_answer,
+        }
+
+        if is_final and request.user.is_authenticated:
+            try:
+                responses = PreAssessmentResponse.objects.filter(user=request.user)
+                count = responses.count()
+                if count < 3:
+                    cluster = 1
+                else:
+                    avg_response_time = responses.aggregate(Avg("time_taken"))["time_taken__avg"]
+                    accuracy = responses.filter(is_correct=True).count() / count
+                    cluster = assign_learner_cluster(avg_response_time, accuracy)
+                ability, _ = UserAbility.objects.get_or_create(
+                    user=request.user,
+                    defaults={"ability_score": 0.5}
+                )
+                ability.learner_cluster = cluster
+                ability.save(update_fields=["learner_cluster"])
+                response_data["cluster"] = cluster
+                response_data["cluster_name"] = get_cluster_name(cluster)
+            except Exception:
+                import traceback
+                traceback.print_exc()
+
+        return Response(response_data)
 
 
 class GameLeaderboardView(APIView):

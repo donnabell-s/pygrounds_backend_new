@@ -34,6 +34,7 @@ class UserSubtopicMastery(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='subtopic_mastery')
     subtopic = models.ForeignKey(Subtopic, on_delete=models.CASCADE)
     mastery_level = models.FloatField(default=0.0)  # Percentage-based internal metric
+    last_practiced_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         unique_together = ('user', 'subtopic')
@@ -60,6 +61,7 @@ class UserAbility(models.Model):
         related_name="ability"
     )
     ability_score = models.FloatField(default=0.5)
+    learner_cluster = models.IntegerField(null=True, blank=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
