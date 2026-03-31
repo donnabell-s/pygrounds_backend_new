@@ -1,5 +1,6 @@
 import uuid
 import re
+from collections import defaultdict
 from django.utils import timezone
 from rest_framework import status
 from rest_framework.decorators import api_view
@@ -9,8 +10,9 @@ from rest_framework.views import APIView
 
 from question_generation.models import PreAssessmentQuestion
 from user_learning.adaptive_engine import recalibrate_topic_proficiency
-from user_learning.clustering import assign_learner_cluster, get_cluster_name
-from user_learning.models import UserAbility
+from user_learning.clustering import assign_learner_cluster, get_cluster_name, get_cluster_mastery_default
+from user_learning.models import UserAbility, UserSubtopicMastery, UserTopicProficiency, UserZoneProgress
+from content_ingestion.models import Topic, Subtopic, GameZone
 from analytics.event_logger import log_question_event
 
 
@@ -735,78 +737,85 @@ class SubmitDebugGame(APIView):
 
 class SubmitPreAssessmentAnswers(APIView):
     """
-    Accepts one pre-assessment answer at a time (one question per page).
+    Accepts a bulk pre-assessment submission.
 
-    Request body (all questions):
-        question_id  (int)   – ID of the PreAssessmentQuestion
-        user_answer  (str)   – the learner's answer
-        time_taken   (int)   – seconds spent on this question (client-side timer)
+    Request body:
+        answers  (list) – [{ question_id, user_answer, time_taken }, ...]
 
-    Request body (final question only — same endpoint, extra field):
-        is_final     (bool)  – true when submitting the last question
+    For each answer:
+      - Grades against PreAssessmentQuestion.correct_answer
+      - Writes one PreAssessmentResponse row (authenticated users only)
+      - Builds a result dict passed to recalibrate_topic_proficiency
 
-    Response (all questions):
-        question_id, is_correct, correct_answer
-
-    Response (final question, authenticated user only):
-        + cluster, cluster_name
-
-    Each submission writes one PreAssessmentResponse row for authenticated users.
-    On is_final, cluster assignment aggregates server-side from those rows.
-    Minimum threshold: fewer than 3 rows → cluster defaults to 1 (mid), K-Means skipped.
+    After all answers are processed, aggregates server-side from
+    PreAssessmentResponse rows and assigns learner_cluster on UserAbility.
+    Minimum threshold: fewer than 3 rows → cluster defaults to 1 (mid).
     event_logger is not used here — PreAssessmentQuestion has no GameQuestion FK.
     """
     permission_classes = [AllowAny]
 
     def post(self, request):
-        question_id = request.data.get("question_id")
-        user_answer = request.data.get("user_answer", "")
-        time_taken = int(request.data.get("time_taken", 0))
-        is_final = bool(request.data.get("is_final", False))
+        answers = request.data.get("answers", [])
 
-        if not question_id:
-            return Response({"error": "question_id is required."}, status=400)
+        results = []
+        correct_count = 0
 
-        try:
-            q = PreAssessmentQuestion.objects.get(id=question_id)
-        except PreAssessmentQuestion.DoesNotExist:
-            return Response({"error": "Question not found."}, status=404)
-
-        is_correct = q.correct_answer.strip().lower() == user_answer.strip().lower()
-
-        if request.user.is_authenticated:
-            PreAssessmentResponse.objects.create(
-                user=request.user,
-                question_id=q.id,
-                is_correct=is_correct,
-                time_taken=time_taken,
-            )
-
-        result = {
-            "question_id": q.id,
-            "question_text": q.question_text,
-            "user_answer": user_answer,
-            "correct_answer": q.correct_answer,
-            "is_correct": is_correct,
-            "topic_ids": q.topic_ids or [],
-            "subtopic_ids": q.subtopic_ids or [],
-            "minigame_time_taken": time_taken,
-        }
-
-        if request.user.is_authenticated:
+        for ans in answers:
             try:
-                recalibrate_topic_proficiency(request.user, [result])
-            except Exception:
-                import traceback
-                traceback.print_exc()
+                q = PreAssessmentQuestion.objects.get(id=ans["question_id"])
+            except PreAssessmentQuestion.DoesNotExist:
+                continue
 
-        response_data = {
-            "question_id": q.id,
-            "is_correct": is_correct,
-            "correct_answer": q.correct_answer,
+            user_answer = ans.get("user_answer", "")
+            time_taken = int(ans.get("time_taken", 0))
+            is_correct = q.correct_answer.strip().lower() == user_answer.strip().lower()
+
+            if is_correct:
+                correct_count += 1
+
+            if request.user.is_authenticated:
+                PreAssessmentResponse.objects.create(
+                    user=request.user,
+                    question_id=q.id,
+                    is_correct=is_correct,
+                    time_taken=time_taken,
+                )
+
+            results.append({
+                "question_id": q.id,
+                "question_text": q.question_text,
+                "user_answer": user_answer,
+                "correct_answer": q.correct_answer,
+                "is_correct": is_correct,
+                "topic_ids": q.topic_ids or [],
+                "subtopic_ids": q.subtopic_ids or [],
+                "minigame_time_taken": time_taken,
+                "estimated_difficulty": q.estimated_difficulty,
+            })
+
+        DIFFICULTY_MULTIPLIER = {
+            "beginner": 1.0,
+            "intermediate": 1.1,
+            "advanced": 1.25,
+            "master": 1.4,
         }
 
-        if is_final and request.user.is_authenticated:
+        subtopic_stats = defaultdict(lambda: {"correct": 0, "total": 0, "difficulty": "beginner"})
+        for r in results:
+            for sid in r.get("subtopic_ids", []):
+                subtopic_stats[sid]["total"] += 1
+                if r["is_correct"]:
+                    subtopic_stats[sid]["correct"] += 1
+                difficulty = r.get("estimated_difficulty", "beginner")
+                if difficulty in ("advanced", "master"):
+                    subtopic_stats[sid]["difficulty"] = difficulty
+                elif difficulty == "intermediate" and subtopic_stats[sid]["difficulty"] == "beginner":
+                    subtopic_stats[sid]["difficulty"] = "intermediate"
+
+        cluster = None
+        cluster_name = None
+
+        if request.user.is_authenticated:
             try:
                 responses = PreAssessmentResponse.objects.filter(user=request.user)
                 count = responses.count()
@@ -816,19 +825,87 @@ class SubmitPreAssessmentAnswers(APIView):
                     avg_response_time = responses.aggregate(Avg("time_taken"))["time_taken__avg"]
                     accuracy = responses.filter(is_correct=True).count() / count
                     cluster = assign_learner_cluster(avg_response_time, accuracy)
+
                 ability, _ = UserAbility.objects.get_or_create(
                     user=request.user,
                     defaults={"ability_score": 0.5}
                 )
                 ability.learner_cluster = cluster
                 ability.save(update_fields=["learner_cluster"])
-                response_data["cluster"] = cluster
-                response_data["cluster_name"] = get_cluster_name(cluster)
+                cluster_name = get_cluster_name(cluster)
+
+                # initialise all subtopics — BKT-seeded if covered by pre-assessment, cluster default otherwise
+                starting_mastery_default = get_cluster_mastery_default(cluster)  # 0.0–1.0
+
+                from user_learning.bkt import bkt_update
+                from user_learning.bkt_params import BKT_PARAMS, DEFAULT_PARAMS
+                bkt_params = BKT_PARAMS.get(cluster_name, DEFAULT_PARAMS)
+
+                for subtopic in Subtopic.objects.all():
+                    sid = subtopic.id
+
+                    if sid in subtopic_stats and subtopic_stats[sid]["total"] > 0:
+                        stats = subtopic_stats[sid]
+                        accuracy = stats["correct"] / stats["total"]
+                        multiplier = DIFFICULTY_MULTIPLIER.get(stats["difficulty"], 1.0)
+
+                        is_correct_obs = accuracy >= 0.5
+                        mastery_0_1 = bkt_update(
+                            starting_mastery_default,
+                            is_correct_obs,
+                            bkt_params["p_slip"],
+                            bkt_params["p_guess"],
+                        )
+
+                        delta = mastery_0_1 - starting_mastery_default
+                        mastery_0_1 = starting_mastery_default + (delta * multiplier)
+                        mastery_0_1 = max(0.05, min(0.95, mastery_0_1))
+                    else:
+                        mastery_0_1 = starting_mastery_default
+
+                    UserSubtopicMastery.objects.get_or_create(
+                        user=request.user,
+                        subtopic=subtopic,
+                        defaults={"mastery_level": mastery_0_1 * 100},
+                    )
+
+                # propagate to topic
+                for topic in Topic.objects.all():
+                    avg = (
+                        UserSubtopicMastery.objects
+                        .filter(user=request.user, subtopic__topic=topic)
+                        .aggregate(avg=Avg("mastery_level"))["avg"] or 0.0
+                    )
+                    UserTopicProficiency.objects.update_or_create(
+                        user=request.user,
+                        topic=topic,
+                        defaults={"proficiency_percent": avg},
+                    )
+
+                # propagate to zone
+                for zone in GameZone.objects.all().order_by("order"):
+                    avg = (
+                        UserTopicProficiency.objects
+                        .filter(user=request.user, topic__zone=zone)
+                        .aggregate(avg=Avg("proficiency_percent"))["avg"] or 0.0
+                    )
+                    UserZoneProgress.objects.update_or_create(
+                        user=request.user,
+                        zone=zone,
+                        defaults={"completion_percent": avg},
+                    )
+
             except Exception:
                 import traceback
                 traceback.print_exc()
 
-        return Response(response_data)
+        return Response({
+            "total": len(answers),
+            "correct": correct_count,
+            "results": results,
+            "cluster": cluster,
+            "cluster_name": cluster_name,
+        })
 
 
 class GameLeaderboardView(APIView):
