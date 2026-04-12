@@ -2,7 +2,6 @@ from django.core.files.storage import default_storage
 from django.shortcuts import get_object_or_404
 from django.db import transaction
 from django.db.models import Count
-from django.http import FileResponse
 
 from rest_framework import generics, status
 from rest_framework.decorators import api_view, permission_classes
@@ -423,20 +422,6 @@ class SubtopicDetail(generics.RetrieveUpdateDestroyAPIView):
     
 
 
-class DocumentList(generics.ListCreateAPIView):
-    queryset = UploadedDocument.objects.all()
-    serializer_class = DocumentSerializer
-
-    def get_queryset(self):
-        queryset = super().get_queryset()
-        return queryset.annotate(
-            chunk_count=Count('chunks')
-        )
-
-class DocumentDetail(generics.RetrieveUpdateDestroyAPIView):
-    queryset = UploadedDocument.objects.all()
-    serializer_class = DocumentSerializer
-
 # getters by object
 
 @api_view(['GET'])
@@ -566,38 +551,6 @@ def get_document_status(request, document_id):
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
 
-@api_view(['GET'])
-def download_document(request, document_id):
-    # download the pdf file
-    try:
-        document = get_object_or_404(UploadedDocument, id=document_id)
-        if not document.pdf_file:
-            return Response(
-                {'error': 'No PDF file associated with this document'},
-                status=status.HTTP_404_NOT_FOUND
-            )
-            
-        try:
-            response = FileResponse(
-                document.pdf_file.open('rb'),
-                content_type='application/pdf'
-            )
-            response['Content-Disposition'] = f'attachment; filename="{document.title}.pdf"'
-            return response
-        except Exception as e:
-            logger.error(f"Error opening PDF file: {str(e)}")
-            return Response(
-                {'error': 'Failed to open PDF file'},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
-            
-    except Exception as e:
-        logger.error(f"Error downloading document: {str(e)}")
-        return Response(
-            {'error': 'Failed to download document'},
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR
-        )
-
 @api_view(['POST', 'DELETE'])
 def delete_document(request, document_id):
     # delete document (soft/hard) and related data
@@ -682,72 +635,3 @@ def delete_document(request, document_id):
         )
 
 
-@api_view(['POST'])
-def cleanup_failed_documents(request):
-    # bulk cleanup for documents stuck in FAILED status
-    try:
-        # find all failed documents
-        failed_documents = UploadedDocument.objects.filter(
-            processing_status='FAILED'
-        )
-        
-        if failed_documents.count() == 0:
-            return Response({
-                'status': 'success',
-                'message': 'No failed documents found to clean up',
-                'deleted_count': 0
-            }, status=status.HTTP_200_OK)
-        
-        # count related data before deletion
-        total_chunks = 0
-        total_toc_entries = 0
-        total_embeddings = 0
-        
-        document_titles = []
-        
-        for doc in failed_documents:
-            document_titles.append(doc.title)
-            total_chunks += doc.chunks.count() if hasattr(doc, 'chunks') else 0
-            total_toc_entries += doc.tocentry_set.count() if hasattr(doc, 'tocentry_set') else 0
-            
-            try:
-                from content_ingestion.models import Embedding
-                total_embeddings += Embedding.objects.filter(
-                    document_chunk__document=doc,
-                    content_type='chunk'
-                ).count()
-            except Exception:
-                pass
-        
-        failed_count = failed_documents.count()
-        
-        logger.info(f"Starting bulk cleanup of {failed_count} failed documents")
-        logger.info(f"Related data to clean: {total_chunks} chunks, {total_toc_entries} TOC entries, {total_embeddings} embeddings")
-        
-        # delete all failed documents (triggers our custom delete method)
-        deleted_titles = list(document_titles)  # copy before deletion
-        failed_documents.delete()
-        
-        logger.info(f"Bulk cleanup completed: {failed_count} failed documents deleted")
-        
-        return Response({
-            'status': 'success',
-            'message': f'Successfully cleaned up {failed_count} failed documents',
-            'deleted_count': failed_count,
-            'deleted_documents': deleted_titles,
-            'cleaned_up': {
-                'chunks': total_chunks,
-                'toc_entries': total_toc_entries,
-                'embeddings': total_embeddings
-            }
-        }, status=status.HTTP_200_OK)
-        
-    except Exception as e:
-        logger.error(f"Error during bulk cleanup of failed documents: {str(e)}")
-        return Response(
-            {
-                'error': 'Failed to cleanup failed documents',
-                'detail': str(e)
-            },
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR
-        )

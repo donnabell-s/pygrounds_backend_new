@@ -90,7 +90,7 @@ def _run_document_pipeline_background(document_id, reprocess=False):
                 pipeline_results['pipeline_steps'][step_result_name] = step_result
                 
                 # stop early if a critical step fails
-                if step_result['status'] == 'error' and step_name in ['toc', 'chunking']:
+                if step_result['status'] == 'error' and step_name in ['toc', 'chunking', 'embedding']:
                     logger.error(f"Critical step {step_name} failed for document {document_id}: {step_result['message']}")
                     break
         

@@ -36,13 +36,18 @@ class GeneratedQuestion(models.Model):
     flag_notes = models.TextField(blank=True, null=True, help_text="Additional notes about the flag")
     flagged_by = models.CharField(max_length=255, blank=True, null=True, help_text="Username of user who flagged")
     flag_created_at = models.DateTimeField(blank=True, null=True, help_text="Timestamp when question was flagged")
+    flag_count_by_level = JSONField(
+        default=dict,
+        blank=True,
+        help_text="Count of flags submitted per user level: {beginner, intermediate, advanced, master}"
+    )
 
     
     # timestamp
     created_at = models.DateTimeField(auto_now_add=True)
-   
+
     class Meta:
-        ordering = ['subtopic__name']
+        ordering = ['-created_at']
         indexes = [
             models.Index(fields=['subtopic', 'estimated_difficulty']),
             models.Index(fields=['validation_status']),

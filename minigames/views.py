@@ -581,13 +581,18 @@ class SubmitHangmanCode(APIView):
                 print(f"User data: {request.user}")
                 print(f"Results data: {results}")
 
-        return Response({
+        response_data = {
             "success": passed,
             "game_over": game_over,
             "remaining_lives": remaining_lives_after,
             "message": message,
-            **({"traceback": trace} if not passed else {})
-        })
+        }
+        if not passed:
+            response_data["traceback"] = trace
+        if game_over:
+            response_data["explanation"] = question.game_data.get("explanation", "")
+            response_data["clean_solution"] = question.game_data.get("clean_solution") or question.game_data.get("correct_code", "")
+        return Response(response_data)
 
 
 class StartDebugGame(APIView):
@@ -616,7 +621,7 @@ class StartDebugGame(APIView):
             "function_name": question.game_data.get("function_name", ""),
             "sample_input":  question.game_data.get("sample_input", ""),
             "sample_output": question.game_data.get("sample_output", ""),
-            "broken_code":   question.game_data.get("buggy_code", ""),
+            "broken_code":   question.game_data.get("code_shown_to_student") or question.game_data.get("buggy_code", ""),
             "timer_seconds": session.time_limit,
         }, status=201)
 
@@ -734,13 +739,18 @@ class SubmitDebugGame(APIView):
                 print(f"User data: {request.user}")
                 print(f"Results data: {results}")
 
-        return Response({
+        response_data = {
             "success": passed,
             "game_over": game_over,
             "remaining_lives": remaining_lives_after,
             "message": message,
-            **({"traceback": traceback_str} if not passed else {})
-        })
+        }
+        if not passed:
+            response_data["traceback"] = traceback_str
+        if game_over:
+            response_data["buggy_explanation"] = question.game_data.get("buggy_explanation", "")
+            response_data["code_with_bug_fixed"] = question.game_data.get("code_with_bug_fixed") or question.game_data.get("buggy_correct_code", "")
+        return Response(response_data)
 
 
 class SubmitPreAssessmentAnswers(APIView):

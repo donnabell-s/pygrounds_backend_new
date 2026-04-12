@@ -142,21 +142,8 @@ class SubtopicSerializer(serializers.ModelSerializer):
                 Topic.objects.get(pk=validated_data['topic'].id)
             except Topic.DoesNotExist:
                 raise serializers.ValidationError({'topic': 'Invalid topic ID provided.'})
-        # track whether intent fields changed
-        concept_intent_changed = (
-            'concept_intent' in validated_data and 
-            validated_data['concept_intent'] != instance.concept_intent
-        )
-        code_intent_changed = (
-            'code_intent' in validated_data and 
-            validated_data['code_intent'] != instance.code_intent
-        )
-        
-        # update instance
+        # update instance — signal handles embedding regeneration when intent fields change
         instance = super().update(instance, validated_data)
-        
-        # signal handles embedding regeneration when intent fields change
-        
         return instance
     
     def create(self, validated_data):
@@ -248,24 +235,6 @@ class SubtopicSerializer(serializers.ModelSerializer):
         
         return instance
     
-    async def _regenerate_dual_embeddings(self, subtopic):
-        # generate dual embeddings using intent-based content
-        try:
-            from content_ingestion.helpers.embedding.generator import EmbeddingGenerator
-            
-            # create embedding generator
-            embedding_gen = EmbeddingGenerator()
-            
-            # generate embeddings for both intents
-            await embedding_gen.generate_subtopic_dual_embeddings(subtopic)
-            
-        except Exception as e:
-            # log error but don't fail the serializer operation
-            import logging
-            logger = logging.getLogger(__name__)
-            logger.error(f"Failed to generate dual embeddings for subtopic {subtopic.id}: {e}")
-            raise e
-
 class TOCEntrySerializer(serializers.ModelSerializer):
     class Meta:
         model = TOCEntry

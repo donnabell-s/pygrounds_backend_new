@@ -3,42 +3,43 @@ from typing import List, Dict, Any, Tuple
 
 
 def detect_split_content(chunks: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-    # merge content split across page boundaries
+    # merge content split across page boundaries (chains of 3+ are handled)
     if not chunks:
         return chunks
-    
+
     merged_chunks = []
     i = 0
-    
+
     while i < len(chunks):
-        current_chunk = chunks[i]
-        
-        if i < len(chunks) - 1:
+        current = chunks[i]
+
+        # keep absorbing following chunks as long as they should be merged
+        while i + 1 < len(chunks):
             next_chunk = chunks[i + 1]
-            
-            should_merge, merge_type = _should_merge_chunks(current_chunk, next_chunk)
-            
-            if should_merge:
-                print(f"Merging chunks due to {merge_type}: pages {current_chunk.get('page_number', '?')} and {next_chunk.get('page_number', '?')}")
-                
-                merged_chunk = _merge_chunks(current_chunk, next_chunk, merge_type)
-                merged_chunks.append(merged_chunk)
-                i += 2
-                continue
-        
-        merged_chunks.append(current_chunk)
+            should_merge, merge_type = _should_merge_chunks(current, next_chunk)
+            if not should_merge:
+                break
+            print(f"Merging chunks due to {merge_type}: pages {current.get('page_number', '?')} and {next_chunk.get('page_number', '?')}")
+            current = _merge_chunks(current, next_chunk, merge_type)
+            i += 1  # advance past the absorbed chunk
+
+        merged_chunks.append(current)
         i += 1
-    
+
     return merged_chunks
 
 
 def _should_merge_chunks(chunk1: Dict[str, Any], chunk2: Dict[str, Any]) -> Tuple[bool, str]:
     text1 = chunk1.get('text', '').strip()
     text2 = chunk2.get('text', '').strip()
-    
+
     if not text1 or not text2:
         return False, ""
-    
+
+    # Safety: never merge if the current chunk is already large — prevents runaway chain merges
+    if len(text1) > 3000:
+        return False, ""
+
     if _is_split_code_block(text1, text2):
         return True, "split_code_block"
     
@@ -56,7 +57,13 @@ def _should_merge_chunks(chunk1: Dict[str, Any], chunk2: Dict[str, Any]) -> Tupl
     
     if _is_same_topic_continuation(text1, text2):
         return True, "topic_continuation"
-    
+
+    if _is_terminal_output(text2):
+        return True, "terminal_output"
+
+    if _is_terminal_output(text1):
+        return True, "terminal_output"
+
     return False, ""
 
 
@@ -75,18 +82,25 @@ def _is_split_code_block(text1: str, text2: str) -> bool:
         if re.search(pattern1, text1, re.MULTILINE) and re.search(pattern2, text2, re.MULTILINE):
             return True
     
-    bracket_counts = {
-        '(': text1.count('(') - text1.count(')'),
-        '[': text1.count('[') - text1.count(']'), 
-        '{': text1.count('{') - text1.count('}')
-    }
-    
-    if any(count > 0 for count in bracket_counts.values()):
-        for bracket, count in bracket_counts.items():
-            closing_bracket = {'(': ')', '[': ']', '{': '}'}[bracket]
-            if count > 0 and text2.count(closing_bracket) > text2.count(bracket):
-                return True
-    
+    # Bracket-imbalance check — only when the text already looks like code,
+    # otherwise prose sentences with parentheses trigger endless chain merges.
+    CODE_SIGNALS = (
+        re.search(r'^\s*(def|class|import|from|if|for|while|try|with)\b', text1, re.MULTILINE) or
+        '>>>' in text1 or
+        re.search(r'print\s*\(', text1)
+    )
+    if CODE_SIGNALS:
+        bracket_counts = {
+            '(': text1.count('(') - text1.count(')'),
+            '[': text1.count('[') - text1.count(']'),
+            '{': text1.count('{') - text1.count('}')
+        }
+        if any(count > 0 for count in bracket_counts.values()):
+            for bracket, count in bracket_counts.items():
+                closing_bracket = {'(': ')', '[': ']', '{': '}'}[bracket]
+                if count > 0 and text2.count(closing_bracket) > text2.count(bracket):
+                    return True
+
     return False
 
 
@@ -104,16 +118,32 @@ def _is_split_class_or_function(text1: str, text2: str) -> bool:
 
 
 def _is_incomplete_sentence(text1: str, text2: str) -> bool:
-    if not re.search(r'[.!?:]\s*$', text1.strip()):
+    # colon at end signals continuation (list or code block follows)
+    if text1.strip().endswith(':'):
+        return True
+
+    # no terminal punctuation + next chunk starts lowercase
+    if not re.search(r'[.!?]\s*$', text1.strip()):
         if re.match(r'^[a-z]', text2.strip()):
             return True
-    
-    if (text1.strip().endswith('method is called') or 
+
+    if (text1.strip().endswith('method is called') or
         text1.strip().endswith('is called') or
         text1.strip().endswith('This is called')):
         return True
-    
+
     return False
+
+
+def _is_terminal_output(text: str) -> bool:
+    stripped = text.strip()
+    return bool(
+        re.match(r'^\$\s+python', stripped) or
+        re.match(r'^\$\s+pip', stripped) or
+        re.match(r'^>>>', stripped) or
+        re.match(r'^Ran \d+ test', stripped) or
+        re.match(r'^(OK|FAILED|ERROR)\s*$', stripped)
+    )
 
 
 def _is_method_continuation(text1: str, text2: str) -> bool:
@@ -191,7 +221,11 @@ def _merge_chunks(chunk1: Dict[str, Any], chunk2: Dict[str, Any], merge_type: st
     elif merge_type == "list_continuation":
         merged_text = f"{text1}\n{text2}"
         chunk_type = chunk1.get('chunk_type', 'Concept')
-        
+
+    elif merge_type == "terminal_output":
+        merged_text = f"{text1}\n{text2}"
+        chunk_type = "Code"
+
     else:
         merged_text = f"{text1}\n\n{text2}"
         chunk_type = chunk1.get('chunk_type', 'Concept')
