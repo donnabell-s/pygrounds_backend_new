@@ -15,6 +15,60 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+# Patterns that signal back-matter / noise pages — skip these chunks
+BACK_MATTER_PATTERNS = [
+    r'Other Books You May Enjoy',
+    r'Leave a review',
+    r'ISBN:\s*\d',
+    r'Para \w+, com todo',
+    r'Table of Contents',
+    r'Chapter Summary \d+',
+    r'Further Reading \d+',
+    r'^\s*[A-Z]\s*$',
+]
+
+# Known book titles used to detect "different book" content in bundles
+BOOK_TITLES = [
+    "Fluent Python",
+    "Expert Python Programming",
+    "Python Basics",
+    "Intermediate Python",
+]
+
+
+def _is_back_matter(text: str) -> bool:
+    return any(
+        re.search(p, text.strip(), re.MULTILINE | re.IGNORECASE)
+        for p in BACK_MATTER_PATTERNS
+    )
+
+
+def _is_index_start(text: str) -> bool:
+    # A real back-of-book index has short alphabetical terms ending in page numbers.
+    # TOC pages look similar but have dots (". . .") and lines starting with chapter numbers.
+    # Exclude any text that looks like a TOC (has dot leaders or chapter-number prefixes).
+    if re.search(r'\.\s*\.\s*\.', text):  # dot leaders like ". . . 43"
+        return False
+    lines = [l.strip() for l in text.strip().splitlines() if l.strip()]
+    if not lines:
+        return False
+    # Index lines: short term (no leading digit) followed directly by a page number
+    index_pattern = re.compile(r'^[^0-9\s].{2,40}\s+\d{2,3}$')
+    index_lines = sum(1 for l in lines if index_pattern.match(l))
+    return index_lines > len(lines) * 0.6
+
+
+def _is_different_book(text: str, current_title: str) -> bool:
+    current_words = set(current_title.lower().split())
+    for title in BOOK_TITLES:
+        if title.lower() in text.lower():
+            title_words = set(title.lower().split())
+            # If they share at least 2 words (e.g. "Python" and "Intermediate"), it's likely the same book
+            if len(current_words.intersection(title_words)) >= 2:
+                continue
+            return True
+    return False
+
 class GranularChunkProcessor:
     # create granular, type-classified chunks for rag
     
@@ -248,9 +302,11 @@ class GranularChunkProcessor:
         print(f"Found {chunks_to_embed.count()} chunks to embed")
         
         embedding_results = self.embedding_generator.embed_and_save_batch(chunks_to_embed)
-        
-        total_processed = embedding_results.get('success', 0) + embedding_results.get('failed', 0)
-        print(f"Embedding complete: {embedding_results.get('success', 0)}/{total_processed} successful")
+
+        embeddings_generated = embedding_results.get('embeddings_generated', 0)
+        db_saves = embedding_results.get('database_saves', 0)
+        failed = embedding_results.get('embeddings_failed', 0)
+        print(f"Embedding complete: {embeddings_generated} generated, {db_saves} saved, {failed} failed")
         
         return embedding_results
     
@@ -312,23 +368,39 @@ class GranularChunkProcessor:
                 valid_chunks = []
                 sample_chunks_filtered = 0
                 pages_per_chunk = max(1, (end_page - start_page + 1) / max(1, len(raw_chunks)))
-                
+
                 for chunk_idx, chunk in enumerate(raw_chunks):
-                    if self._is_sample_placeholder_content(chunk['text']):
+                    text = chunk['text']
+
+                    # stop on index pages (dense "term  NNN" lines)
+                    if _is_index_start(text):
+                        print(f"   Index detected at chunk {chunk_idx} — stopping ingestion")
+                        break
+
+                    # stop when a different book's content appears (bundle PDFs)
+                    if _is_different_book(text, document.title):
+                        print(f"   Different book detected at chunk {chunk_idx} — stopping ingestion")
+                        break
+
+                    # skip back-matter noise (ISBN pages, "Other Books" ads, etc.)
+                    if _is_back_matter(text):
+                        continue
+
+                    if self._is_sample_placeholder_content(text):
                         sample_chunks_filtered += 1
                         continue
-                    
+
                     estimated_page = start_page + int(chunk_idx * pages_per_chunk)
                     chunk_page = min(estimated_page, end_page)
-                    
+
                     enhanced_chunk = {
-                        'text': chunk['text'],
+                        'text': text,
                         'chunk_type': chunk['chunk_type'],
                         'page_number': chunk_page,
                         'order_in_doc': chunk_idx,
                     }
                     valid_chunks.append(enhanced_chunk)
-                
+
                 if sample_chunks_filtered > 0:
                     print(f"   Filtered {sample_chunks_filtered} sample chunks, kept {len(valid_chunks)} valid chunks")
                 
@@ -360,14 +432,14 @@ class GranularChunkProcessor:
     def _save_granular_chunks(self, document: UploadedDocument, chunks: List[Dict[str, Any]]) -> int:
         saved_count = 0
         total_chunks = len(chunks)
-        
+
         print(f"   Saving {total_chunks} chunks to database...")
-        
+
         with transaction.atomic():
             for chunk in chunks:
                 try:
                     token_count = self.token_counter.count_tokens(chunk['text'])
-                    
+
                     DocumentChunk.objects.create(
                         document=document,
                         chunk_type=chunk['chunk_type'],
@@ -377,14 +449,14 @@ class GranularChunkProcessor:
                         token_count=token_count,
                     )
                     saved_count += 1
-                    
+
                     if saved_count % 500 == 0:
                         print(f"   Saved {saved_count}/{total_chunks} chunks...")
-                        
+
                 except Exception as e:
                     print(f"   ERROR: Error saving chunk {chunk.get('order_in_doc', 'unknown')}: {str(e)}")
                     logger.error(f"Chunk save error: {str(e)}")
                     raise e
-        
+
         print(f"   Successfully saved {saved_count}/{total_chunks} chunks to database")
         return saved_count

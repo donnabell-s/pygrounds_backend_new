@@ -33,12 +33,13 @@ def extract_unstructured_chunks(file_path):
             elements = partition_pdf(
                 filename=file_path,
                 extract_images_in_pdf=False,
-                infer_table_structure=True,
+                infer_table_structure=False,
                 chunking_strategy="by_title",
-                max_characters=1000,  
-                new_after_n_chars=800, 
-                combine_text_under_n_chars=200,  
-                overlap=50
+                max_characters=1500,
+                new_after_n_chars=1200,
+                combine_text_under_n_chars=300,
+                overlap=150,
+                multipage_sections=True,
             )
         finally:
             if old_tmpdir:

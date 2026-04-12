@@ -1,14 +1,24 @@
 from django.contrib import admin
 from .models import (
     UploadedDocument, DocumentChunk, TOCEntry, 
-    GameZone, Topic, Subtopic, SemanticSubtopic
+    GameZone, Topic, Subtopic, SemanticSubtopic,
+    Embedding
 )
 
+class DeleteAllMixin:
+    actions = ['delete_all_records']
+
+    @admin.action(description="Delete ALL records (Ignore Selection)")
+    def delete_all_records(self, request, queryset):
+        count, _ = self.model.objects.all().delete()
+        self.message_user(request, f'Successfully deleted {count} records.')
+
 @admin.register(UploadedDocument)
-class UploadedDocumentAdmin(admin.ModelAdmin):
+class UploadedDocumentAdmin(admin.ModelAdmin, DeleteAllMixin):
     list_display = ['title', 'processing_status', 'difficulty', 'total_pages']
     list_filter = ['processing_status', 'difficulty']
     search_fields = ['title']
+    actions = ['delete_all_records']
 
 @admin.register(GameZone)
 class GameZoneAdmin(admin.ModelAdmin):
@@ -35,13 +45,34 @@ class TOCEntryAdmin(admin.ModelAdmin):
     list_filter = ['document', 'level']
     search_fields = ['title']
     ordering = ['document', 'order']
+    
+@admin.register(DocumentChunk)
+class DocumentChunkAdmin(admin.ModelAdmin, DeleteAllMixin):
+    list_display = ['chunk_type', 'text', 'token_count']
+    search_fields = ['text']
+    readonly_fields = ['document_id']
+    actions = ['delete_all_records']
 
+    fieldsets = (
+        ('Content', {
+            'fields': ('text',)
+        }),
+        ('Metadata', {
+            'fields': ('chunk_type', 'token_count'),
+        }),
+        ('Timestamps', {
+            'fields': ('document_id',),
+            'classes': ('collapse',)
+        }),
+    )
+    
 
 @admin.register(SemanticSubtopic)
-class SemanticSubtopicAdmin(admin.ModelAdmin):
+class SemanticSubtopicAdmin(admin.ModelAdmin, DeleteAllMixin):
     list_display = ['subtopic', 'concept_chunk_count', 'code_chunk_count', 'updated_at']
     search_fields = ['subtopic__name']
     readonly_fields = ['updated_at']
+    actions = ['delete_all_records']
     
     fieldsets = (
         ('Basic Info', {
@@ -67,3 +98,10 @@ class SemanticSubtopicAdmin(admin.ModelAdmin):
     
     def get_queryset(self, request):
         return super().get_queryset(request).select_related('subtopic')
+
+@admin.register(Embedding)
+class EmbeddingAdmin(admin.ModelAdmin, DeleteAllMixin):
+    list_display = ['id', 'content_type', 'model_type', 'dimension', 'model_name', 'embedded_at']
+    list_filter = ['content_type', 'model_type']
+    search_fields = ['model_name']
+    actions = ['delete_all_records']

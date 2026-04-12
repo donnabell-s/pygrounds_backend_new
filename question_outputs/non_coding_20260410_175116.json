@@ -1,0 +1,3694 @@
+[
+  {
+    "question_text": "The default data pathway for input().",
+    "correct_answer": "stdin",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Using input() to Read User Data",
+    "game_data": {
+      "explanation": "The input() function reads from the standard input stream (stdin), which is typically the keyboard in console applications.",
+      "generation_timestamp": "2026-04-10T18:12:37.227618"
+    },
+    "created_at": "2026-04-10T10:12:37.225624+00:00",
+    "exported_at": "2026-04-10T18:12:37.227618"
+  },
+  {
+    "question_text": "Ensuring input meets certain criteria.",
+    "correct_answer": "validation",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Using input() to Read User Data",
+    "game_data": {
+      "explanation": "The process of checking if user input is acceptable (e.g., a number within a range) before using it in the program.",
+      "generation_timestamp": "2026-04-10T18:12:37.252699"
+    },
+    "created_at": "2026-04-10T10:12:37.250705+00:00",
+    "exported_at": "2026-04-10T18:12:37.252699"
+  },
+  {
+    "question_text": "A loop used for repeated input requests.",
+    "correct_answer": "iteration",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Using input() to Read User Data",
+    "game_data": {
+      "explanation": "Programs often use loops to iterate, repeatedly asking for user input until a valid or terminating condition is met.",
+      "generation_timestamp": "2026-04-10T18:12:37.274830"
+    },
+    "created_at": "2026-04-10T10:12:37.272821+00:00",
+    "exported_at": "2026-04-10T18:12:37.274830"
+  },
+  {
+    "question_text": "Halting execution to wait for user entry.",
+    "correct_answer": "blocking",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Using input() to Read User Data",
+    "game_data": {
+      "explanation": "The input() function is blocking; it stops the program and waits for the user to type something and press Enter.",
+      "generation_timestamp": "2026-04-10T18:12:37.292517"
+    },
+    "created_at": "2026-04-10T10:12:37.291530+00:00",
+    "exported_at": "2026-04-10T18:12:37.292517"
+  },
+  {
+    "question_text": "Printing multiple values with a custom delimiter.",
+    "correct_answer": "separator",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Using the print() Function Effectively",
+    "game_data": {
+      "explanation": "The separator string, set via the 'sep' parameter, controls how multiple arguments are joined.",
+      "generation_timestamp": "2026-04-10T18:12:37.064632"
+    },
+    "created_at": "2026-04-10T10:12:37.063659+00:00",
+    "exported_at": "2026-04-10T18:12:37.064632"
+  },
+  {
+    "question_text": "The default behavior that adds a line break after printing.",
+    "correct_answer": "newline",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Using the print() Function Effectively",
+    "game_data": {
+      "explanation": "By default, print() ends with a newline character, which moves the cursor to the next line.",
+      "generation_timestamp": "2026-04-10T18:12:37.333159"
+    },
+    "created_at": "2026-04-10T10:12:37.331075+00:00",
+    "exported_at": "2026-04-10T18:12:37.333159"
+  },
+  {
+    "question_text": "Converting non-string objects for printing.",
+    "correct_answer": "stringification",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Using the print() Function Effectively",
+    "game_data": {
+      "explanation": "Print automatically calls str() on non-string arguments to convert them to a readable form.",
+      "generation_timestamp": "2026-04-10T18:12:37.357183"
+    },
+    "created_at": "2026-04-10T10:12:37.356181+00:00",
+    "exported_at": "2026-04-10T18:12:37.357183"
+  },
+  {
+    "question_text": "Printing without any automatic spacing.",
+    "correct_answer": "concatenation",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Using the print() Function Effectively",
+    "game_data": {
+      "explanation": "By setting sep='', you can print items directly next to each other as if concatenated.",
+      "generation_timestamp": "2026-04-10T18:12:37.377720"
+    },
+    "created_at": "2026-04-10T10:12:37.376705+00:00",
+    "exported_at": "2026-04-10T18:12:37.377720"
+  },
+  {
+    "question_text": "The object representing the console output stream.",
+    "correct_answer": "stdout",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Using the print() Function Effectively",
+    "game_data": {
+      "explanation": "In sys.stdout, this is the file-like object where print sends its text by default.",
+      "generation_timestamp": "2026-04-10T18:12:37.394792"
+    },
+    "created_at": "2026-04-10T10:12:37.393795+00:00",
+    "exported_at": "2026-04-10T18:12:37.394792"
+  },
+  {
+    "question_text": "Flushing the output buffer immediately with print.",
+    "correct_answer": "flush",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Using the print() Function Effectively",
+    "game_data": {
+      "explanation": "The 'flush' parameter, when True, forces the output to be written immediately, useful for real-time updates.",
+      "generation_timestamp": "2026-04-10T18:12:37.409907"
+    },
+    "created_at": "2026-04-10T10:12:37.408914+00:00",
+    "exported_at": "2026-04-10T18:12:37.409907"
+  },
+  {
+    "question_text": "Raw user text before any processing.",
+    "correct_answer": "keystrokes",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Using input() to Read User Data",
+    "game_data": {
+      "explanation": "The literal sequence of characters the user types, which input() captures as a single string until the Enter key.",
+      "generation_timestamp": "2026-04-10T18:12:37.309454"
+    },
+    "created_at": "2026-04-10T10:12:37.308452+00:00",
+    "exported_at": "2026-04-10T18:12:37.309454"
+  },
+  {
+    "question_text": "A sequence of characters from input.",
+    "correct_answer": "sequence",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Using input() to Read User Data",
+    "game_data": {
+      "explanation": "The result of input() is a string, which in Python is a sequence of characters that can be indexed and iterated over.",
+      "generation_timestamp": "2026-04-10T18:12:37.465534"
+    },
+    "created_at": "2026-04-10T10:12:37.463524+00:00",
+    "exported_at": "2026-04-10T18:12:37.466530"
+  },
+  {
+    "question_text": "The environment where input() typically operates.",
+    "correct_answer": "console",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Using input() to Read User Data",
+    "game_data": {
+      "explanation": "The input() function is designed for command-line or console applications where text-based interaction occurs.",
+      "generation_timestamp": "2026-04-10T18:12:37.487131"
+    },
+    "created_at": "2026-04-10T10:12:37.486132+00:00",
+    "exported_at": "2026-04-10T18:12:37.487131"
+  },
+  {
+    "question_text": "A potential issue if input is not sanitized.",
+    "correct_answer": "injection",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Using input() to Read User Data",
+    "game_data": {
+      "explanation": "Though more critical in other contexts, unsanitized input can lead to security vulnerabilities or unexpected program behavior.",
+      "generation_timestamp": "2026-04-10T18:12:37.504135"
+    },
+    "created_at": "2026-04-10T10:12:37.503133+00:00",
+    "exported_at": "2026-04-10T18:12:37.504135"
+  },
+  {
+    "question_text": "The act of a user providing data to a program.",
+    "correct_answer": "submission",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Using input() to Read User Data",
+    "game_data": {
+      "explanation": "When the user finishes typing and presses Enter, they are submitting their data for the program to receive via input().",
+      "generation_timestamp": "2026-04-10T18:12:37.520317"
+    },
+    "created_at": "2026-04-10T10:12:37.519317+00:00",
+    "exported_at": "2026-04-10T18:12:37.520317"
+  },
+  {
+    "question_text": "A sequence of characters passed to print.",
+    "correct_answer": "string",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Using the print() Function Effectively",
+    "game_data": {
+      "explanation": "A string is the primary data type printed, though other types are automatically converted.",
+      "generation_timestamp": "2026-04-10T18:12:37.465534"
+    },
+    "created_at": "2026-04-10T10:12:37.462530+00:00",
+    "exported_at": "2026-04-10T18:12:37.465534"
+  },
+  {
+    "question_text": "Combining strings and variables in a print statement.",
+    "correct_answer": "formatting",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Using the print() Function Effectively",
+    "game_data": {
+      "explanation": "String formatting allows you to create dynamic output by embedding values within text.",
+      "generation_timestamp": "2026-04-10T18:12:37.588805"
+    },
+    "created_at": "2026-04-10T10:12:37.586803+00:00",
+    "exported_at": "2026-04-10T18:12:37.588805"
+  },
+  {
+    "question_text": "The built-in function to get a printable string representation.",
+    "correct_answer": "repr",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Using the print() Function Effectively",
+    "game_data": {
+      "explanation": "repr() returns an official string representation of an object, often used for debugging in print.",
+      "generation_timestamp": "2026-04-10T18:12:37.607804"
+    },
+    "created_at": "2026-04-10T10:12:37.606805+00:00",
+    "exported_at": "2026-04-10T18:12:37.607804"
+  },
+  {
+    "question_text": "Printing special characters like tabs or newlines.",
+    "correct_answer": "escapesequence",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Using the print() Function Effectively",
+    "game_data": {
+      "explanation": "Escape sequences like \\n or \\t are used within strings to represent non-printable characters.",
+      "generation_timestamp": "2026-04-10T18:12:37.626344"
+    },
+    "created_at": "2026-04-10T10:12:37.625338+00:00",
+    "exported_at": "2026-04-10T18:12:37.626344"
+  },
+  {
+    "question_text": "The parameter controlling spacing between printed arguments.",
+    "correct_answer": "separator",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Using the print() Function Effectively",
+    "game_data": {
+      "explanation": "The separator, set by 'sep', is the string placed between each item in the print output.",
+      "generation_timestamp": "2026-04-10T18:12:37.647338"
+    },
+    "created_at": "2026-04-10T10:12:37.645338+00:00",
+    "exported_at": "2026-04-10T18:12:37.647338"
+  },
+  {
+    "question_text": "Suppressing the automatic newline in print output.",
+    "correct_answer": "end",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Using the print() Function Effectively",
+    "game_data": {
+      "explanation": "By setting end to an empty string, you can print multiple times on the same line.",
+      "generation_timestamp": "2026-04-10T18:12:37.667358"
+    },
+    "created_at": "2026-04-10T10:12:37.666351+00:00",
+    "exported_at": "2026-04-10T18:12:37.667358"
+  },
+  {
+    "question_text": "The first line of a script that tells the OS where to find the interpreter.",
+    "correct_answer": "shebang",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Writing and Running Your First Python Script",
+    "game_data": {
+      "explanation": "A shebang line, starting with #!, specifies the path to the interpreter for executing the script, like #!/usr/bin/env python3.",
+      "generation_timestamp": "2026-04-10T18:12:39.195481"
+    },
+    "created_at": "2026-04-10T10:12:39.193499+00:00",
+    "exported_at": "2026-04-10T18:12:39.195481"
+  },
+  {
+    "question_text": "The environment where you write, edit, and run your Python code.",
+    "correct_answer": "ide",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Writing and Running Your First Python Script",
+    "game_data": {
+      "explanation": "An Integrated Development Environment (IDE) provides tools for coding, debugging, and running programs in one application.",
+      "generation_timestamp": "2026-04-10T18:12:39.205498"
+    },
+    "created_at": "2026-04-10T10:12:39.204503+00:00",
+    "exported_at": "2026-04-10T18:12:39.205498"
+  },
+  {
+    "question_text": "A file containing Python code that can be executed.",
+    "correct_answer": "script",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Writing and Running Your First Python Script",
+    "game_data": {
+      "explanation": "A Python script is a plain text file with a .py extension containing instructions that the Python interpreter can run.",
+      "generation_timestamp": "2026-04-10T18:12:39.225402"
+    },
+    "created_at": "2026-04-10T10:12:39.224401+00:00",
+    "exported_at": "2026-04-10T18:12:39.225402"
+  },
+  {
+    "question_text": "A command-line interface used to run Python scripts.",
+    "correct_answer": "terminal",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Writing and Running Your First Python Script",
+    "game_data": {
+      "explanation": "A terminal or command prompt is a text-based interface where you can type commands to execute Python files directly.",
+      "generation_timestamp": "2026-04-10T18:12:39.246479"
+    },
+    "created_at": "2026-04-10T10:12:39.245484+00:00",
+    "exported_at": "2026-04-10T18:12:39.246479"
+  },
+  {
+    "question_text": "The act of starting a Python program to see its output.",
+    "correct_answer": "execution",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Writing and Running Your First Python Script",
+    "game_data": {
+      "explanation": "Execution refers to the process of running a script, where the interpreter carries out the program's instructions.",
+      "generation_timestamp": "2026-04-10T18:12:39.269491"
+    },
+    "created_at": "2026-04-10T10:12:39.268491+00:00",
+    "exported_at": "2026-04-10T18:12:39.269491"
+  },
+  {
+    "question_text": "A message displayed by a program, often the first output.",
+    "correct_answer": "greeting",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Writing and Running Your First Python Script",
+    "game_data": {
+      "explanation": "A greeting like 'Hello, World!' is a common initial output to verify a script is running correctly.",
+      "generation_timestamp": "2026-04-10T18:12:39.293027"
+    },
+    "created_at": "2026-04-10T10:12:39.292027+00:00",
+    "exported_at": "2026-04-10T18:12:39.293027"
+  },
+  {
+    "question_text": "The extension used for Python source code files.",
+    "correct_answer": "py",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Writing and Running Your First Python Script",
+    "game_data": {
+      "explanation": "Python script files are saved with a .py extension, which identifies them for the interpreter.",
+      "generation_timestamp": "2026-04-10T18:12:39.312026"
+    },
+    "created_at": "2026-04-10T10:12:39.311026+00:00",
+    "exported_at": "2026-04-10T18:12:39.312026"
+  },
+  {
+    "question_text": "A method to run Python code directly without saving to a file.",
+    "correct_answer": "repl",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Writing and Running Your First Python Script",
+    "game_data": {
+      "explanation": "REPL stands for Read-Eval-Print Loop, an interactive shell for executing Python commands line by line.",
+      "generation_timestamp": "2026-04-10T18:12:39.328036"
+    },
+    "created_at": "2026-04-10T10:12:39.327039+00:00",
+    "exported_at": "2026-04-10T18:12:39.328036"
+  },
+  {
+    "question_text": "Text in code ignored by the interpreter, used for notes.",
+    "correct_answer": "comment",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Writing and Running Your First Python Script",
+    "game_data": {
+      "explanation": "A comment in Python starts with a # and provides explanations for humans, not executed by the interpreter.",
+      "generation_timestamp": "2026-04-10T18:12:39.345895"
+    },
+    "created_at": "2026-04-10T10:12:39.343893+00:00",
+    "exported_at": "2026-04-10T18:12:39.345895"
+  },
+  {
+    "question_text": "Ensuring code follows Python's syntax rules before running.",
+    "correct_answer": "validation",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Writing and Running Your First Python Script",
+    "game_data": {
+      "explanation": "Validation checks that a script's structure is correct, often done by the interpreter to prevent errors.",
+      "generation_timestamp": "2026-04-10T18:12:39.367989"
+    },
+    "created_at": "2026-04-10T10:12:39.365993+00:00",
+    "exported_at": "2026-04-10T18:12:39.367989"
+  },
+  {
+    "question_text": "A common error when the interpreter cannot understand code.",
+    "correct_answer": "syntaxerror",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Writing and Running Your First Python Script",
+    "game_data": {
+      "explanation": "A SyntaxError occurs when code violates Python's grammatical rules, stopping execution before it starts.",
+      "generation_timestamp": "2026-04-10T18:12:39.395704"
+    },
+    "created_at": "2026-04-10T10:12:39.393632+00:00",
+    "exported_at": "2026-04-10T18:12:39.395704"
+  },
+  {
+    "question_text": "The process of finding and fixing errors in a script.",
+    "correct_answer": "debugging",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Writing and Running Your First Python Script",
+    "game_data": {
+      "explanation": "Debugging involves identifying and correcting mistakes in code to ensure it runs as intended.",
+      "generation_timestamp": "2026-04-10T18:12:39.418704"
+    },
+    "created_at": "2026-04-10T10:12:39.417700+00:00",
+    "exported_at": "2026-04-10T18:12:39.418704"
+  },
+  {
+    "question_text": "A built-in function that outputs text to the console.",
+    "correct_answer": "print",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Writing and Running Your First Python Script",
+    "game_data": {
+      "explanation": "The print() function displays information, like strings or variables, to the standard output during script execution.",
+      "generation_timestamp": "2026-04-10T18:12:39.443633"
+    },
+    "created_at": "2026-04-10T10:12:39.441626+00:00",
+    "exported_at": "2026-04-10T18:12:39.443633"
+  },
+  {
+    "question_text": "The location where a script is saved on your computer.",
+    "correct_answer": "directory",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Writing and Running Your First Python Script",
+    "game_data": {
+      "explanation": "A directory or folder is the file system path where your Python script resides, important for running it correctly.",
+      "generation_timestamp": "2026-04-10T18:12:39.470823"
+    },
+    "created_at": "2026-04-10T10:12:39.467798+00:00",
+    "exported_at": "2026-04-10T18:12:39.470823"
+  },
+  {
+    "question_text": "A sequence of characters used as output in a script.",
+    "correct_answer": "string",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Writing and Running Your First Python Script",
+    "game_data": {
+      "explanation": "A string is a data type in Python representing text, often enclosed in quotes, commonly printed in scripts.",
+      "generation_timestamp": "2026-04-10T18:12:39.498325"
+    },
+    "created_at": "2026-04-10T10:12:39.496332+00:00",
+    "exported_at": "2026-04-10T18:12:39.498325"
+  },
+  {
+    "question_text": "The result produced after running a Python program.",
+    "correct_answer": "output",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Writing and Running Your First Python Script",
+    "game_data": {
+      "explanation": "Output is the information a script displays, such as text or data, generated during its execution.",
+      "generation_timestamp": "2026-04-10T18:12:39.525332"
+    },
+    "created_at": "2026-04-10T10:12:39.523332+00:00",
+    "exported_at": "2026-04-10T18:12:39.525332"
+  },
+  {
+    "question_text": "A tool that helps organize and manage Python projects.",
+    "correct_answer": "workspace",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Writing and Running Your First Python Script",
+    "game_data": {
+      "explanation": "A workspace in an IDE groups related files and settings, making it easier to develop and run scripts.",
+      "generation_timestamp": "2026-04-10T18:12:39.552332"
+    },
+    "created_at": "2026-04-10T10:12:39.550329+00:00",
+    "exported_at": "2026-04-10T18:12:39.552332"
+  },
+  {
+    "question_text": "The initial step to make a Python file ready for execution.",
+    "correct_answer": "saving",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Writing and Running Your First Python Script",
+    "game_data": {
+      "explanation": "Saving a script with a .py extension is essential before it can be run by the Python interpreter.",
+      "generation_timestamp": "2026-04-10T18:12:39.571344"
+    },
+    "created_at": "2026-04-10T10:12:39.570344+00:00",
+    "exported_at": "2026-04-10T18:12:39.571344"
+  },
+  {
+    "question_text": "A string literal that appears right after a function definition.",
+    "correct_answer": "docstring",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Writing Self-Documenting Code",
+    "game_data": {
+      "explanation": "Docstrings explain what a function does, its parameters, and return value, serving as built-in documentation.",
+      "generation_timestamp": "2026-04-10T18:12:41.382134"
+    },
+    "created_at": "2026-04-10T10:12:41.380135+00:00",
+    "exported_at": "2026-04-10T18:12:41.382134"
+  },
+  {
+    "question_text": "A value that cannot be altered after creation.",
+    "correct_answer": "immutable",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Writing Self-Documenting Code",
+    "game_data": {
+      "explanation": "Immutability, like in tuples, makes data flow predictable and reduces hidden side effects in code.",
+      "generation_timestamp": "2026-04-10T18:12:41.402664"
+    },
+    "created_at": "2026-04-10T10:12:41.400745+00:00",
+    "exported_at": "2026-04-10T18:12:41.402664"
+  },
+  {
+    "question_text": "A function that returns an iterator yielding items one at a time.",
+    "correct_answer": "generator",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Writing Self-Documenting Code",
+    "game_data": {
+      "explanation": "Generators use 'yield' to produce sequences lazily, making their purpose clear as data producers.",
+      "generation_timestamp": "2026-04-10T18:12:41.434744"
+    },
+    "created_at": "2026-04-10T10:12:41.433787+00:00",
+    "exported_at": "2026-04-10T18:12:41.434744"
+  },
+  {
+    "question_text": "A function that modifies data outside its local scope.",
+    "correct_answer": "impure",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Writing Self-Documenting Code",
+    "game_data": {
+      "explanation": "An impure function has side effects, making code harder to reason about compared to pure functions.",
+      "generation_timestamp": "2026-04-10T18:12:41.460756"
+    },
+    "created_at": "2026-04-10T10:12:41.458738+00:00",
+    "exported_at": "2026-04-10T18:12:41.460756"
+  },
+  {
+    "question_text": "A function whose output depends only on its input arguments.",
+    "correct_answer": "pure",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Writing Self-Documenting Code",
+    "game_data": {
+      "explanation": "Pure functions have no side effects, making them predictable and self-documenting in their behavior.",
+      "generation_timestamp": "2026-04-10T18:12:41.486545"
+    },
+    "created_at": "2026-04-10T10:12:41.485535+00:00",
+    "exported_at": "2026-04-10T18:12:41.486545"
+  },
+  {
+    "question_text": "A coding style guide for Python promoting readability.",
+    "correct_answer": "pep8",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Writing Self-Documenting Code",
+    "game_data": {
+      "explanation": "PEP 8 provides conventions for formatting code, which helps make it consistently readable for all.",
+      "generation_timestamp": "2026-04-10T18:12:41.507543"
+    },
+    "created_at": "2026-04-10T10:12:41.504533+00:00",
+    "exported_at": "2026-04-10T18:12:41.507543"
+  },
+  {
+    "question_text": "A block of code that handles a specific type of error.",
+    "correct_answer": "exception",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Writing Self-Documenting Code",
+    "game_data": {
+      "explanation": "Properly named exception handlers document what can go wrong and how the code recovers.",
+      "generation_timestamp": "2026-04-10T18:12:41.529538"
+    },
+    "created_at": "2026-04-10T10:12:41.528531+00:00",
+    "exported_at": "2026-04-10T18:12:41.529538"
+  },
+  {
+    "question_text": "A variable accessible throughout a module or script.",
+    "correct_answer": "global",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Writing Self-Documenting Code",
+    "game_data": {
+      "explanation": "Global variables can make code hard to follow; minimizing their use improves clarity.",
+      "generation_timestamp": "2026-04-10T18:12:41.550549"
+    },
+    "created_at": "2026-04-10T10:12:41.549530+00:00",
+    "exported_at": "2026-04-10T18:12:41.550549"
+  },
+  {
+    "question_text": "A data structure that maps unique keys to values.",
+    "correct_answer": "dictionary",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Writing Self-Documenting Code",
+    "game_data": {
+      "explanation": "Using descriptive keys in a dictionary makes the relationships between data elements obvious.",
+      "generation_timestamp": "2026-04-10T18:12:41.580544"
+    },
+    "created_at": "2026-04-10T10:12:41.578631+00:00",
+    "exported_at": "2026-04-10T18:12:41.580544"
+  },
+  {
+    "question_text": "A module that contains related functions and classes.",
+    "correct_answer": "namespace",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Writing Self-Documenting Code",
+    "game_data": {
+      "explanation": "Organizing code into logical namespaces groups related functionality, aiding discoverability.",
+      "generation_timestamp": "2026-04-10T18:12:41.618138"
+    },
+    "created_at": "2026-04-10T10:12:41.616141+00:00",
+    "exported_at": "2026-04-10T18:12:41.618138"
+  },
+  {
+    "question_text": "A value that signals the absence of a value.",
+    "correct_answer": "none",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Writing Self-Documenting Code",
+    "game_data": {
+      "explanation": "Explicitly using None can document when a variable or return value is intentionally empty.",
+      "generation_timestamp": "2026-04-10T18:12:41.646056"
+    },
+    "created_at": "2026-04-10T10:12:41.644055+00:00",
+    "exported_at": "2026-04-10T18:12:41.647056"
+  },
+  {
+    "question_text": "A function that creates and returns a new object.",
+    "correct_answer": "factory",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Writing Self-Documenting Code",
+    "game_data": {
+      "explanation": "Factory functions clearly indicate they are responsible for object creation, centralizing logic.",
+      "generation_timestamp": "2026-04-10T18:12:41.672145"
+    },
+    "created_at": "2026-04-10T10:12:41.670146+00:00",
+    "exported_at": "2026-04-10T18:12:41.672145"
+  },
+  {
+    "question_text": "A technique to unpack items from sequences.",
+    "correct_answer": "unpacking",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Writing Self-Documenting Code",
+    "game_data": {
+      "explanation": "Unpacking, like in a, b = (1, 2), makes assignments clear and avoids cryptic indexing.",
+      "generation_timestamp": "2026-04-10T18:12:41.697595"
+    },
+    "created_at": "2026-04-10T10:12:41.695595+00:00",
+    "exported_at": "2026-04-10T18:12:41.697595"
+  },
+  {
+    "question_text": "Multiple error types handled in one clause.",
+    "correct_answer": "tuple",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Catching Multiple Exceptions",
+    "game_data": {
+      "explanation": "You can catch different exceptions by specifying them as a tuple in the except statement.",
+      "generation_timestamp": "2026-04-10T18:13:01.356176"
+    },
+    "created_at": "2026-04-10T10:13:01.354167+00:00",
+    "exported_at": "2026-04-10T18:13:01.356176"
+  },
+  {
+    "question_text": "Catches any exception not previously named.",
+    "correct_answer": "bareexcept",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Catching Multiple Exceptions",
+    "game_data": {
+      "explanation": "A bare except clause catches all exceptions, but it's generally discouraged as it can hide errors.",
+      "generation_timestamp": "2026-04-10T18:13:01.368971"
+    },
+    "created_at": "2026-04-10T10:13:01.367875+00:00",
+    "exported_at": "2026-04-10T18:13:01.368971"
+  },
+  {
+    "question_text": "Exception for invalid operation types.",
+    "correct_answer": "TypeError",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Catching Multiple Exceptions",
+    "game_data": {
+      "explanation": "A TypeError is raised when an operation or function is applied to an object of inappropriate type.",
+      "generation_timestamp": "2026-04-10T18:13:01.411303"
+    },
+    "created_at": "2026-04-10T10:13:01.409352+00:00",
+    "exported_at": "2026-04-10T18:13:01.411303"
+  },
+  {
+    "question_text": "Exception for invalid value arguments.",
+    "correct_answer": "ValueError",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Catching Multiple Exceptions",
+    "game_data": {
+      "explanation": "A ValueError is raised when a function receives an argument of the right type but an inappropriate value.",
+      "generation_timestamp": "2026-04-10T18:13:01.435000"
+    },
+    "created_at": "2026-04-10T10:13:01.433079+00:00",
+    "exported_at": "2026-04-10T18:13:01.435000"
+  },
+  {
+    "question_text": "Exception for division by zero.",
+    "correct_answer": "ZeroDivisionError",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Catching Multiple Exceptions",
+    "game_data": {
+      "explanation": "A ZeroDivisionError is raised when the second argument of a division or modulo operation is zero.",
+      "generation_timestamp": "2026-04-10T18:13:01.455996"
+    },
+    "created_at": "2026-04-10T10:13:01.454996+00:00",
+    "exported_at": "2026-04-10T18:13:01.455996"
+  },
+  {
+    "question_text": "Exception for accessing non-existent sequence index.",
+    "correct_answer": "IndexError",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Catching Multiple Exceptions",
+    "game_data": {
+      "explanation": "An IndexError is raised when a sequence subscript is out of range.",
+      "generation_timestamp": "2026-04-10T18:13:01.472993"
+    },
+    "created_at": "2026-04-10T10:13:01.471992+00:00",
+    "exported_at": "2026-04-10T18:13:01.472993"
+  },
+  {
+    "question_text": "Exception for missing dictionary key.",
+    "correct_answer": "KeyError",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Catching Multiple Exceptions",
+    "game_data": {
+      "explanation": "A KeyError is raised when a dictionary key is not found in the set of existing keys.",
+      "generation_timestamp": "2026-04-10T18:13:01.489994"
+    },
+    "created_at": "2026-04-10T10:13:01.489077+00:00",
+    "exported_at": "2026-04-10T18:13:01.489994"
+  },
+  {
+    "question_text": "Exception for file not found.",
+    "correct_answer": "FileNotFoundError",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Catching Multiple Exceptions",
+    "game_data": {
+      "explanation": "A FileNotFoundError is raised when a file or directory is requested but doesn't exist.",
+      "generation_timestamp": "2026-04-10T18:13:01.509066"
+    },
+    "created_at": "2026-04-10T10:13:01.508009+00:00",
+    "exported_at": "2026-04-10T18:13:01.509066"
+  },
+  {
+    "question_text": "Exception for import failures.",
+    "correct_answer": "ImportError",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Catching Multiple Exceptions",
+    "game_data": {
+      "explanation": "An ImportError is raised when an import statement fails to find the module definition.",
+      "generation_timestamp": "2026-04-10T18:13:01.527605"
+    },
+    "created_at": "2026-04-10T10:13:01.526605+00:00",
+    "exported_at": "2026-04-10T18:13:01.527605"
+  },
+  {
+    "question_text": "Exception for keyboard interrupt.",
+    "correct_answer": "KeyboardInterrupt",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Catching Multiple Exceptions",
+    "game_data": {
+      "explanation": "A KeyboardInterrupt is raised when the user hits the interrupt key (Ctrl+C).",
+      "generation_timestamp": "2026-04-10T18:13:01.544604"
+    },
+    "created_at": "2026-04-10T10:13:01.543603+00:00",
+    "exported_at": "2026-04-10T18:13:01.544604"
+  },
+  {
+    "question_text": "Exception for system exit.",
+    "correct_answer": "SystemExit",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Catching Multiple Exceptions",
+    "game_data": {
+      "explanation": "A SystemExit exception is raised by the sys.exit() function to request interpreter exit.",
+      "generation_timestamp": "2026-04-10T18:13:01.569605"
+    },
+    "created_at": "2026-04-10T10:13:01.567602+00:00",
+    "exported_at": "2026-04-10T18:13:01.569605"
+  },
+  {
+    "question_text": "Exception for arithmetic overflow.",
+    "correct_answer": "OverflowError",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Catching Multiple Exceptions",
+    "game_data": {
+      "explanation": "An OverflowError is raised when the result of an arithmetic operation is too large to be expressed.",
+      "generation_timestamp": "2026-04-10T18:13:01.589604"
+    },
+    "created_at": "2026-04-10T10:13:01.588604+00:00",
+    "exported_at": "2026-04-10T18:13:01.589604"
+  },
+  {
+    "question_text": "Exception for recursion depth exceeded.",
+    "correct_answer": "RecursionError",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Catching Multiple Exceptions",
+    "game_data": {
+      "explanation": "A RecursionError is raised when the maximum recursion depth is exceeded.",
+      "generation_timestamp": "2026-04-10T18:13:01.614621"
+    },
+    "created_at": "2026-04-10T10:13:01.612618+00:00",
+    "exported_at": "2026-04-10T18:13:01.614621"
+  },
+  {
+    "question_text": "Exception for attribute reference failure.",
+    "correct_answer": "AttributeError",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Catching Multiple Exceptions",
+    "game_data": {
+      "explanation": "An AttributeError is raised when an attribute reference or assignment fails.",
+      "generation_timestamp": "2026-04-10T18:13:01.637614"
+    },
+    "created_at": "2026-04-10T10:13:01.634613+00:00",
+    "exported_at": "2026-04-10T18:13:01.637614"
+  },
+  {
+    "question_text": "Exception for running out of memory.",
+    "correct_answer": "MemoryError",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Catching Multiple Exceptions",
+    "game_data": {
+      "explanation": "A MemoryError is raised when an operation runs out of memory.",
+      "generation_timestamp": "2026-04-10T18:13:01.664614"
+    },
+    "created_at": "2026-04-10T10:13:01.662610+00:00",
+    "exported_at": "2026-04-10T18:13:01.664614"
+  },
+  {
+    "question_text": "Exception for operating system errors.",
+    "correct_answer": "OSError",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Catching Multiple Exceptions",
+    "game_data": {
+      "explanation": "An OSError is raised when a system-related error occurs, such as I/O failures.",
+      "generation_timestamp": "2026-04-10T18:13:01.684616"
+    },
+    "created_at": "2026-04-10T10:13:01.683611+00:00",
+    "exported_at": "2026-04-10T18:13:01.684616"
+  },
+  {
+    "question_text": "Exception for assertion failures.",
+    "correct_answer": "AssertionError",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Catching Multiple Exceptions",
+    "game_data": {
+      "explanation": "An AssertionError is raised when an assert statement fails.",
+      "generation_timestamp": "2026-04-10T18:13:01.704624"
+    },
+    "created_at": "2026-04-10T10:13:01.703611+00:00",
+    "exported_at": "2026-04-10T18:13:01.704624"
+  },
+  {
+    "question_text": "Type of expression that evaluates to either true or false.",
+    "correct_answer": "boolean",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Boolean Logic in Conditions",
+    "game_data": {
+      "explanation": "A boolean expression in Python produces a result that is either True or False, often used in conditions.",
+      "generation_timestamp": "2026-04-10T18:13:05.611002"
+    },
+    "created_at": "2026-04-10T10:13:05.594992+00:00",
+    "exported_at": "2026-04-10T18:13:05.611002"
+  },
+  {
+    "question_text": "Short-circuit evaluation stops early when this operator's first operand is false.",
+    "correct_answer": "and",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Boolean Logic in Conditions",
+    "game_data": {
+      "explanation": "With 'and', if the first condition is false, Python doesn't evaluate the second one since the result is already determined.",
+      "generation_timestamp": "2026-04-10T18:13:05.630058"
+    },
+    "created_at": "2026-04-10T10:13:05.627057+00:00",
+    "exported_at": "2026-04-10T18:13:05.630058"
+  },
+  {
+    "question_text": "Combining multiple boolean expressions into a single condition.",
+    "correct_answer": "compound",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Boolean Logic in Conditions",
+    "game_data": {
+      "explanation": "A compound condition uses logical operators like 'and', 'or', and 'not' to combine multiple boolean expressions.",
+      "generation_timestamp": "2026-04-10T18:13:05.665832"
+    },
+    "created_at": "2026-04-10T10:13:05.663833+00:00",
+    "exported_at": "2026-04-10T18:13:05.665832"
+  },
+  {
+    "question_text": "Boolean value representing a false condition in Python.",
+    "correct_answer": "False",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Boolean Logic in Conditions",
+    "game_data": {
+      "explanation": "False is one of Python's two boolean literals, representing a negative or untrue condition in logic.",
+      "generation_timestamp": "2026-04-10T18:13:05.690478"
+    },
+    "created_at": "2026-04-10T10:13:05.689479+00:00",
+    "exported_at": "2026-04-10T18:13:05.690478"
+  },
+  {
+    "question_text": "Boolean value representing a true condition in Python.",
+    "correct_answer": "True",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Boolean Logic in Conditions",
+    "game_data": {
+      "explanation": "True is one of Python's two boolean literals, representing a positive or valid condition in logic.",
+      "generation_timestamp": "2026-04-10T18:13:05.707477"
+    },
+    "created_at": "2026-04-10T10:13:05.706478+00:00",
+    "exported_at": "2026-04-10T18:13:05.707477"
+  },
+  {
+    "question_text": "Operator precedence determines which operation is evaluated first in boolean logic.",
+    "correct_answer": "precedence",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Boolean Logic in Conditions",
+    "game_data": {
+      "explanation": "Precedence rules in Python determine the order in which boolean operators are evaluated in complex expressions.",
+      "generation_timestamp": "2026-04-10T18:13:05.725008"
+    },
+    "created_at": "2026-04-10T10:13:05.723496+00:00",
+    "exported_at": "2026-04-10T18:13:05.725008"
+  },
+  {
+    "question_text": "Using parentheses to explicitly control evaluation order in boolean expressions.",
+    "correct_answer": "grouping",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Boolean Logic in Conditions",
+    "game_data": {
+      "explanation": "Grouping with parentheses in boolean expressions forces specific evaluation order, overriding normal operator precedence.",
+      "generation_timestamp": "2026-04-10T18:13:05.747025"
+    },
+    "created_at": "2026-04-10T10:13:05.745114+00:00",
+    "exported_at": "2026-04-10T18:13:05.747025"
+  },
+  {
+    "question_text": "A condition that is always true regardless of input values.",
+    "correct_answer": "tautology",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Boolean Logic in Conditions",
+    "game_data": {
+      "explanation": "In boolean logic, a tautology is an expression that always evaluates to true under all possible conditions.",
+      "generation_timestamp": "2026-04-10T18:13:05.767024"
+    },
+    "created_at": "2026-04-10T10:13:05.765024+00:00",
+    "exported_at": "2026-04-10T18:13:05.767024"
+  },
+  {
+    "question_text": "A condition that is always false regardless of input values.",
+    "correct_answer": "contradiction",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Boolean Logic in Conditions",
+    "game_data": {
+      "explanation": "In boolean logic, a contradiction is an expression that always evaluates to false under all possible conditions.",
+      "generation_timestamp": "2026-04-10T18:13:05.786017"
+    },
+    "created_at": "2026-04-10T10:13:05.785023+00:00",
+    "exported_at": "2026-04-10T18:13:05.786017"
+  },
+  {
+    "question_text": "The process of simplifying complex boolean expressions using logical rules.",
+    "correct_answer": "reduction",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Boolean Logic in Conditions",
+    "game_data": {
+      "explanation": "Boolean reduction applies logical equivalences to simplify complex expressions while maintaining the same truth values.",
+      "generation_timestamp": "2026-04-10T18:13:05.805027"
+    },
+    "created_at": "2026-04-10T10:13:05.804016+00:00",
+    "exported_at": "2026-04-10T18:13:05.805027"
+  },
+  {
+    "question_text": "Boolean algebra rule: A and (B or C) equals (A and B) or (A and C).",
+    "correct_answer": "distributive",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Boolean Logic in Conditions",
+    "game_data": {
+      "explanation": "The distributive law in boolean algebra allows 'and' to distribute over 'or', similar to multiplication over addition.",
+      "generation_timestamp": "2026-04-10T18:13:05.825038"
+    },
+    "created_at": "2026-04-10T10:13:05.824030+00:00",
+    "exported_at": "2026-04-10T18:13:05.825038"
+  },
+  {
+    "question_text": "Boolean algebra rule: not (A and B) equals (not A) or (not B).",
+    "correct_answer": "demorgan",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Boolean Logic in Conditions",
+    "game_data": {
+      "explanation": "De Morgan's laws describe how negation distributes over conjunction and disjunction in boolean logic.",
+      "generation_timestamp": "2026-04-10T18:13:05.848202"
+    },
+    "created_at": "2026-04-10T10:13:05.845208+00:00",
+    "exported_at": "2026-04-10T18:13:05.848202"
+  },
+  {
+    "question_text": "Boolean algebra rule: A or (A and B) simplifies to just A.",
+    "correct_answer": "absorption",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Boolean Logic in Conditions",
+    "game_data": {
+      "explanation": "The absorption law in boolean algebra states that A combined with (A and B) simply results in A.",
+      "generation_timestamp": "2026-04-10T18:13:05.874200"
+    },
+    "created_at": "2026-04-10T10:13:05.872201+00:00",
+    "exported_at": "2026-04-10T18:13:05.874200"
+  },
+  {
+    "question_text": "A common error when conditions overlap incorrectly.",
+    "correct_answer": "offbyone",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Common Logic Pitfalls and Debugging",
+    "game_data": {
+      "explanation": "Off-by-one errors occur when loops or conditions are incorrectly bounded by one iteration or element.",
+      "generation_timestamp": "2026-04-10T18:13:06.589964"
+    },
+    "created_at": "2026-04-10T10:13:06.588964+00:00",
+    "exported_at": "2026-04-10T18:13:06.589964"
+  },
+  {
+    "question_text": "When a condition is always true or false regardless of input.",
+    "correct_answer": "tautology",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Common Logic Pitfalls and Debugging",
+    "game_data": {
+      "explanation": "A tautology in logic is a statement that is always true, making the conditional pointless.",
+      "generation_timestamp": "2026-04-10T18:13:06.601969"
+    },
+    "created_at": "2026-04-10T10:13:06.600963+00:00",
+    "exported_at": "2026-04-10T18:13:06.601969"
+  },
+  {
+    "question_text": "A logical flaw where the order of conditions matters.",
+    "correct_answer": "shortcircuit",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Common Logic Pitfalls and Debugging",
+    "game_data": {
+      "explanation": "Short-circuit evaluation can cause bugs if later conditions rely on side effects of earlier ones.",
+      "generation_timestamp": "2026-04-10T18:13:06.624968"
+    },
+    "created_at": "2026-04-10T10:13:06.623967+00:00",
+    "exported_at": "2026-04-10T18:13:06.624968"
+  },
+  {
+    "question_text": "Mistaken identity between assignment and comparison.",
+    "correct_answer": "assignment",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Common Logic Pitfalls and Debugging",
+    "game_data": {
+      "explanation": "Using a single equals (=) instead of double (==) for comparison is a classic logic pitfall.",
+      "generation_timestamp": "2026-04-10T18:13:06.648487"
+    },
+    "created_at": "2026-04-10T10:13:06.646486+00:00",
+    "exported_at": "2026-04-10T18:13:06.648487"
+  },
+  {
+    "question_text": "When nested conditionals become overly complex and hard to follow.",
+    "correct_answer": "spaghetticode",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Common Logic Pitfalls and Debugging",
+    "game_data": {
+      "explanation": "Spaghetti code refers to complex, tangled control flow that is difficult to debug and maintain.",
+      "generation_timestamp": "2026-04-10T18:13:06.671486"
+    },
+    "created_at": "2026-04-10T10:13:06.670488+00:00",
+    "exported_at": "2026-04-10T18:13:06.671486"
+  },
+  {
+    "question_text": "A subtle bug from mutable default arguments in functions.",
+    "correct_answer": "mutability",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Common Logic Pitfalls and Debugging",
+    "game_data": {
+      "explanation": "Using mutable objects as default arguments can lead to unexpected behavior across function calls.",
+      "generation_timestamp": "2026-04-10T18:13:06.694486"
+    },
+    "created_at": "2026-04-10T10:13:06.692488+00:00",
+    "exported_at": "2026-04-10T18:13:06.694486"
+  },
+  {
+    "question_text": "Failing to handle all possible cases in conditionals.",
+    "correct_answer": "edgecase",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Common Logic Pitfalls and Debugging",
+    "game_data": {
+      "explanation": "An edge case is an input or situation at an extreme operating parameter, often missed in testing.",
+      "generation_timestamp": "2026-04-10T18:13:06.715502"
+    },
+    "created_at": "2026-04-10T10:13:06.713510+00:00",
+    "exported_at": "2026-04-10T18:13:06.715502"
+  },
+  {
+    "question_text": "Incorrect assumption about operator precedence.",
+    "correct_answer": "precedence",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Common Logic Pitfalls and Debugging",
+    "game_data": {
+      "explanation": "Logical errors arise when the order of operations is not what the programmer intended.",
+      "generation_timestamp": "2026-04-10T18:13:06.736052"
+    },
+    "created_at": "2026-04-10T10:13:06.734052+00:00",
+    "exported_at": "2026-04-10T18:13:06.736052"
+  },
+  {
+    "question_text": "A logical error from confusing 'and' with 'or'.",
+    "correct_answer": "booleanlogic",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Common Logic Pitfalls and Debugging",
+    "game_data": {
+      "explanation": "Incorrect application of Boolean algebra (AND/OR/NOT) leads to flawed conditional logic.",
+      "generation_timestamp": "2026-04-10T18:13:06.765049"
+    },
+    "created_at": "2026-04-10T10:13:06.764047+00:00",
+    "exported_at": "2026-04-10T18:13:06.765049"
+  },
+  {
+    "question_text": "When a loop or recursion never terminates.",
+    "correct_answer": "infinite",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Common Logic Pitfalls and Debugging",
+    "game_data": {
+      "explanation": "An infinite loop occurs when the loop's termination condition is never met.",
+      "generation_timestamp": "2026-04-10T18:13:06.786318"
+    },
+    "created_at": "2026-04-10T10:13:06.784316+00:00",
+    "exported_at": "2026-04-10T18:13:06.786318"
+  },
+  {
+    "question_text": "A bug caused by modifying a list while iterating over it.",
+    "correct_answer": "modification",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Common Logic Pitfalls and Debugging",
+    "game_data": {
+      "explanation": "Modifying a collection during iteration can skip elements or cause runtime errors.",
+      "generation_timestamp": "2026-04-10T18:13:06.811322"
+    },
+    "created_at": "2026-04-10T10:13:06.809329+00:00",
+    "exported_at": "2026-04-10T18:13:06.811322"
+  },
+  {
+    "question_text": "Missing the final 'else' clause for completeness.",
+    "correct_answer": "exhaustiveness",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Common Logic Pitfalls and Debugging",
+    "game_data": {
+      "explanation": "Non-exhaustive conditionals fail to handle all possible inputs, leading to undefined behavior.",
+      "generation_timestamp": "2026-04-10T18:13:06.840494"
+    },
+    "created_at": "2026-04-10T10:13:06.838486+00:00",
+    "exported_at": "2026-04-10T18:13:06.840494"
+  },
+  {
+    "question_text": "Relying on floating-point numbers for exact equality checks.",
+    "correct_answer": "imprecision",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Common Logic Pitfalls and Debugging",
+    "game_data": {
+      "explanation": "Floating-point arithmetic has rounding errors, making direct equality comparisons unreliable.",
+      "generation_timestamp": "2026-04-10T18:13:06.876588"
+    },
+    "created_at": "2026-04-10T10:13:06.873576+00:00",
+    "exported_at": "2026-04-10T18:13:06.876588"
+  },
+  {
+    "question_text": "A logical flaw from deeply nested conditional blocks.",
+    "correct_answer": "arrowcode",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Common Logic Pitfalls and Debugging",
+    "game_data": {
+      "explanation": "Arrow code is a style with many nested conditionals, forming a visual arrow and increasing complexity.",
+      "generation_timestamp": "2026-04-10T18:13:06.913500"
+    },
+    "created_at": "2026-04-10T10:13:06.911505+00:00",
+    "exported_at": "2026-04-10T18:13:06.913500"
+  },
+  {
+    "question_text": "Forgetting that Python conditions require explicit Boolean expressions.",
+    "correct_answer": "truthiness",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Common Logic Pitfalls and Debugging",
+    "game_data": {
+      "explanation": "Python's truthiness rules can cause non-Boolean values to be evaluated in conditionals unexpectedly.",
+      "generation_timestamp": "2026-04-10T18:13:06.939634"
+    },
+    "created_at": "2026-04-10T10:13:06.937638+00:00",
+    "exported_at": "2026-04-10T18:13:06.939634"
+  },
+  {
+    "question_text": "A bug from variable scope within conditional blocks.",
+    "correct_answer": "namespace",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Common Logic Pitfalls and Debugging",
+    "game_data": {
+      "explanation": "Variables defined inside a conditional block may not be accessible outside, causing NameErrors.",
+      "generation_timestamp": "2026-04-10T18:13:06.962417"
+    },
+    "created_at": "2026-04-10T10:13:06.961412+00:00",
+    "exported_at": "2026-04-10T18:13:06.962417"
+  },
+  {
+    "question_text": "Incorrect chaining of comparison operators.",
+    "correct_answer": "chaining",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Common Logic Pitfalls and Debugging",
+    "game_data": {
+      "explanation": "Python supports chained comparisons (a < b < c), but misusing them can create logical errors.",
+      "generation_timestamp": "2026-04-10T18:13:06.980415"
+    },
+    "created_at": "2026-04-10T10:13:06.979416+00:00",
+    "exported_at": "2026-04-10T18:13:06.980415"
+  },
+  {
+    "question_text": "A block of code where exceptions are monitored and can be caught.",
+    "correct_answer": "try",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "else and finally Clauses in Error Handling",
+    "game_data": {
+      "explanation": "The try block contains code that might raise an exception, allowing subsequent except clauses to handle it.",
+      "generation_timestamp": "2026-04-10T18:13:09.154249"
+    },
+    "created_at": "2026-04-10T10:13:09.152223+00:00",
+    "exported_at": "2026-04-10T18:13:09.154249"
+  },
+  {
+    "question_text": "Clause that handles specific exceptions raised in a try block.",
+    "correct_answer": "except",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "else and finally Clauses in Error Handling",
+    "game_data": {
+      "explanation": "The except clause catches and handles exceptions that occur in the preceding try block.",
+      "generation_timestamp": "2026-04-10T18:13:09.168255"
+    },
+    "created_at": "2026-04-10T10:13:09.166250+00:00",
+    "exported_at": "2026-04-10T18:13:09.168255"
+  },
+  {
+    "question_text": "An abnormal event that disrupts normal program flow.",
+    "correct_answer": "exception",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "else and finally Clauses in Error Handling",
+    "game_data": {
+      "explanation": "An exception is an error that occurs during execution, which can be caught and handled using try-except blocks.",
+      "generation_timestamp": "2026-04-10T18:13:09.199761"
+    },
+    "created_at": "2026-04-10T10:13:09.196762+00:00",
+    "exported_at": "2026-04-10T18:13:09.199761"
+  },
+  {
+    "question_text": "The process of dealing with exceptions to prevent program crashes.",
+    "correct_answer": "handling",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "else and finally Clauses in Error Handling",
+    "game_data": {
+      "explanation": "Exception handling involves using try, except, else, and finally to manage errors gracefully.",
+      "generation_timestamp": "2026-04-10T18:13:09.225775"
+    },
+    "created_at": "2026-04-10T10:13:09.224775+00:00",
+    "exported_at": "2026-04-10T18:13:09.225775"
+  },
+  {
+    "question_text": "A specific type of error that can be caught by an except clause.",
+    "correct_answer": "exceptiontype",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "else and finally Clauses in Error Handling",
+    "game_data": {
+      "explanation": "Exception types like ValueError or TypeError specify the kind of error, allowing targeted handling.",
+      "generation_timestamp": "2026-04-10T18:13:09.246303"
+    },
+    "created_at": "2026-04-10T10:13:09.245301+00:00",
+    "exported_at": "2026-04-10T18:13:09.246303"
+  },
+  {
+    "question_text": "To capture and manage an exception so the program can continue.",
+    "correct_answer": "catch",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "else and finally Clauses in Error Handling",
+    "game_data": {
+      "explanation": "Catching an exception means intercepting it with an except block to handle it without stopping execution.",
+      "generation_timestamp": "2026-04-10T18:13:09.268302"
+    },
+    "created_at": "2026-04-10T10:13:09.266303+00:00",
+    "exported_at": "2026-04-10T18:13:09.268302"
+  },
+  {
+    "question_text": "A block that ensures resource cleanup, like closing files.",
+    "correct_answer": "finally",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "else and finally Clauses in Error Handling",
+    "game_data": {
+      "explanation": "The finally clause is ideal for cleanup tasks, as it runs whether an exception occurred or not.",
+      "generation_timestamp": "2026-04-10T18:13:09.286303"
+    },
+    "created_at": "2026-04-10T10:13:09.285310+00:00",
+    "exported_at": "2026-04-10T18:13:09.286303"
+  },
+  {
+    "question_text": "Clause for code that should run only when try succeeds.",
+    "correct_answer": "else",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "else and finally Clauses in Error Handling",
+    "game_data": {
+      "explanation": "The else clause is perfect for code that depends on the try block completing without errors.",
+      "generation_timestamp": "2026-04-10T18:13:09.308317"
+    },
+    "created_at": "2026-04-10T10:13:09.306302+00:00",
+    "exported_at": "2026-04-10T18:13:09.308317"
+  },
+  {
+    "question_text": "The act of intercepting an exception before it crashes the program.",
+    "correct_answer": "trapping",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "else and finally Clauses in Error Handling",
+    "game_data": {
+      "explanation": "Trapping an exception means catching it with an except block to prevent the program from terminating.",
+      "generation_timestamp": "2026-04-10T18:13:09.330817"
+    },
+    "created_at": "2026-04-10T10:13:09.329812+00:00",
+    "exported_at": "2026-04-10T18:13:09.330817"
+  },
+  {
+    "question_text": "A statement used to exit a try block early without raising an exception.",
+    "correct_answer": "return",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "else and finally Clauses in Error Handling",
+    "game_data": {
+      "explanation": "A return statement in a try block exits the function, but finally will still execute if present.",
+      "generation_timestamp": "2026-04-10T18:13:09.357825"
+    },
+    "created_at": "2026-04-10T10:13:09.355825+00:00",
+    "exported_at": "2026-04-10T18:13:09.357825"
+  },
+  {
+    "question_text": "The sequence of try, except, else, and finally in error handling.",
+    "correct_answer": "structure",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "else and finally Clauses in Error Handling",
+    "game_data": {
+      "explanation": "The structure defines the order and purpose of each clause in comprehensive exception handling.",
+      "generation_timestamp": "2026-04-10T18:13:09.382236"
+    },
+    "created_at": "2026-04-10T10:13:09.380236+00:00",
+    "exported_at": "2026-04-10T18:13:09.382236"
+  },
+  {
+    "question_text": "To pass an exception to a higher level of the program.",
+    "correct_answer": "propagate",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "else and finally Clauses in Error Handling",
+    "game_data": {
+      "explanation": "If not caught, an exception propagates up the call stack until handled or causing a crash.",
+      "generation_timestamp": "2026-04-10T18:13:09.405241"
+    },
+    "created_at": "2026-04-10T10:13:09.404241+00:00",
+    "exported_at": "2026-04-10T18:13:09.405241"
+  },
+  {
+    "question_text": "A clause that can follow try without an except, but requires finally.",
+    "correct_answer": "else",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "else and finally Clauses in Error Handling",
+    "game_data": {
+      "explanation": "An else clause can be used with try and finally, but only if there's no except, which is rare.",
+      "generation_timestamp": "2026-04-10T18:13:09.434769"
+    },
+    "created_at": "2026-04-10T10:13:09.432777+00:00",
+    "exported_at": "2026-04-10T18:13:09.434769"
+  },
+  {
+    "question_text": "Ensuring certain code runs even after an unhandled exception.",
+    "correct_answer": "finally",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "else and finally Clauses in Error Handling",
+    "game_data": {
+      "explanation": "The finally clause guarantees execution, even if an exception isn't caught and causes the program to exit.",
+      "generation_timestamp": "2026-04-10T18:13:09.463769"
+    },
+    "created_at": "2026-04-10T10:13:09.462768+00:00",
+    "exported_at": "2026-04-10T18:13:09.463769"
+  },
+  {
+    "question_text": "A block where else might be used to separate success logic from error handling.",
+    "correct_answer": "try",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "else and finally Clauses in Error Handling",
+    "game_data": {
+      "explanation": "The try block's success leads to else, keeping error-free code distinct from exception handling.",
+      "generation_timestamp": "2026-04-10T18:13:09.486766"
+    },
+    "created_at": "2026-04-10T10:13:09.485764+00:00",
+    "exported_at": "2026-04-10T18:13:09.486766"
+  },
+  {
+    "question_text": "The overall approach to managing errors with try, except, else, and finally.",
+    "correct_answer": "exceptionhandling",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "else and finally Clauses in Error Handling",
+    "game_data": {
+      "explanation": "Exception handling is the comprehensive strategy using all these clauses to manage program errors robustly.",
+      "generation_timestamp": "2026-04-10T18:13:09.508763"
+    },
+    "created_at": "2026-04-10T10:13:09.507769+00:00",
+    "exported_at": "2026-04-10T18:13:09.508763"
+  },
+  {
+    "question_text": "A built-in function that prints a traceback of the last exception.",
+    "correct_answer": "traceback",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Error Messages and Debugging Tools",
+    "game_data": {
+      "explanation": "The traceback module provides a standard interface to extract, format, and print stack traces of Python programs. It's crucial for debugging.",
+      "generation_timestamp": "2026-04-10T18:13:33.683269"
+    },
+    "created_at": "2026-04-10T10:13:33.682267+00:00",
+    "exported_at": "2026-04-10T18:13:33.683269"
+  },
+  {
+    "question_text": "The default Python debugger, invoked with import pdb.",
+    "correct_answer": "pdb",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Error Messages and Debugging Tools",
+    "game_data": {
+      "explanation": "PDB is the Python Debugger, an interactive source code debugger for Python programs. It allows setting breakpoints and stepping through code.",
+      "generation_timestamp": "2026-04-10T18:13:33.694269"
+    },
+    "created_at": "2026-04-10T10:13:33.693266+00:00",
+    "exported_at": "2026-04-10T18:13:33.694269"
+  },
+  {
+    "question_text": "A tool for static analysis of Python code to find bugs.",
+    "correct_answer": "pylint",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Error Messages and Debugging Tools",
+    "game_data": {
+      "explanation": "Pylint is a static code analysis tool that checks for programming errors, enforces a coding standard, and looks for code smells.",
+      "generation_timestamp": "2026-04-10T18:13:33.717273"
+    },
+    "created_at": "2026-04-10T10:13:33.716269+00:00",
+    "exported_at": "2026-04-10T18:13:33.717273"
+  },
+  {
+    "question_text": "A common error when a name is not found in local or global scope.",
+    "correct_answer": "NameError",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Error Messages and Debugging Tools",
+    "game_data": {
+      "explanation": "A NameError is raised when a local or global name is not found. This often happens with typos or using a variable before it's defined.",
+      "generation_timestamp": "2026-04-10T18:13:33.735268"
+    },
+    "created_at": "2026-04-10T10:13:33.734264+00:00",
+    "exported_at": "2026-04-10T18:13:33.735268"
+  },
+  {
+    "question_text": "Error raised when an operation or function is applied to an object of inappropriate type.",
+    "correct_answer": "TypeError",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Error Messages and Debugging Tools",
+    "game_data": {
+      "explanation": "A TypeError occurs when an operation or function is applied to an object of an inappropriate type, like adding a string to an integer.",
+      "generation_timestamp": "2026-04-10T18:13:33.753273"
+    },
+    "created_at": "2026-04-10T10:13:33.752281+00:00",
+    "exported_at": "2026-04-10T18:13:33.753273"
+  },
+  {
+    "question_text": "Exception raised when a sequence subscript is out of range.",
+    "correct_answer": "IndexError",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Error Messages and Debugging Tools",
+    "game_data": {
+      "explanation": "An IndexError is raised when a sequence subscript is out of range. For example, trying to access the 10th item in a 5-item list.",
+      "generation_timestamp": "2026-04-10T18:13:33.772799"
+    },
+    "created_at": "2026-04-10T10:13:33.771799+00:00",
+    "exported_at": "2026-04-10T18:13:33.772799"
+  },
+  {
+    "question_text": "Error raised when a dictionary key is not found.",
+    "correct_answer": "KeyError",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Error Messages and Debugging Tools",
+    "game_data": {
+      "explanation": "A KeyError is raised when a dictionary key is not found in the set of existing keys. It's a common error when accessing dicts.",
+      "generation_timestamp": "2026-04-10T18:13:33.791802"
+    },
+    "created_at": "2026-04-10T10:13:33.790810+00:00",
+    "exported_at": "2026-04-10T18:13:33.791802"
+  },
+  {
+    "question_text": "Exception raised when an attribute reference or assignment fails.",
+    "correct_answer": "AttributeError",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Error Messages and Debugging Tools",
+    "game_data": {
+      "explanation": "An AttributeError is raised when an attribute reference or assignment fails. This happens when trying to access a non-existent object attribute.",
+      "generation_timestamp": "2026-04-10T18:13:33.813802"
+    },
+    "created_at": "2026-04-10T10:13:33.812802+00:00",
+    "exported_at": "2026-04-10T18:13:33.813802"
+  },
+  {
+    "question_text": "Error raised when an imported module is not found.",
+    "correct_answer": "ModuleNotFoundError",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Error Messages and Debugging Tools",
+    "game_data": {
+      "explanation": "A ModuleNotFoundError is raised when an imported module is not found. It's a subclass of ImportError and indicates the module doesn't exist.",
+      "generation_timestamp": "2026-04-10T18:13:33.843870"
+    },
+    "created_at": "2026-04-10T10:13:33.841912+00:00",
+    "exported_at": "2026-04-10T18:13:33.843870"
+  },
+  {
+    "question_text": "The base class for all built-in, non-system-exiting exceptions.",
+    "correct_answer": "Exception",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Error Messages and Debugging Tools",
+    "game_data": {
+      "explanation": "Exception is the base class for all built-in, non-system-exiting exceptions. All user-defined exceptions should also be derived from this class.",
+      "generation_timestamp": "2026-04-10T18:13:33.877369"
+    },
+    "created_at": "2026-04-10T10:13:33.875365+00:00",
+    "exported_at": "2026-04-10T18:13:33.877369"
+  },
+  {
+    "question_text": "A tool for measuring execution time of small code snippets.",
+    "correct_answer": "timeit",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Error Messages and Debugging Tools",
+    "game_data": {
+      "explanation": "The timeit module provides a simple way to time small bits of Python code. It avoids a number of common traps for measuring execution times.",
+      "generation_timestamp": "2026-04-10T18:13:33.909365"
+    },
+    "created_at": "2026-04-10T10:13:33.908363+00:00",
+    "exported_at": "2026-04-10T18:13:33.909365"
+  },
+  {
+    "question_text": "A function that returns the list of names in the current local scope.",
+    "correct_answer": "locals",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Error Messages and Debugging Tools",
+    "game_data": {
+      "explanation": "The locals() function returns a dictionary representing the current local symbol table. This is useful for debugging to see available variables.",
+      "generation_timestamp": "2026-04-10T18:13:33.931468"
+    },
+    "created_at": "2026-04-10T10:13:33.929461+00:00",
+    "exported_at": "2026-04-10T18:13:33.931468"
+  },
+  {
+    "question_text": "A method to get information about any object in Python.",
+    "correct_answer": "dir",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Error Messages and Debugging Tools",
+    "game_data": {
+      "explanation": "The dir() function returns a list of valid attributes for the specified object. It's a powerful introspection tool for debugging.",
+      "generation_timestamp": "2026-04-10T18:13:33.967214"
+    },
+    "created_at": "2026-04-10T10:13:33.965214+00:00",
+    "exported_at": "2026-04-10T18:13:33.967214"
+  },
+  {
+    "question_text": "A function that returns the identity of an object, useful for debugging references.",
+    "correct_answer": "id",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Error Messages and Debugging Tools",
+    "game_data": {
+      "explanation": "The id() function returns the identity of an object. This is useful for debugging to check if two variables reference the same object.",
+      "generation_timestamp": "2026-04-10T18:13:33.991448"
+    },
+    "created_at": "2026-04-10T10:13:33.989454+00:00",
+    "exported_at": "2026-04-10T18:13:33.991448"
+  },
+  {
+    "question_text": "A module for inspecting live objects and getting source code information.",
+    "correct_answer": "inspect",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Error Messages and Debugging Tools",
+    "game_data": {
+      "explanation": "The inspect module provides several useful functions to get information about live objects such as modules, classes, methods, and functions.",
+      "generation_timestamp": "2026-04-10T18:13:34.015450"
+    },
+    "created_at": "2026-04-10T10:13:34.013455+00:00",
+    "exported_at": "2026-04-10T18:13:34.015450"
+  },
+  {
+    "question_text": "A tool for checking Python code against PEP 8 style conventions.",
+    "correct_answer": "pycodestyle",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Error Messages and Debugging Tools",
+    "game_data": {
+      "explanation": "Pycodestyle is a tool to check Python code against some of the style conventions in PEP 8. It helps maintain code quality.",
+      "generation_timestamp": "2026-04-10T18:13:34.046469"
+    },
+    "created_at": "2026-04-10T10:13:34.044450+00:00",
+    "exported_at": "2026-04-10T18:13:34.046469"
+  },
+  {
+    "question_text": "A Python module for working with the interpreter's stack frames.",
+    "correct_answer": "sys",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Error Messages and Debugging Tools",
+    "game_data": {
+      "explanation": "The sys module provides access to some variables used or maintained by the interpreter, including the call stack via sys._getframe().",
+      "generation_timestamp": "2026-04-10T18:13:34.080002"
+    },
+    "created_at": "2026-04-10T10:13:34.077999+00:00",
+    "exported_at": "2026-04-10T18:13:34.080002"
+  },
+  {
+    "question_text": "A function that prints a string representation of an object to sys.stderr.",
+    "correct_answer": "eprint",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Error Messages and Debugging Tools",
+    "game_data": {
+      "explanation": "While not built-in, eprint is a common debugging function that prints to stderr. It's often defined as print(*args, file=sys.stderr).",
+      "generation_timestamp": "2026-04-10T18:13:34.161720"
+    },
+    "created_at": "2026-04-10T10:13:34.159208+00:00",
+    "exported_at": "2026-04-10T18:13:34.161720"
+  },
+  {
+    "question_text": "Optional block following an if, for alternative conditions.",
+    "correct_answer": "elif",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "if Statement Syntax and Structure",
+    "game_data": {
+      "explanation": "'elif' is short for 'else if'. It allows you to check multiple conditions in sequence after an initial 'if' statement.",
+      "generation_timestamp": "2026-04-10T18:13:35.697707"
+    },
+    "created_at": "2026-04-10T10:13:35.695709+00:00",
+    "exported_at": "2026-04-10T18:13:35.697707"
+  },
+  {
+    "question_text": "Final, catch-all block in a conditional chain.",
+    "correct_answer": "else",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "if Statement Syntax and Structure",
+    "game_data": {
+      "explanation": "The 'else' clause executes its code block only if all preceding 'if' and 'elif' conditions evaluate to False.",
+      "generation_timestamp": "2026-04-10T18:13:35.715759"
+    },
+    "created_at": "2026-04-10T10:13:35.713771+00:00",
+    "exported_at": "2026-04-10T18:13:35.715759"
+  },
+  {
+    "question_text": "The expression whose truth value determines code path.",
+    "correct_answer": "condition",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "if Statement Syntax and Structure",
+    "game_data": {
+      "explanation": "A condition is a boolean expression (evaluates to True or False) that controls the flow of execution in an if statement.",
+      "generation_timestamp": "2026-04-10T18:13:35.753714"
+    },
+    "created_at": "2026-04-10T10:13:35.750714+00:00",
+    "exported_at": "2026-04-10T18:13:35.753714"
+  },
+  {
+    "question_text": "Colon marking the end of an if statement's header.",
+    "correct_answer": "colon",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "if Statement Syntax and Structure",
+    "game_data": {
+      "explanation": "In Python syntax, a colon (:) is required at the end of the 'if', 'elif', and 'else' lines to introduce the following block.",
+      "generation_timestamp": "2026-04-10T18:13:35.786523"
+    },
+    "created_at": "2026-04-10T10:13:35.785525+00:00",
+    "exported_at": "2026-04-10T18:13:35.787525"
+  },
+  {
+    "question_text": "Indented lines following a conditional header.",
+    "correct_answer": "block",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "if Statement Syntax and Structure",
+    "game_data": {
+      "explanation": "A block is a group of indented statements that executes as a unit when its associated conditional expression is true.",
+      "generation_timestamp": "2026-04-10T18:13:35.810587"
+    },
+    "created_at": "2026-04-10T10:13:35.808536+00:00",
+    "exported_at": "2026-04-10T18:13:35.810587"
+  },
+  {
+    "question_text": "Logical operator for combining true conditions.",
+    "correct_answer": "and",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "if Statement Syntax and Structure",
+    "game_data": {
+      "explanation": "The 'and' operator returns True only if both conditions on its left and right are true, used to create compound conditions.",
+      "generation_timestamp": "2026-04-10T18:13:35.832532"
+    },
+    "created_at": "2026-04-10T10:13:35.831532+00:00",
+    "exported_at": "2026-04-10T18:13:35.832532"
+  },
+  {
+    "question_text": "Logical operator for an alternative true condition.",
+    "correct_answer": "or",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "if Statement Syntax and Structure",
+    "game_data": {
+      "explanation": "The 'or' operator returns True if at least one of the conditions on its left or right is true.",
+      "generation_timestamp": "2026-04-10T18:13:35.865623"
+    },
+    "created_at": "2026-04-10T10:13:35.863607+00:00",
+    "exported_at": "2026-04-10T18:13:35.865623"
+  },
+  {
+    "question_text": "Logical operator that inverts a boolean value.",
+    "correct_answer": "not",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "if Statement Syntax and Structure",
+    "game_data": {
+      "explanation": "The 'not' operator negates a boolean expression, turning True into False and vice versa.",
+      "generation_timestamp": "2026-04-10T18:13:35.890629"
+    },
+    "created_at": "2026-04-10T10:13:35.887623+00:00",
+    "exported_at": "2026-04-10T18:13:35.890629"
+  },
+  {
+    "question_text": "Conditional expression inside parentheses for clarity.",
+    "correct_answer": "grouping",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "if Statement Syntax and Structure",
+    "game_data": {
+      "explanation": "Using parentheses to group parts of a complex conditional expression can control evaluation order and improve readability.",
+      "generation_timestamp": "2026-04-10T18:13:35.919622"
+    },
+    "created_at": "2026-04-10T10:13:35.918625+00:00",
+    "exported_at": "2026-04-10T18:13:35.919622"
+  },
+  {
+    "question_text": "A conditional inside another conditional's block.",
+    "correct_answer": "nesting",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "if Statement Syntax and Structure",
+    "game_data": {
+      "explanation": "Nesting is the practice of placing one if statement inside the code block of another, allowing for more complex decision trees.",
+      "generation_timestamp": "2026-04-10T18:13:35.945167"
+    },
+    "created_at": "2026-04-10T10:13:35.944169+00:00",
+    "exported_at": "2026-04-10T18:13:35.945167"
+  },
+  {
+    "question_text": "Empty block placeholder keyword.",
+    "correct_answer": "pass",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "if Statement Syntax and Structure",
+    "game_data": {
+      "explanation": "The 'pass' statement is a null operation; it does nothing and is used as a placeholder where syntax requires a statement.",
+      "generation_timestamp": "2026-04-10T18:13:35.968643"
+    },
+    "created_at": "2026-04-10T10:13:35.965644+00:00",
+    "exported_at": "2026-04-10T18:13:35.968643"
+  },
+  {
+    "question_text": "Equality comparison operator.",
+    "correct_answer": "equals",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "if Statement Syntax and Structure",
+    "game_data": {
+      "explanation": "The equality operator (==) checks if two values are the same, returning True if they are. It's distinct from the assignment operator (=).",
+      "generation_timestamp": "2026-04-10T18:13:35.992264"
+    },
+    "created_at": "2026-04-10T10:13:35.990264+00:00",
+    "exported_at": "2026-04-10T18:13:35.992264"
+  },
+  {
+    "question_text": "Inequality comparison operator.",
+    "correct_answer": "notequals",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "if Statement Syntax and Structure",
+    "game_data": {
+      "explanation": "The inequality operator (!=) returns True if two values are not the same, and False if they are equal.",
+      "generation_timestamp": "2026-04-10T18:13:36.014260"
+    },
+    "created_at": "2026-04-10T10:13:36.012260+00:00",
+    "exported_at": "2026-04-10T18:13:36.014260"
+  },
+  {
+    "question_text": "Checking if an object is a specific type.",
+    "correct_answer": "isinstance",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "if Statement Syntax and Structure",
+    "game_data": {
+      "explanation": "The isinstance() function is used in conditions to check if an object is an instance of a specified class or data type.",
+      "generation_timestamp": "2026-04-10T18:13:36.036255"
+    },
+    "created_at": "2026-04-10T10:13:36.035258+00:00",
+    "exported_at": "2026-04-10T18:13:36.036255"
+  },
+  {
+    "question_text": "A condition that always evaluates to True.",
+    "correct_answer": "tautology",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "if Statement Syntax and Structure",
+    "game_data": {
+      "explanation": "In logic, a tautology is a statement that is always true, such as using 'True' directly as a condition.",
+      "generation_timestamp": "2026-04-10T18:13:36.061350"
+    },
+    "created_at": "2026-04-10T10:13:36.060350+00:00",
+    "exported_at": "2026-04-10T18:13:36.061350"
+  },
+  {
+    "question_text": "The overall control path determined by conditionals.",
+    "correct_answer": "branching",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "if Statement Syntax and Structure",
+    "game_data": {
+      "explanation": "Branching refers to the different paths (branches) a program's execution can take based on the evaluation of conditional statements.",
+      "generation_timestamp": "2026-04-10T18:13:36.095936"
+    },
+    "created_at": "2026-04-10T10:13:36.093934+00:00",
+    "exported_at": "2026-04-10T18:13:36.095936"
+  },
+  {
+    "question_text": "Keyword for the alternative path when an 'if' condition is false.",
+    "correct_answer": "else",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "if-else and elif Ladder",
+    "game_data": {
+      "explanation": "The 'else' clause provides the code to run when the preceding 'if' (or 'elif') condition evaluates to False.",
+      "generation_timestamp": "2026-04-10T18:13:37.171153"
+    },
+    "created_at": "2026-04-10T10:13:37.168153+00:00",
+    "exported_at": "2026-04-10T18:13:37.171153"
+  },
+  {
+    "question_text": "Contraction for 'else if', allowing multiple condition checks.",
+    "correct_answer": "elif",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "if-else and elif Ladder",
+    "game_data": {
+      "explanation": "Short for 'else if', the 'elif' keyword allows you to check multiple conditions sequentially after an initial 'if'.",
+      "generation_timestamp": "2026-04-10T18:13:37.189340"
+    },
+    "created_at": "2026-04-10T10:13:37.188328+00:00",
+    "exported_at": "2026-04-10T18:13:37.189340"
+  },
+  {
+    "question_text": "A series of 'if', 'elif', and 'else' statements forming a multi-way branch.",
+    "correct_answer": "ladder",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "if-else and elif Ladder",
+    "game_data": {
+      "explanation": "An 'elif ladder' is a common term for a sequence of conditional branches that choose one path from many.",
+      "generation_timestamp": "2026-04-10T18:13:37.227341"
+    },
+    "created_at": "2026-04-10T10:13:37.224409+00:00",
+    "exported_at": "2026-04-10T18:13:37.227341"
+  },
+  {
+    "question_text": "The colon character that terminates a conditional statement's header.",
+    "correct_answer": "colon",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "if-else and elif Ladder",
+    "game_data": {
+      "explanation": "In Python syntax, a colon (:) is required at the end of 'if', 'elif', and 'else' lines to introduce an indented block.",
+      "generation_timestamp": "2026-04-10T18:13:37.261448"
+    },
+    "created_at": "2026-04-10T10:13:37.259525+00:00",
+    "exported_at": "2026-04-10T18:13:37.261448"
+  },
+  {
+    "question_text": "The whitespace that defines a block of code belonging to a condition.",
+    "correct_answer": "indentation",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "if-else and elif Ladder",
+    "game_data": {
+      "explanation": "Python uses indentation (spaces or tabs) to group statements under a conditional clause, rather than braces.",
+      "generation_timestamp": "2026-04-10T18:13:37.295070"
+    },
+    "created_at": "2026-04-10T10:13:37.293065+00:00",
+    "exported_at": "2026-04-10T18:13:37.295070"
+  },
+  {
+    "question_text": "A statement that exits a conditional block early, often used in loops.",
+    "correct_answer": "break",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "if-else and elif Ladder",
+    "game_data": {
+      "explanation": "While not exclusive to conditionals, the 'break' statement is often used inside an 'if' to terminate a loop prematurely.",
+      "generation_timestamp": "2026-04-10T18:13:37.321065"
+    },
+    "created_at": "2026-04-10T10:13:37.319070+00:00",
+    "exported_at": "2026-04-10T18:13:37.321065"
+  },
+  {
+    "question_text": "A statement that skips to the next iteration of a loop, often conditional.",
+    "correct_answer": "continue",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "if-else and elif Ladder",
+    "game_data": {
+      "explanation": "The 'continue' statement is used inside loops, typically within an 'if', to skip the rest of the current iteration.",
+      "generation_timestamp": "2026-04-10T18:13:37.343070"
+    },
+    "created_at": "2026-04-10T10:13:37.342066+00:00",
+    "exported_at": "2026-04-10T18:13:37.343070"
+  },
+  {
+    "question_text": "The boolean result that determines which conditional branch is taken.",
+    "correct_answer": "condition",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "if-else and elif Ladder",
+    "game_data": {
+      "explanation": "A condition is an expression that evaluates to True or False, controlling the flow of 'if', 'elif', and 'else' statements.",
+      "generation_timestamp": "2026-04-10T18:13:37.366079"
+    },
+    "created_at": "2026-04-10T10:13:37.364077+00:00",
+    "exported_at": "2026-04-10T18:13:37.366079"
+  },
+  {
+    "question_text": "A block of code that runs only when its associated condition is true.",
+    "correct_answer": "clause",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "if-else and elif Ladder",
+    "game_data": {
+      "explanation": "Each 'if', 'elif', or 'else' section, along with its indented code, is referred to as a clause.",
+      "generation_timestamp": "2026-04-10T18:13:37.393630"
+    },
+    "created_at": "2026-04-10T10:13:37.392125+00:00",
+    "exported_at": "2026-04-10T18:13:37.393630"
+  },
+  {
+    "question_text": "The logical operator used to require all conditions to be true.",
+    "correct_answer": "and",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "if-else and elif Ladder",
+    "game_data": {
+      "explanation": "The 'and' operator allows you to combine multiple conditions in an 'if' statement; all must be True for the overall condition to be True.",
+      "generation_timestamp": "2026-04-10T18:13:37.417643"
+    },
+    "created_at": "2026-04-10T10:13:37.416637+00:00",
+    "exported_at": "2026-04-10T18:13:37.417643"
+  },
+  {
+    "question_text": "The logical operator used to require at least one condition to be true.",
+    "correct_answer": "or",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "if-else and elif Ladder",
+    "game_data": {
+      "explanation": "The 'or' operator combines conditions; if at least one is True, the overall condition evaluates to True.",
+      "generation_timestamp": "2026-04-10T18:13:37.449644"
+    },
+    "created_at": "2026-04-10T10:13:37.447643+00:00",
+    "exported_at": "2026-04-10T18:13:37.449644"
+  },
+  {
+    "question_text": "The logical operator that inverts a boolean value.",
+    "correct_answer": "not",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "if-else and elif Ladder",
+    "game_data": {
+      "explanation": "The 'not' operator negates a boolean expression, turning True into False and vice versa, often used in conditions.",
+      "generation_timestamp": "2026-04-10T18:13:37.485256"
+    },
+    "created_at": "2026-04-10T10:13:37.484267+00:00",
+    "exported_at": "2026-04-10T18:13:37.485256"
+  },
+  {
+    "question_text": "A conditional expression that returns one of two values based on a test.",
+    "correct_answer": "ternary",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "if-else and elif Ladder",
+    "game_data": {
+      "explanation": "A ternary operator (x if condition else y) is a concise, one-line conditional expression for simple value assignments.",
+      "generation_timestamp": "2026-04-10T18:13:37.518262"
+    },
+    "created_at": "2026-04-10T10:13:37.516264+00:00",
+    "exported_at": "2026-04-10T18:13:37.518262"
+  },
+  {
+    "question_text": "The concept of code executing line by line, altered by conditionals.",
+    "correct_answer": "flow",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "if-else and elif Ladder",
+    "game_data": {
+      "explanation": "Control flow refers to the order in which statements are executed, which 'if-else' and 'elif' ladders directly influence.",
+      "generation_timestamp": "2026-04-10T18:13:37.547262"
+    },
+    "created_at": "2026-04-10T10:13:37.545279+00:00",
+    "exported_at": "2026-04-10T18:13:37.547262"
+  },
+  {
+    "question_text": "A statement that does nothing, often used as a placeholder in a conditional block.",
+    "correct_answer": "pass",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "if-else and elif Ladder",
+    "game_data": {
+      "explanation": "The 'pass' statement is a null operation; it's useful as a placeholder in an 'if' block where you intend to write code later.",
+      "generation_timestamp": "2026-04-10T18:13:37.582668"
+    },
+    "created_at": "2026-04-10T10:13:37.580681+00:00",
+    "exported_at": "2026-04-10T18:13:37.582668"
+  },
+  {
+    "question_text": "Nesting conditionals inside other conditionals creates this structure.",
+    "correct_answer": "nesting",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "if-else and elif Ladder",
+    "game_data": {
+      "explanation": "Nesting is the practice of placing one 'if-else' statement inside the block of another, allowing for complex decision trees.",
+      "generation_timestamp": "2026-04-10T18:13:37.613681"
+    },
+    "created_at": "2026-04-10T10:13:37.611763+00:00",
+    "exported_at": "2026-04-10T18:13:37.613681"
+  },
+  {
+    "question_text": "The final, catch-all branch in a conditional ladder.",
+    "correct_answer": "default",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "if-else and elif Ladder",
+    "game_data": {
+      "explanation": "The 'else' clause acts as the default branch, executing when no preceding 'if' or 'elif' conditions are met.",
+      "generation_timestamp": "2026-04-10T18:13:37.637056"
+    },
+    "created_at": "2026-04-10T10:13:37.636072+00:00",
+    "exported_at": "2026-04-10T18:13:37.637056"
+  },
+  {
+    "question_text": "The act of choosing one execution path from several possibilities.",
+    "correct_answer": "branching",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "if-else and elif Ladder",
+    "game_data": {
+      "explanation": "Branching is the fundamental process where a program's execution path diverges based on conditional logic.",
+      "generation_timestamp": "2026-04-10T18:13:37.662140"
+    },
+    "created_at": "2026-04-10T10:13:37.661143+00:00",
+    "exported_at": "2026-04-10T18:13:37.662140"
+  },
+  {
+    "question_text": "Conditional within a conditional, for complex decision trees.",
+    "correct_answer": "nesting",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Nested Conditional Statements",
+    "game_data": {
+      "explanation": "Placing one conditional statement inside another allows for more intricate logic flow and multi-layered checks in a program.",
+      "generation_timestamp": "2026-04-10T18:13:37.975208"
+    },
+    "created_at": "2026-04-10T10:13:37.972796+00:00",
+    "exported_at": "2026-04-10T18:13:37.975208"
+  },
+  {
+    "question_text": "The innermost block executed when all outer conditions are true.",
+    "correct_answer": "innerblock",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Nested Conditional Statements",
+    "game_data": {
+      "explanation": "In nested conditionals, this is the code that runs only after every surrounding 'if' statement's condition has been satisfied.",
+      "generation_timestamp": "2026-04-10T18:13:37.993887"
+    },
+    "created_at": "2026-04-10T10:13:37.992892+00:00",
+    "exported_at": "2026-04-10T18:13:37.993887"
+  },
+  {
+    "question_text": "Keyword for an alternative branch in a conditional chain.",
+    "correct_answer": "elif",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Nested Conditional Statements",
+    "game_data": {
+      "explanation": "Stands for 'else if', used to check multiple exclusive conditions after an initial 'if' within the same structure.",
+      "generation_timestamp": "2026-04-10T18:13:38.026879"
+    },
+    "created_at": "2026-04-10T10:13:38.024869+00:00",
+    "exported_at": "2026-04-10T18:13:38.026879"
+  },
+  {
+    "question_text": "The final catch-all branch in a conditional structure.",
+    "correct_answer": "else",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Nested Conditional Statements",
+    "game_data": {
+      "explanation": "This clause executes its block of code when none of the preceding 'if' or 'elif' conditions evaluate to True.",
+      "generation_timestamp": "2026-04-10T18:13:38.052999"
+    },
+    "created_at": "2026-04-10T10:13:38.051896+00:00",
+    "exported_at": "2026-04-10T18:13:38.052999"
+  },
+  {
+    "question_text": "A statement that directs program flow based on a test.",
+    "correct_answer": "conditional",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Nested Conditional Statements",
+    "game_data": {
+      "explanation": "It allows different blocks of code to run depending on whether a given Boolean expression is true or false.",
+      "generation_timestamp": "2026-04-10T18:13:38.084722"
+    },
+    "created_at": "2026-04-10T10:13:38.082724+00:00",
+    "exported_at": "2026-04-10T18:13:38.084722"
+  },
+  {
+    "question_text": "The Boolean result that determines which path to take.",
+    "correct_answer": "condition",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Nested Conditional Statements",
+    "game_data": {
+      "explanation": "The expression, often a comparison, that is evaluated to decide which branch of a conditional statement to execute.",
+      "generation_timestamp": "2026-04-10T18:13:38.113719"
+    },
+    "created_at": "2026-04-10T10:13:38.111725+00:00",
+    "exported_at": "2026-04-10T18:13:38.113719"
+  },
+  {
+    "question_text": "Logical operator for requiring all parts to be true.",
+    "correct_answer": "and",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Nested Conditional Statements",
+    "game_data": {
+      "explanation": "Used to combine multiple Boolean expressions; the overall condition is True only if all individual parts are True.",
+      "generation_timestamp": "2026-04-10T18:13:38.147714"
+    },
+    "created_at": "2026-04-10T10:13:38.145718+00:00",
+    "exported_at": "2026-04-10T18:13:38.147714"
+  },
+  {
+    "question_text": "Logical operator for requiring at least one part true.",
+    "correct_answer": "or",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Nested Conditional Statements",
+    "game_data": {
+      "explanation": "Used to combine Boolean expressions; the overall condition is True if at least one of the combined parts is True.",
+      "generation_timestamp": "2026-04-10T18:13:38.179244"
+    },
+    "created_at": "2026-04-10T10:13:38.177251+00:00",
+    "exported_at": "2026-04-10T18:13:38.179244"
+  },
+  {
+    "question_text": "Logical operator that reverses a truth value.",
+    "correct_answer": "not",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Nested Conditional Statements",
+    "game_data": {
+      "explanation": "A unary operator that negates a Boolean expression, turning True into False and vice versa.",
+      "generation_timestamp": "2026-04-10T18:13:38.208324"
+    },
+    "created_at": "2026-04-10T10:13:38.206331+00:00",
+    "exported_at": "2026-04-10T18:13:38.208324"
+  },
+  {
+    "question_text": "The overall structure containing nested decisions.",
+    "correct_answer": "controlflow",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Nested Conditional Statements",
+    "game_data": {
+      "explanation": "The order in which individual statements, instructions, or function calls are executed or evaluated in a program.",
+      "generation_timestamp": "2026-04-10T18:13:38.239330"
+    },
+    "created_at": "2026-04-10T10:13:38.237335+00:00",
+    "exported_at": "2026-04-10T18:13:38.239330"
+  },
+  {
+    "question_text": "Potential pitfall of deep nesting, making code hard to follow.",
+    "correct_answer": "complexity",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Nested Conditional Statements",
+    "game_data": {
+      "explanation": "Excessive nesting of conditionals can lead to convoluted logic that is difficult to read, debug, and maintain.",
+      "generation_timestamp": "2026-04-10T18:13:38.268020"
+    },
+    "created_at": "2026-04-10T10:13:38.266425+00:00",
+    "exported_at": "2026-04-10T18:13:38.268020"
+  },
+  {
+    "question_text": "A simpler alternative to deep nesting, using multiple returns.",
+    "correct_answer": "earlyreturn",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Nested Conditional Statements",
+    "game_data": {
+      "explanation": "A coding pattern where a function returns a value as soon as a condition is met, avoiding deeply nested 'else' blocks.",
+      "generation_timestamp": "2026-04-10T18:13:38.300119"
+    },
+    "created_at": "2026-04-10T10:13:38.298118+00:00",
+    "exported_at": "2026-04-10T18:13:38.300119"
+  },
+  {
+    "question_text": "A block of code that executes only if its condition is true.",
+    "correct_answer": "ifblock",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Nested Conditional Statements",
+    "game_data": {
+      "explanation": "The suite of statements indented under an 'if' keyword, which runs when the associated condition evaluates to True.",
+      "generation_timestamp": "2026-04-10T18:13:38.334118"
+    },
+    "created_at": "2026-04-10T10:13:38.332123+00:00",
+    "exported_at": "2026-04-10T18:13:38.334118"
+  },
+  {
+    "question_text": "The act of checking one condition only if another is true.",
+    "correct_answer": "chaining",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Nested Conditional Statements",
+    "game_data": {
+      "explanation": "Linking conditional statements sequentially, often with 'if-elif-else', to evaluate a series of possibilities.",
+      "generation_timestamp": "2026-04-10T18:13:38.368946"
+    },
+    "created_at": "2026-04-10T10:13:38.366708+00:00",
+    "exported_at": "2026-04-10T18:13:38.368946"
+  },
+  {
+    "question_text": "A conditional inside a loop, creating dynamic flow.",
+    "correct_answer": "branching",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Nested Conditional Statements",
+    "game_data": {
+      "explanation": "Using 'if' statements within loops to make execution decisions on each iteration based on changing data.",
+      "generation_timestamp": "2026-04-10T18:13:38.395849"
+    },
+    "created_at": "2026-04-10T10:13:38.394752+00:00",
+    "exported_at": "2026-04-10T18:13:38.395849"
+  },
+  {
+    "question_text": "The evaluation order of conditions in a nested structure.",
+    "correct_answer": "precedence",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Nested Conditional Statements",
+    "game_data": {
+      "explanation": "Determines which operators or conditions are evaluated first in a complex logical expression, affecting the outcome.",
+      "generation_timestamp": "2026-04-10T18:13:38.422458"
+    },
+    "created_at": "2026-04-10T10:13:38.420470+00:00",
+    "exported_at": "2026-04-10T18:13:38.422458"
+  },
+  {
+    "question_text": "A single-line conditional expression for simple choices.",
+    "correct_answer": "ternary",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Nested Conditional Statements",
+    "game_data": {
+      "explanation": "A compact 'if-else' expression (x if condition else y) used to assign a value based on a condition.",
+      "generation_timestamp": "2026-04-10T18:13:38.448012"
+    },
+    "created_at": "2026-04-10T10:13:38.447011+00:00",
+    "exported_at": "2026-04-10T18:13:38.448012"
+  },
+  {
+    "question_text": "The visual hierarchy created by indentation in conditionals.",
+    "correct_answer": "structure",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Nested Conditional Statements",
+    "game_data": {
+      "explanation": "In Python, the indentation level defines code blocks, making the nesting of conditional statements visually clear.",
+      "generation_timestamp": "2026-04-10T18:13:38.471667"
+    },
+    "created_at": "2026-04-10T10:13:38.470667+00:00",
+    "exported_at": "2026-04-10T18:13:38.471667"
+  },
+  {
+    "question_text": "A condition that is always true, creating an infinite block.",
+    "correct_answer": "tautology",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Nested Conditional Statements",
+    "game_data": {
+      "explanation": "A Boolean expression that always evaluates to True, such as 'True' itself, which would cause its block to always run.",
+      "generation_timestamp": "2026-04-10T18:13:38.496760"
+    },
+    "created_at": "2026-04-10T10:13:38.495773+00:00",
+    "exported_at": "2026-04-10T18:13:38.496760"
+  },
+  {
+    "question_text": "The operator used in a ternary expression.",
+    "correct_answer": "conditional",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Ternary Operators (One-liner conditionals)",
+    "game_data": {
+      "explanation": "Refers to the specific syntax that evaluates a condition to choose between two outcomes in one line.",
+      "generation_timestamp": "2026-04-10T18:14:02.433106"
+    },
+    "created_at": "2026-04-10T10:14:02.432106+00:00",
+    "exported_at": "2026-04-10T18:14:02.433106"
+  },
+  {
+    "question_text": "The part evaluated if true in a ternary.",
+    "correct_answer": "expression",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Ternary Operators (One-liner conditionals)",
+    "game_data": {
+      "explanation": "In a ternary operator, this is the value or result returned when the condition is true.",
+      "generation_timestamp": "2026-04-10T18:14:02.453102"
+    },
+    "created_at": "2026-04-10T10:14:02.451106+00:00",
+    "exported_at": "2026-04-10T18:14:02.453102"
+  },
+  {
+    "question_text": "The part evaluated if false in a ternary.",
+    "correct_answer": "alternative",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Ternary Operators (One-liner conditionals)",
+    "game_data": {
+      "explanation": "In a ternary operator, this is the value or result returned when the condition is false.",
+      "generation_timestamp": "2026-04-10T18:14:02.488106"
+    },
+    "created_at": "2026-04-10T10:14:02.487106+00:00",
+    "exported_at": "2026-04-10T18:14:02.488106"
+  },
+  {
+    "question_text": "The condition that decides the outcome.",
+    "correct_answer": "predicate",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Ternary Operators (One-liner conditionals)",
+    "game_data": {
+      "explanation": "The boolean expression in a ternary operator that determines which value gets returned.",
+      "generation_timestamp": "2026-04-10T18:14:02.514110"
+    },
+    "created_at": "2026-04-10T10:14:02.513110+00:00",
+    "exported_at": "2026-04-10T18:14:02.514110"
+  },
+  {
+    "question_text": "Ternary operators avoid multi-line statements.",
+    "correct_answer": "conciseness",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Ternary Operators (One-liner conditionals)",
+    "game_data": {
+      "explanation": "A key benefit of using a ternary operator is to write conditional logic in a compact, single line.",
+      "generation_timestamp": "2026-04-10T18:14:02.537622"
+    },
+    "created_at": "2026-04-10T10:14:02.536616+00:00",
+    "exported_at": "2026-04-10T18:14:02.537622"
+  },
+  {
+    "question_text": "Ternary syntax uses colon and question mark.",
+    "correct_answer": "operator",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Ternary Operators (One-liner conditionals)",
+    "game_data": {
+      "explanation": "The ternary conditional operator in Python uses specific symbols to separate its parts.",
+      "generation_timestamp": "2026-04-10T18:14:02.559623"
+    },
+    "created_at": "2026-04-10T10:14:02.558620+00:00",
+    "exported_at": "2026-04-10T18:14:02.559623"
+  },
+  {
+    "question_text": "Assign value based on a condition in one line.",
+    "correct_answer": "assignment",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Ternary Operators (One-liner conditionals)",
+    "game_data": {
+      "explanation": "A common use case for the ternary operator is to conditionally assign a value to a variable.",
+      "generation_timestamp": "2026-04-10T18:14:02.579680"
+    },
+    "created_at": "2026-04-10T10:14:02.578623+00:00",
+    "exported_at": "2026-04-10T18:14:02.579680"
+  },
+  {
+    "question_text": "Evaluates to one of two possible values.",
+    "correct_answer": "selection",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Ternary Operators (One-liner conditionals)",
+    "game_data": {
+      "explanation": "The ternary operator's purpose is to select between two expressions based on a condition.",
+      "generation_timestamp": "2026-04-10T18:14:02.600623"
+    },
+    "created_at": "2026-04-10T10:14:02.599616+00:00",
+    "exported_at": "2026-04-10T18:14:02.600623"
+  },
+  {
+    "question_text": "A more verbose alternative to ternary.",
+    "correct_answer": "statement",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Ternary Operators (One-liner conditionals)",
+    "game_data": {
+      "explanation": "A full if-else block is the multi-line alternative to a one-line ternary conditional expression.",
+      "generation_timestamp": "2026-04-10T18:14:02.621141"
+    },
+    "created_at": "2026-04-10T10:14:02.620147+00:00",
+    "exported_at": "2026-04-10T18:14:02.621141"
+  },
+  {
+    "question_text": "Ternary operators are also called conditional ones.",
+    "correct_answer": "expressions",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Ternary Operators (One-liner conditionals)",
+    "game_data": {
+      "explanation": "Unlike if statements, ternaries are expressions because they evaluate to a value.",
+      "generation_timestamp": "2026-04-10T18:14:02.644147"
+    },
+    "created_at": "2026-04-10T10:14:02.642141+00:00",
+    "exported_at": "2026-04-10T18:14:02.644147"
+  },
+  {
+    "question_text": "The order of evaluation in a ternary.",
+    "correct_answer": "syntax",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Ternary Operators (One-liner conditionals)",
+    "game_data": {
+      "explanation": "The specific structure: 'value_if_true if condition else value_if_false' defines the ternary.",
+      "generation_timestamp": "2026-04-10T18:14:02.664143"
+    },
+    "created_at": "2026-04-10T10:14:02.663140+00:00",
+    "exported_at": "2026-04-10T18:14:02.664143"
+  },
+  {
+    "question_text": "Can be nested but is discouraged for clarity.",
+    "correct_answer": "ternaries",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Ternary Operators (One-liner conditionals)",
+    "game_data": {
+      "explanation": "Multiple ternary operators can be placed inside one another, though it often reduces readability.",
+      "generation_timestamp": "2026-04-10T18:14:02.698141"
+    },
+    "created_at": "2026-04-10T10:14:02.697147+00:00",
+    "exported_at": "2026-04-10T18:14:02.698141"
+  },
+  {
+    "question_text": "The boolean test in a conditional expression.",
+    "correct_answer": "condition",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Ternary Operators (One-liner conditionals)",
+    "game_data": {
+      "explanation": "The first part of a ternary that must evaluate to either True or False to direct the flow.",
+      "generation_timestamp": "2026-04-10T18:14:02.719679"
+    },
+    "created_at": "2026-04-10T10:14:02.718679+00:00",
+    "exported_at": "2026-04-10T18:14:02.719679"
+  },
+  {
+    "question_text": "Ternary result type depends on evaluated branches.",
+    "correct_answer": "evaluation",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Ternary Operators (One-liner conditionals)",
+    "game_data": {
+      "explanation": "The process of determining which part of the ternary operator to execute based on the condition.",
+      "generation_timestamp": "2026-04-10T18:14:02.748698"
+    },
+    "created_at": "2026-04-10T10:14:02.746686+00:00",
+    "exported_at": "2026-04-10T18:14:02.748698"
+  },
+  {
+    "question_text": "A potential downside of overusing ternaries.",
+    "correct_answer": "readability",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Ternary Operators (One-liner conditionals)",
+    "game_data": {
+      "explanation": "While concise, complex ternary expressions can make code harder to read and understand.",
+      "generation_timestamp": "2026-04-10T18:14:02.779218"
+    },
+    "created_at": "2026-04-10T10:14:02.778217+00:00",
+    "exported_at": "2026-04-10T18:14:02.779218"
+  },
+  {
+    "question_text": "The core concept enabling one-line conditionals.",
+    "correct_answer": "conditional",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Ternary Operators (One-liner conditionals)",
+    "game_data": {
+      "explanation": "The ternary operator is a specific form of a conditional construct in Python.",
+      "generation_timestamp": "2026-04-10T18:14:02.804215"
+    },
+    "created_at": "2026-04-10T10:14:02.802215+00:00",
+    "exported_at": "2026-04-10T18:14:02.804215"
+  },
+  {
+    "question_text": "Value returned when the condition is met.",
+    "correct_answer": "truevalue",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Ternary Operators (One-liner conditionals)",
+    "game_data": {
+      "explanation": "In the ternary structure, this is the result if the conditional expression evaluates to True.",
+      "generation_timestamp": "2026-04-10T18:14:02.829746"
+    },
+    "created_at": "2026-04-10T10:14:02.828739+00:00",
+    "exported_at": "2026-04-10T18:14:02.829746"
+  },
+  {
+    "question_text": "Value returned when the condition is not met.",
+    "correct_answer": "falsevalue",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Ternary Operators (One-liner conditionals)",
+    "game_data": {
+      "explanation": "In the ternary structure, this is the result if the conditional expression evaluates to False.",
+      "generation_timestamp": "2026-04-10T18:14:02.851746"
+    },
+    "created_at": "2026-04-10T10:14:02.850743+00:00",
+    "exported_at": "2026-04-10T18:14:02.851746"
+  },
+  {
+    "question_text": "To signal an error condition from your own code.",
+    "correct_answer": "raise",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Raising Custom Exceptions",
+    "game_data": {
+      "explanation": "The 'raise' keyword is used to trigger an exception, allowing you to indicate that something has gone wrong in your program.",
+      "generation_timestamp": "2026-04-10T18:14:03.134778"
+    },
+    "created_at": "2026-04-10T10:14:03.132769+00:00",
+    "exported_at": "2026-04-10T18:14:03.134778"
+  },
+  {
+    "question_text": "A user-defined class that inherits from Exception.",
+    "correct_answer": "customexception",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Raising Custom Exceptions",
+    "game_data": {
+      "explanation": "A custom exception is a class you create by inheriting from Python's built-in Exception class to define your own error types.",
+      "generation_timestamp": "2026-04-10T18:14:03.154766"
+    },
+    "created_at": "2026-04-10T10:14:03.153766+00:00",
+    "exported_at": "2026-04-10T18:14:03.154766"
+  },
+  {
+    "question_text": "The optional descriptive string passed when raising an error.",
+    "correct_answer": "message",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Raising Custom Exceptions",
+    "game_data": {
+      "explanation": "The exception message provides a human-readable description of what went wrong, often passed as an argument to the exception.",
+      "generation_timestamp": "2026-04-10T18:14:03.194970"
+    },
+    "created_at": "2026-04-10T10:14:03.192965+00:00",
+    "exported_at": "2026-04-10T18:14:03.194970"
+  },
+  {
+    "question_text": "The act of creating an instance of an exception class.",
+    "correct_answer": "instantiation",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Raising Custom Exceptions",
+    "game_data": {
+      "explanation": "Raising an exception typically involves instantiating an exception class, like raising ValueError('invalid input').",
+      "generation_timestamp": "2026-04-10T18:14:03.227515"
+    },
+    "created_at": "2026-04-10T10:14:03.225515+00:00",
+    "exported_at": "2026-04-10T18:14:03.227515"
+  },
+  {
+    "question_text": "To define a new class for a specific error scenario.",
+    "correct_answer": "subclass",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Raising Custom Exceptions",
+    "game_data": {
+      "explanation": "You create a custom exception by subclassing the Exception class or one of its more specific descendants.",
+      "generation_timestamp": "2026-04-10T18:14:03.253515"
+    },
+    "created_at": "2026-04-10T10:14:03.252516+00:00",
+    "exported_at": "2026-04-10T18:14:03.253515"
+  },
+  {
+    "question_text": "The mechanism to pass control when an error occurs.",
+    "correct_answer": "exceptionhandling",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Raising Custom Exceptions",
+    "game_data": {
+      "explanation": "Exception handling is the process of responding to and managing errors that arise during program execution.",
+      "generation_timestamp": "2026-04-10T18:14:03.278512"
+    },
+    "created_at": "2026-04-10T10:14:03.277514+00:00",
+    "exported_at": "2026-04-10T18:14:03.278512"
+  },
+  {
+    "question_text": "The block of code that attempts to run potentially error-prone statements.",
+    "correct_answer": "try",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Raising Custom Exceptions",
+    "game_data": {
+      "explanation": "The 'try' block encloses code that might raise an exception, allowing subsequent 'except' blocks to handle it.",
+      "generation_timestamp": "2026-04-10T18:14:03.302523"
+    },
+    "created_at": "2026-04-10T10:14:03.300515+00:00",
+    "exported_at": "2026-04-10T18:14:03.302523"
+  },
+  {
+    "question_text": "To intercept and manage a raised exception.",
+    "correct_answer": "catch",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Raising Custom Exceptions",
+    "game_data": {
+      "explanation": "Often synonymous with 'except', to catch an exception means to handle it, preventing the program from crashing.",
+      "generation_timestamp": "2026-04-10T18:14:03.336038"
+    },
+    "created_at": "2026-04-10T10:14:03.334046+00:00",
+    "exported_at": "2026-04-10T18:14:03.336038"
+  },
+  {
+    "question_text": "A clause that runs regardless of whether an exception was raised.",
+    "correct_answer": "finally",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Raising Custom Exceptions",
+    "game_data": {
+      "explanation": "The 'finally' clause executes cleanup code after a try block, whether an exception occurred or not.",
+      "generation_timestamp": "2026-04-10T18:14:03.358038"
+    },
+    "created_at": "2026-04-10T10:14:03.357045+00:00",
+    "exported_at": "2026-04-10T18:14:03.358038"
+  },
+  {
+    "question_text": "To trigger a specific exception with a custom message.",
+    "correct_answer": "raise",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Raising Custom Exceptions",
+    "game_data": {
+      "explanation": "You use the 'raise' statement to trigger a specific exception, optionally providing a descriptive error message.",
+      "generation_timestamp": "2026-04-10T18:14:03.397040"
+    },
+    "created_at": "2026-04-10T10:14:03.395045+00:00",
+    "exported_at": "2026-04-10T18:14:03.397040"
+  },
+  {
+    "question_text": "A built-in exception for invalid function arguments.",
+    "correct_answer": "valueerror",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Raising Custom Exceptions",
+    "game_data": {
+      "explanation": "ValueError is raised when a function receives an argument of the right type but an inappropriate value.",
+      "generation_timestamp": "2026-04-10T18:14:03.432208"
+    },
+    "created_at": "2026-04-10T10:14:03.431211+00:00",
+    "exported_at": "2026-04-10T18:14:03.432208"
+  },
+  {
+    "question_text": "An exception for operations on unsupported types.",
+    "correct_answer": "typeerror",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Raising Custom Exceptions",
+    "game_data": {
+      "explanation": "TypeError is raised when an operation or function is applied to an object of an inappropriate type.",
+      "generation_timestamp": "2026-04-10T18:14:03.461205"
+    },
+    "created_at": "2026-04-10T10:14:03.460205+00:00",
+    "exported_at": "2026-04-10T18:14:03.461205"
+  },
+  {
+    "question_text": "To define the string representation of a custom exception.",
+    "correct_answer": "str",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Raising Custom Exceptions",
+    "game_data": {
+      "explanation": "You can define the __str__ method in your custom exception class to control how it is displayed as a string.",
+      "generation_timestamp": "2026-04-10T18:14:03.494202"
+    },
+    "created_at": "2026-04-10T10:14:03.492203+00:00",
+    "exported_at": "2026-04-10T18:14:03.494202"
+  },
+  {
+    "question_text": "The process of an exception propagating up the call stack.",
+    "correct_answer": "propagation",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Raising Custom Exceptions",
+    "game_data": {
+      "explanation": "If not caught, an exception propagates upward through the call stack until it is handled or crashes the program.",
+      "generation_timestamp": "2026-04-10T18:14:03.527729"
+    },
+    "created_at": "2026-04-10T10:14:03.526730+00:00",
+    "exported_at": "2026-04-10T18:14:03.527729"
+  },
+  {
+    "question_text": "To re-raise the currently handled exception.",
+    "correct_answer": "reraise",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Raising Custom Exceptions",
+    "game_data": {
+      "explanation": "Using a bare 'raise' inside an except block re-raises the current exception, allowing it to propagate further.",
+      "generation_timestamp": "2026-04-10T18:14:03.568728"
+    },
+    "created_at": "2026-04-10T10:14:03.567730+00:00",
+    "exported_at": "2026-04-10T18:14:03.568728"
+  },
+  {
+    "question_text": "A clause to handle a specific exception type.",
+    "correct_answer": "except",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Raising Custom Exceptions",
+    "game_data": {
+      "explanation": "The 'except' clause catches and handles exceptions of a specified type (or all types) that occur in the try block.",
+      "generation_timestamp": "2026-04-10T18:14:03.592732"
+    },
+    "created_at": "2026-04-10T10:14:03.591732+00:00",
+    "exported_at": "2026-04-10T18:14:03.592732"
+  },
+  {
+    "question_text": "The attribute storing the error message in an exception instance.",
+    "correct_answer": "args",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Raising Custom Exceptions",
+    "game_data": {
+      "explanation": "The 'args' attribute of an exception instance is a tuple containing the arguments passed to the exception constructor.",
+      "generation_timestamp": "2026-04-10T18:14:03.621261"
+    },
+    "created_at": "2026-04-10T10:14:03.620257+00:00",
+    "exported_at": "2026-04-10T18:14:03.621261"
+  },
+  {
+    "question_text": "Catching all exceptions without specifying type.",
+    "correct_answer": "bareexcept",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Try-Except Block Structure",
+    "game_data": {
+      "explanation": "A bare except clause catches all exceptions, but it's generally discouraged as it can hide unexpected errors.",
+      "generation_timestamp": "2026-04-10T18:14:06.076795"
+    },
+    "created_at": "2026-04-10T10:14:06.074495+00:00",
+    "exported_at": "2026-04-10T18:14:06.076795"
+  },
+  {
+    "question_text": "Exception handling with multiple specific error types.",
+    "correct_answer": "multiexcept",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Try-Except Block Structure",
+    "game_data": {
+      "explanation": "Multiple except blocks allow you to handle different exception types with specific responses for each error case.",
+      "generation_timestamp": "2026-04-10T18:14:06.100486"
+    },
+    "created_at": "2026-04-10T10:14:06.098486+00:00",
+    "exported_at": "2026-04-10T18:14:06.100486"
+  },
+  {
+    "question_text": "Catching several exception types in one handler.",
+    "correct_answer": "tupleexcept",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Try-Except Block Structure",
+    "game_data": {
+      "explanation": "You can catch multiple exception types by specifying them as a tuple in a single except clause for combined handling.",
+      "generation_timestamp": "2026-04-10T18:14:06.140279"
+    },
+    "created_at": "2026-04-10T10:14:06.138281+00:00",
+    "exported_at": "2026-04-10T18:14:06.140279"
+  },
+  {
+    "question_text": "Accessing the exception object in the handler.",
+    "correct_answer": "asexception",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Try-Except Block Structure",
+    "game_data": {
+      "explanation": "Using 'as' with except allows you to capture the exception object for inspection or logging purposes.",
+      "generation_timestamp": "2026-04-10T18:14:06.173283"
+    },
+    "created_at": "2026-04-10T10:14:06.172200+00:00",
+    "exported_at": "2026-04-10T18:14:06.173283"
+  },
+  {
+    "question_text": "Re-raising a caught exception after handling.",
+    "correct_answer": "reraise",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Try-Except Block Structure",
+    "game_data": {
+      "explanation": "You can re-raise an exception using 'raise' without arguments to propagate it after performing some handling.",
+      "generation_timestamp": "2026-04-10T18:14:06.205280"
+    },
+    "created_at": "2026-04-10T10:14:06.204275+00:00",
+    "exported_at": "2026-04-10T18:14:06.205280"
+  },
+  {
+    "question_text": "Exception that occurs when dividing by zero.",
+    "correct_answer": "zerodivision",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Try-Except Block Structure",
+    "game_data": {
+      "explanation": "ZeroDivisionError is raised when attempting to divide a number by zero in Python arithmetic operations.",
+      "generation_timestamp": "2026-04-10T18:14:06.240114"
+    },
+    "created_at": "2026-04-10T10:14:06.238048+00:00",
+    "exported_at": "2026-04-10T18:14:06.240114"
+  },
+  {
+    "question_text": "Error when accessing non-existent dictionary key.",
+    "correct_answer": "keyerror",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Try-Except Block Structure",
+    "game_data": {
+      "explanation": "KeyError occurs when trying to access a dictionary key that doesn't exist in the dictionary's current keys.",
+      "generation_timestamp": "2026-04-10T18:14:06.271128"
+    },
+    "created_at": "2026-04-10T10:14:06.268125+00:00",
+    "exported_at": "2026-04-10T18:14:06.271128"
+  },
+  {
+    "question_text": "Exception for invalid sequence index access.",
+    "correct_answer": "indexerror",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Try-Except Block Structure",
+    "game_data": {
+      "explanation": "IndexError is raised when trying to access a list or sequence element using an index that's out of range.",
+      "generation_timestamp": "2026-04-10T18:14:06.303033"
+    },
+    "created_at": "2026-04-10T10:14:06.301034+00:00",
+    "exported_at": "2026-04-10T18:14:06.303033"
+  },
+  {
+    "question_text": "Error when a variable name is not found.",
+    "correct_answer": "nameerror",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Try-Except Block Structure",
+    "game_data": {
+      "explanation": "NameError occurs when Python cannot find a variable name in the current local or global namespace.",
+      "generation_timestamp": "2026-04-10T18:14:06.343016"
+    },
+    "created_at": "2026-04-10T10:14:06.341018+00:00",
+    "exported_at": "2026-04-10T18:14:06.343016"
+  },
+  {
+    "question_text": "Exception for incorrect function arguments.",
+    "correct_answer": "typeerror",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Try-Except Block Structure",
+    "game_data": {
+      "explanation": "TypeError is raised when an operation or function is applied to an object of inappropriate type.",
+      "generation_timestamp": "2026-04-10T18:14:06.377637"
+    },
+    "created_at": "2026-04-10T10:14:06.374631+00:00",
+    "exported_at": "2026-04-10T18:14:06.377637"
+  },
+  {
+    "question_text": "Error when file operations fail.",
+    "correct_answer": "ioerror",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Try-Except Block Structure",
+    "game_data": {
+      "explanation": "IOError (now OSError in Python 3) occurs when an input/output operation fails, like file not found errors.",
+      "generation_timestamp": "2026-04-10T18:14:06.404650"
+    },
+    "created_at": "2026-04-10T10:14:06.401638+00:00",
+    "exported_at": "2026-04-10T18:14:06.404650"
+  },
+  {
+    "question_text": "Creating custom error types for specific cases.",
+    "correct_answer": "customexception",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Try-Except Block Structure",
+    "game_data": {
+      "explanation": "Custom exceptions are user-defined classes that inherit from Exception, allowing for domain-specific error handling.",
+      "generation_timestamp": "2026-04-10T18:14:06.443410"
+    },
+    "created_at": "2026-04-10T10:14:06.440406+00:00",
+    "exported_at": "2026-04-10T18:14:06.443410"
+  },
+  {
+    "question_text": "Exception that should never be caught lightly.",
+    "correct_answer": "systemexit",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Try-Except Block Structure",
+    "game_data": {
+      "explanation": "SystemExit is raised by sys.exit() and should generally not be caught except in main programs for cleanup.",
+      "generation_timestamp": "2026-04-10T18:14:06.481411"
+    },
+    "created_at": "2026-04-10T10:14:06.478407+00:00",
+    "exported_at": "2026-04-10T18:14:06.481411"
+  },
+  {
+    "question_text": "Exception for keyboard interrupt events.",
+    "correct_answer": "keyboardinterrupt",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Try-Except Block Structure",
+    "game_data": {
+      "explanation": "KeyboardInterrupt is raised when the user presses interrupt keys (Ctrl+C), allowing graceful program termination.",
+      "generation_timestamp": "2026-04-10T18:14:06.518586"
+    },
+    "created_at": "2026-04-10T10:14:06.516582+00:00",
+    "exported_at": "2026-04-10T18:14:06.518586"
+  },
+  {
+    "question_text": "A runtime error when a name is not found in the local or global scope.",
+    "correct_answer": "NameError",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Understanding Common Runtime Errors",
+    "game_data": {
+      "explanation": "This error occurs when Python cannot find a name you've tried to use, meaning it hasn't been defined yet.",
+      "generation_timestamp": "2026-04-10T18:14:07.495343"
+    },
+    "created_at": "2026-04-10T10:14:07.494338+00:00",
+    "exported_at": "2026-04-10T18:14:07.495343"
+  },
+  {
+    "question_text": "Error from trying to access an index that doesn't exist in a sequence.",
+    "correct_answer": "IndexError",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Understanding Common Runtime Errors",
+    "game_data": {
+      "explanation": "This happens when you try to access a list, tuple, or string with an index that is out of range.",
+      "generation_timestamp": "2026-04-10T18:14:07.517420"
+    },
+    "created_at": "2026-04-10T10:14:07.515386+00:00",
+    "exported_at": "2026-04-10T18:14:07.517420"
+  },
+  {
+    "question_text": "Occurs when a function or operation receives an argument of the wrong type.",
+    "correct_answer": "TypeError",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Understanding Common Runtime Errors",
+    "game_data": {
+      "explanation": "A common error when you try to perform an operation on incompatible data types.",
+      "generation_timestamp": "2026-04-10T18:14:07.545015"
+    },
+    "created_at": "2026-04-10T10:14:07.543003+00:00",
+    "exported_at": "2026-04-10T18:14:07.545015"
+  },
+  {
+    "question_text": "Error from using a key that is not present in a dictionary.",
+    "correct_answer": "KeyError",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Understanding Common Runtime Errors",
+    "game_data": {
+      "explanation": "This runtime error is raised when you try to access a dictionary key that does not exist.",
+      "generation_timestamp": "2026-04-10T18:14:07.569002"
+    },
+    "created_at": "2026-04-10T10:14:07.568000+00:00",
+    "exported_at": "2026-04-10T18:14:07.569002"
+  },
+  {
+    "question_text": "Error from dividing a number by zero.",
+    "correct_answer": "ZeroDivisionError",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Understanding Common Runtime Errors",
+    "game_data": {
+      "explanation": "A specific arithmetic error that occurs when you attempt to divide by zero in Python.",
+      "generation_timestamp": "2026-04-10T18:14:07.597999"
+    },
+    "created_at": "2026-04-10T10:14:07.596999+00:00",
+    "exported_at": "2026-04-10T18:14:07.597999"
+  },
+  {
+    "question_text": "Error when a built-in operation or function receives an argument with the right type but inappropriate value.",
+    "correct_answer": "ValueError",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Understanding Common Runtime Errors",
+    "game_data": {
+      "explanation": "Raised when a function gets an argument of correct type but with an invalid value, like int('abc').",
+      "generation_timestamp": "2026-04-10T18:14:07.633415"
+    },
+    "created_at": "2026-04-10T10:14:07.631418+00:00",
+    "exported_at": "2026-04-10T18:14:07.633415"
+  },
+  {
+    "question_text": "Error when a file or directory is requested but doesn't exist.",
+    "correct_answer": "FileNotFoundError",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Understanding Common Runtime Errors",
+    "game_data": {
+      "explanation": "A specific OSError raised when a file operation fails because the file cannot be found.",
+      "generation_timestamp": "2026-04-10T18:14:07.677418"
+    },
+    "created_at": "2026-04-10T10:14:07.675414+00:00",
+    "exported_at": "2026-04-10T18:14:07.677418"
+  },
+  {
+    "question_text": "Base class for errors that are related to the operating system.",
+    "correct_answer": "OSError",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Understanding Common Runtime Errors",
+    "game_data": {
+      "explanation": "This is the parent class for system-related errors like file I/O problems and connection failures.",
+      "generation_timestamp": "2026-04-10T18:14:07.704414"
+    },
+    "created_at": "2026-04-10T10:14:07.703417+00:00",
+    "exported_at": "2026-04-10T18:14:07.704414"
+  },
+  {
+    "question_text": "Error when an operation or function is interrupted by the user, often with Ctrl+C.",
+    "correct_answer": "KeyboardInterrupt",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Understanding Common Runtime Errors",
+    "game_data": {
+      "explanation": "This exception is raised when the user interrupts program execution, typically by pressing Ctrl+C.",
+      "generation_timestamp": "2026-04-10T18:14:07.731934"
+    },
+    "created_at": "2026-04-10T10:14:07.730938+00:00",
+    "exported_at": "2026-04-10T18:14:07.731934"
+  },
+  {
+    "question_text": "Error when an operation times out, such as in network communication.",
+    "correct_answer": "TimeoutError",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Understanding Common Runtime Errors",
+    "game_data": {
+      "explanation": "Raised when a system function timed out at the system level, often in socket operations.",
+      "generation_timestamp": "2026-04-10T18:14:07.752947"
+    },
+    "created_at": "2026-04-10T10:14:07.751937+00:00",
+    "exported_at": "2026-04-10T18:14:07.752947"
+  },
+  {
+    "question_text": "Error when an arithmetic operation exceeds the limits of the numeric type.",
+    "correct_answer": "OverflowError",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Understanding Common Runtime Errors",
+    "game_data": {
+      "explanation": "Occurs when the result of an arithmetic operation is too large to be represented by the numeric type.",
+      "generation_timestamp": "2026-04-10T18:14:07.775931"
+    },
+    "created_at": "2026-04-10T10:14:07.774931+00:00",
+    "exported_at": "2026-04-10T18:14:07.775931"
+  },
+  {
+    "question_text": "Error when a specific Unicode encoding issue occurs.",
+    "correct_answer": "UnicodeEncodeError",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Understanding Common Runtime Errors",
+    "game_data": {
+      "explanation": "A subclass of UnicodeError raised when a string cannot be encoded into a specific encoding.",
+      "generation_timestamp": "2026-04-10T18:14:07.806932"
+    },
+    "created_at": "2026-04-10T10:14:07.803933+00:00",
+    "exported_at": "2026-04-10T18:14:07.806932"
+  },
+  {
+    "question_text": "Error when a specific Unicode decoding issue occurs.",
+    "correct_answer": "UnicodeDecodeError",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Understanding Common Runtime Errors",
+    "game_data": {
+      "explanation": "A subclass of UnicodeError raised when a byte sequence cannot be decoded into a string.",
+      "generation_timestamp": "2026-04-10T18:14:07.830453"
+    },
+    "created_at": "2026-04-10T10:14:07.828454+00:00",
+    "exported_at": "2026-04-10T18:14:07.830453"
+  },
+  {
+    "question_text": "Error when an indentation is not consistent or correct.",
+    "correct_answer": "IndentationError",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Understanding Common Runtime Errors",
+    "game_data": {
+      "explanation": "A syntax error that occurs when the indentation in your Python code is improperly structured.",
+      "generation_timestamp": "2026-04-10T18:14:07.854458"
+    },
+    "created_at": "2026-04-10T10:14:07.852457+00:00",
+    "exported_at": "2026-04-10T18:14:07.854458"
+  },
+  {
+    "question_text": "Statement used for debugging to check if a condition is true.",
+    "correct_answer": "assert",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Using assert Statements",
+    "game_data": {
+      "explanation": "An assert statement is a debugging aid that tests a condition; if false, it raises an AssertionError.",
+      "generation_timestamp": "2026-04-10T18:14:30.680916"
+    },
+    "created_at": "2026-04-10T10:14:30.679967+00:00",
+    "exported_at": "2026-04-10T18:14:30.680916"
+  },
+  {
+    "question_text": "Exception raised when an assert condition fails.",
+    "correct_answer": "AssertionError",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Using assert Statements",
+    "game_data": {
+      "explanation": "AssertionError is the exception type raised when the condition in an assert statement evaluates to False.",
+      "generation_timestamp": "2026-04-10T18:14:30.704924"
+    },
+    "created_at": "2026-04-10T10:14:30.703924+00:00",
+    "exported_at": "2026-04-10T18:14:30.704924"
+  },
+  {
+    "question_text": "Optional message that can follow an assert condition.",
+    "correct_answer": "assertionmessage",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Using assert Statements",
+    "game_data": {
+      "explanation": "An optional string argument to assert that provides a custom error message if the assertion fails.",
+      "generation_timestamp": "2026-04-10T18:14:30.736008"
+    },
+    "created_at": "2026-04-10T10:14:30.733999+00:00",
+    "exported_at": "2026-04-10T18:14:30.736008"
+  },
+  {
+    "question_text": "Boolean expression that an assert statement evaluates.",
+    "correct_answer": "condition",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Using assert Statements",
+    "game_data": {
+      "explanation": "The condition is a boolean expression that the assert statement checks; if False, it triggers an error.",
+      "generation_timestamp": "2026-04-10T18:14:30.771943"
+    },
+    "created_at": "2026-04-10T10:14:30.769948+00:00",
+    "exported_at": "2026-04-10T18:14:30.771943"
+  },
+  {
+    "question_text": "Practice of adding checks to ensure code correctness.",
+    "correct_answer": "debugging",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Using assert Statements",
+    "game_data": {
+      "explanation": "Debugging involves identifying and removing errors; assert statements are a common tool for this purpose.",
+      "generation_timestamp": "2026-04-10T18:14:30.808540"
+    },
+    "created_at": "2026-04-10T10:14:30.806540+00:00",
+    "exported_at": "2026-04-10T18:14:30.808540"
+  },
+  {
+    "question_text": "State where a program's assumptions are validated.",
+    "correct_answer": "invariant",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Using assert Statements",
+    "game_data": {
+      "explanation": "An invariant is a condition that should always hold true; assert statements often check invariants.",
+      "generation_timestamp": "2026-04-10T18:14:30.838533"
+    },
+    "created_at": "2026-04-10T10:14:30.836599+00:00",
+    "exported_at": "2026-04-10T18:14:30.838533"
+  },
+  {
+    "question_text": "Process of verifying that inputs meet expected criteria.",
+    "correct_answer": "validation",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Using assert Statements",
+    "game_data": {
+      "explanation": "Validation ensures data is correct and useful; assert can be used to validate conditions in code.",
+      "generation_timestamp": "2026-04-10T18:14:30.879233"
+    },
+    "created_at": "2026-04-10T10:14:30.877233+00:00",
+    "exported_at": "2026-04-10T18:14:30.879233"
+  },
+  {
+    "question_text": "Flag that disables assert statements for optimization.",
+    "correct_answer": "optimization",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Using assert Statements",
+    "game_data": {
+      "explanation": "Optimization can involve disabling assert statements in production using the -O command-line flag.",
+      "generation_timestamp": "2026-04-10T18:14:30.921246"
+    },
+    "created_at": "2026-04-10T10:14:30.919326+00:00",
+    "exported_at": "2026-04-10T18:14:30.921246"
+  },
+  {
+    "question_text": "Command-line option to run Python without assert checks.",
+    "correct_answer": "dasho",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Using assert Statements",
+    "game_data": {
+      "explanation": "The -O flag (dash O) runs Python in optimized mode, ignoring assert statements for better performance.",
+      "generation_timestamp": "2026-04-10T18:14:30.961947"
+    },
+    "created_at": "2026-04-10T10:14:30.958947+00:00",
+    "exported_at": "2026-04-10T18:14:30.961947"
+  },
+  {
+    "question_text": "Type of error that assert helps catch early.",
+    "correct_answer": "logicalerror",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Using assert Statements",
+    "game_data": {
+      "explanation": "Logical errors are bugs where code runs but produces wrong results; assert can detect these by checking assumptions.",
+      "generation_timestamp": "2026-04-10T18:14:30.995325"
+    },
+    "created_at": "2026-04-10T10:14:30.994338+00:00",
+    "exported_at": "2026-04-10T18:14:30.995325"
+  },
+  {
+    "question_text": "Programming principle of failing fast on errors.",
+    "correct_answer": "failfast",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Using assert Statements",
+    "game_data": {
+      "explanation": "Fail-fast is a design approach where errors are detected immediately; assert statements support this by checking conditions early.",
+      "generation_timestamp": "2026-04-10T18:14:31.019644"
+    },
+    "created_at": "2026-04-10T10:14:31.018643+00:00",
+    "exported_at": "2026-04-10T18:14:31.019644"
+  },
+  {
+    "question_text": "Condition that must be true before code execution.",
+    "correct_answer": "precondition",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Using assert Statements",
+    "game_data": {
+      "explanation": "A precondition is a requirement that must be met before a function runs; assert statements often enforce preconditions.",
+      "generation_timestamp": "2026-04-10T18:14:31.043645"
+    },
+    "created_at": "2026-04-10T10:14:31.042645+00:00",
+    "exported_at": "2026-04-10T18:14:31.043645"
+  },
+  {
+    "question_text": "Condition that must be true after code execution.",
+    "correct_answer": "postcondition",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Using assert Statements",
+    "game_data": {
+      "explanation": "A postcondition is a guarantee after function execution; assert can verify postconditions to ensure correctness.",
+      "generation_timestamp": "2026-04-10T18:14:31.072661"
+    },
+    "created_at": "2026-04-10T10:14:31.071660+00:00",
+    "exported_at": "2026-04-10T18:14:31.072661"
+  },
+  {
+    "question_text": "Method to ensure code behaves as intended.",
+    "correct_answer": "verification",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Using assert Statements",
+    "game_data": {
+      "explanation": "Verification confirms that code meets specifications; assert statements are a lightweight verification tool.",
+      "generation_timestamp": "2026-04-10T18:14:31.101193"
+    },
+    "created_at": "2026-04-10T10:14:31.100192+00:00",
+    "exported_at": "2026-04-10T18:14:31.101193"
+  },
+  {
+    "question_text": "Programming style emphasizing explicit checks.",
+    "correct_answer": "defensiveprogramming",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Using assert Statements",
+    "game_data": {
+      "explanation": "Defensive programming involves adding checks like assert to handle unexpected conditions and prevent errors.",
+      "generation_timestamp": "2026-04-10T18:14:31.125192"
+    },
+    "created_at": "2026-04-10T10:14:31.123192+00:00",
+    "exported_at": "2026-04-10T18:14:31.125192"
+  },
+  {
+    "question_text": "Tool for testing assumptions during development.",
+    "correct_answer": "debuggingaid",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Using assert Statements",
+    "game_data": {
+      "explanation": "A debugging aid assists developers; assert statements serve as such by testing assumptions and catching bugs early.",
+      "generation_timestamp": "2026-04-10T18:14:31.147275"
+    },
+    "created_at": "2026-04-10T10:14:31.146265+00:00",
+    "exported_at": "2026-04-10T18:14:31.147275"
+  },
+  {
+    "question_text": "Error that occurs when an assert fails.",
+    "correct_answer": "runtimeerror",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Using assert Statements",
+    "game_data": {
+      "explanation": "A runtime error happens during execution; AssertionError is a specific type raised by failed assert statements.",
+      "generation_timestamp": "2026-04-10T18:14:31.171251"
+    },
+    "created_at": "2026-04-10T10:14:31.170334+00:00",
+    "exported_at": "2026-04-10T18:14:31.171251"
+  },
+  {
+    "question_text": "Technique to temporarily disable code checks.",
+    "correct_answer": "flagusage",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Using assert Statements",
+    "game_data": {
+      "explanation": "Flag usage, like -O, can disable assert statements, allowing for performance tuning in production environments.",
+      "generation_timestamp": "2026-04-10T18:14:31.192411"
+    },
+    "created_at": "2026-04-10T10:14:31.191413+00:00",
+    "exported_at": "2026-04-10T18:14:31.192411"
+  },
+  {
+    "question_text": "Concept of ensuring code reliability through checks.",
+    "correct_answer": "robustness",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Using assert Statements",
+    "game_data": {
+      "explanation": "Robustness is the ability of code to handle errors; assert statements contribute by validating conditions and catching issues.",
+      "generation_timestamp": "2026-04-10T18:14:31.213409"
+    },
+    "created_at": "2026-04-10T10:14:31.212408+00:00",
+    "exported_at": "2026-04-10T18:14:31.213409"
+  },
+  {
+    "question_text": "A keyword for checking multiple exclusive conditions after an initial 'if'.",
+    "correct_answer": "elif",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Using Conditions with Input",
+    "game_data": {
+      "explanation": "Short for 'else if', it allows chaining multiple conditions to test in sequence after the initial 'if'.",
+      "generation_timestamp": "2026-04-10T18:14:34.440606"
+    },
+    "created_at": "2026-04-10T10:14:34.438623+00:00",
+    "exported_at": "2026-04-10T18:14:34.440606"
+  },
+  {
+    "question_text": "The process of making decisions in code based on different conditions.",
+    "correct_answer": "branching",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Using Conditions with Input",
+    "game_data": {
+      "explanation": "Conditional statements create branches in the code's execution path, leading to different outcomes.",
+      "generation_timestamp": "2026-04-10T18:14:34.472520"
+    },
+    "created_at": "2026-04-10T10:14:34.470435+00:00",
+    "exported_at": "2026-04-10T18:14:34.472520"
+  },
+  {
+    "question_text": "A structure that nests one conditional statement inside another.",
+    "correct_answer": "nesting",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Using Conditions with Input",
+    "game_data": {
+      "explanation": "Placing an 'if' statement inside another 'if' or 'else' block creates nested conditionals for complex logic.",
+      "generation_timestamp": "2026-04-10T18:14:34.514321"
+    },
+    "created_at": "2026-04-10T10:14:34.512309+00:00",
+    "exported_at": "2026-04-10T18:14:34.514321"
+  },
+  {
+    "question_text": "The logical operator used to require both conditions to be true.",
+    "correct_answer": "and",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Using Conditions with Input",
+    "game_data": {
+      "explanation": "The 'and' operator combines two Boolean expressions; the overall result is True only if both are True.",
+      "generation_timestamp": "2026-04-10T18:14:34.546927"
+    },
+    "created_at": "2026-04-10T10:14:34.545920+00:00",
+    "exported_at": "2026-04-10T18:14:34.546927"
+  },
+  {
+    "question_text": "The logical operator used to require at least one condition to be true.",
+    "correct_answer": "or",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Using Conditions with Input",
+    "game_data": {
+      "explanation": "The 'or' operator combines two Boolean expressions; the result is True if at least one expression is True.",
+      "generation_timestamp": "2026-04-10T18:14:34.578936"
+    },
+    "created_at": "2026-04-10T10:14:34.577940+00:00",
+    "exported_at": "2026-04-10T18:14:34.578936"
+  },
+  {
+    "question_text": "The logical operator that reverses the truth value of a condition.",
+    "correct_answer": "not",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Using Conditions with Input",
+    "game_data": {
+      "explanation": "The 'not' operator negates a Boolean expression, turning True into False and vice versa.",
+      "generation_timestamp": "2026-04-10T18:14:34.603465"
+    },
+    "created_at": "2026-04-10T10:14:34.602470+00:00",
+    "exported_at": "2026-04-10T18:14:34.603465"
+  },
+  {
+    "question_text": "A common function used to get user input for conditional testing.",
+    "correct_answer": "input",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Using Conditions with Input",
+    "game_data": {
+      "explanation": "The input() function prompts the user for data, which can then be evaluated within conditional statements.",
+      "generation_timestamp": "2026-04-10T18:14:34.624002"
+    },
+    "created_at": "2026-04-10T10:14:34.622990+00:00",
+    "exported_at": "2026-04-10T18:14:34.624002"
+  },
+  {
+    "question_text": "Converting user input from a string to a number for numerical comparison.",
+    "correct_answer": "typecasting",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Using Conditions with Input",
+    "game_data": {
+      "explanation": "Often necessary after input(), typecasting (e.g., int()) converts the string to a numeric type for conditionals.",
+      "generation_timestamp": "2026-04-10T18:14:34.647817"
+    },
+    "created_at": "2026-04-10T10:14:34.646817+00:00",
+    "exported_at": "2026-04-10T18:14:34.647817"
+  },
+  {
+    "question_text": "Checking if a value falls within a specified range using comparisons.",
+    "correct_answer": "rangecheck",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Using Conditions with Input",
+    "game_data": {
+      "explanation": "A common conditional pattern using 'and' to test if a value is between two other values (e.g., 1 <= x <= 10).",
+      "generation_timestamp": "2026-04-10T18:14:34.671820"
+    },
+    "created_at": "2026-04-10T10:14:34.670822+00:00",
+    "exported_at": "2026-04-10T18:14:34.671820"
+  },
+  {
+    "question_text": "A conditional check for equality between two values.",
+    "correct_answer": "equality",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Using Conditions with Input",
+    "game_data": {
+      "explanation": "Performed with the '==' operator, it's a fundamental test to see if two values are the same.",
+      "generation_timestamp": "2026-04-10T18:14:34.697356"
+    },
+    "created_at": "2026-04-10T10:14:34.696350+00:00",
+    "exported_at": "2026-04-10T18:14:34.697356"
+  },
+  {
+    "question_text": "A conditional check to see if two values are not the same.",
+    "correct_answer": "inequality",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Using Conditions with Input",
+    "game_data": {
+      "explanation": "Performed with the '!=' operator, it tests whether two values are different from each other.",
+      "generation_timestamp": "2026-04-10T18:14:34.722370"
+    },
+    "created_at": "2026-04-10T10:14:34.721374+00:00",
+    "exported_at": "2026-04-10T18:14:34.722370"
+  },
+  {
+    "question_text": "The block of code that executes when a conditional's test passes.",
+    "correct_answer": "suite",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Using Conditions with Input",
+    "game_data": {
+      "explanation": "In Python, the indented block of statements following a colon (:) in an 'if', 'elif', or 'else' clause.",
+      "generation_timestamp": "2026-04-10T18:14:34.745434"
+    },
+    "created_at": "2026-04-10T10:14:34.743430+00:00",
+    "exported_at": "2026-04-10T18:14:34.745434"
+  },
+  {
+    "question_text": "The comparison operator meaning 'greater than or equal to'.",
+    "correct_answer": "greaterthanorequal",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Using Conditions with Input",
+    "game_data": {
+      "explanation": "The '>=' operator returns True if the left operand is greater than or equal to the right operand.",
+      "generation_timestamp": "2026-04-10T18:14:34.767368"
+    },
+    "created_at": "2026-04-10T10:14:34.766368+00:00",
+    "exported_at": "2026-04-10T18:14:34.767368"
+  },
+  {
+    "question_text": "The comparison operator meaning 'less than or equal to'.",
+    "correct_answer": "lessthanorequal",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Using Conditions with Input",
+    "game_data": {
+      "explanation": "The '<=' operator returns True if the left operand is less than or equal to the right operand.",
+      "generation_timestamp": "2026-04-10T18:14:34.789208"
+    },
+    "created_at": "2026-04-10T10:14:34.788484+00:00",
+    "exported_at": "2026-04-10T18:14:34.789208"
+  },
+  {
+    "question_text": "A conditional structure that chooses one of many paths.",
+    "correct_answer": "multibranch",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Using Conditions with Input",
+    "game_data": {
+      "explanation": "A series of 'if', 'elif', and 'else' statements that direct the program down one of several possible branches.",
+      "generation_timestamp": "2026-04-10T18:14:34.882363"
+    },
+    "created_at": "2026-04-10T10:14:34.881346+00:00",
+    "exported_at": "2026-04-10T18:14:34.882363"
+  },
+  {
+    "question_text": "The overall flow of execution determined by conditions and loops.",
+    "correct_answer": "controlflow",
+    "game_type": "non_coding",
+    "difficulty": "master",
+    "subtopic": "Using Conditions with Input",
+    "game_data": {
+      "explanation": "Conditional statements are a primary tool for controlling the order in which a program's instructions are executed.",
+      "generation_timestamp": "2026-04-10T18:14:34.910448"
+    },
+    "created_at": "2026-04-10T10:14:34.909360+00:00",
+    "exported_at": "2026-04-10T18:14:34.910448"
+  }
+]
