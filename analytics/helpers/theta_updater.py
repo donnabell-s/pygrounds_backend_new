@@ -35,10 +35,10 @@ def update_user_theta(user_id):
 
     # Gradient ascent for theta estimation
     for r in responses:
-        try:
-            params = ItemIRTParameters.objects.get(question=r.question)
-        except ItemIRTParameters.DoesNotExist:
-            continue
+        params, _ = ItemIRTParameters.objects.get_or_create(
+            question=r.question,
+            defaults={"a": 1.0, "b": 0.0}
+        )
 
         a = params.a
         b = params.b

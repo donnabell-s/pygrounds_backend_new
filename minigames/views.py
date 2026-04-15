@@ -164,9 +164,10 @@ class SubmitAnswers(APIView):
             payload = submitted_map.get(gq.id)
 
             if payload is None:
-                ua, ok = "", False
+                ua, ok, time_taken = "", False, 0
             else:
                 ua = payload.get("user_answer", "")
+                time_taken = int(payload.get("time_taken", 0))
                 if session.game_type in ("crossword", "wordsearch"):
                     ok = _san(ua) == _san(q.correct_answer or "")
                 else:
@@ -180,12 +181,8 @@ class SubmitAnswers(APIView):
                 game_question=gq,
                 user_answer=ua,
                 is_correct=ok,
-                time_taken=0,
+                time_taken=time_taken,
             )
-            from analytics.helpers.theta_updater import update_user_theta
-            update_user_theta(request.user.id)
-
-
 
             # Extract topic and subtopic IDs
             topic_ids, subtopic_ids = extract_topic_subtopic_ids(q)
@@ -203,6 +200,9 @@ class SubmitAnswers(APIView):
                 "game_type": getattr(q, "game_type", None),
                 "minigame_type": getattr(q, "minigame_type", None),
             })
+
+        from analytics.helpers.theta_updater import update_user_theta
+        update_user_theta(request.user.id)
 
         session.status = "completed"
         session.total_score = correct_count
@@ -503,11 +503,6 @@ class SubmitHangmanCode(APIView):
             time_taken=0,
             attempt_number=attempt_number,
         )
-        from analytics.helpers.theta_updater import update_user_theta
-        update_user_theta(request.user.id)
-
-
-
 
         wrong_after = QuestionResponse.objects.filter(
             question=game_q, user=request.user, is_correct=False
@@ -521,6 +516,9 @@ class SubmitHangmanCode(APIView):
             session.total_score = 1 if passed else 0
             session.end_time = timezone.now()
             session.save()
+
+            from analytics.helpers.theta_updater import update_user_theta
+            update_user_theta(request.user.id)
 
             attempts = list(
                 QuestionResponse.objects
@@ -658,10 +656,6 @@ class SubmitDebugGame(APIView):
             time_taken=0,
             attempt_number=attempt_number,
         )
-        from analytics.helpers.theta_updater import update_user_theta
-        update_user_theta(request.user.id)
-
-
 
         wrong_after = QuestionResponse.objects.filter(
             question=game_q, user=request.user, is_correct=False
@@ -675,6 +669,9 @@ class SubmitDebugGame(APIView):
             session.total_score = 1 if passed else 0
             session.end_time = timezone.now()
             session.save()
+
+            from analytics.helpers.theta_updater import update_user_theta
+            update_user_theta(request.user.id)
 
             attempts = list(
                 QuestionResponse.objects

@@ -69,43 +69,55 @@ def aggregate_by_subtopic(results: List[dict]) -> Dict[int, Dict[str, float]]:
 @transaction.atomic
 def recalibrate_topic_proficiency(user, results: list) -> dict:
 
+    print(f"\n[RECAL] ===== recalibrate_topic_proficiency for user={user} =====")
+    print(f"[RECAL] results count: {len(results)}")
+    for i, r in enumerate(results):
+        print(f"[RECAL]   result[{i}]: is_correct={r.get('is_correct')}, subtopic_ids={r.get('subtopic_ids')}, subtopic_id={r.get('subtopic_id')}")
+
     if not results:
+        print("[RECAL] Empty results — returning early, nothing updated")
         return {
             "session": {"total_attempts": 0, "correct": 0, "accuracy": 0.0},
             "ability": {"old": 0.5, "new": 0.5},
             "updated_subtopics": [],
             "touched_topics": [],
         }
-    
+
     ability, _ = UserAbility.objects.get_or_create(
         user=user,
         defaults={"ability_score": 0.5}
     )
     ability_old = float(ability.ability_score)
-    
+
     subtopic_agg = aggregate_by_subtopic(results)
-    
+    print(f"[RECAL] subtopic_agg keys (subtopics touched): {list(subtopic_agg.keys())}")
+    for sid, stats in subtopic_agg.items():
+        print(f"[RECAL]   subtopic {sid}: attempts={stats['attempts']}, accuracy={stats['accuracy']:.3f}")
+
     #compute user's performance this session (how accurate, ect)
     total_attempts = sum(entry.get("is_correct") is not None for entry in results)
     total_correct = sum(1 for entry in results if entry.get("is_correct", False))
     session_accuracy = total_correct / total_attempts if total_attempts > 0 else 0.0
-    
+    print(f"[RECAL] session: total_attempts={total_attempts}, correct={total_correct}, accuracy={session_accuracy:.3f}")
+
     beta = 0.20   #userability update rate
-    
+
     updated_subtopics = []
     touched_topic_ids = set()
-    
+
     #resolve BKT params from learner cluster
     try:
         cluster_name = get_cluster_name(ability.learner_cluster)
         params = BKT_PARAMS.get(cluster_name, DEFAULT_PARAMS)
     except Exception:
         params = DEFAULT_PARAMS
+    print(f"[RECAL] learner_cluster={ability.learner_cluster}, params={params}")
 
     #update each used subtopic's mastery
     for subtopic_id, stats in subtopic_agg.items():
         subtopic_obj = Subtopic.objects.filter(id=subtopic_id).first()
         if not subtopic_obj:
+            print(f"[RECAL] subtopic {subtopic_id} not found in DB — skipping")
             continue
 
         touched_topic_ids.add(subtopic_obj.topic_id)
@@ -126,8 +138,11 @@ def recalibrate_topic_proficiency(user, results: list) -> dict:
         is_correct_obs = subtopic_accuracy >= 0.5
         K_posterior = bkt_update(K_decayed, is_correct_obs, params["p_slip"], params["p_guess"])
 
-        # step 3: apply transit (learning gain)
-        K_transited = K_posterior + (1 - K_posterior) * params["p_transit"]
+        # step 3: apply transit (learning gain) only on correct observations
+        if is_correct_obs:
+            K_transited = K_posterior + (1 - K_posterior) * params["p_transit"]
+        else:
+            K_transited = K_posterior
 
         # step 4: coding multiplier on the delta only
         game_types_in_results = {
@@ -141,6 +156,11 @@ def recalibrate_topic_proficiency(user, results: list) -> dict:
             K_transited = K_decayed + apply_coding_multiplier(delta)
 
         K_new = clamp(K_transited, 0.0, 1.0)
+
+        print(f"[RECAL]   subtopic {subtopic_id} ({subtopic_obj.name}): "
+              f"K_old={K_old:.3f} -> K_decayed={K_decayed:.3f} -> "
+              f"K_posterior={K_posterior:.3f} -> K_transited={K_transited:.3f} -> K_new={K_new:.3f} "
+              f"(is_correct_obs={is_correct_obs})")
 
         mastery_obj.mastery_level = K_new * 100.0
         mastery_obj.last_practiced_at = timezone.now()
@@ -157,8 +177,9 @@ def recalibrate_topic_proficiency(user, results: list) -> dict:
     
     #update userability
     ability_new = (1 - beta) * ability_old + beta * session_accuracy
-    ability_new = clamp(ability_new, 0.05, 0.95)
-    
+    ability_new = clamp(ability_new, 0.01, 0.99)
+
+    print(f"[RECAL] ability_score: {ability_old:.4f} -> {ability_new:.4f}")
     ability.ability_score = ability_new
     ability.save(update_fields=["ability_score"])
     
