@@ -1,8 +1,8 @@
 # users/views.py
 from rest_framework import permissions, generics, status, exceptions
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
-from .models import User
-from .serializers import UserSerializer, RegisterSerializer, UserPublicProfileSerializer, AdminUserSerializer
+from .models import User, Notification
+from .serializers import UserSerializer, RegisterSerializer, UserPublicProfileSerializer, AdminUserSerializer, NotificationSerializer
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
@@ -122,3 +122,42 @@ def activate_user(request, user_id):
         return Response({'message': 'User activated successfully'})
     except User.DoesNotExist:
         return Response({'error': 'User not found'}, status=404)
+
+
+# --- Notification Views ---
+
+class AdminNotificationListCreateView(generics.ListCreateAPIView):
+    """Admin: list all notifications or send a new one (single user or broadcast)."""
+    serializer_class = NotificationSerializer
+    permission_classes = [IsAdminUser]
+
+    def get_queryset(self):
+        return Notification.objects.all()
+
+    def perform_create(self, serializer):
+        is_broadcast = self.request.data.get('is_broadcast', False)
+        if is_broadcast:
+            # Send to every learner
+            learners = User.objects.filter(role='learner')
+            notifications = [
+                Notification(
+                    recipient=user,
+                    title=serializer.validated_data['title'],
+                    message=serializer.validated_data['message'],
+                    notification_type=serializer.validated_data.get('notification_type', Notification.GENERAL),
+                    is_broadcast=True,
+                )
+                for user in learners
+            ]
+            Notification.objects.bulk_create(notifications)
+        else:
+            serializer.save()
+
+
+class AdminNotificationDetailView(generics.RetrieveDestroyAPIView):
+    """Admin: retrieve or delete a specific notification."""
+    serializer_class = NotificationSerializer
+    permission_classes = [IsAdminUser]
+    queryset = Notification.objects.all()
+
+
