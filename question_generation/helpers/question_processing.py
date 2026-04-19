@@ -1,245 +1,203 @@
-# question processing utilities for formatting, validation, and deduplication
-
 import hashlib
 import json
+import re
+import logging
 from typing import List, Dict, Any, Optional
 
+logger = logging.getLogger(__name__)
 
-def generate_question_hash(question_text, subtopic_combination, game_type):
-    # create a unique hash for a question to prevent duplicates
-    # uses first 5 meaningful words from question + subtopic ids + game type
-    # extract key words from question text (remove common words)
-    common_words = {'a', 'an', 'the', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by', 'is', 'are', 'was', 'were', 'be', 'been', 'being', 'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could', 'should'}
-    
-    # clean and extract meaningful words
+
+def _fix_invalid_json_escapes(text: str) -> str:
+    """
+    Replace bare backslashes that aren't valid JSON escape sequences.
+    Valid JSON escapes: \\\\  \\"  \\/  \\b  \\f  \\n  \\r  \\t  \\uXXXX
+    The LLM often emits Python code containing \\e, \\s, \\p, \\', etc.
+    inside JSON string values, which makes json.loads reject the whole response.
+    """
+    return re.sub(r'\\(?!["\\/bfnrtu])', r'\\\\', text)
+
+
+def generate_question_hash(question_text, subtopic_combination, game_type, difficulty=''):
+    common_words = {
+        'a', 'an', 'the', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for',
+        'of', 'with', 'by', 'is', 'are', 'was', 'were', 'be', 'been', 'being',
+        'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could', 'should',
+    }
     words = question_text.lower().split()
-    meaningful_words = [w.strip('.,!?()[]{}";:') for w in words if w.strip('.,!?()[]{}";:') not in common_words and len(w) > 2]
-    question_essence = ' '.join(sorted(meaningful_words[:5]))  # first 5 meaningful words, sorted
-    
-    # create combination signature
+    meaningful = [w.strip('.,!?()[]{}";:') for w in words
+                  if w.strip('.,!?()[]{}";:') not in common_words and len(w) > 2]
+    question_essence = ' '.join(sorted(meaningful[:5]))
     subtopic_ids = tuple(sorted([s.id for s in subtopic_combination]))
-    
-    # generate hash
-    hash_input = f"{question_essence}|{subtopic_ids}|{game_type}"
-    return hashlib.md5(hash_input.encode()).hexdigest()[:12]
+    return hashlib.md5(f"{question_essence}|{subtopic_ids}|{game_type}|{difficulty}".encode()).hexdigest()[:12]
 
 
 def check_question_similarity(question_text1: str, question_text2: str, threshold: float = 0.8) -> bool:
-    # lightweight text similarity check for dedupe
     if not question_text1 or not question_text2:
         return False
-        
-    # normalize texts
-    text1 = question_text1.lower().strip()
-    text2 = question_text2.lower().strip()
-    
-    # exact match
+    text1, text2 = question_text1.lower().strip(), question_text2.lower().strip()
     if text1 == text2:
         return True
-    
-    # length similarity check
     len1, len2 = len(text1), len(text2)
-    if min(len1, len2) / max(len1, len2) < 0.7:  # length difference too big
+    if min(len1, len2) / max(len1, len2) < 0.7:
         return False
-    
-    # word-based similarity
-    words1 = set(text1.split())
-    words2 = set(text2.split())
-    
-    # jaccard similarity of word sets
-    intersection = len(words1 & words2)
+    words1, words2 = set(text1.split()), set(text2.split())
     union = len(words1 | words2)
-    
     if union == 0:
         return False
-        
-    jaccard_similarity = intersection / union
-    
-    return jaccard_similarity >= threshold
+    return (len(words1 & words2) / union) >= threshold
+
+
+def _extract_json_array(text: str):
+    """Extract and parse the first complete JSON array found in text."""
+    start = text.find('[')
+    if start == -1:
+        return None
+    bracket_count = end = 0
+    for i, char in enumerate(text[start:], start):
+        if char == '[':
+            bracket_count += 1
+        elif char == ']':
+            bracket_count -= 1
+            if bracket_count == 0:
+                end = i + 1
+                break
+    if not end:
+        return None
+    questions = json.loads(text[start:end])
+    return questions if isinstance(questions, list) else [questions]
+
+
+def _try_parse(text: str):
+    """Parse JSON and normalise to a list."""
+    parsed = json.loads(text)
+    questions = parsed.get('questions', parsed) if isinstance(parsed, dict) else parsed
+    if isinstance(questions, dict):
+        return [questions]
+    if isinstance(questions, list):
+        return questions
+    return None
 
 
 def parse_llm_json_response(llm_response: str, game_type: str = 'coding') -> Optional[List[Dict[str, Any]]]:
-    # extract and parse json array of questions from llm response
-    # returns None if parsing fails
+    clean = llm_response.strip()
+    if "```json" in clean:
+        start = clean.find("```json") + 7
+        end = clean.find("```", start)
+        if end != -1:
+            clean = clean[start:end].strip()
+
+    # 1. Try as-is
     try:
-        clean_resp = llm_response.strip()
-        
-        # handle code block extraction
-        if "```json" in clean_resp:
-            start_idx = clean_resp.find("```json") + 7
-            end_idx = clean_resp.find("```", start_idx)
-            if end_idx != -1:
-                clean_resp = clean_resp[start_idx:end_idx].strip()
-        
-        # parse json
-        parsed_data = json.loads(clean_resp)
-        
-        # check if it's wrapped in a container with generation_info
-        if isinstance(parsed_data, dict) and 'questions' in parsed_data:
-            questions = parsed_data['questions']
-        else:
-            questions = parsed_data
-            
-        # ensure it's a list
-        if isinstance(questions, dict):
-            questions = [questions]
-        elif not isinstance(questions, list):
-            print(f"Expected list, got {type(questions)}")
-            return None
-            
-        # Validation is applied downstream (e.g., validate_question_data + DB dedupe).
-        print(f"Parsed {len(questions)} questions")
-        return questions
-        
+        return _try_parse(clean)
+    except json.JSONDecodeError:
+        pass
+
+    # 2. Try with invalid escape sequences fixed
+    try:
+        return _try_parse(_fix_invalid_json_escapes(clean))
     except json.JSONDecodeError as e:
-        print(f"JSON parse error at position {e.pos}: {str(e)}")
-        print(f"Response preview: {llm_response[:300]}...")
-        
-        # try to find and parse partial json array
-        try:
-            # look for opening bracket
-            start_idx = llm_response.find('[')
-            if start_idx != -1:
-                # try to find matching closing bracket
-                bracket_count = 0
-                end_idx = -1
-                for i, char in enumerate(llm_response[start_idx:], start_idx):
-                    if char == '[':
-                        bracket_count += 1
-                    elif char == ']':
-                        bracket_count -= 1
-                        if bracket_count == 0:
-                            end_idx = i + 1
-                            break
-                
-                if end_idx != -1:
-                    partial_json = llm_response[start_idx:end_idx]
-                    questions = json.loads(partial_json)
-                    print(f"Recovered {len(questions)} questions from partial response")
-                    return questions if isinstance(questions, list) else [questions]
-        except:
-            pass
-            
-        return None
-    except Exception as e:
-        print(f"Error parsing LLM response: {str(e)}")
-        return None
+        logger.error(f"JSON parse error at position {e.pos}: {e} — preview: {llm_response[:300]}")
+
+    # 3. Bracket extraction (as-is, then escape-fixed)
+    try:
+        return _extract_json_array(clean)
+    except Exception:
+        pass
+
+    try:
+        return _extract_json_array(_fix_invalid_json_escapes(clean))
+    except Exception:
+        pass
+
+    logger.error("All parse attempts failed")
+    return None
 
 
 def format_question_for_game_type(question_data: Dict[str, Any], game_type: str) -> Dict[str, Any]:
-    # normalize llm output into the fields we persist
     if game_type == 'coding':
         return {
-            'question_text': question_data.get('question_text', ''),
-            'buggy_question_text': question_data.get('buggy_question_text', ''),
-            'function_name': question_data.get('function_name', ''),
-            'sample_input': question_data.get('sample_input', ''),
-            'sample_output': question_data.get('sample_output', ''),
-            'hidden_tests': question_data.get('hidden_tests', []),
-            'buggy_code': question_data.get('buggy_code', ''),
-            'correct_code': question_data.get('correct_code', ''),
-            'buggy_correct_code': question_data.get('buggy_correct_code', ''),
-            'difficulty': question_data.get('difficulty', ''),
-            'explanation': question_data.get('explanation', ''),
-            'buggy_explanation': question_data.get('buggy_explanation', ''),
+            'question_text':         question_data.get('question_text', ''),
+            'buggy_question_text':   question_data.get('buggy_question_text', ''),
+            'function_name':         question_data.get('function_name', ''),
+            'sample_input':          question_data.get('sample_input', ''),
+            'sample_output':         question_data.get('sample_output', ''),
+            'hidden_tests':          question_data.get('hidden_tests', []),
+            'clean_solution':        question_data.get('clean_solution') or question_data.get('correct_code', ''),
+            'code_shown_to_student': question_data.get('code_shown_to_student') or question_data.get('buggy_code', ''),
+            'code_with_bug_fixed':   question_data.get('code_with_bug_fixed') or question_data.get('buggy_correct_code', ''),
+            'difficulty':            question_data.get('difficulty', ''),
+            'explanation':           question_data.get('explanation', ''),
+            'buggy_explanation':     question_data.get('buggy_explanation', ''),
         }
-    else:  # non_coding
+    else:
         return {
             'question_text': question_data.get('question_text', ''),
-            'answer': question_data.get('answer', question_data.get('correct_answer', '')),
-            'difficulty': question_data.get('difficulty', ''),
-            'explanation': question_data.get('explanation', ''),
+            'answer':        question_data.get('answer', question_data.get('correct_answer', '')),
+            'difficulty':    question_data.get('difficulty', ''),
+            'explanation':   question_data.get('explanation', ''),
         }
 
 
-def validate_question_data(question_data: Dict[str, Any], game_type: str, seen_function_names: set = None) -> bool:
-    # validate required fields and (for coding) enforce unique function_name
+def validate_question_data(question_data: Dict[str, Any], game_type: str,
+                            seen_function_names: set = None) -> bool:
     required_fields = ['question_text', 'difficulty']
-    
     if game_type == 'coding':
         required_fields.extend([
-            'buggy_question_text',
-            'function_name',
-            'sample_input',
-            'sample_output',
-            'hidden_tests',
-            'buggy_code',
-            'correct_code',
-            'buggy_correct_code',
-            'explanation',
-            'buggy_explanation',
+            'buggy_question_text', 'function_name', 'sample_input', 'sample_output',
+            'hidden_tests', 'clean_solution', 'code_shown_to_student', 'code_with_bug_fixed',
+            'explanation', 'buggy_explanation',
         ])
-        
-        # check for duplicate function names if we're tracking them
         if seen_function_names is not None:
-            function_name = question_data.get('function_name')
-            if function_name in seen_function_names:
-                print(f"Duplicate function name detected: {function_name}")
+            fn = question_data.get('function_name')
+            if fn in seen_function_names:
+                logger.warning(f"Duplicate function name: {fn}")
                 return False
-            seen_function_names.add(function_name)
-    else:  # non-coding questions
-        required_fields.extend(['answer', 'explanation'])  # answer and explanation are required for non-coding questions
-    
-    # check required fields (type-aware)
+            seen_function_names.add(fn)
+    else:
+        required_fields.extend(['answer', 'explanation'])
+
     for field in required_fields:
         if field not in question_data:
-            print(f"Missing required field: {field}")
+            logger.warning(f"Missing required field: {field}")
             return False
-
-        value = question_data.get(field)
-
+        value = question_data[field]
         if field == 'hidden_tests':
-            if not isinstance(value, list) or len(value) == 0:
-                print("Invalid hidden_tests (must be non-empty list)")
+            if not isinstance(value, list) or not value:
+                logger.warning("Invalid hidden_tests: must be a non-empty list")
                 return False
             continue
-
         if isinstance(value, str):
             if not value.strip():
-                print(f"Empty required field: {field}")
+                logger.warning(f"Empty required field: {field}")
                 return False
         elif value is None:
-            print(f"Missing required field: {field}")
+            logger.warning(f"Null required field: {field}")
             return False
-            
     return True
 
 
 def validate_question_batch(questions: List[Dict[str, Any]], game_type: str) -> bool:
-    # validate a batch and ensure uniqueness constraints
     if not questions:
         return False
-        
     seen_function_names = set() if game_type == 'coding' else None
-    
-    for question in questions:
-        if not validate_question_data(question, game_type, seen_function_names):
-            return False
-            
-    return True
+    return all(validate_question_data(q, game_type, seen_function_names) for q in questions)
 
 
 def extract_subtopic_names(subtopic_combination) -> List[str]:
-    # extract names from a queryset/list
     try:
         return [subtopic.name for subtopic in subtopic_combination]
     except AttributeError:
-        # handle case where it might be a list of strings already
         return list(subtopic_combination) if isinstance(subtopic_combination, (list, tuple)) else []
 
 
-def create_generation_context(subtopic_combination, difficulty: str, num_questions: int, rag_context: str = None) -> Dict[str, Any]:
-    # create context dict for prompt generation
+def create_generation_context(subtopic_combination, difficulty: str, num_questions: int,
+                               rag_context: str = None) -> Dict[str, Any]:
     subtopic_names = extract_subtopic_names(subtopic_combination)
-    
-    # create safe subtopic name by escaping characters that could interfere with string formatting
-    safe_subtopic_name = ' + '.join(subtopic_names) if len(subtopic_names) > 1 else subtopic_names[0] if subtopic_names else ''
-    
-    context = {
-        'subtopic_name': safe_subtopic_name,
-        'difficulty': difficulty,
+    safe_name = (' + '.join(subtopic_names) if len(subtopic_names) > 1
+                 else subtopic_names[0] if subtopic_names else '')
+    return {
+        'subtopic_name': safe_name,
+        'difficulty':    difficulty,
         'num_questions': num_questions,
-        'rag_context': rag_context if rag_context else 'No specific content context available. Generate questions based on general Python knowledge.'
+        'rag_context':   rag_context or 'No specific content context available. Generate questions based on general Python knowledge.',
     }
-        
-    return context

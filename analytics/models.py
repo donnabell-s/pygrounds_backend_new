@@ -41,6 +41,7 @@ class QuestionResponse(models.Model):
 
     # optional metadata
     response_time = models.IntegerField(null=True, blank=True)
+    attempt_number = models.PositiveIntegerField(null=True, blank=True)
     user_id = models.IntegerField(null=True, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)

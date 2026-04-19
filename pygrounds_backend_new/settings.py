@@ -35,9 +35,14 @@ logging.getLogger('google.protobuf').setLevel(logging.ERROR)
 
 try:
     import tensorflow as tf
-    tf.get_logger().setLevel('ERROR')  # Only show TF errors
-    # Additional TensorFlow configuration
-    tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
+    try:
+        tf.get_logger().setLevel('ERROR')
+    except AttributeError:
+        pass
+    try:
+        tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
+    except AttributeError:
+        pass
 except ImportError:
     pass  # TensorFlow not installed
 
@@ -69,6 +74,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'django.contrib.postgres',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',

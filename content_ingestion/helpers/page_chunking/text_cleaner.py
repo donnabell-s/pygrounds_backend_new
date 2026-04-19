@@ -5,21 +5,30 @@ from typing import Optional
 def clean_raw_text(text: str) -> str:
     if not text:
         return ""
-    
+
+    # Remove [ NNN ] page markers (common in epub-converted PDFs)
+    text = re.sub(r'\[\s*\d+\s*\]', '', text)
+
+    # Remove "[ NNN ] Chapter Title Chapter N" header lines
+    text = re.sub(r'\[\s*\d+\s*\]\s*.{0,60}Chapter\s+\d+', '', text, flags=re.IGNORECASE)
+
+    # Remove standalone "Chapter N" lines
+    text = re.sub(r'^Chapter\s+\d+\s*$', '', text, flags=re.MULTILINE)
+
     text = _remove_urls(text)
-    
+
     text = re.sub(r'\[([^\]]+)\]\([^)]+\)', r'\1', text)
-    
+
     text = re.sub(r'\[\d+\]', '', text)
-    
+
     text = re.sub(r'Page \d+ of \d+', '', text, flags=re.IGNORECASE)
     text = re.sub(r'^\d+$', '', text, flags=re.MULTILINE)
-    
+
     text = re.sub(r'Copyright.*', '', text, flags=re.IGNORECASE)
     text = re.sub(r'All rights reserved.*', '', text, flags=re.IGNORECASE)
-    
+
     text = re.sub(r'\s+', ' ', text).strip()
-    
+
     return text
 
 

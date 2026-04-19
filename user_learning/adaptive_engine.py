@@ -1,9 +1,15 @@
 from typing import Dict, List
 from django.db import transaction
 from django.db.models import Avg
+from django.utils import timezone
 from user_learning.models import UserZoneProgress, UserTopicProficiency, UserSubtopicMastery, UserAbility
 from content_ingestion.models import Topic, Subtopic, GameZone
 from .adaptive_weights import compute_effective_correctness
+from .bkt_params import BKT_PARAMS, DEFAULT_PARAMS
+from .bkt import bkt_update
+from .forgetting import apply_forgetting
+from .performance_multiplier import apply_coding_multiplier
+from .clustering import get_cluster_name
 
 
 def clamp(x: float, min_val: float, max_val: float) -> float:
@@ -63,60 +69,103 @@ def aggregate_by_subtopic(results: List[dict]) -> Dict[int, Dict[str, float]]:
 @transaction.atomic
 def recalibrate_topic_proficiency(user, results: list) -> dict:
 
+    print(f"\n[RECAL] ===== recalibrate_topic_proficiency for user={user} =====")
+    print(f"[RECAL] results count: {len(results)}")
+    for i, r in enumerate(results):
+        print(f"[RECAL]   result[{i}]: is_correct={r.get('is_correct')}, subtopic_ids={r.get('subtopic_ids')}, subtopic_id={r.get('subtopic_id')}")
+
     if not results:
+        print("[RECAL] Empty results — returning early, nothing updated")
         return {
             "session": {"total_attempts": 0, "correct": 0, "accuracy": 0.0},
             "ability": {"old": 0.5, "new": 0.5},
             "updated_subtopics": [],
             "touched_topics": [],
         }
-    
+
     ability, _ = UserAbility.objects.get_or_create(
         user=user,
         defaults={"ability_score": 0.5}
     )
     ability_old = float(ability.ability_score)
-    
+
     subtopic_agg = aggregate_by_subtopic(results)
-    
+    print(f"[RECAL] subtopic_agg keys (subtopics touched): {list(subtopic_agg.keys())}")
+    for sid, stats in subtopic_agg.items():
+        print(f"[RECAL]   subtopic {sid}: attempts={stats['attempts']}, accuracy={stats['accuracy']:.3f}")
+
     #compute user's performance this session (how accurate, ect)
     total_attempts = sum(entry.get("is_correct") is not None for entry in results)
     total_correct = sum(1 for entry in results if entry.get("is_correct", False))
     session_accuracy = total_correct / total_attempts if total_attempts > 0 else 0.0
-    
-    alpha = 0.45  #subtopicmastery update rate
+    print(f"[RECAL] session: total_attempts={total_attempts}, correct={total_correct}, accuracy={session_accuracy:.3f}")
+
     beta = 0.20   #userability update rate
-    
+
     updated_subtopics = []
     touched_topic_ids = set()
-    
+
+    #resolve BKT params from learner cluster
+    try:
+        cluster_name = get_cluster_name(ability.learner_cluster)
+        params = BKT_PARAMS.get(cluster_name, DEFAULT_PARAMS)
+    except Exception:
+        params = DEFAULT_PARAMS
+    print(f"[RECAL] learner_cluster={ability.learner_cluster}, params={params}")
+
     #update each used subtopic's mastery
     for subtopic_id, stats in subtopic_agg.items():
         subtopic_obj = Subtopic.objects.filter(id=subtopic_id).first()
         if not subtopic_obj:
+            print(f"[RECAL] subtopic {subtopic_id} not found in DB — skipping")
             continue
-        
+
         touched_topic_ids.add(subtopic_obj.topic_id)
-        
+
         mastery_obj, _ = UserSubtopicMastery.objects.get_or_create(
             user=user,
             subtopic=subtopic_obj,
             defaults={"mastery_level": 0.0}
         )
-        
-        K_old = mastery_obj.mastery_level / 100.0  # convert percent to 0-1
-        K_old = clamp(K_old, 0.0, 1.0)
-        
-        prior = 0.7 * K_old + 0.3 * ability_old
-        
-        #update ema
+
+        K_old = clamp(mastery_obj.mastery_level / 100.0, 0.0, 1.0)
+
+        # step 1: apply forgetting factor
+        K_decayed = apply_forgetting(K_old, mastery_obj.last_practiced_at, params["p_forget"])
+
+        # step 2: BKT posterior — treat accuracy >= 0.5 as a correct observation
         subtopic_accuracy = stats["accuracy"]
-        K_new = (1 - alpha) * prior + alpha * subtopic_accuracy
-        K_new = clamp(K_new, 0.0, 1.0)
-        
+        is_correct_obs = subtopic_accuracy >= 0.5
+        K_posterior = bkt_update(K_decayed, is_correct_obs, params["p_slip"], params["p_guess"])
+
+        # step 3: apply transit (learning gain) only on correct observations
+        if is_correct_obs:
+            K_transited = K_posterior + (1 - K_posterior) * params["p_transit"]
+        else:
+            K_transited = K_posterior
+
+        # step 4: coding multiplier on the delta only
+        game_types_in_results = {
+            entry.get("game_type", "") for entry in results
+            if entry.get("subtopic_id") == subtopic_id
+               or subtopic_id in entry.get("subtopic_ids", [])
+        }
+        is_coding = bool(game_types_in_results & {"coding"})
+        if is_coding and subtopic_accuracy >= 0.5:
+            delta = K_transited - K_decayed
+            K_transited = K_decayed + apply_coding_multiplier(delta)
+
+        K_new = clamp(K_transited, 0.0, 1.0)
+
+        print(f"[RECAL]   subtopic {subtopic_id} ({subtopic_obj.name}): "
+              f"K_old={K_old:.3f} -> K_decayed={K_decayed:.3f} -> "
+              f"K_posterior={K_posterior:.3f} -> K_transited={K_transited:.3f} -> K_new={K_new:.3f} "
+              f"(is_correct_obs={is_correct_obs})")
+
         mastery_obj.mastery_level = K_new * 100.0
-        mastery_obj.save(update_fields=["mastery_level"])
-        
+        mastery_obj.last_practiced_at = timezone.now()
+        mastery_obj.save(update_fields=["mastery_level", "last_practiced_at"])
+
         updated_subtopics.append({
             "subtopic_id": subtopic_id,
             "subtopic_name": subtopic_obj.name,
@@ -128,8 +177,9 @@ def recalibrate_topic_proficiency(user, results: list) -> dict:
     
     #update userability
     ability_new = (1 - beta) * ability_old + beta * session_accuracy
-    ability_new = clamp(ability_new, 0.05, 0.95)
-    
+    ability_new = clamp(ability_new, 0.01, 0.99)
+
+    print(f"[RECAL] ability_score: {ability_old:.4f} -> {ability_new:.4f}")
     ability.ability_score = ability_new
     ability.save(update_fields=["ability_score"])
     

@@ -13,6 +13,7 @@ from .views import (
     activate_user,
     AdminNotificationListCreateView,
     AdminNotificationDetailView,
+    check_availability,
 )
 from users.jwt_views import EmailTokenObtainPairView
 
@@ -38,4 +39,7 @@ urlpatterns = [
 
     # token endpoint
     path('api/token/', EmailTokenObtainPairView.as_view(), name='token_obtain_pair'),
+
+    # availability check (public)
+    path('check-availability/', check_availability, name='check-availability'),
 ]
