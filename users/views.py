@@ -103,6 +103,21 @@ class AdminUserDetailView(generics.RetrieveUpdateDestroyAPIView):
             instance.delete()
 
 
+@api_view(['GET'])
+def check_availability(request):
+    """Check if a username or email is already taken. Returns {username_taken, email_taken}."""
+    username = request.query_params.get('username', '').strip()
+    email = request.query_params.get('email', '').strip()
+
+    result = {}
+    if username:
+        result['username_taken'] = User.objects.filter(username__iexact=username).exists()
+    if email:
+        result['email_taken'] = User.objects.filter(email__iexact=email).exists()
+
+    return Response(result)
+
+
 @api_view(['PATCH', 'POST'])
 def deactivate_user(request, user_id):
     try:
