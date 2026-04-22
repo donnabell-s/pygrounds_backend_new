@@ -119,7 +119,7 @@ def get_generation_stats(request):
         
         difficulty_stats = {}
         for difficulty in ['beginner', 'intermediate', 'advanced', 'master']:
-            difficulty_stats[difficulty] = GeneratedQuestion.objects.filter(difficulty=difficulty).count()
+            difficulty_stats[difficulty] = GeneratedQuestion.objects.filter(estimated_difficulty=difficulty).count()
         
         return Response({
             'status': 'success',

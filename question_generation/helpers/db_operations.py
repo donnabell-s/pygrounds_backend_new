@@ -90,7 +90,7 @@ def write_json_safely(filepath: str, data: list, question_type: str = "question"
 
 def _get_or_create_output_file(game_type: str) -> str:
     """Return path to the most recent output file for game_type (within 1 hour), or a new one."""
-    output_dir = os.path.join(os.path.dirname(__file__), '..', '..', 'question_outputs')
+    output_dir = os.path.join(os.path.dirname(__file__), '..', '..', '..', 'question_outputs')
     os.makedirs(output_dir, exist_ok=True)
     existing = glob.glob(os.path.join(output_dir, f"{game_type}_*.json"))
     cutoff = time.time() - 3600
@@ -174,7 +174,7 @@ def export_question_to_json(question_obj, game_type: str):
 def export_preassessment_question_to_json(question_obj):
     """Append a pre-assessment question to question_outputs/pre_assessment_*.json."""
     try:
-        output_dir = os.path.join(os.path.dirname(__file__), '..', '..', 'question_outputs')
+        output_dir = os.path.join(os.path.dirname(__file__), '..', '..', '..', 'question_outputs')
         os.makedirs(output_dir, exist_ok=True)
         date_str = datetime.now().strftime("%Y%m%d")
         existing = glob.glob(os.path.join(output_dir, f"pre_assessment_{date_str}_*.json"))

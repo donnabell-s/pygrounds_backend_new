@@ -177,7 +177,7 @@ def generate_pre_assessment(request):
     """
     try:
         topic_ids       = request.data.get('topic_ids')
-        total_questions = int(request.data.get('total_questions', 20))
+        total_questions = 30  # Hardcoded max questions to 30
 
         topics = Topic.objects.filter(id__in=topic_ids) if topic_ids else Topic.objects.all()
         if not topics.exists():
@@ -211,10 +211,22 @@ def generate_pre_assessment(request):
                 prompt = deepseek_prompt_manager.get_prompt_for_minigame(
                     "pre_assessment", {'topics_and_subtopics': topics_str, 'num_questions': total_questions}
                 )
+                # Calculate difficulty distribution: 1 master, rest split roughly 40/40/20
+                rem = total_questions - 1
+                beginner_count     = round(rem * 0.45)
+                intermediate_count = round(rem * 0.35)
+                advanced_count     = rem - beginner_count - intermediate_count
+                master_count       = 1
+
                 system_prompt = (
                     f"You are a Python assessment expert. "
-                    f"Generate {total_questions} questions covering all listed topics and subtopics. "
-                    f"Mix questions that span multiple subtopics. Use exact subtopic names from the list."
+                    f"Generate exactly {total_questions} questions covering all listed topics and subtopics. "
+                    f"Mix questions that span multiple subtopics. Use exact subtopic names from the list.\n"
+                    f"CRITICAL INSTRUCTION - You MUST generate exactly this distribution of difficulties:\n"
+                    f"- {beginner_count} beginner questions\n"
+                    f"- {intermediate_count} intermediate questions\n"
+                    f"- {advanced_count} advanced questions\n"
+                    f"- {master_count} master question"
                 )
                 llm_response = invoke_deepseek(
                     prompt, system_prompt=system_prompt, model="deepseek-chat",
