@@ -24,9 +24,8 @@ def ml_bulk_predict_difficulty(request, question_type):
     difficulty = request.query_params.get("difficulty")
     validation_status = request.query_params.get("validation_status")
 
-    # -------------------------------
+    
     # SELECT BASE QUERYSET
-    # -------------------------------
     if question_type == "coding":
         qs = GeneratedQuestion.objects.filter(game_type="coding")
 
@@ -42,9 +41,7 @@ def ml_bulk_predict_difficulty(request, question_type):
     else:
         return Response({"message": f"Invalid question type: {question_type}"}, status=400)
 
-    # -------------------------------
     # APPLY FILTERS
-    # -------------------------------
     if difficulty:
         qs = qs.filter(estimated_difficulty=difficulty)
 
@@ -56,9 +53,7 @@ def ml_bulk_predict_difficulty(request, question_type):
     updated = 0
     unchanged = 0
 
-    # -------------------------------
     # MAIN LOOP
-    # -------------------------------
     for q in qs:
         if isinstance(q, GeneratedQuestion):
             gtype = q.game_type

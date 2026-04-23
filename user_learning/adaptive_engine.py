@@ -7,7 +7,7 @@ from content_ingestion.models import Topic, Subtopic, GameZone
 from .adaptive_weights import compute_effective_correctness
 from .bkt_params import BKT_PARAMS, DEFAULT_PARAMS
 from .bkt import bkt_update
-from .forgetting import apply_forgetting
+from .forgetting import recency_weight
 from .performance_multiplier import apply_coding_multiplier
 from .clustering import get_cluster_name
 
@@ -130,13 +130,14 @@ def recalibrate_topic_proficiency(user, results: list) -> dict:
 
         K_old = clamp(mastery_obj.mastery_level / 100.0, 0.0, 1.0)
 
-        # step 1: apply forgetting factor
-        K_decayed = apply_forgetting(K_old, mastery_obj.last_practiced_at, params["p_forget"])
+        # new
+        # step 1: compute recency weight based on time since last practice
+        weight = recency_weight(mastery_obj.last_practiced_at)
 
         # step 2: BKT posterior — treat accuracy >= 0.5 as a correct observation
         subtopic_accuracy = stats["accuracy"]
         is_correct_obs = subtopic_accuracy >= 0.5
-        K_posterior = bkt_update(K_decayed, is_correct_obs, params["p_slip"], params["p_guess"])
+        K_posterior = bkt_update(K_old, is_correct_obs, params["p_slip"], params["p_guess"])
 
         # step 3: apply transit (learning gain) only on correct observations
         if is_correct_obs:
@@ -144,23 +145,27 @@ def recalibrate_topic_proficiency(user, results: list) -> dict:
         else:
             K_transited = K_posterior
 
-        # step 4: coding multiplier on the delta only
+        # step 4: apply recency weight to the delta
+        delta = K_transited - K_old
+        K_weighted = K_old + (delta * weight)
+
+        # step 5: coding multiplier on the delta only
         game_types_in_results = {
             entry.get("game_type", "") for entry in results
             if entry.get("subtopic_id") == subtopic_id
-               or subtopic_id in entry.get("subtopic_ids", [])
+            or subtopic_id in entry.get("subtopic_ids", [])
         }
         is_coding = bool(game_types_in_results & {"coding"})
         if is_coding and subtopic_accuracy >= 0.5:
-            delta = K_transited - K_decayed
-            K_transited = K_decayed + apply_coding_multiplier(delta)
+            delta = K_weighted - K_old
+            K_weighted = K_old + apply_coding_multiplier(delta)
 
-        K_new = clamp(K_transited, 0.0, 1.0)
+        K_new = clamp(K_weighted, 0.0, 1.0)
 
         print(f"[RECAL]   subtopic {subtopic_id} ({subtopic_obj.name}): "
-              f"K_old={K_old:.3f} -> K_decayed={K_decayed:.3f} -> "
-              f"K_posterior={K_posterior:.3f} -> K_transited={K_transited:.3f} -> K_new={K_new:.3f} "
-              f"(is_correct_obs={is_correct_obs})")
+            f"K_old={K_old:.3f} -> K_posterior={K_posterior:.3f} -> "
+            f"K_transited={K_transited:.3f} -> K_weighted={K_weighted:.3f} -> K_new={K_new:.3f} "
+            f"(is_correct_obs={is_correct_obs}, recency_weight={weight:.2f})")
 
         mastery_obj.mastery_level = K_new * 100.0
         mastery_obj.last_practiced_at = timezone.now()

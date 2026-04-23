@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User, LearnerProfile, AdminProfile
+from .models import User, LearnerProfile, AdminProfile, Notification
 from django.contrib.auth.password_validation import validate_password
 from user_learning.models import UserZoneProgress, UserTopicProficiency
 from user_learning.serializers import ZoneSerializer, TopicSerializer
@@ -129,6 +129,16 @@ class UserTopicProficiencySerializer(serializers.ModelSerializer):
     class Meta:
         model = UserTopicProficiency
         fields = ["topic", "zone", "proficiency_percent"]
+
+
+class NotificationSerializer(serializers.ModelSerializer):
+    recipient_username = serializers.CharField(source='recipient.username', read_only=True)
+
+    class Meta:
+        model = Notification
+        fields = ['id', 'recipient', 'recipient_username', 'title', 'message', 'notification_type', 'is_read', 'is_broadcast', 'created_at']
+        read_only_fields = ['id', 'is_read', 'created_at', 'recipient_username']
+
 
 
 class UserPublicProfileSerializer(serializers.ModelSerializer):
