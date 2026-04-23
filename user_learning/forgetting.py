@@ -1,16 +1,15 @@
 from django.utils import timezone
 
 
-def apply_forgetting(mastery: float, last_practiced_at, p_forget: float) -> float:
+def recency_weight(last_practiced_at) -> float:
     """
-    Decays mastery based on days since last practice.
-    Only applies if last_practiced_at is not None.
-    Decay is linear per day, clamped to a floor of 0.05.
-    mastery is expected in [0, 1].
+    Returns a weight multiplier based on days since last practice.
+    Longer gap = higher weight = larger BKT update in either direction.
+    Capped at 2.0 to prevent extreme jumps.
+    If never practiced, returns 1.0 (neutral).
     """
     if last_practiced_at is None:
-        return mastery
+        return 1.0
 
     days_since = (timezone.now() - last_practiced_at).days
-    decayed = mastery - (p_forget * days_since)
-    return max(0.05, decayed)
+    return min(1.0 + (days_since * 0.05), 2.0)
