@@ -11,6 +11,8 @@ from .views import (
     AdminUserDetailView,
     deactivate_user,
     activate_user,
+    AdminNotificationListCreateView,
+    AdminNotificationDetailView,
     check_availability,
 )
 from users.jwt_views import EmailTokenObtainPairView
@@ -30,6 +32,10 @@ urlpatterns = [
     path('admin/users/<int:pk>/', AdminUserDetailView.as_view(), name='admin-user-detail'),
     path('admin/users/<int:user_id>/deactivate/', deactivate_user, name='deactivate-user'),
     path('admin/users/<int:user_id>/activate/', activate_user, name='activate-user'),
+
+    # admin notification endpoints
+    path('admin/notifications/', AdminNotificationListCreateView.as_view(), name='admin-notification-list'),
+    path('admin/notifications/<int:pk>/', AdminNotificationDetailView.as_view(), name='admin-notification-detail'),
 
     # token endpoint
     path('api/token/', EmailTokenObtainPairView.as_view(), name='token_obtain_pair'),

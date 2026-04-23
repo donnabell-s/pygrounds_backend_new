@@ -1,139 +1,180 @@
-import re
+# question_generation/utils/non_coding_rule_engine.py
 
-def _has_any(patterns, text: str) -> bool:
-    for p in patterns:
-        if re.search(p, text, flags=re.IGNORECASE):
-            return True
+import re
+from typing import List, Tuple
+
+
+def _has(pattern: str, text: str) -> bool:
+    return re.search(pattern, text, flags=re.IGNORECASE) is not None
+
+
+def _count(pattern: str, text: str) -> int:
+    return len(re.findall(pattern, text, flags=re.IGNORECASE))
+
+
+def _looks_like_flashcard_statement(t: str) -> bool:
+    """
+    Detect statement-style prompts (common in your dataset) like:
+    "A tuple's value is fixed only if..."
+    "Generator expressions share..."
+    These are recall/definition even without "What is/Define".
+    """
+    s = (t or "").strip()
+    if not s:
+        return False
+
+    low = s.lower()
+
+    # already a question
+    if "?" in s:
+        return False
+
+    # starts like definition statement
+    if re.match(r"^(a|an|the|this|these|those)\b", low):
+        return True
+
+    # noun phrase + verb style
+    if re.match(
+        r"^[a-z][a-z\s'/-]{3,60}\b(is|are|can|cannot|will|share|uses|allow|allows|means|refers)\b",
+        low,
+    ):
+        return True
+
     return False
 
 
-
-MASTER_KEYWORDS = [
-    r"\btypevar\b", r"\bgeneric(s)?\b", r"\bcovariant\b", r"\bcontravariant\b",
-    r"\bsingledispatch\b", r"\boverload\b", r"\bmetaclass\b",
-    r"\bmappingproxytype\b", r"\bweakref\b", r"\bdescriptor(s)?\b",
-    r"\bmethod resolution order\b", r"\bmro\b",
-    r"\bprotocol\b", r"\biterator protocol\b",
-    r"\bcoroutine(s)?\b", r"\bawaitable(s)?\b",
-    r"\babstract base class(es)?\b", r"\babc\b",
-    r"\bcontextmanager\b", r"\bdecorator(s)?\b",
-]
-
-ADVANCED_KEYWORDS = [
-    r"\bbreak\b", r"\bcontinue\b", r"\bpass\b",
-    r"\bternary\b", r"\bwalrus\b",
-    r"\bpopitem\b", r"\bzfill\b", r"\bstrip\b",
-    r"\bidentity\b",
-    r"\bbitwise\b",
-    r"\bindividual bits?\b",
-    r"\bbit shift\b",
-    r"\b(left|right)\s+shift\b",
-    r"\breduce\b",
-    r"\bfunctools\b",
-    r"\baccumulate\b",
-    r"\bconsume\b.*\breturn\b.*\bresult(s)?\b",
-    r"\bbeyond simple iteration\b",
-]
-INTERMEDIATE_KEYWORDS = [
-    r"\biterator(s)?\b", r"\biterable(s)?\b", r"\bgenerator(s)?\b",
-    r"\bcomprehension(s)?\b",
-    # type hints (catch common phrasing)
-    r"\btype hint(s)?\b",
-    r"\btype annotation(s)?\b",
-    r"\bannotation(s)?\b",
-    r"\btype information\b",
-    r"\bfunction parameters?\b.*\breturn values?\b",
-    r"\bparameter(s)?\b.*\breturn\b",
-    # mutability
-    r"\bhashable\b", r"\bmutable\b", r"\bimmutable\b",
-    # slicing
-    r"\bslice\b", r"\bslicing\b",
-    r"\bstart\b.*\bstop\b.*\bstep\b",
-    # dunder / special methods for string representation
-    r"\bdunder\b",
-    r"__str__|__repr__",
-    r"\bspecial methods?\b.*\bstrings?\b",
-    r"\bappear as strings?\b",
-    r"\bstring representation\b",
-    # closures
-    r"\bclosure(s)?\b",
-    r"\benclosing environment\b",
-    r"\bfree variable(s)?\b",
-    # design patterns (iterator pattern phrasing)
-    r"\bdesign pattern\b.*\btravers\w+\b.*\bcollection",
-    r"\bsequential access\b",
-    r"\bsuppl(y|ies)\b.*\belements?\b.*\bsequential(ly)?\b",
-    r"\bwithout exposing\b.*\bunderlying structure\b",
-    # floor division nuance
-    r"\bfloor division\b",
-    r"\bnegative infinity\b",
-    r"\btruncates?\b.*\bnegative infinity\b",
-    r"\btype hint(s)?\b"
-    r"\bannotation(s)?\b"
-    r"\bparameter(s)?\b"
-    r"\breturn value(s)?\b"
-    r"\bslicing\b"
-    r"\bstart\b.*\bstop\b.*\bstep\b"
-]
-
-# BEGINNER (syntax, basic ops, basic data concepts)
-BEGINNER_KEYWORDS = [
-    r"\bmodulo\b", r"\barithmetic\b",
-    # conditionals (catch phrasing even if “if” not present)
-    r"\bif\b", r"\belse\b",
-    r"\bonly if\b",
-    r"\bcondition is met\b",
-    r"\btrue division\b"
-    r"\bfloor division\b"
-    r"\bset union\b"
-    r"\bunion\b" 
-    r"\bbitwise\b"
-    r"\bfor loop\b",
-    # common types
-    r"\bstring\b", r"\blist\b", r"\binteger\b",
-    r"\bboolean\b", r"\bvariable\b",
-    # indentation / blocks
-    r"\bindentation\b",
-    r"\bcode blocks?\b",
-    r"\bcurly braces?\b",
-    # division operators phrasing
-    r"\btrue division\b",
-    r"\bwithout floor rounding\b",
-    r"\boperator\b.*\bdivision\b",
-    # conversion
-    r"\bfloat\b",
-    r"\bdecimal numbers?\b",
-    r"\bconvert\b.*\btext\b.*\bdecimal\b",
-    # ascii
-    r"\bascii\b",
-    r"\bspace\b.*\btilde\b",
-    r"\bprintable\b.*\bcharacters?\b",
-    # sets / union 
-    r"\bset union\b",
-    r"\bunion operation\b",
-]
-
-def refined_non_coding_rule_engine(text: str):
+def _noncoding_score(text: str) -> Tuple[int, List[str], bool, bool]:
     """
-    Returns: 'beginner' | 'intermediate' | 'advanced' | 'master' | None
+    Returns: (score, reasons, has_trace_intent, has_example)
+    Cognitive scoring based on intent + reasoning demand (no topic keywords).
     """
-    t = (text or "").strip().lower()
+    t = (text or "").strip()
+    low = t.lower()
+    score = 0
+    reasons: List[str] = []
+
+    # -------- Intent signals --------
+    # Recall/Define (question form)
+    if _has(r"\b(define|definition|what is|identify|name|meaning|which of the following|choose)\b", low):
+        score += 1
+        reasons.append("Intent: recall/define (+1)")
+
+    # Recall/Define (flashcard statement)
+    if _looks_like_flashcard_statement(t):
+        score += 1
+        reasons.append("Intent: flashcard/definition statement (+1)")
+
+    # Explain / Describe
+    if _has(r"\b(explain|describe|summarize)\b", low):
+        score += 2
+        reasons.append("Intent: explain/describe (+2)")
+
+    # Apply / Use
+    if _has(r"\b(how do you use|how to|use|apply|write|create|implement)\b", low):
+        score += 2
+        reasons.append("Intent: apply/use (+2)")
+
+    # Analyze / Compare / Justify
+    if _has(r"\b(analyze|compare|contrast|justify|trade[-\s]?off|difference between)\b", low):
+        score += 3
+        reasons.append("Intent: analyze/compare/justify (+3)")
+
+    # Causal reasoning
+    if _has(r"\b(why|how does|what happens if|effect of|reason)\b", low):
+        score += 3
+        reasons.append("Intent: causal reasoning (+3)")
+
+    # Debug / error reasoning
+    if _has(r"\b(debug|fix|error|incorrect|bug)\b", low):
+        score += 3
+        reasons.append("Intent: debug/error reasoning (+3)")
+
+    # Trace / output / evaluate
+    has_trace_intent = _has(r"\b(output|what will be printed|trace|evaluate)\b", low)
+    if has_trace_intent:
+        score += 3
+        reasons.append("Intent: trace/predict/evaluate (+3)")
+
+    # -------- Complexity signals --------
+    if _has(r"\b(step|steps|first|then|after|before|next)\b", low):
+        score += 1
+        reasons.append("Complexity: multi-step phrasing (+1)")
+
+    if _count(r"\b(and|or|but|however)\b", low) >= 2:
+        score += 1
+        reasons.append("Complexity: multiple clauses (+1)")
+
+    # Example/expression/snippet presence
+    has_code_block = _has(r"```", t)
+    has_expression = _has(r"[()\[\]{}=+\-*/%<>]", t)
+    has_codeish = _has(r"\bfor\b|\bwhile\b|\bif\b|\bdef\b|print\(", t)
+    has_example = has_code_block or has_codeish or has_expression
+
+    if has_example:
+        score += 1
+        reasons.append("Context: contains example/expression (+1)")
+
+    return score, reasons, has_trace_intent, has_example
+
+
+def _score_to_label(score: int) -> str:
+    if score >= 8:
+        return "master"
+    if score >= 6:
+        return "advanced"
+    if score >= 4:
+        return "intermediate"
+    return "beginner"
+
+
+# ============================================================
+# ✅ MAIN API used by ml_classifier.py
+# ============================================================
+
+def predict_non_coding_difficulty(text: str) -> str:
+    """
+    Non-coding difficulty using cognitive scoring (NO ML).
+    Hard-minimum rule:
+      trace/output/evaluate + example => at least INTERMEDIATE (only raise, never downgrade)
+    """
+    t = (text or "").strip()
     if not t:
-        return None
-
-    if "∪" in t:
         return "beginner"
 
-    if _has_any(MASTER_KEYWORDS, t):
-        return "master"
+    score, reasons, has_trace_intent, has_example = _noncoding_score(t)
+    base = _score_to_label(score)
 
-    if _has_any(ADVANCED_KEYWORDS, t):
-        return "advanced"
-
-    if _has_any(INTERMEDIATE_KEYWORDS, t):
+    # hard minimum: trace + example must be at least intermediate
+    if has_trace_intent and has_example and base == "beginner":
         return "intermediate"
 
-    if _has_any(BEGINNER_KEYWORDS, t):
-        return "beginner"
+    return base
 
-    return None
+
+def predict_non_coding_difficulty_debug(text: str) -> dict:
+    """
+    Debug version for non-coding cognitive scoring.
+    """
+    t = (text or "").strip()
+    score, reasons, has_trace_intent, has_example = _noncoding_score(t)
+    base = _score_to_label(score)
+
+    final_label = base
+    note = "cognitive scoring"
+
+    if has_trace_intent and has_example and base == "beginner":
+        final_label = "intermediate"
+        note = "hard minimum applied (beginner -> intermediate)"
+    elif has_trace_intent and has_example and base != "beginner":
+        note = "hard minimum checked (already >= intermediate)"
+
+    return {
+        "score": score,
+        "base_label": base,
+        "final_label": final_label,
+        "has_trace_intent": has_trace_intent,
+        "has_example": has_example,
+        "reasons": reasons,
+        "flashcard_statement": _looks_like_flashcard_statement(t),
+        "note": note,
+    }
