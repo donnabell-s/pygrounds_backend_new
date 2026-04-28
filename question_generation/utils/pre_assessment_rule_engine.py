@@ -93,7 +93,7 @@ def _score_preassessment(text: str) -> Tuple[int, List[FeatureHit]]:
         hits.append(FeatureHit("Conditionals", 2, "Requires conditional reasoning."))
 
     # Loops
-    if _has(r"\bfor\b|\bwhile\b", low) or _has(r"\bfor\b|\bwhile\b", code):
+    if _has(r"\bfor\b|\bwhile\b|\bloop\b", low) or _has(r"\bfor\b|\bwhile\b", code):
         score += 2
         hits.append(FeatureHit("Loops", 2, "Requires iterative reasoning."))
 

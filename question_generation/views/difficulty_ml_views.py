@@ -21,8 +21,13 @@ def ml_bulk_predict_difficulty(request, question_type):
     - validation_status=pending|processed      (minigame only)
     """
 
-    difficulty = request.query_params.get("difficulty")
-    validation_status = request.query_params.get("validation_status")
+    difficulty = request.query_params.get("difficulty") or request.data.get("difficulty_filter")
+    validation_status = request.query_params.get("validation_status") or request.data.get("status_filter")
+
+    if difficulty == "all":
+        difficulty = None
+    if validation_status == "all":
+        validation_status = None
 
     
     # SELECT BASE QUERYSET
