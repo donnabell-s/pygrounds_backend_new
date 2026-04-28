@@ -62,3 +62,31 @@ Tips:
 - If you see "Skipped existing achievement (use --update to modify)", rerun with `--update`.
 - To safely inspect planned changes before applying, use `--dry-run`.
 - Ensure you’re in the correct directory (where `manage.py` is) when running commands.
+
+## ML Difficulty Checker Setup
+
+The coding question difficulty checker uses a trained ML model (TF-IDF + XGBoost). The model file is excluded from git (too large), so each developer needs to generate it locally.
+
+### First-time setup
+
+**1. Install required packages:**
+```bash
+pip install xgboost imbalanced-learn
+```
+
+**2. Create the models directory:**
+```bash
+mkdir -p question_generation/models
+```
+
+**3. Train and save the coding model:**
+```bash
+python question_generation/helpers/minigame_train_coding.py
+```
+
+This will generate `question_generation/models/minigame_coding_model.pkl`.
+
+### Notes
+- The model only needs to be trained once per machine.
+- If the model file is missing, the system will automatically fall back to the rule-based engine — the Check Difficulty feature will still work, just without ML.
+- `minigame_train_non_coding.py` does NOT need to be run — non-coding difficulty uses the rule engine directly in this branch.
