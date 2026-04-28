@@ -50,8 +50,8 @@ def _embed_chunk_worker(chunk_id: int, text: str, chunk_type: str) -> Dict[str, 
 class EmbeddingGenerator:
 
     def __init__(self, max_workers: int = None, use_gpu: bool = False):
-        # workers setting
-        self.max_workers = max_workers or multiprocessing.cpu_count()
+        # workers setting — cap at 4 for transformer inference; cpu_count() thrashes RAM
+        self.max_workers = max_workers or min(4, max(1, multiprocessing.cpu_count() // 2))
         self.use_gpu = use_gpu
         self.models: Dict[EmbeddingModelType, dict] = {}  # load models from models.py
         self._model_lock = threading.Lock()
@@ -322,6 +322,20 @@ class EmbeddingGenerator:
 
         return clean_text
 
+    def _embed_chunk_inline(self, chunk_id: int, text: str, chunk_type: str) -> Dict[str, Any]:
+        """Embed one chunk using this generator's already-loaded model (no subprocess/thread overhead)."""
+        result = self.generate_embedding(text, chunk_type)
+        if result['vector'] is None:
+            raise RuntimeError(result.get('error', 'Embedding generation failed'))
+        model_type_str = result['model_type'].value if hasattr(result['model_type'], 'value') else str(result['model_type'])
+        return {
+            'chunk_id': chunk_id,
+            'embedding': result['vector'],
+            'model_type': model_type_str,
+            'model_name': result['model_name'],
+            'dimension': result['dimension'],
+        }
+
     def embed_chunks_batch(self, model_chunks: List[Any]) -> Dict[str, Any]:
         # encode chunks
         success, failed, items = 0, 0, []
@@ -331,15 +345,15 @@ class EmbeddingGenerator:
         ]
         chunk_lookup = {c.id: c for c in model_chunks}
 
-        with self.executor_class(max_workers=self.max_workers) as ex:
-            futures = [ex.submit(_embed_chunk_worker, cid, text, chunk_type) for cid, text, chunk_type, _ in chunk_data]
-            
-            for f in futures:
+        # When running inside a subprocess (Pool worker), _embed_chunk_worker creates a
+        # brand-new EmbeddingGenerator and reloads the model from disk for every worker
+        # thread, which wastes gigabytes of RAM and is extremely slow.
+        # Fix: in subprocess mode use _embed_chunk_inline which reuses self's loaded model.
+        if _is_in_subprocess():
+            for cid, text, chunk_type, _ in chunk_data:
                 try:
-                    result = f.result()
-                    chunk_id = result['chunk_id']
-                    chunk = chunk_lookup[chunk_id]
-                    
+                    result = self._embed_chunk_inline(cid, text, chunk_type)
+                    chunk = chunk_lookup[cid]
                     items.append({
                         'chunk': chunk,
                         'embedding': result['embedding'],
@@ -349,8 +363,28 @@ class EmbeddingGenerator:
                     })
                     success += 1
                 except Exception as e:
-                    logger.error(f"Chunk embedding failed: {e}")
+                    logger.error(f"Chunk embedding failed (inline): {e}")
                     failed += 1
+        else:
+            with self.executor_class(max_workers=self.max_workers) as ex:
+                futures = [ex.submit(_embed_chunk_worker, cid, text, chunk_type) for cid, text, chunk_type, _ in chunk_data]
+
+                for f in futures:
+                    try:
+                        result = f.result()
+                        chunk_id = result['chunk_id']
+                        chunk = chunk_lookup[chunk_id]
+                        items.append({
+                            'chunk': chunk,
+                            'embedding': result['embedding'],
+                            'model_type': result['model_type'],
+                            'model_name': result['model_name'],
+                            'dimension': result['dimension'],
+                        })
+                        success += 1
+                    except Exception as e:
+                        logger.error(f"Chunk embedding failed: {e}")
+                        failed += 1
 
         return {'success': success, 'failed': failed, 'total': success + failed, 'embeddings': items}
 

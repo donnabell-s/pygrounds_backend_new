@@ -1,213 +1,160 @@
 import logging
-from typing import Optional
-
 from django.db import models
 
 logger = logging.getLogger(__name__)
 
+_TOP_K        = 15
+_MIN_SIMILARITY = 0.5
+
+# Which book difficulty levels are appropriate for each generation difficulty.
+# Cumulative pools: harder questions can draw from easier books too,
+# but not the other way around.
+_DIFFICULTY_POOLS = {
+    'beginner':     ['beginner'],
+    'intermediate': ['beginner', 'intermediate'],
+    'advanced':     ['intermediate', 'advanced'],
+    'master':       ['advanced', 'master'],
+}
+
+
+# ── Single subtopic ────────────────────────────────────────────────────────────
 
 def get_rag_context_for_subtopic(subtopic, difficulty: str, game_type: str = 'non_coding') -> str:
-    # get relevant content chunks for question generation
-    # uses semantic similarity to fetch best matching content based on game type
-    #
-    # process:
-    # 1. get semantic subtopic data
-    # 2. select chunks based on game_type (coding prioritizes code chunks, non_coding prioritizes concept chunks)
-    # 3. format context for llm
+    """
+    Fetch ranked document chunks for a subtopic and format them as an LLM context string.
+    Falls back to a minimal stub when no semantic data or matching chunks exist.
+    """
     try:
-        from content_ingestion.models import DocumentChunk
-        from content_ingestion.models import SemanticSubtopic  # moved to content_ingestion
+        from content_ingestion.models import DocumentChunk, SemanticSubtopic
 
-        # try to get pre-computed semantic analysis for this subtopic
         try:
-            semantic_subtopic = SemanticSubtopic.objects.get(subtopic=subtopic)
+            semantic = SemanticSubtopic.objects.get(subtopic=subtopic)
         except SemanticSubtopic.DoesNotExist:
-            # fallback: generate basic context from subtopic metadata
-            return f"""
-Topic: {subtopic.topic.name}
-Subtopic: {subtopic.name}
-Game Type: {game_type}
+            return _fallback_context(subtopic, game_type, reason="No semantic analysis available")
 
-No semantic analysis available for this subtopic.
-Please generate {game_type} questions based on the subtopic name.
-Focus on {game_type}-appropriate content related to {subtopic.name}.
-"""
-
-        # chunk retrieval configuration
-        config = {
-            'top_k': 15,                    # Retrieve at most 15 chunks
-            'min_similarity': 0.5,          # 50% minimum similarity threshold
-        }
-
-        # get ranked chunk ids based on game type
-        if game_type == 'coding':
-            # for coding questions, prioritize code chunks (codebert rankings)
-            chunk_ids = semantic_subtopic.get_code_chunk_ids(
-                limit=config['top_k'],
-                min_similarity=config['min_similarity']
-            )
-            # if no code chunks found, fallback to concept chunks
-            if not chunk_ids:
-                chunk_ids = semantic_subtopic.get_concept_chunk_ids(
-                    limit=config['top_k'] // 2,
-                    min_similarity=config['min_similarity']
-                )
-        else:  # non_coding
-            # for non-coding questions, prioritize concept chunks (minilm rankings)
-            chunk_ids = semantic_subtopic.get_concept_chunk_ids(
-                limit=config['top_k'],
-                min_similarity=config['min_similarity']
-            )
-            # if no concept chunks found, fallback to code chunks
-            if not chunk_ids:
-                chunk_ids = semantic_subtopic.get_code_chunk_ids(
-                    limit=config['top_k'] // 2,
-                    min_similarity=config['min_similarity']
-                )
-
+        chunk_ids = _get_chunk_ids(semantic, game_type)
         if not chunk_ids:
-            return f"""
-Topic: {subtopic.topic.name}
-Subtopic: {subtopic.name}
-Game Type: {game_type}
+            return _fallback_context(subtopic, game_type, reason=f"No relevant {game_type} chunks found above similarity threshold")
 
-No relevant {game_type} chunks found above similarity threshold (50%).
-Please generate {game_type} questions based on the subtopic name.
-Focus on {game_type}-appropriate content related to {subtopic.name}.
-"""
-
-        # fetch actual chunks from database
-        chunks = DocumentChunk.objects.filter(id__in=chunk_ids).order_by(
-            models.Case(
-                *[models.When(id=chunk_id, then=idx) for idx, chunk_id in enumerate(chunk_ids)]
-            )
+        allowed_difficulties = _DIFFICULTY_POOLS.get(difficulty, list(_DIFFICULTY_POOLS.keys()))
+        chunks = DocumentChunk.objects.filter(
+            id__in=chunk_ids,
+            document__difficulty__in=allowed_difficulties,
+        ).order_by(
+            models.Case(*[models.When(id=cid, then=idx) for idx, cid in enumerate(chunk_ids)])
         )
 
-        # build context from chunks
-        context_parts = []
-        chunk_types_found = set()
+        # If the difficulty filter removed everything, fall back to all matched chunks
+        if not chunks.exists():
+            chunks = DocumentChunk.objects.filter(id__in=chunk_ids).order_by(
+                models.Case(*[models.When(id=cid, then=idx) for idx, cid in enumerate(chunk_ids)])
+            )
 
+        chunk_types = set()
+        parts = []
         for chunk in chunks:
-            chunk_types_found.add(chunk.chunk_type or 'Unknown')
+            chunk_types.add(chunk.chunk_type or 'Unknown')
+            parts.append(f"--- {chunk.chunk_type or 'Content'} ---\n{chunk.text.strip()}\nDocument: {chunk.document.title}")
 
-            # format chunk with metadata
-            chunk_context = f"""
---- {chunk.chunk_type or 'Content'} ---
-{chunk.text.strip()}
-
-Document: {chunk.document.title}
-"""
-            context_parts.append(chunk_context.strip())
-
-        # create final context with metadata
-        context = f"""
-Topic: {subtopic.topic.name}
-Subtopic: {subtopic.name}
-Game Type: {game_type}
-Content Types Found: {', '.join(sorted(chunk_types_found))}
-Retrieved Chunks: {len(context_parts)}
-
-LEARNING CONTENT:
-{chr(10).join(context_parts)}
-"""
-        return context.strip()
+        return (
+            f"Topic: {subtopic.topic.name}\n"
+            f"Subtopic: {subtopic.name}\n"
+            f"Game Type: {game_type}\n"
+            f"Content Types Found: {', '.join(sorted(chunk_types))}\n"
+            f"Retrieved Chunks: {len(parts)}\n\n"
+            f"LEARNING CONTENT:\n" + "\n\n".join(parts)
+        )
 
     except Exception as e:
-        print(f"Error retrieving RAG context for {subtopic.name}: {str(e)}")
-        return f"""
-Topic: {subtopic.topic.name}
-Subtopic: {subtopic.name}
-Game Type: {game_type}
+        logger.error(f"RAG context retrieval failed for {subtopic.name}: {e}")
+        return _fallback_context(subtopic, game_type, reason=f"Error: {e}")
 
-Error retrieving context: {str(e)}
-Please generate {game_type} questions based on the subtopic name.
-"""
 
+# ── Multi-subtopic ─────────────────────────────────────────────────────────────
 
 def get_combined_rag_context(subtopic_combination, difficulty: str, game_type: str = 'non_coding') -> str:
-    # combine rag context for multiple subtopics
+    """Merge individual subtopic contexts into a single combined context string."""
     try:
-        combined_contexts = []
-        subtopic_names = []
-
+        parts = []
+        names = []
         for subtopic in subtopic_combination:
-            subtopic_names.append(subtopic.name)
-            context = get_rag_context_for_subtopic(subtopic, difficulty, game_type)
+            names.append(subtopic.name)
+            ctx = get_rag_context_for_subtopic(subtopic, difficulty, game_type)
+            content = ctx.split("LEARNING CONTENT:")[1].strip() if "LEARNING CONTENT:" in ctx else ctx
+            parts.append(f"=== {subtopic.name} ===\n{content}")
 
-            # extract just the learning content part
-            if "LEARNING CONTENT:" in context:
-                content_part = context.split("LEARNING CONTENT:")[1].strip()
-                combined_contexts.append(f"=== {subtopic.name} ===\n{content_part}")
-            else:
-                combined_contexts.append(f"=== {subtopic.name} ===\n{context}")
+        if not parts:
+            return _multi_fallback(names, game_type)
 
-        if not combined_contexts:
-            return f"""
-FALLBACK MODE: No semantic content chunks were found for these subtopics.
-Please generate {game_type} questions based on general Python knowledge for these topics:
-{chr(10).join([f"- {name}: Focus on {game_type}-appropriate content" for name in subtopic_names])}
-
-LEARNING CONTEXT:
-These subtopics are from learning progression.
-Create {game_type} questions that would be appropriate for learners.
-"""
-
-        combined_context = f"""
-GAME TYPE: {game_type.upper()}
-DIFFICULTY LEVEL: {difficulty.upper()}
-SUBTOPIC COMBINATION: {' + '.join(subtopic_names)}
-
-""" + "\n\n".join(combined_contexts)
-
-        return combined_context
+        return (
+            f"GAME TYPE: {game_type.upper()}\n"
+            f"DIFFICULTY LEVEL: {difficulty.upper()}\n"
+            f"SUBTOPIC COMBINATION: {' + '.join(names)}\n\n"
+            + "\n\n".join(parts)
+        )
 
     except Exception as e:
-        print(f"Error combining RAG contexts: {str(e)}")
-        return f"""
-Error retrieving combined context: {str(e)}
-Please generate {game_type} questions for: {', '.join([s.name for s in subtopic_combination])}
-Focus on {game_type}-appropriate content.
-"""
+        logger.error(f"Combined RAG context failed: {e}")
+        names = [s.name for s in subtopic_combination]
+        return f"Error retrieving combined context: {e}\nPlease generate {game_type} questions for: {', '.join(names)}"
 
 
-def format_rag_context_for_prompt(rag_context: str, subtopic_names: list, difficulty: str, game_type: str = 'non_coding') -> str:
-    # format rag context for prompt consumption
+# ── Batch fetch ────────────────────────────────────────────────────────────────
+
+def get_batched_rag_contexts(all_combinations, difficulty: str, game_type: str = 'non_coding') -> dict:
+    """Pre-fetch contexts for all combinations keyed by tuple of subtopic objects."""
+    contexts = {}
+    try:
+        for combo in all_combinations:
+            key = tuple(combo) if isinstance(combo, (list, tuple)) else (combo,)
+            contexts[key] = (
+                get_rag_context_for_subtopic(combo[0], difficulty, game_type)
+                if len(combo) == 1
+                else get_combined_rag_context(combo, difficulty, game_type)
+            )
+    except Exception as e:
+        logger.error(f"Batch RAG context retrieval failed: {e}")
+    return contexts
+
+
+# ── Prompt formatter ───────────────────────────────────────────────────────────
+
+def format_rag_context_for_prompt(rag_context: str, subtopic_names: list,
+                                  difficulty: str, game_type: str = 'non_coding') -> str:
+    """Return a fallback stub if the context has no useful content."""
     if "No semantic analysis available" in rag_context or "No relevant chunks found" in rag_context:
-        return f"""
-FALLBACK MODE: No semantic content chunks were found for these subtopics.
-Please generate {game_type} questions based on general Python knowledge for these topics:
-{chr(10).join([f"- {name}: Focus on {game_type}-appropriate content" for name in subtopic_names])}
-
-LEARNING CONTEXT:
-These subtopics are from the learning progression.
-Create {game_type} questions that would be appropriate for learners.
-"""
-
+        return _multi_fallback(subtopic_names, game_type)
     return rag_context
 
 
-def get_batched_rag_contexts(all_combinations, difficulty: str, game_type: str = 'non_coding'):
-    # batch fetch rag contexts for multiple subtopic combinations
-    rag_contexts = {}
+# ── Helpers ────────────────────────────────────────────────────────────────────
 
-    try:
-        for combination in all_combinations:
-            # ensure combination is a tuple for dictionary key
-            combination_key = (
-                tuple(combination) if isinstance(combination, (list, tuple)) else (combination,)
-            )
+def _get_chunk_ids(semantic, game_type: str) -> list:
+    """Select ranked chunk IDs, preferring the type that matches the game, with fallback."""
+    if game_type == 'coding':
+        ids = semantic.get_code_chunk_ids(limit=_TOP_K, min_similarity=_MIN_SIMILARITY)
+        if not ids:
+            ids = semantic.get_concept_chunk_ids(limit=_TOP_K // 2, min_similarity=_MIN_SIMILARITY)
+    else:
+        ids = semantic.get_concept_chunk_ids(limit=_TOP_K, min_similarity=_MIN_SIMILARITY)
+        if not ids:
+            ids = semantic.get_code_chunk_ids(limit=_TOP_K // 2, min_similarity=_MIN_SIMILARITY)
+    return ids
 
-            if len(combination) == 1:
-                # single subtopic
-                context = get_rag_context_for_subtopic(combination[0], difficulty, game_type)
-            else:
-                # multiple subtopics
-                context = get_combined_rag_context(combination, difficulty, game_type)
 
-            rag_contexts[combination_key] = context
+def _fallback_context(subtopic, game_type: str, reason: str = '') -> str:
+    return (
+        f"Topic: {subtopic.topic.name}\n"
+        f"Subtopic: {subtopic.name}\n"
+        f"Game Type: {game_type}\n\n"
+        f"{reason}.\n"
+        f"Please generate {game_type} questions based on the subtopic name and general Python knowledge."
+    )
 
-    except Exception as e:
-        print(f"Error in batch RAG context retrieval: {str(e)}")
-        # return empty dict if there's an error; individual calls handle fallbacks
 
-    return rag_contexts
+def _multi_fallback(names: list, game_type: str) -> str:
+    lines = "\n".join(f"- {name}" for name in names)
+    return (
+        f"FALLBACK MODE: No semantic content chunks were found for these subtopics.\n"
+        f"Please generate {game_type} questions based on general Python knowledge for:\n{lines}"
+    )

@@ -31,8 +31,10 @@ def process_document_task(task_data):
 
         if step == 'cleanup' and reprocess:
             try:
-                document.toc_entry_set.all().delete()
-                document.documentchunk_set.all().delete()
+                # TOCEntry has no related_name → Django auto-generates tocentry_set
+                document.tocentry_set.all().delete()
+                # DocumentChunk has related_name='chunks'
+                document.chunks.all().delete()
 
                 return ('cleanup', {
                     'status': 'success',
@@ -76,7 +78,8 @@ def process_document_task(task_data):
         elif step == 'chunking':
             try:
                 from content_ingestion.helpers.page_chunking.toc_chunk_processor import GranularChunkProcessor
-                processor = GranularChunkProcessor()
+                # disable inline embedding — the dedicated 'embedding' step handles it
+                processor = GranularChunkProcessor(enable_embeddings=False)
                 chunk_result = processor.process_entire_document(document)
                 chunks_created = chunk_result.get('total_chunks_created', 0)
 
@@ -109,15 +112,26 @@ def process_document_task(task_data):
                 chunks = DocumentChunk.objects.filter(document=document)
 
                 if chunks.exists():
+                    chunk_count = chunks.count()
                     embedding_result = embedding_gen.embed_and_save_batch(chunks)
                     embeddings_created = embedding_result.get('embeddings_generated', 0)
+                    db_saves = embedding_result.get('database_saves', 0)
+
+                    if db_saves == 0:
+                        return ('embedding', {
+                            'status': 'error',
+                            'message': f'Embedding generation produced 0 database saves for {chunk_count} chunks',
+                            'embeddings_created': 0,
+                            'chunks_processed': chunk_count,
+                            'error': 'No embeddings saved to database'
+                        })
 
                     return ('embedding', {
                         'status': 'success',
-                        'message': f'Generated {embeddings_created} embeddings for {chunks.count()} chunks',
+                        'message': f'Generated {embeddings_created} embeddings ({db_saves} saved) for {chunk_count} chunks',
                         'embeddings_created': embeddings_created,
-                        'database_saves': embedding_result.get('database_saves', 0),
-                        'chunks_processed': chunks.count()
+                        'database_saves': db_saves,
+                        'chunks_processed': chunk_count
                     })
                 else:
                     return ('embedding', {

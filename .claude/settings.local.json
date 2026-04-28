@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -c ':*)",
+      "Read(//c/Users/Ju/Documents/PYGROUNDS/pygrounds_frontend/src/views/**)",
+      "Read(//c/Users/Ju/Documents/PYGROUNDS/pygrounds_frontend/src/api/**)",
+      "Read(//c/Users/Ju/Documents/PYGROUNDS/pygrounds_frontend/src/services/**)"
+    ]
+  }
+}

@@ -1,8 +1,6 @@
 from rest_framework import serializers
-from django.contrib.auth.models import User
 from .models import GeneratedQuestion, PreAssessmentQuestion
-from content_ingestion.models import SemanticSubtopic  # moved to content_ingestion
-from content_ingestion.models import Topic, Subtopic
+from content_ingestion.models import SemanticSubtopic, Topic, Subtopic
 
 
 class TopicNestedSerializer(serializers.ModelSerializer):
@@ -34,14 +32,13 @@ class GeneratedQuestionSerializer(serializers.ModelSerializer):
     topic_name = serializers.SerializerMethodField()
     subtopic_name = serializers.SerializerMethodField()
     zone_name = serializers.SerializerMethodField()
-    created_at = serializers.DateTimeField(read_only=True)
-    
+
     class Meta:
         model = GeneratedQuestion
         fields = [
             'id', 'topic', 'subtopic', 'topic_name', 'subtopic_name', 'zone_name',
             'question_text', 'correct_answer', 'estimated_difficulty', 'game_type',
-            'game_data', 'validation_status', 'created_at'
+            'game_data', 'validation_status', 'flagged', 'created_at'
         ]
         read_only_fields = ['id', 'created_at']
     

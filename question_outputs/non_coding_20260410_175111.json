@@ -1,0 +1,535 @@
+[
+  {
+    "question_text": "Assigns a value to a variable.",
+    "correct_answer": "assignment",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "Assignment Operators (=, +=, -=, etc. )",
+    "game_data": {
+      "explanation": "The basic operation where the equals sign gives a value to a variable name.",
+      "generation_timestamp": "2026-04-10T17:51:11.246438"
+    },
+    "created_at": "2026-04-10T09:51:11.242429+00:00",
+    "exported_at": "2026-04-10T17:51:11.246438"
+  },
+  {
+    "question_text": "Adds to a variable's current value.",
+    "correct_answer": "addition",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "Assignment Operators (=, +=, -=, etc. )",
+    "game_data": {
+      "explanation": "The plus-equals operator performs this arithmetic operation in place.",
+      "generation_timestamp": "2026-04-10T17:51:11.260494"
+    },
+    "created_at": "2026-04-10T09:51:11.257494+00:00",
+    "exported_at": "2026-04-10T17:51:11.260494"
+  },
+  {
+    "question_text": "Subtracts from a variable's current value.",
+    "correct_answer": "subtraction",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "Assignment Operators (=, +=, -=, etc. )",
+    "game_data": {
+      "explanation": "The minus-equals operator performs this arithmetic operation in place.",
+      "generation_timestamp": "2026-04-10T17:51:11.281494"
+    },
+    "created_at": "2026-04-10T09:51:11.279569+00:00",
+    "exported_at": "2026-04-10T17:51:11.281494"
+  },
+  {
+    "question_text": "Multiplies a variable's current value.",
+    "correct_answer": "multiplication",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "Assignment Operators (=, +=, -=, etc. )",
+    "game_data": {
+      "explanation": "The star-equals operator performs this arithmetic operation in place.",
+      "generation_timestamp": "2026-04-10T17:51:11.299499"
+    },
+    "created_at": "2026-04-10T09:51:11.297489+00:00",
+    "exported_at": "2026-04-10T17:51:11.299499"
+  },
+  {
+    "question_text": "Divides a variable's current value.",
+    "correct_answer": "division",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "Assignment Operators (=, +=, -=, etc. )",
+    "game_data": {
+      "explanation": "The slash-equals operator performs this arithmetic operation in place.",
+      "generation_timestamp": "2026-04-10T17:51:11.317496"
+    },
+    "created_at": "2026-04-10T09:51:11.316488+00:00",
+    "exported_at": "2026-04-10T17:51:11.317496"
+  },
+  {
+    "question_text": "Performs floor division on a variable.",
+    "correct_answer": "floordivision",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "Assignment Operators (=, +=, -=, etc. )",
+    "game_data": {
+      "explanation": "The double-slash-equals operator performs integer division in place.",
+      "generation_timestamp": "2026-04-10T17:51:11.336043"
+    },
+    "created_at": "2026-04-10T09:51:11.335015+00:00",
+    "exported_at": "2026-04-10T17:51:11.336043"
+  },
+  {
+    "question_text": "Raises a variable to a power.",
+    "correct_answer": "exponentiation",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "Assignment Operators (=, +=, -=, etc. )",
+    "game_data": {
+      "explanation": "The double-star-equals operator performs this mathematical operation in place.",
+      "generation_timestamp": "2026-04-10T17:51:11.354015"
+    },
+    "created_at": "2026-04-10T09:51:11.352016+00:00",
+    "exported_at": "2026-04-10T17:51:11.354015"
+  },
+  {
+    "question_text": "Calculates the remainder of division.",
+    "correct_answer": "modulo",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "Assignment Operators (=, +=, -=, etc. )",
+    "game_data": {
+      "explanation": "The percent-equals operator performs this remainder operation in place.",
+      "generation_timestamp": "2026-04-10T17:51:11.371014"
+    },
+    "created_at": "2026-04-10T09:51:11.370014+00:00",
+    "exported_at": "2026-04-10T17:51:11.371014"
+  },
+  {
+    "question_text": "Operator that modifies a variable in place.",
+    "correct_answer": "augmented",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "Assignment Operators (=, +=, -=, etc. )",
+    "game_data": {
+      "explanation": "Describes assignment operators like += that combine an operation with assignment.",
+      "generation_timestamp": "2026-04-10T17:51:11.390015"
+    },
+    "created_at": "2026-04-10T09:51:11.387025+00:00",
+    "exported_at": "2026-04-10T17:51:11.390015"
+  },
+  {
+    "question_text": "The simplest assignment operator symbol.",
+    "correct_answer": "equals",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "Assignment Operators (=, +=, -=, etc. )",
+    "game_data": {
+      "explanation": "The single = sign used to assign a value to a variable.",
+      "generation_timestamp": "2026-04-10T17:51:11.407013"
+    },
+    "created_at": "2026-04-10T09:51:11.405013+00:00",
+    "exported_at": "2026-04-10T17:51:11.407013"
+  },
+  {
+    "question_text": "Updates a variable by adding to it.",
+    "correct_answer": "increment",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "Assignment Operators (=, +=, -=, etc. )",
+    "game_data": {
+      "explanation": "What the += operator does to a variable's value.",
+      "generation_timestamp": "2026-04-10T17:51:11.423033"
+    },
+    "created_at": "2026-04-10T09:51:11.422035+00:00",
+    "exported_at": "2026-04-10T17:51:11.423033"
+  },
+  {
+    "question_text": "Updates a variable by subtracting from it.",
+    "correct_answer": "decrement",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "Assignment Operators (=, +=, -=, etc. )",
+    "game_data": {
+      "explanation": "What the -= operator does to a variable's value.",
+      "generation_timestamp": "2026-04-10T17:51:11.441421"
+    },
+    "created_at": "2026-04-10T09:51:11.439422+00:00",
+    "exported_at": "2026-04-10T17:51:11.441421"
+  },
+  {
+    "question_text": "Combines assignment with an operation.",
+    "correct_answer": "compound",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "Assignment Operators (=, +=, -=, etc. )",
+    "game_data": {
+      "explanation": "Another term for augmented assignment operators like += and -=.",
+      "generation_timestamp": "2026-04-10T17:51:11.459420"
+    },
+    "created_at": "2026-04-10T09:51:11.457421+00:00",
+    "exported_at": "2026-04-10T17:51:11.459420"
+  },
+  {
+    "question_text": "Changes a variable's value directly.",
+    "correct_answer": "modify",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "Assignment Operators (=, +=, -=, etc. )",
+    "game_data": {
+      "explanation": "What all assignment operators do to a variable.",
+      "generation_timestamp": "2026-04-10T17:51:11.476422"
+    },
+    "created_at": "2026-04-10T09:51:11.474424+00:00",
+    "exported_at": "2026-04-10T17:51:11.476422"
+  },
+  {
+    "question_text": "Performs bitwise AND in place.",
+    "correct_answer": "bitwise",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "Assignment Operators (=, +=, -=, etc. )",
+    "game_data": {
+      "explanation": "Describes operators like &= that work on binary representations.",
+      "generation_timestamp": "2026-04-10T17:51:11.492419"
+    },
+    "created_at": "2026-04-10T09:51:11.491422+00:00",
+    "exported_at": "2026-04-10T17:51:11.492419"
+  },
+  {
+    "question_text": "Performs bitwise XOR in place.",
+    "correct_answer": "bitwisexor",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "Assignment Operators (=, +=, -=, etc. )",
+    "game_data": {
+      "explanation": "The ^= operator performs this exclusive OR operation with assignment.",
+      "generation_timestamp": "2026-04-10T17:51:11.508699"
+    },
+    "created_at": "2026-04-10T09:51:11.507698+00:00",
+    "exported_at": "2026-04-10T17:51:11.508699"
+  },
+  {
+    "question_text": "Shifts bits left in place.",
+    "correct_answer": "bitshift",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "Assignment Operators (=, +=, -=, etc. )",
+    "game_data": {
+      "explanation": "The <<= operator performs this binary operation with assignment.",
+      "generation_timestamp": "2026-04-10T17:51:11.524708"
+    },
+    "created_at": "2026-04-10T09:51:11.522705+00:00",
+    "exported_at": "2026-04-10T17:51:11.524708"
+  },
+  {
+    "question_text": "Shifts bits right in place.",
+    "correct_answer": "bitshiftright",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "Assignment Operators (=, +=, -=, etc. )",
+    "game_data": {
+      "explanation": "The >>= operator performs this binary operation with assignment.",
+      "generation_timestamp": "2026-04-10T17:51:11.539875"
+    },
+    "created_at": "2026-04-10T09:51:11.539219+00:00",
+    "exported_at": "2026-04-10T17:51:11.539875"
+  },
+  {
+    "question_text": "Adds two numbers together.",
+    "correct_answer": "addition",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "Arithmetic Operators (+, -, *, /, %, //, **)",
+    "game_data": {
+      "explanation": "The addition operator (+) sums two values, producing a total result.",
+      "generation_timestamp": "2026-04-10T17:51:12.229529"
+    },
+    "created_at": "2026-04-10T09:51:12.220195+00:00",
+    "exported_at": "2026-04-10T17:51:12.229529"
+  },
+  {
+    "question_text": "Finds the difference between two numbers.",
+    "correct_answer": "subtraction",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "Arithmetic Operators (+, -, *, /, %, //, **)",
+    "game_data": {
+      "explanation": "The subtraction operator (-) takes one value from another, giving the remainder.",
+      "generation_timestamp": "2026-04-10T17:51:12.253501"
+    },
+    "created_at": "2026-04-10T09:51:12.252500+00:00",
+    "exported_at": "2026-04-10T17:51:12.253501"
+  },
+  {
+    "question_text": "Repeated addition, calculates the product.",
+    "correct_answer": "multiplication",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "Arithmetic Operators (+, -, *, /, %, //, **)",
+    "game_data": {
+      "explanation": "The multiplication operator (*) combines numbers to find their total when added repeatedly.",
+      "generation_timestamp": "2026-04-10T17:51:12.267501"
+    },
+    "created_at": "2026-04-10T09:51:12.266500+00:00",
+    "exported_at": "2026-04-10T17:51:12.267501"
+  },
+  {
+    "question_text": "Splits a number into equal parts.",
+    "correct_answer": "division",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "Arithmetic Operators (+, -, *, /, %, //, **)",
+    "game_data": {
+      "explanation": "The division operator (/) determines how many times one number is contained within another.",
+      "generation_timestamp": "2026-04-10T17:51:12.281498"
+    },
+    "created_at": "2026-04-10T09:51:12.280498+00:00",
+    "exported_at": "2026-04-10T17:51:12.281498"
+  },
+  {
+    "question_text": "Gives the leftover after division.",
+    "correct_answer": "modulo",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "Arithmetic Operators (+, -, *, /, %, //, **)",
+    "game_data": {
+      "explanation": "The modulo operator (%) returns the remainder from dividing one number by another.",
+      "generation_timestamp": "2026-04-10T17:51:12.296498"
+    },
+    "created_at": "2026-04-10T09:51:12.294500+00:00",
+    "exported_at": "2026-04-10T17:51:12.296498"
+  },
+  {
+    "question_text": "Division that discards the fractional part.",
+    "correct_answer": "floordivision",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "Arithmetic Operators (+, -, *, /, %, //, **)",
+    "game_data": {
+      "explanation": "Floor division (//) performs division and rounds down to the nearest whole number.",
+      "generation_timestamp": "2026-04-10T17:51:12.310502"
+    },
+    "created_at": "2026-04-10T09:51:12.309499+00:00",
+    "exported_at": "2026-04-10T17:51:12.310502"
+  },
+  {
+    "question_text": "Raises a number to a power.",
+    "correct_answer": "exponentiation",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "Arithmetic Operators (+, -, *, /, %, //, **)",
+    "game_data": {
+      "explanation": "The exponentiation operator (**) multiplies a number by itself a specified number of times.",
+      "generation_timestamp": "2026-04-10T17:51:12.325508"
+    },
+    "created_at": "2026-04-10T09:51:12.323522+00:00",
+    "exported_at": "2026-04-10T17:51:12.325508"
+  },
+  {
+    "question_text": "The result of an addition operation.",
+    "correct_answer": "sum",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "Arithmetic Operators (+, -, *, /, %, //, **)",
+    "game_data": {
+      "explanation": "The sum is the total amount resulting from the addition of two or more numbers.",
+      "generation_timestamp": "2026-04-10T17:51:12.339016"
+    },
+    "created_at": "2026-04-10T09:51:12.338017+00:00",
+    "exported_at": "2026-04-10T17:51:12.339016"
+  },
+  {
+    "question_text": "The result of a subtraction operation.",
+    "correct_answer": "difference",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "Arithmetic Operators (+, -, *, /, %, //, **)",
+    "game_data": {
+      "explanation": "The difference is the amount by which one quantity is less or more than another.",
+      "generation_timestamp": "2026-04-10T17:51:12.353016"
+    },
+    "created_at": "2026-04-10T09:51:12.352017+00:00",
+    "exported_at": "2026-04-10T17:51:12.353016"
+  },
+  {
+    "question_text": "The result of a multiplication operation.",
+    "correct_answer": "product",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "Arithmetic Operators (+, -, *, /, %, //, **)",
+    "game_data": {
+      "explanation": "The product is the number obtained by multiplying two or more factors together.",
+      "generation_timestamp": "2026-04-10T17:51:12.368016"
+    },
+    "created_at": "2026-04-10T09:51:12.367017+00:00",
+    "exported_at": "2026-04-10T17:51:12.368016"
+  },
+  {
+    "question_text": "The result of a division operation.",
+    "correct_answer": "quotient",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "Arithmetic Operators (+, -, *, /, %, //, **)",
+    "game_data": {
+      "explanation": "The quotient is the number obtained by dividing one number by another.",
+      "generation_timestamp": "2026-04-10T17:51:12.383017"
+    },
+    "created_at": "2026-04-10T09:51:12.382017+00:00",
+    "exported_at": "2026-04-10T17:51:12.383017"
+  },
+  {
+    "question_text": "A whole number with no fractional part.",
+    "correct_answer": "integer",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "Arithmetic Operators (+, -, *, /, %, //, **)",
+    "game_data": {
+      "explanation": "An integer is a data type representing whole numbers, used in many arithmetic operations.",
+      "generation_timestamp": "2026-04-10T17:51:12.397027"
+    },
+    "created_at": "2026-04-10T09:51:12.396018+00:00",
+    "exported_at": "2026-04-10T17:51:12.397027"
+  },
+  {
+    "question_text": "A number with a decimal point.",
+    "correct_answer": "float",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "Arithmetic Operators (+, -, *, /, %, //, **)",
+    "game_data": {
+      "explanation": "A float is a data type representing real numbers, allowing for fractional values.",
+      "generation_timestamp": "2026-04-10T17:51:12.410015"
+    },
+    "created_at": "2026-04-10T09:51:12.409018+00:00",
+    "exported_at": "2026-04-10T17:51:12.410015"
+  },
+  {
+    "question_text": "A symbol that performs a calculation.",
+    "correct_answer": "operator",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "Arithmetic Operators (+, -, *, /, %, //, **)",
+    "game_data": {
+      "explanation": "An operator is a special symbol that carries out an operation on one or more values.",
+      "generation_timestamp": "2026-04-10T17:51:12.425023"
+    },
+    "created_at": "2026-04-10T09:51:12.424024+00:00",
+    "exported_at": "2026-04-10T17:51:12.425023"
+  },
+  {
+    "question_text": "Numbers used in a calculation.",
+    "correct_answer": "operands",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "Arithmetic Operators (+, -, *, /, %, //, **)",
+    "game_data": {
+      "explanation": "Operands are the values on which an operator performs its specified action.",
+      "generation_timestamp": "2026-04-10T17:51:12.438536"
+    },
+    "created_at": "2026-04-10T09:51:12.437536+00:00",
+    "exported_at": "2026-04-10T17:51:12.438536"
+  },
+  {
+    "question_text": "The order in which operations are performed.",
+    "correct_answer": "precedence",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "Arithmetic Operators (+, -, *, /, %, //, **)",
+    "game_data": {
+      "explanation": "Precedence determines which operations in an expression are calculated first.",
+      "generation_timestamp": "2026-04-10T17:51:12.452535"
+    },
+    "created_at": "2026-04-10T09:51:12.451538+00:00",
+    "exported_at": "2026-04-10T17:51:12.452535"
+  },
+  {
+    "question_text": "A combination of values and operators.",
+    "correct_answer": "expression",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "Arithmetic Operators (+, -, *, /, %, //, **)",
+    "game_data": {
+      "explanation": "An expression evaluates to a single value through the application of operators.",
+      "generation_timestamp": "2026-04-10T17:51:12.466545"
+    },
+    "created_at": "2026-04-10T09:51:12.465546+00:00",
+    "exported_at": "2026-04-10T17:51:12.466545"
+  },
+  {
+    "question_text": "The numeric value of an expression.",
+    "correct_answer": "evaluation",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "Arithmetic Operators (+, -, *, /, %, //, **)",
+    "game_data": {
+      "explanation": "Evaluation is the process of calculating the result of an expression.",
+      "generation_timestamp": "2026-04-10T17:51:12.481536"
+    },
+    "created_at": "2026-04-10T09:51:12.481536+00:00",
+    "exported_at": "2026-04-10T17:51:12.481536"
+  },
+  {
+    "question_text": "A whole number result from floor division.",
+    "correct_answer": "integer",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "Arithmetic Operators (+, -, *, /, %, //, **)",
+    "game_data": {
+      "explanation": "Floor division always returns an integer, discarding any fractional remainder.",
+      "generation_timestamp": "2026-04-10T17:51:12.497540"
+    },
+    "created_at": "2026-04-10T09:51:12.496536+00:00",
+    "exported_at": "2026-04-10T17:51:12.497540"
+  },
+  {
+    "question_text": "Built-in function for displaying text.",
+    "correct_answer": "print",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "Basic Text Output with print()",
+    "game_data": {
+      "explanation": "The print() function outputs text to the console, making it the most basic way to display information in Python.",
+      "generation_timestamp": "2026-04-10T17:51:15.981204"
+    },
+    "created_at": "2026-04-10T09:51:15.979206+00:00",
+    "exported_at": "2026-04-10T17:51:15.981204"
+  },
+  {
+    "question_text": "Text data type in Python.",
+    "correct_answer": "string",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "Basic Text Output with print()",
+    "game_data": {
+      "explanation": "A string is a sequence of characters enclosed in quotes, which is the primary data type used with the print() function.",
+      "generation_timestamp": "2026-04-10T17:51:16.001206"
+    },
+    "created_at": "2026-04-10T09:51:16.000203+00:00",
+    "exported_at": "2026-04-10T17:51:16.001206"
+  },
+  {
+    "question_text": "Characters that separate items in print.",
+    "correct_answer": "separator",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "Basic Text Output with print()",
+    "game_data": {
+      "explanation": "The 'sep' parameter in print() defines the string inserted between multiple arguments, defaulting to a space.",
+      "generation_timestamp": "2026-04-10T17:51:16.018860"
+    },
+    "created_at": "2026-04-10T09:51:16.017861+00:00",
+    "exported_at": "2026-04-10T17:51:16.018860"
+  },
+  {
+    "question_text": "Evaluates to True if both operands are the same.",
+    "correct_answer": "equality",
+    "game_type": "non_coding",
+    "difficulty": "advanced",
+    "subtopic": "Booleans and Logical Expressions",
+    "game_data": {
+      "explanation": "The equality operator (==) checks if two values are identical.",
+      "generation_timestamp": "2026-04-10T18:03:22.482952"
+    },
+    "created_at": "2026-04-10T10:03:22.464953+00:00",
+    "exported_at": "2026-04-10T18:03:22.482952"
+  }
+]

@@ -19,11 +19,16 @@ def run_user_code(user_code: str, function_name: str, test_cases: list):
 
             if isinstance(test, dict):
                 input_expr = test.get("input", "")
-                expected = test.get("output", None)
+                # support new key (expected_output) and legacy key (output)
+                expected = test.get("expected_output") or test.get("output", None)
 
             elif isinstance(test, str):
 
-                if "output" in test:
+                if "expected_output" in test:
+                    parts = re.split(r",\s*expected_output[:=]", test, maxsplit=1)
+                    input_expr = parts[0].strip()
+                    expected = parts[1].strip().strip("'\"") if len(parts) > 1 else None
+                elif "output" in test:
                     parts = re.split(r",\s*output[:=]", test, maxsplit=1)
                     input_expr = parts[0].strip()
                     expected = parts[1].strip().strip("'\"") if len(parts) > 1 else None

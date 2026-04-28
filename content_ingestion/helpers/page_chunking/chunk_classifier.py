@@ -31,20 +31,30 @@ def infer_chunk_type(text: str, default: str = "Concept") -> str:
 
 #check for type indicators
 def _is_code_content(text: str, text_lower: str, text_stripped: str) -> bool:
-    coding_indicators = [
+    # Strong indicators — any one is sufficient to classify as Code
+    strong = [
         text_stripped.startswith(">>>"),
         ">>>" in text,
         "..." in text and (">>>" in text or "def " in text),
-        text_stripped.startswith(("import ", "from ", "def ", "class ", "if __name__")),
-        re.search(r'^\s*(def|class|import|from)\s+\w+', text, re.MULTILINE),
-        re.search(r'[a-zA-Z_]\w*\s*=\s*[^=]', text), 
-        re.search(r'print\s*\(.*\)', text),
-        re.search(r'return\s+\w+', text),
-        text.count('{') > 0 and text.count('}') > 0,  
-        text.count('[') > 1 and text.count(']') > 1,  
+        text_stripped.startswith(("import ", "from ", "def ", "class ", "if __name__", "$ python", "$ pip")),
+        bool(re.search(r'^\s*(def|class|import|from)\s+\w+', text, re.MULTILINE)),
+        bool(re.search(r'print\s*\(.*\)', text)),
+        bool(re.search(r'return\s+\w+', text)),
     ]
-    
-    return any(coding_indicators)
+
+    if any(strong):
+        return True
+
+    # Weak indicators — need 2+ to classify as Code
+    weak = [
+        bool(re.search(r'[a-zA-Z_]\w*\s*=\s*[^=\s]', text)),  # assignment (not == or = at line end)
+        text.count('{') > 1 and text.count('}') > 1,           # multiple braces
+        text.count('[') > 2 and text.count(']') > 2,           # multiple brackets
+        bool(re.search(r'\b\w+\(\w+.*\)', text)),              # function call with arg
+        text.count('    ') > 1,                                 # 2+ indented lines
+    ]
+
+    return sum(bool(w) for w in weak) >= 2
 
 
 def _is_try_it_content(text_lower: str) -> bool:

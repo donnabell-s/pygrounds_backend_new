@@ -1,5 +1,6 @@
 import uuid
 import re
+from collections import defaultdict
 from django.utils import timezone
 from rest_framework import status
 from rest_framework.decorators import api_view
@@ -9,7 +10,10 @@ from rest_framework.views import APIView
 
 from question_generation.models import PreAssessmentQuestion
 from user_learning.adaptive_engine import recalibrate_topic_proficiency
-from analytics.models import QuestionResponse as AnalyticsResponse
+from user_learning.clustering import assign_learner_cluster, get_cluster_name, get_cluster_mastery_default
+from user_learning.models import UserAbility, UserSubtopicMastery, UserTopicProficiency, UserZoneProgress
+from content_ingestion.models import Topic, Subtopic, GameZone
+from analytics.event_logger import log_question_event
 
 
 from .game_logic.crossword import CrosswordGenerator
@@ -20,7 +24,8 @@ from .models import (
     GameQuestion,
     QuestionResponse,
     WordSearchData,
-    CrosswordData
+    CrosswordData,
+    PreAssessmentResponse,
 )
 from .serializers import GameSessionSerializer, QuestionResponseSerializer, LightweightQuestionSerializer
 from .question_fetching import fetch_questions_for_game
@@ -159,9 +164,10 @@ class SubmitAnswers(APIView):
             payload = submitted_map.get(gq.id)
 
             if payload is None:
-                ua, ok = "", False
+                ua, ok, time_taken = "", False, 0
             else:
                 ua = payload.get("user_answer", "")
+                time_taken = int(payload.get("time_taken", 0))
                 if session.game_type in ("crossword", "wordsearch"):
                     ok = _san(ua) == _san(q.correct_answer or "")
                 else:
@@ -170,22 +176,13 @@ class SubmitAnswers(APIView):
             if ok:
                 correct_count += 1
 
-            QuestionResponse.objects.create(
-                question=gq,
+            log_question_event(
                 user=request.user,
+                game_question=gq,
                 user_answer=ua,
                 is_correct=ok,
+                time_taken=time_taken,
             )
-            AnalyticsResponse.objects.create(
-                question=q,
-                score=1 if ok else 0,
-                user_id=request.user.id,
-                response_time=0
-            )
-            from analytics.helpers.theta_updater import update_user_theta
-            update_user_theta(request.user.id)
-
-
 
             # Extract topic and subtopic IDs
             topic_ids, subtopic_ids = extract_topic_subtopic_ids(q)
@@ -203,6 +200,9 @@ class SubmitAnswers(APIView):
                 "game_type": getattr(q, "game_type", None),
                 "minigame_type": getattr(q, "minigame_type", None),
             })
+
+        from analytics.helpers.theta_updater import update_user_theta
+        update_user_theta(request.user.id)
 
         session.status = "completed"
         session.total_score = correct_count
@@ -494,24 +494,15 @@ class SubmitHangmanCode(APIView):
             question.game_data.get("hidden_tests", [])
         )
 
-        QuestionResponse.objects.create(
-            question=game_q,
+        attempt_number = wrong_before + 1
+        log_question_event(
             user=request.user,
+            game_question=game_q,
             user_answer=user_code,
             is_correct=passed,
+            time_taken=0,
+            attempt_number=attempt_number,
         )
-     
-        AnalyticsResponse.objects.create(
-            question=question,
-            score=1 if passed else 0,
-            user_id=request.user.id,
-            response_time=0
-        )
-        from analytics.helpers.theta_updater import update_user_theta
-        update_user_theta(request.user.id)
-
-
-
 
         wrong_after = QuestionResponse.objects.filter(
             question=game_q, user=request.user, is_correct=False
@@ -525,6 +516,9 @@ class SubmitHangmanCode(APIView):
             session.total_score = 1 if passed else 0
             session.end_time = timezone.now()
             session.save()
+
+            from analytics.helpers.theta_updater import update_user_theta
+            update_user_theta(request.user.id)
 
             attempts = list(
                 QuestionResponse.objects
@@ -581,13 +575,18 @@ class SubmitHangmanCode(APIView):
                 print(f"User data: {request.user}")
                 print(f"Results data: {results}")
 
-        return Response({
+        response_data = {
             "success": passed,
             "game_over": game_over,
             "remaining_lives": remaining_lives_after,
             "message": message,
-            **({"traceback": trace} if not passed else {})
-        })
+        }
+        if not passed:
+            response_data["traceback"] = trace
+        if game_over:
+            response_data["explanation"] = question.game_data.get("explanation", "")
+            response_data["clean_solution"] = question.game_data.get("clean_solution") or question.game_data.get("correct_code", "")
+        return Response(response_data)
 
 
 class StartDebugGame(APIView):
@@ -616,7 +615,7 @@ class StartDebugGame(APIView):
             "function_name": question.game_data.get("function_name", ""),
             "sample_input":  question.game_data.get("sample_input", ""),
             "sample_output": question.game_data.get("sample_output", ""),
-            "broken_code":   question.game_data.get("buggy_code", ""),
+            "broken_code":   question.game_data.get("code_shown_to_student") or question.game_data.get("buggy_code", ""),
             "timer_seconds": session.time_limit,
         }, status=201)
 
@@ -648,23 +647,15 @@ class SubmitDebugGame(APIView):
             question.game_data.get("hidden_tests", [])
         )
 
-        QuestionResponse.objects.create(
-            question=game_q,
+        attempt_number = wrong_before + 1
+        log_question_event(
             user=request.user,
+            game_question=game_q,
             user_answer=user_code,
             is_correct=passed,
+            time_taken=0,
+            attempt_number=attempt_number,
         )
-        # --- ANALYTICS LOGGING ---
-        AnalyticsResponse.objects.create(
-            question=question,
-            score=1 if passed else 0,
-            user_id=request.user.id,
-            response_time=0
-        )
-        from analytics.helpers.theta_updater import update_user_theta
-        update_user_theta(request.user.id)
-
-
 
         wrong_after = QuestionResponse.objects.filter(
             question=game_q, user=request.user, is_correct=False
@@ -678,6 +669,9 @@ class SubmitDebugGame(APIView):
             session.total_score = 1 if passed else 0
             session.end_time = timezone.now()
             session.save()
+
+            from analytics.helpers.theta_updater import update_user_theta
+            update_user_theta(request.user.id)
 
             attempts = list(
                 QuestionResponse.objects
@@ -734,21 +728,41 @@ class SubmitDebugGame(APIView):
                 print(f"User data: {request.user}")
                 print(f"Results data: {results}")
 
-        return Response({
+        response_data = {
             "success": passed,
             "game_over": game_over,
             "remaining_lives": remaining_lives_after,
             "message": message,
-            **({"traceback": traceback_str} if not passed else {})
-        })
+        }
+        if not passed:
+            response_data["traceback"] = traceback_str
+        if game_over:
+            response_data["buggy_explanation"] = question.game_data.get("buggy_explanation", "")
+            response_data["code_with_bug_fixed"] = question.game_data.get("code_with_bug_fixed") or question.game_data.get("buggy_correct_code", "")
+        return Response(response_data)
 
 
 class SubmitPreAssessmentAnswers(APIView):
+    """
+    Accepts a bulk pre-assessment submission.
+
+    Request body:
+        answers  (list) – [{ question_id, user_answer, time_taken }, ...]
+
+    For each answer:
+      - Grades against PreAssessmentQuestion.correct_answer
+      - Writes one PreAssessmentResponse row (authenticated users only)
+      - Builds a result dict passed to recalibrate_topic_proficiency
+
+    After all answers are processed, aggregates server-side from
+    PreAssessmentResponse rows and assigns learner_cluster on UserAbility.
+    Minimum threshold: fewer than 3 rows → cluster defaults to 1 (mid).
+    event_logger is not used here — PreAssessmentQuestion has no GameQuestion FK.
+    """
     permission_classes = [AllowAny]
 
     def post(self, request):
-        data = request.data
-        answers = data if isinstance(data, list) else data.get("answers", [])
+        answers = request.data.get("answers", [])
 
         results = []
         correct_count = 0
@@ -756,41 +770,148 @@ class SubmitPreAssessmentAnswers(APIView):
         for ans in answers:
             try:
                 q = PreAssessmentQuestion.objects.get(id=ans["question_id"])
-                is_correct = q.correct_answer.strip().lower() == ans["user_answer"].strip().lower()
-                results.append({
-                    "question_id": q.id,
-                    "question_text": q.question_text,
-                    "user_answer": ans["user_answer"],
-                    "correct_answer": q.correct_answer,
-                    "is_correct": is_correct,
-                    "topic_ids": q.topic_ids or [],
-                    "subtopic_ids": q.subtopic_ids or []
-                })
-                if is_correct:
-                    correct_count += 1
             except PreAssessmentQuestion.DoesNotExist:
                 continue
 
+            user_answer = ans.get("user_answer", "")
+            time_taken = int(ans.get("time_taken", 0))
+            is_correct = q.correct_answer.strip().lower() == user_answer.strip().lower()
+
+            if is_correct:
+                correct_count += 1
+
+            if request.user.is_authenticated:
+                PreAssessmentResponse.objects.create(
+                    user=request.user,
+                    question_id=q.id,
+                    is_correct=is_correct,
+                    time_taken=time_taken,
+                )
+
+            results.append({
+                "question_id": q.id,
+                "question_text": q.question_text,
+                "user_answer": user_answer,
+                "correct_answer": q.correct_answer,
+                "is_correct": is_correct,
+                "topic_ids": q.topic_ids or [],
+                "subtopic_ids": q.subtopic_ids or [],
+                "minigame_time_taken": time_taken,
+                "estimated_difficulty": q.estimated_difficulty,
+            })
+
+        DIFFICULTY_MULTIPLIER = {
+            "beginner": 1.0,
+            "intermediate": 1.1,
+            "advanced": 1.25,
+            "master": 1.4,
+        }
+
+        subtopic_stats = defaultdict(lambda: {"correct": 0, "total": 0, "difficulty": "beginner"})
+        for r in results:
+            for sid in r.get("subtopic_ids", []):
+                subtopic_stats[sid]["total"] += 1
+                if r["is_correct"]:
+                    subtopic_stats[sid]["correct"] += 1
+                difficulty = r.get("estimated_difficulty", "beginner")
+                if difficulty in ("advanced", "master"):
+                    subtopic_stats[sid]["difficulty"] = difficulty
+                elif difficulty == "intermediate" and subtopic_stats[sid]["difficulty"] == "beginner":
+                    subtopic_stats[sid]["difficulty"] = "intermediate"
+
+        cluster = None
+        cluster_name = None
+
         if request.user.is_authenticated:
             try:
-                print(f"Attempting to recalibrate topic proficiency for wordsearch...")
-                print(f"User: {request.user}")
-                print(f"Results data: {results}")
-                recalibrate_topic_proficiency(request.user, results)
-                print("✅ Recalibration completed successfully!")
-            except Exception as e:
+                responses = PreAssessmentResponse.objects.filter(user=request.user)
+                count = responses.count()
+                if count < 3:
+                    cluster = 1
+                else:
+                    avg_response_time = responses.aggregate(Avg("time_taken"))["time_taken__avg"]
+                    accuracy = responses.filter(is_correct=True).count() / count
+                    cluster = assign_learner_cluster(avg_response_time, accuracy)
+
+                ability, _ = UserAbility.objects.get_or_create(
+                    user=request.user,
+                    defaults={"ability_score": 0.5}
+                )
+                ability.learner_cluster = cluster
+                ability.save(update_fields=["learner_cluster"])
+                cluster_name = get_cluster_name(cluster)
+
+                # initialise all subtopics — BKT-seeded if covered by pre-assessment, cluster default otherwise
+                starting_mastery_default = get_cluster_mastery_default(cluster)  # 0.0–1.0
+
+                from user_learning.bkt import bkt_update
+                from user_learning.bkt_params import BKT_PARAMS, DEFAULT_PARAMS
+                bkt_params = BKT_PARAMS.get(cluster_name, DEFAULT_PARAMS)
+
+                for subtopic in Subtopic.objects.all():
+                    sid = subtopic.id
+
+                    if sid in subtopic_stats and subtopic_stats[sid]["total"] > 0:
+                        stats = subtopic_stats[sid]
+                        accuracy = stats["correct"] / stats["total"]
+                        multiplier = DIFFICULTY_MULTIPLIER.get(stats["difficulty"], 1.0)
+
+                        is_correct_obs = accuracy >= 0.5
+                        mastery_0_1 = bkt_update(
+                            starting_mastery_default,
+                            is_correct_obs,
+                            bkt_params["p_slip"],
+                            bkt_params["p_guess"],
+                        )
+
+                        delta = mastery_0_1 - starting_mastery_default
+                        mastery_0_1 = starting_mastery_default + (delta * multiplier)
+                        mastery_0_1 = max(0.05, min(0.95, mastery_0_1))
+                    else:
+                        mastery_0_1 = starting_mastery_default
+
+                    UserSubtopicMastery.objects.get_or_create(
+                        user=request.user,
+                        subtopic=subtopic,
+                        defaults={"mastery_level": mastery_0_1 * 100},
+                    )
+
+                # propagate to topic
+                for topic in Topic.objects.all():
+                    avg = (
+                        UserSubtopicMastery.objects
+                        .filter(user=request.user, subtopic__topic=topic)
+                        .aggregate(avg=Avg("mastery_level"))["avg"] or 0.0
+                    )
+                    UserTopicProficiency.objects.update_or_create(
+                        user=request.user,
+                        topic=topic,
+                        defaults={"proficiency_percent": avg},
+                    )
+
+                # propagate to zone
+                for zone in GameZone.objects.all().order_by("order"):
+                    avg = (
+                        UserTopicProficiency.objects
+                        .filter(user=request.user, topic__zone=zone)
+                        .aggregate(avg=Avg("proficiency_percent"))["avg"] or 0.0
+                    )
+                    UserZoneProgress.objects.update_or_create(
+                        user=request.user,
+                        zone=zone,
+                        defaults={"completion_percent": avg},
+                    )
+
+            except Exception:
                 import traceback
-                print(f"Recalibration error (wordsearch): {e}")
-                print(f"Error type: {type(e)}")
-                print(f"Traceback:")
                 traceback.print_exc()
-                print(f"User data: {request.user}")
-                print(f"Results data: {results}")
 
         return Response({
             "total": len(answers),
             "correct": correct_count,
-            "results": results
+            "results": results,
+            "cluster": cluster,
+            "cluster_name": cluster_name,
         })
 
 

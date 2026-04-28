@@ -117,38 +117,47 @@ def process_all_subtopics(document_id: Optional[int] = None,
     }
 
 
-def process_single_subtopic(subtopic_id: int, 
+def process_single_subtopic(subtopic_id: int,
                            document_id: Optional[int] = None,
                            similarity_threshold: float = 0.1,
                            top_k_results: int = 10) -> Dict[str, Any]:
-    # Process semantic similarity for a single subtopic
+    # Process semantic similarity for a single subtopic using dual-model approach
     try:
         subtopic = Subtopic.objects.get(id=subtopic_id)
     except Subtopic.DoesNotExist:
         return {'status': 'error', 'message': f'Subtopic {subtopic_id} not found'}
-    
-    # Get subtopic embedding
-    subtopic_data = get_subtopic_embedding(subtopic)
-    if not subtopic_data:
-        return {'status': 'error', 'message': f'No embedding found for subtopic {subtopic.name}'}
-    
-    # Get chunks with embeddings
-    chunks_with_embeddings = get_chunks_with_embeddings(document_id)
-    if not chunks_with_embeddings:
-        return {'status': 'error', 'message': 'No chunks with embeddings found'}
-    
-    # Compute similarities
-    similarity_results = compute_subtopic_similarities(subtopic_data, chunks_with_embeddings, similarity_threshold)
-    
-    if similarity_results:
-        # Take top results
-        similarity_results.sort(key=lambda x: x['similarity'], reverse=True)
-        top_similarities = similarity_results[:top_k_results]
-        store_semantic_results(subtopic, top_similarities)
+
+    minilm_chunks = get_chunks_with_embeddings(document_id, model_type='sentence')
+    codebert_chunks = get_chunks_with_embeddings(document_id, model_type='code_bert')
+
+    if not minilm_chunks and not codebert_chunks:
+        return {'status': 'warning', 'message': 'No chunks with embeddings found'}
+
+    concept_similarities = []
+    code_similarities = []
+
+    if minilm_chunks:
+        minilm_data = get_subtopic_embedding(subtopic, model_type='sentence', use_intents=True)
+        if minilm_data:
+            concept_similarities = compute_subtopic_similarities(minilm_data, minilm_chunks, similarity_threshold)
+            concept_similarities.sort(key=lambda x: x['similarity'], reverse=True)
+            concept_similarities = concept_similarities[:top_k_results]
+
+    if codebert_chunks:
+        codebert_data = get_subtopic_embedding(subtopic, model_type='code_bert', use_intents=True)
+        if codebert_data:
+            code_similarities = compute_subtopic_similarities(codebert_data, codebert_chunks, similarity_threshold)
+            code_similarities.sort(key=lambda x: x['similarity'], reverse=True)
+            code_similarities = code_similarities[:top_k_results]
+
+    if concept_similarities or code_similarities:
+        store_semantic_results_separate(subtopic, concept_similarities, code_similarities)
         return {
             'status': 'success',
             'subtopic_name': subtopic.name,
-            'similar_chunks': len(top_similarities)
+            'similar_chunks': len(concept_similarities) + len(code_similarities),
+            'concept_chunks': len(concept_similarities),
+            'code_chunks': len(code_similarities),
         }
     else:
         return {
@@ -237,15 +246,19 @@ def generate_intent_based_embedding(subtopic: Subtopic, model_type: str = None) 
         # Generate embedding using intent text
         result = generator.generate_embedding(intent_text, chunk_type)
         
-        if result.get('status') == 'success':
-            embedding_data = result['embedding_data']
+        if result and result.get('vector'):
+            # Convert enum to string if needed
+            returned_model_type = result.get('model_type', model_type)
+            if hasattr(returned_model_type, 'value'):
+                returned_model_type = returned_model_type.value
+                
             return {
                 'subtopic': subtopic,
-                'embedding': np.array(embedding_data['vector']),
+                'embedding': np.array(result['vector']),
                 'embedding_id': None,  # Not saved to DB yet
-                'dimension': embedding_data['dimension'],
-                'model_type': embedding_data.get('model_type', model_type),
-                'model_name': embedding_data.get('model_name', ''),
+                'dimension': result.get('dimension', len(result['vector'])),
+                'model_type': returned_model_type,
+                'model_name': result.get('model_name', ''),
                 'generated_from_intent': True,
                 'intent_text': intent_text
             }

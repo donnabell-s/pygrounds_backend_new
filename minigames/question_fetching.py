@@ -9,38 +9,32 @@ from content_ingestion.models import Subtopic, GameZone
 from user_learning.models import UserZoneProgress, UserSubtopicMastery
 from question_generation.models import GeneratedQuestion
 
-# If available in the same app, prefer importing from adaptive_engine to keep logic in sync
-try:
-    from user_learning.adaptive_engine import (
-        BKTParams,
-        bkt_update_once,
-    )
-except Exception:
-    # Minimal local fallback to avoid circular/import errors during migrations
-    from dataclasses import dataclass
+from dataclasses import dataclass
 
-    @dataclass
-    class BKTParams:  # type: ignore
-        p_L0: float = 0.20
-        p_T: float = 0.10
-        p_S: float = 0.10
-        p_G: float = 0.20
-        decay_wrong: float = 0.85
-        min_floor: float = 0.001
-        max_ceiling: float = 0.999
 
-    def bkt_update_once(p_know: float, correct: bool, p: BKTParams) -> float:  # type: ignore
-        if correct:
-            num = p_know * (1.0 - p.p_S)
-            den = num + (1.0 - p_know) * p.p_G
-        else:
-            num = p_know * p.p_S
-            den = num + (1.0 - p_know) * (1.0 - p.p_G)
-        post = 0.0 if den == 0 else num / den
-        p_next = post + (1.0 - post) * p.p_T
-        if not correct:
-            p_next *= p.decay_wrong
-        return max(p.min_floor, min(p.max_ceiling, p_next))
+@dataclass
+class BKTParams:
+    p_L0: float = 0.20
+    p_T: float = 0.10
+    p_S: float = 0.10
+    p_G: float = 0.20
+    decay_wrong: float = 0.85
+    min_floor: float = 0.001
+    max_ceiling: float = 0.999
+
+
+def bkt_update_once(p_know: float, correct: bool, p: BKTParams) -> float:
+    if correct:
+        num = p_know * (1.0 - p.p_S)
+        den = num + (1.0 - p_know) * p.p_G
+    else:
+        num = p_know * p.p_S
+        den = num + (1.0 - p_know) * (1.0 - p.p_G)
+    post = 0.0 if den == 0 else num / den
+    p_next = post + (1.0 - post) * p.p_T
+    if not correct:
+        p_next *= p.decay_wrong
+    return max(p.min_floor, min(p.max_ceiling, p_next))
 
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -496,10 +490,14 @@ def fetch_questions_for_game(
     else:
         target_levels = ["advanced", "master"]
 
-    # Filter weak pools to prioritize difficulty near theta
-    weak_low_qs  = weak_low_qs.filter(estimated_difficulty__in=target_levels) or weak_low_qs
-    weak_mid_qs  = weak_mid_qs.filter(estimated_difficulty__in=target_levels) or weak_mid_qs
-    weak_high_qs = weak_high_qs.filter(estimated_difficulty__in=target_levels) or weak_high_qs
+    # Filter weak pools to prioritize difficulty near theta (only if results exist)
+    def _filter_or_keep(qs, levels):
+        filtered = qs.filter(estimated_difficulty__in=levels)
+        return filtered if filtered.exists() else qs
+
+    weak_low_qs  = _filter_or_keep(weak_low_qs,  target_levels)
+    weak_mid_qs  = _filter_or_keep(weak_mid_qs,  target_levels)
+    weak_high_qs = _filter_or_keep(weak_high_qs, target_levels)
 
 
     # Review: allow anything; Maintenance: prefer hard items to truly test mastery

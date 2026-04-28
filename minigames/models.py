@@ -97,3 +97,14 @@ class CrosswordData(models.Model):
 
     def __str__(self):
         return f"Crossword for Session {self.session.session_id}"
+
+
+class PreAssessmentResponse(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    question_id = models.IntegerField()
+    is_correct = models.BooleanField()
+    time_taken = models.IntegerField()
+    answered_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["answered_at"]
