@@ -62,7 +62,12 @@ def _load_bundle(game_type: str):
         # if you later want to re-enable ML for non-coding, this exists
         path = os.path.join(_MODEL_DIR, "minigame_non_coding_model.pkl")
 
-    bundle = joblib.load(path)
+    try:
+        bundle = joblib.load(path)
+    except FileNotFoundError:
+        _BUNDLE_CACHE[gt] = None
+        return None
+
     model = bundle["model"]
     veczr = bundle["vectorizer"]
     enc = bundle["label_encoder"]
@@ -81,7 +86,12 @@ def _ml_predict_with_conf(text: str, game_type: str):
     - Else -> None
     """
     cleaned = _clean_text(text)
-    model, veczr, enc = _load_bundle(game_type)
+    bundle = _load_bundle(game_type)
+
+    if bundle is None:
+        return None, None
+
+    model, veczr, enc = bundle
 
     X = veczr.transform([cleaned])  # ✅ TF-IDF applied here
     pred = model.predict(X)[0]
@@ -154,6 +164,10 @@ def predict_difficulty(text: str, game_type: str) -> str:
             if rule_output == "hard_advanced":
                 return "advanced"
             return "intermediate"
+
+        # No ML model available — fall back to rule engine
+        if ml_output is None:
+            return rule_output or "beginner"
 
         # Confidence-gated override (conservative)
         CONF_THRESHOLD = 0.40
