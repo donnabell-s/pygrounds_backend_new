@@ -70,12 +70,16 @@ def _noncoding_score(text: str) -> Tuple[int, List[str], bool, bool]:
         reasons.append("Intent: explain/describe (+2)")
 
     # Apply / Use
-    if _has(r"\b(how do you use|how to|use|apply|write|create|implement)\b", low):
-        score += 2
-        reasons.append("Intent: apply/use (+2)")
+    if _has(r"\b(how do you use|how to|apply|write|create|implement)\b", low):
+        score += 4
+        reasons.append("Intent: apply/use (+4)")
+        
+    if _has(r"\b(evaluate|trade[-\s]?off|tradeoffs|trade-offs)\b", low):
+        score += 8
+        reasons.append("Intent: evaluate/trade-off reasoning (+8)")
 
     # Analyze / Compare / Justify
-    if _has(r"\b(analyze|compare|contrast|justify|trade[-\s]?off|difference between)\b", low):
+    if _has(r"\b(analyze|compare|contrast|justify|difference between)\b", low):
         score += 3
         reasons.append("Intent: analyze/compare/justify (+3)")
 
@@ -90,7 +94,7 @@ def _noncoding_score(text: str) -> Tuple[int, List[str], bool, bool]:
         reasons.append("Intent: debug/error reasoning (+3)")
 
     # Trace / output / evaluate
-    has_trace_intent = _has(r"\b(output|what will be printed|trace|evaluate)\b", low)
+    has_trace_intent = _has(r"\b(output|what will be printed|trace)\b", low)
     if has_trace_intent:
         score += 3
         reasons.append("Intent: trace/predict/evaluate (+3)")
@@ -126,10 +130,7 @@ def _score_to_label(score: int) -> str:
         return "intermediate"
     return "beginner"
 
-
-# ============================================================
-# ✅ MAIN API used by ml_classifier.py
-# ============================================================
+# main api used by ml_classifier.py
 
 def predict_non_coding_difficulty(text: str) -> str:
     """
