@@ -10,7 +10,35 @@ class DeepSeekPromptManager:
             raise ValueError(f"Unknown game_type: {game_type}")
         return prompts[game_type](context)
 
+    def _coding_integration_block(self, context: dict) -> str:
+        names = context.get('subtopic_names') or []
+        if len(names) <= 1:
+            return ''
+        bullets = '\n'.join(f"- {n}" for n in names)
+        return f"""
+CROSS-SUBTOPIC INTEGRATION REQUIRED:
+The task MUST meaningfully combine concepts from ALL {len(names)} subtopics below — not just one of them. The student should need to apply ideas from each subtopic to solve the question.
+SUBTOPICS TO INTEGRATE:
+{bullets}
+Examples of integration: looping over a list (Loops + Lists), using a conditional inside a function (Functions + Conditionals), iterating over dictionary items with filtering (Loops + Dictionaries + Conditionals).
+The question_text and explanation should reference how the subtopics work together.
+"""
+
+    def _non_coding_integration_block(self, context: dict) -> str:
+        names = context.get('subtopic_names') or []
+        if len(names) <= 1:
+            return ''
+        bullets = '\n'.join(f"- {n}" for n in names)
+        return f"""
+CROSS-SUBTOPIC INTEGRATION REQUIRED:
+Each clue MUST touch concepts from ALL {len(names)} subtopics below, not just one. The single-term answer should be a Python concept that sits at the intersection of these subtopics, or the clue should describe an interaction between them.
+SUBTOPICS TO INTEGRATE:
+{bullets}
+The explanation must mention how the answer relates to each listed subtopic.
+"""
+
     def get_coding_prompt(self, context: dict) -> str:
+        integration_block = self._coding_integration_block(context)
         return f"""
 OUTPUT ONLY VALID JSON ARRAY. NO prose, NO markdown, NO backticks.
 
@@ -19,7 +47,7 @@ Each question serves TWO games: Hangman (write from scratch) and Debugging (fix 
 
 RAG_CONTEXT:
 {context['rag_context']}
-
+{integration_block}
 RULES:
 - Simple real-world tasks, no external libs, under 20 lines per code block.
 - snake_case function names.
@@ -77,6 +105,7 @@ RETURN: JSON array only. {context['num_questions']} items.
 """
 
     def get_non_coding_prompt(self, context: dict) -> str:
+      integration_block = self._non_coding_integration_block(context)
       return f"""
 OUTPUT ONLY VALID JSON ARRAY. NO prose, NO markdown, NO backticks.
 
@@ -86,7 +115,7 @@ DIFFICULTY: {context['difficulty']}
 
 RAG_CONTEXT:
 {context['rag_context']}
-
+{integration_block}
 RULES:
 - Each question targets ONE specific Python concept term from RAG_CONTEXT.
 - Answer must be a single term, 4-13 letters only, domain-specific (e.g. docstring, immutability, generator).

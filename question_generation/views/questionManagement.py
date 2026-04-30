@@ -444,11 +444,6 @@ def _apply_regenerated_question(request, question, q, game_type, llm_prompt, acc
 
     question.game_data         = game_data
     question.validation_status = 'pending'
-    question.flagged           = False
-    question.flag_reason       = None
-    question.flag_notes        = None
-    question.flagged_by        = None
-    question.flag_created_at   = None
     question.save()
 
     return Response({
@@ -492,6 +487,7 @@ def get_all_questions(request):
         offset   - pagination offset (default: 0)
         order_by - id | created_at | estimated_difficulty | game_type (default: created_at)
         order    - asc | desc (default: desc)
+        search   - search by question id or question_text text
     """
     VALID_ORDER_FIELDS = ['id', 'created_at', 'estimated_difficulty', 'game_type']
     try:
@@ -499,6 +495,7 @@ def get_all_questions(request):
         offset   = int(request.query_params.get('offset', 0))
         order_by = request.query_params.get('order_by', 'created_at')
         order    = request.query_params.get('order', 'desc')
+        search   = request.query_params.get('search', '').strip()
 
         if order_by not in VALID_ORDER_FIELDS:
             return Response({'status': 'error', 'message': f'order_by must be one of: {", ".join(VALID_ORDER_FIELDS)}'}, status=status.HTTP_400_BAD_REQUEST)
@@ -506,7 +503,16 @@ def get_all_questions(request):
             return Response({'status': 'error', 'message': 'order must be "asc" or "desc"'}, status=status.HTTP_400_BAD_REQUEST)
 
         order_field = f"-{order_by}" if order == 'desc' else order_by
-        qs          = GeneratedQuestion.objects.all().order_by(order_field)
+        qs          = GeneratedQuestion.objects.all()
+
+        if search:
+            from django.db.models import Q
+            if search.isdigit():
+                qs = qs.filter(Q(id=int(search)) | Q(question_text__icontains=search))
+            else:
+                qs = qs.filter(question_text__icontains=search)
+
+        qs          = qs.order_by(order_field)
         total_count = qs.count()
         questions   = [format_question_response(q) for q in qs[offset:offset + limit]]
 
@@ -535,6 +541,7 @@ def get_questions_by_filters(request):
         difficulty - beginner | intermediate | advanced | master (optional)
         limit      - max results (default: 20)
         offset     - pagination offset (default: 0)
+        search     - search by question id or question_text text
     """
     VALID_DIFFICULTIES = ['beginner', 'intermediate', 'advanced', 'master']
     try:
@@ -550,10 +557,24 @@ def get_questions_by_filters(request):
 
         limit  = int(request.query_params.get('limit', 20))
         offset = int(request.query_params.get('offset', 0))
+        search = request.query_params.get('search', '').strip()
 
-        qs = GeneratedQuestion.objects.filter(game_type=game_type)
-        if difficulty:
-            qs = qs.filter(estimated_difficulty=difficulty)
+        if search and search.isdigit():
+            # Exact ID lookup bypasses game_type/difficulty filters so the user
+            # can locate any question by ID regardless of the current tab.
+            from django.db.models import Q
+            qs = GeneratedQuestion.objects.filter(
+                Q(id=int(search)) | (Q(game_type=game_type) & Q(question_text__icontains=search))
+            )
+            if difficulty:
+                qs = qs.filter(Q(id=int(search)) | Q(estimated_difficulty=difficulty))
+        else:
+            qs = GeneratedQuestion.objects.filter(game_type=game_type)
+            if difficulty:
+                qs = qs.filter(estimated_difficulty=difficulty)
+            if search:
+                qs = qs.filter(question_text__icontains=search)
+
         qs = qs.order_by('-id')
 
         total_count = qs.count()
@@ -561,7 +582,7 @@ def get_questions_by_filters(request):
 
         return Response({
             'status': 'success',
-            'filters_applied': {'game_type': game_type, 'difficulty': difficulty, 'limit': limit, 'offset': offset},
+            'filters_applied': {'game_type': game_type, 'difficulty': difficulty, 'limit': limit, 'offset': offset, 'search': search},
             'pagination': {'total_count': total_count, 'returned_count': len(questions), 'has_more': offset + limit < total_count},
             'questions': questions,
         })

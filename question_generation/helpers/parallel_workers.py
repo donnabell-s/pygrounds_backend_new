@@ -83,44 +83,6 @@ def calculate_questions_per_combination(num_subtopics: int, num_questions_per_su
     return max(1, budget // num_combinations)
 
 
-# ── Single-subtopic batch ──────────────────────────────────────────────────────
-
-def generate_questions_for_single_subtopic_batch(subtopic, difficulty_levels: List[str],
-                                                  total_questions_needed: int, game_type: str,
-                                                  session_id: str) -> Dict[str, Any]:
-    """Distribute questions for a single subtopic across difficulty levels."""
-    try:
-        per_difficulty = total_questions_needed // len(difficulty_levels)
-        extra          = total_questions_needed % len(difficulty_levels)
-        total_saved    = 0
-
-        for i, difficulty in enumerate(difficulty_levels):
-            count = per_difficulty + (1 if i < extra else 0)
-            if not count:
-                continue
-            result = generate_questions_for_subtopic_combination(
-                subtopic_combination=[subtopic],
-                difficulty=difficulty,
-                num_questions=count,
-                game_type=game_type,
-                zone=subtopic.topic.zone,
-                session_id=session_id,
-            )
-            if result['success']:
-                total_saved += result.get('questions_saved', 0)
-            else:
-                logger.warning(f"Failed {difficulty} questions for {subtopic.name}: {result.get('error')}")
-
-        return {
-            'success':        total_saved > 0,
-            'questions_saved': total_saved,
-            'error':          None if total_saved > 0 else 'No questions generated',
-        }
-    except Exception as e:
-        logger.error(f"Single subtopic batch error: {e}")
-        return {'success': False, 'questions_saved': 0, 'error': str(e)}
-
-
 # ── Subtopic-specific generation ───────────────────────────────────────────────
 
 def run_subtopic_specific_generation(subtopic_ids: List[int],
@@ -140,22 +102,10 @@ def run_subtopic_specific_generation(subtopic_ids: List[int],
         # ── Single-subtopic path ───────────────────────────────────────────────
         if len(subtopics) == 1:
             single = subtopics[0]
-            total_needed      = len(difficulty_levels) * num_questions_per_subtopic
-            actual_workers    = min(settings.QUESTION_GENERATION_WORKERS, total_needed)
-            questions_per_worker = max(1, total_needed // actual_workers)
-
-            batches = []
-            assigned = 0
-            for worker_id in range(actual_workers):
-                worker_q = min(questions_per_worker, total_needed - assigned)
-                if worker_q > 0:
-                    batches.append({
-                        'worker_id':        worker_id,
-                        'subtopic':         single,
-                        'difficulty_levels': difficulty_levels,
-                        'questions_needed': worker_q,
-                    })
-                    assigned += worker_q
+            batches = [
+                {'worker_id': i, 'difficulty': d, 'questions_needed': num_questions_per_subtopic}
+                for i, d in enumerate(difficulty_levels)
+            ]
 
             generation_status_tracker.update_status(session_id, {
                 'status': 'processing', 'total_tasks': len(batches),
@@ -166,22 +116,24 @@ def run_subtopic_specific_generation(subtopic_ids: List[int],
             for batch in batches:
                 if generation_status_tracker.is_session_cancelled(session_id):
                     break
-                result = generate_questions_for_single_subtopic_batch(
-                    subtopic=batch['subtopic'],
-                    difficulty_levels=batch['difficulty_levels'],
-                    total_questions_needed=batch['questions_needed'],
+                result = generate_questions_for_subtopic_combination(
+                    subtopic_combination=[single],
+                    difficulty=batch['difficulty'],
+                    num_questions=batch['questions_needed'],
                     game_type=game_type,
+                    zone=single.topic.zone,
                     session_id=session_id,
                 )
                 if result['success']:
                     successful += 1
                     total_q    += result.get('questions_saved', 0)
                 else:
-                    logger.warning(f"Worker {batch['worker_id']} failed: {result.get('error')}")
+                    logger.warning(f"Worker {batch['worker_id']} ({batch['difficulty']}) failed: {result.get('error')}")
                 completed += 1
                 generation_status_tracker.update_status(session_id, {
                     'completed_tasks': completed, 'successful_tasks': successful,
                     'total_questions': total_q,
+                    'current_difficulty': batch['difficulty'],
                     'progress_percentage': (completed / len(batches)) * 100,
                 })
 

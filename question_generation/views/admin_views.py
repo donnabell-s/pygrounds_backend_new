@@ -2,7 +2,7 @@ from rest_framework import generics, status, filters
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
-from django.db.models import Count
+from django.db.models import Count, Q
 
 from ..models import GeneratedQuestion, PreAssessmentQuestion
 from content_ingestion.models import SemanticSubtopic, GameZone, Subtopic
@@ -32,8 +32,7 @@ class StandardResultsSetPagination(PageNumberPagination):
 class AdminGeneratedQuestionListView(generics.ListAPIView):
     serializer_class = QuestionSummarySerializer
     pagination_class = StandardResultsSetPagination
-    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
-    search_fields = ['question_text', 'subtopic__name', 'topic__name']
+    filter_backends = [filters.OrderingFilter]
     ordering_fields = ['id', 'estimated_difficulty', 'order']
     ordering = ['-id']
 
@@ -54,6 +53,15 @@ class AdminGeneratedQuestionListView(generics.ListAPIView):
             value = self.request.query_params.get(param)
             if value:
                 queryset = queryset.filter(**{field: value})
+
+        search = (self.request.query_params.get('search') or '').strip()
+        if search:
+            text_q = (
+                Q(question_text__icontains=search)
+                | Q(subtopic__name__icontains=search)
+                | Q(topic__name__icontains=search)
+            )
+            queryset = queryset.filter(Q(id=int(search)) | text_q) if search.isdigit() else queryset.filter(text_q)
 
         return queryset
 
@@ -140,6 +148,25 @@ def bulk_delete_questions(request):
         return Response({'error': 'confirm must be true to proceed with deletion'}, status=status.HTTP_400_BAD_REQUEST)
 
     deleted_count, _ = GeneratedQuestion.objects.filter(id__in=question_ids).delete()
+    return Response({'deleted_count': deleted_count, 'question_ids': question_ids})
+
+
+@api_view(['DELETE'])
+def bulk_delete_preassessment_questions(request):
+    """
+    Request body:
+        question_ids - list of question IDs
+        confirm      - must be true
+    """
+    question_ids = request.data.get('question_ids', [])
+    confirm = request.data.get('confirm', False)
+
+    if not question_ids:
+        return Response({'error': 'question_ids is required'}, status=status.HTTP_400_BAD_REQUEST)
+    if not confirm:
+        return Response({'error': 'confirm must be true to proceed with deletion'}, status=status.HTTP_400_BAD_REQUEST)
+
+    deleted_count, _ = PreAssessmentQuestion.objects.filter(id__in=question_ids).delete()
     return Response({'deleted_count': deleted_count, 'question_ids': question_ids})
 
 
