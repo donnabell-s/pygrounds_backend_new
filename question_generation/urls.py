@@ -23,6 +23,7 @@ from .views.admin_views import (
     AdminPreAssessmentQuestionListView,
     AdminPreAssessmentQuestionDetailView,
     AdminSemanticSubtopicListView,
+    bulk_delete_preassessment_questions,
 )
 from .views.getQuestions import PreAssessmentQuestionListView
 from .views.test_views import (
@@ -57,6 +58,7 @@ urlpatterns = [
     path('admin/questions/', AdminGeneratedQuestionListView.as_view(), name='admin-questions'),
     path('admin/questions/<int:pk>/', AdminGeneratedQuestionDetailView.as_view(), name='admin-question-detail'),
     path('admin/pre-assessment/', AdminPreAssessmentQuestionListView.as_view(), name='admin-pre-assessment'),
+    path('admin/pre-assessment/bulk-delete/', bulk_delete_preassessment_questions, name='admin-pre-assessment-bulk-delete'),
     path('admin/pre-assessment/<int:pk>/', AdminPreAssessmentQuestionDetailView.as_view(), name='admin-pre-assessment-detail'),
     path('admin/semantic/', AdminSemanticSubtopicListView.as_view(), name='admin-semantic'),
 

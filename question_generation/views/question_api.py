@@ -196,7 +196,7 @@ def generate_pre_assessment(request):
         def _generate():
             try:
                 generation_status_tracker.update_status(session_id, {
-                    'status': 'processing', 'step': 'Building topic context',
+                    'status': 'processing', 'step': 'Pre-assessment generation: Building topic context',
                 })
 
                 topics_str = "\n\n".join(
@@ -205,7 +205,7 @@ def generate_pre_assessment(request):
                 )
 
                 generation_status_tracker.update_status(session_id, {
-                    'status': 'processing', 'step': 'Calling LLM',
+                    'status': 'processing', 'step': 'Pre-assessment generation: LLM is thinking...',
                 })
 
                 prompt = deepseek_prompt_manager.get_prompt_for_minigame(
@@ -237,7 +237,7 @@ def generate_pre_assessment(request):
 
                 generation_status_tracker.update_status(session_id, {
                     'status': 'processing',
-                    'step': f'Saving {len(questions)} questions to database',
+                    'step': f'Pre-assessment generation: Saving {len(questions)} questions to database',
                     'questions_generated': len(questions),
                     'total_questions_requested': total_questions,
                 })
@@ -259,6 +259,9 @@ def generate_pre_assessment(request):
                             return v
                     return None, None
 
+                # Trim the questions list explicitly to the requested total
+                questions = questions[:total_questions]
+
                 saved, errors = [], 0
                 for idx, q in enumerate(questions):
                     try:
@@ -278,7 +281,7 @@ def generate_pre_assessment(request):
                             answer_options=q.get('choices', []),
                             correct_answer=q.get('correct_answer', ''),
                             estimated_difficulty=q.get('difficulty', 'beginner'),
-                            order=idx,
+                            order=idx + 1,  # 1-indexed order starting from 1 to total_questions
                         )
                         try:
                             from ..helpers.db_operations import export_preassessment_question_to_json
@@ -358,6 +361,7 @@ def get_generation_status(request, session_id):
                 'topics': session.get('topics', []),
                 'assessment_info': session.get('assessment_info', {}),
                 'questions': session.get('questions', []),
+                'saved_questions': session.get('saved_questions', []),
                 'topics_covered': session.get('topics_covered', []),
                 'message': session.get('message', ''),
             })

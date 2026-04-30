@@ -196,8 +196,9 @@ def create_generation_context(subtopic_combination, difficulty: str, num_questio
     safe_name = (' + '.join(subtopic_names) if len(subtopic_names) > 1
                  else subtopic_names[0] if subtopic_names else '')
     return {
-        'subtopic_name': safe_name,
-        'difficulty':    difficulty,
-        'num_questions': num_questions,
-        'rag_context':   rag_context or 'No specific content context available. Generate questions based on general Python knowledge.',
+        'subtopic_name':  safe_name,
+        'subtopic_names': subtopic_names,
+        'difficulty':     difficulty,
+        'num_questions':  num_questions,
+        'rag_context':    rag_context or 'No specific content context available. Generate questions based on general Python knowledge.',
     }
