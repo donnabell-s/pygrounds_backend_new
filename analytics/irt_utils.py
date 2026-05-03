@@ -91,14 +91,16 @@ def recalibrate_item_irt(question_id):
     # Fetch all responses for this question
     responses = QuestionResponse.objects.filter(question=question)
 
-    if responses.count() < 5:
-        return "Not enough responses for IRT recalibration (need ≥10)."
+    if responses.count() < 20:
+        return "Not enough responses for IRT recalibration (need ≥20)."
 
-    # Theta estimation (simple placeholder: mean scores)
+    # Theta estimation: map binary score to IRT ability scale
+    # score=1 (correct) → theta=2.0 (high ability)
+    # score=0 (wrong)   → theta=-2.0 (low ability)
     theta_values = {}
     for r in responses:
         if r.user_id not in theta_values:
-            theta_values[r.user_id] = r.score
+            theta_values[r.user_id] = (r.score - 0.5) * 4.0
 
     # Load or create IRT params
     params, _ = ItemIRTParameters.objects.get_or_create(question=question)
@@ -109,9 +111,27 @@ def recalibrate_item_irt(question_id):
     # Compute new parameters
     new_a, new_b = update_parameters(a, b, responses, theta_values)
 
-    # Save updated values
+    # Clamp b to valid IRT range
+    new_b = max(-3.0, min(3.0, new_b))
+
+    # Save updated IRT values
     params.a = new_a
     params.b = new_b
     params.save()
 
-    return f"IRT recalibration done → a={new_a:.3f}, b={new_b:.3f}"
+    # Map b parameter to difficulty label and update question
+    if new_b >= 1.0:
+        new_diff = "master"
+    elif new_b >= 0.0:
+        new_diff = "advanced"
+    elif new_b >= -1.0:
+        new_diff = "intermediate"
+    else:
+        new_diff = "beginner"
+
+    old_diff = question.estimated_difficulty
+    if new_diff != old_diff:
+        question.estimated_difficulty = new_diff
+        question.save(update_fields=["estimated_difficulty"])
+
+    return f"IRT recalibration done → a={new_a:.3f}, b={new_b:.3f}, difficulty: {old_diff} → {new_diff}"

@@ -160,11 +160,15 @@ def _coding_score(text: str) -> tuple:
     Score is based on structure and task demand, not keyword difficulty lists.
     """
     reasons = []
+    score = 0
     t = (text or "").strip()
     low = t.lower()
     code = _extract_code(t)
 
-    score = 0
+    # Detect inline code patterns (no markdown block present)
+    if "```" not in t and _regex_has(r"\bfor\b|\bwhile\b|\bif\b|\bprint\s*\(|range\s*\(", t):
+        score += 2
+        reasons.append("Structure: inline code detected (+2)")
 
     # -------- Task intent (what student must do) --------
     if _regex_has(r"\b(trace|predict the output|what is the output|what will be printed)\b", low):
@@ -258,8 +262,8 @@ def _coding_score(text: str) -> tuple:
             reasons.append("Structure: try/except hint (regex) (+3)")
 
         if _regex_count(r"\bfor\b|\bwhile\b", code) >= 2:
-            score += 3
-            reasons.append("Structure: nested loops hint (regex) (+3)")
+            score += 4
+            reasons.append("Structure: nested loops hint (regex) (+4)")
         elif _regex_has(r"\bfor\b|\bwhile\b", code):
             score += 2
             reasons.append("Structure: loop hint (regex) (+2)")
@@ -282,11 +286,11 @@ def _score_to_label(score: int) -> str:
     """
     Map score to difficulty level for CODING rule suggestions.
     """
-    if score >= 10:
+    if score >= 13:
         return "master"
-    if score >= 7:
+    if score >= 9:
         return "advanced"
-    if score >= 4:
+    if score >= 5:
         return "intermediate"
     return "beginner"
 

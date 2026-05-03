@@ -123,8 +123,13 @@ def _score_preassessment(text: str) -> Tuple[int, List[FeatureHit]]:
         score += 1
         hits.append(FeatureHit("Recall/Definition task", 1, "Asks for definition/identification."))
 
+    # Explain / Describe (Understand-level, between recall and apply)
+    if _has(r"\b(explain|describe|summarize)\b", low):
+        score += 1
+        hits.append(FeatureHit("Explain/Describe task", 1, "Asks to explain or describe a concept."))
+
     # Apply / Construct (Intermediate-ish)
-    if _has(r"\b(write|create|use|convert|compute|calculate|implement)\b", low):
+    if _has(r"\b(write|create|use|convert|compute|calculate|implement|handle)\b", low):
         score += 2
         hits.append(FeatureHit("Apply/Construct task", 2, "Asks to produce or apply a concept."))
 
@@ -176,7 +181,7 @@ def _score_preassessment(text: str) -> Tuple[int, List[FeatureHit]]:
         hits.append(FeatureHit("Data structures", 1, "Uses collections / structures."))
 
     # Exception handling (advanced-ish)
-    if _has(r"\btry\b|\bexcept\b", low) or _has(r"\btry\b|\bexcept\b", code):
+    if _has(r"\btry\b|\bexcept\b|\bexception\b", low) or _has(r"\btry\b|\bexcept\b|\bexception\b", code):
         score += 2
         hits.append(FeatureHit("Exception handling", 2, "Requires error-flow reasoning."))
 

@@ -170,7 +170,7 @@ def predict_difficulty(text: str, game_type: str) -> str:
             return rule_output or "beginner"
 
         # Confidence-gated override (conservative)
-        CONF_THRESHOLD = 0.40
+        CONF_THRESHOLD = 0.70
         if rule_output and (ml_conf is None or ml_conf < CONF_THRESHOLD):
             return rule_output
 
@@ -242,7 +242,7 @@ def predict_difficulty_debug(text: str, game_type: str):
             info["note"] = f"coding hard override applied (rule={rule_output})"
             return info
 
-        CONF_THRESHOLD = 0.40
+        CONF_THRESHOLD = 0.70
         if rule_output and (ml_conf is None or ml_conf < CONF_THRESHOLD):
             info["final_output"] = rule_output
             info["note"] = f"rule override applied (ml_conf={ml_conf}, threshold={CONF_THRESHOLD})"
