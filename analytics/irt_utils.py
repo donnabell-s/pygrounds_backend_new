@@ -91,8 +91,8 @@ def recalibrate_item_irt(question_id):
     # Fetch all responses for this question
     responses = QuestionResponse.objects.filter(question=question)
 
-    if responses.count() < 5:
-        return "Not enough responses for IRT recalibration (need ≥10)."
+    if responses.count() < 20:
+        return "Not enough responses for IRT recalibration (need ≥20)."
 
     # Theta estimation: map binary score to IRT ability scale
     # score=1 (correct) → theta=2.0 (high ability)
