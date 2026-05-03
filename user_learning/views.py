@@ -25,28 +25,52 @@ class MyTopicProgressView(APIView):
 
     def get(self, request):
         from .models import UserTopicProficiency
-        from .serializers import UserTopicProficiencySerializer
+        from content_ingestion.models import Topic
         import logging
         logger = logging.getLogger(__name__)
-        
+
         try:
-            progress = UserTopicProficiency.objects.filter(user=request.user).select_related('topic__zone')
-            logger.info(f"Found {progress.count()} topic progress records for user {request.user.username}")
-            
-            # Check for any broken zone relationships
-            valid_progress = []
-            for p in progress:
-                if p.topic and p.topic.zone:
-                    valid_progress.append(p)
-                else:
-                    logger.warning(f"Skipping topic progress for topic {p.topic.name if p.topic else 'Unknown'} - missing zone")
-            
-            serializer = UserTopicProficiencySerializer(valid_progress, many=True)
-            return Response(serializer.data)
-            
+            # All topics that have at least one subtopic, ordered by zone order then topic id
+            qualifying_topics = (
+                Topic.objects
+                .filter(subtopics__isnull=False)
+                .select_related('zone')
+                .distinct()
+                .order_by('zone__order', 'id')
+            )
+
+            # Existing proficiency records keyed by topic id
+            existing = {
+                p.topic_id: p.proficiency_percent
+                for p in UserTopicProficiency.objects.filter(user=request.user)
+            }
+
+            data = []
+            for topic in qualifying_topics:
+                if not topic.zone:
+                    continue
+                zone_data = {
+                    "id": topic.zone.id,
+                    "name": topic.zone.name,
+                    "description": topic.zone.description,
+                    "order": topic.zone.order,
+                }
+                data.append({
+                    "topic": {
+                        "id": topic.id,
+                        "name": topic.name,
+                        "description": topic.description,
+                        "zone": zone_data,
+                    },
+                    "zone": zone_data,
+                    "proficiency_percent": existing.get(topic.id, 0.0),
+                })
+
+            return Response(data)
+
         except Exception as e:
             logger.error(f"Error in MyTopicProgressView: {e}")
-            return Response([], status=200)  # Return empty list instead of error
+            return Response([], status=200)
 
 
 class MySubtopicStatsView(APIView):

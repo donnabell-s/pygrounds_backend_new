@@ -219,7 +219,7 @@ def process_zone_difficulty_combination(args) -> Dict[str, Any]:
             result['error'] = f"No subtopics in zone {zone.name}"
             return result
 
-        if num_questions_per_subtopic == 1 or (max_total_questions and max_total_questions <= 1):
+        if max_total_questions and max_total_questions <= 1:
             max_combination_size = 1
         else:
             difficulty_combo_map = {'beginner': 1, 'intermediate': 2, 'advanced': 3, 'master': 3}
@@ -228,11 +228,14 @@ def process_zone_difficulty_combination(args) -> Dict[str, Any]:
                 len(zone_subtopics)
             )
 
-        all_combinations = [
-            combo
-            for size in range(1, max_combination_size + 1)
-            for combo in combinations(zone_subtopics, size)
-        ]
+        # Always include individuals; cap pairs/triples so combinations don't explode
+        # for large zones (10 subtopics × all triples = 175 combos otherwise).
+        all_combinations = [(s,) for s in zone_subtopics]
+        n = len(zone_subtopics)
+        if max_combination_size >= 2:
+            all_combinations.extend(list(combinations(zone_subtopics, 2))[:max(1, n // 2)])
+        if max_combination_size >= 3:
+            all_combinations.extend(list(combinations(zone_subtopics, 3))[:max(1, n // 3)])
 
         if session_id:
             from .generation_status import generation_status_tracker
