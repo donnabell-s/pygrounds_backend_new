@@ -1,0 +1,160 @@
+[
+  {
+    "game_type": "coding",
+    "difficulty": "beginner",
+    "subtopic": "Constants and Immutability Concepts",
+    "game_data": {
+      "normal": {
+        "question_text": "Define a constant for the speed of light",
+        "function_name": "speed_of_light",
+        "sample_input": "()",
+        "sample_output": "299792458",
+        "hidden_tests": [
+          {
+            "input": "()",
+            "expected_output": "299792458"
+          }
+        ],
+        "clean_solution": "def speed_of_light():\n    return 299792458",
+        "explanation": "This function returns the speed of light as a constant. A common mistake is using a mutable type like a list instead of an immutable number. Remember: constants should be immutable, like integers or floats."
+      },
+      "buggy": {
+        "buggy_question_text": "Function returns wrong value for speed of light constant",
+        "code_shown_to_student": "def speed_of_light():\n    return [299792458]",
+        "code_with_bug_fixed": "def speed_of_light():\n    return 299792458",
+        "buggy_explanation": "The bug was returning a list instead of a number. The speed of light is a single value, not a list. Always use immutable types like int or float for constants."
+      },
+      "generation_timestamp": "2026-05-03T12:40:03.511255"
+    },
+    "created_at": "2026-05-03T04:40:03.463813+00:00",
+    "exported_at": "2026-05-03T12:40:03.511255"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "intermediate",
+    "subtopic": "Constants and Immutability Concepts",
+    "game_data": {
+      "normal": {
+        "question_text": "Return a tuple with constant values unchanged",
+        "function_name": "get_constants",
+        "sample_input": "()",
+        "sample_output": "(42, 'hello')",
+        "hidden_tests": [
+          {
+            "input": "()",
+            "expected_output": "(42, 'hello')"
+          }
+        ],
+        "clean_solution": "def get_constants():\n    return (42, 'hello')",
+        "explanation": "This function returns a tuple of two constants. A common mistake is trying to modify a tuple, forgetting tuples are immutable. Remember: tuples cannot be changed after creation."
+      },
+      "buggy": {
+        "buggy_question_text": "Function modifies a tuple instead of returning it unchanged",
+        "code_shown_to_student": "def get_constants():\n    constants = (42, 'hello')\n    constants[0] = 100\n    return constants",
+        "code_with_bug_fixed": "def get_constants():\n    constants = (42, 'hello')\n    return constants",
+        "buggy_explanation": "The bug was attempting to assign a new value to a tuple element, which raises an error. Tuples are immutable; use a list if modification is needed."
+      },
+      "generation_timestamp": "2026-05-03T12:40:07.620622"
+    },
+    "created_at": "2026-05-03T04:40:07.614473+00:00",
+    "exported_at": "2026-05-03T12:40:07.620622"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "advanced",
+    "subtopic": "Constants and Immutability Concepts",
+    "game_data": {
+      "normal": {
+        "question_text": "Create an immutable constant for a tuple of primes",
+        "function_name": "sum_primes",
+        "sample_input": "([2, 3, 5],)",
+        "sample_output": "10",
+        "hidden_tests": [
+          {
+            "input": "([2, 3, 5, 7],)",
+            "expected_output": "17"
+          },
+          {
+            "input": "([],)",
+            "expected_output": "0"
+          }
+        ],
+        "clean_solution": "def sum_primes(primes):\n    return sum(primes)",
+        "explanation": "This function sums a tuple of primes using a constant. A common mistake is using a mutable default argument that persists across calls. Remember: use None as default and create a new tuple inside to ensure immutability."
+      },
+      "buggy": {
+        "buggy_question_text": "Function returns wrong sum when using a mutable default argument",
+        "code_shown_to_student": "def sum_primes(primes=[]):\n    return sum(primes)",
+        "code_with_bug_fixed": "def sum_primes(primes=None):\n    if primes is None:\n        primes = []\n    return sum(primes)",
+        "buggy_explanation": "The bug was using a mutable list as default argument, which accumulates across calls. Fix by using None as default and creating a new tuple inside. Always avoid mutable defaults to prevent unintended state sharing."
+      },
+      "generation_timestamp": "2026-05-03T12:40:15.884659"
+    },
+    "created_at": "2026-05-03T04:40:15.879560+00:00",
+    "exported_at": "2026-05-03T12:40:15.884659"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "master",
+    "subtopic": "Constants and Immutability Concepts",
+    "game_data": {
+      "normal": {
+        "question_text": "Return a tuple with constant values unchanged",
+        "function_name": "get_constants",
+        "sample_input": "()",
+        "sample_output": "(3.14159, 2.71828)",
+        "hidden_tests": [
+          {
+            "input": "()",
+            "expected_output": "(3.14159, 2.71828)"
+          }
+        ],
+        "clean_solution": "def get_constants():\n    PI = 3.14159\n    E = 2.71828\n    return (PI, E)",
+        "explanation": "This function returns a tuple of two constants. A common mistake is trying to modify a tuple, which is immutable. Remember: tuples cannot be changed after creation; always return them as-is."
+      },
+      "buggy": {
+        "buggy_question_text": "Function modifies a tuple instead of returning it unchanged",
+        "code_shown_to_student": "def get_constants():\n    PI = 3.14159\n    E = 2.71828\n    constants = (PI, E)\n    constants.append(1.0)\n    return constants",
+        "code_with_bug_fixed": "def get_constants():\n    PI = 3.14159\n    E = 2.71828\n    constants = (PI, E)\n    return constants",
+        "buggy_explanation": "The bug was attempting to append to a tuple, which is immutable. This causes an AttributeError. The fix is to return the tuple directly without modification, respecting immutability."
+      },
+      "generation_timestamp": "2026-05-03T12:40:21.334027"
+    },
+    "created_at": "2026-05-03T04:40:21.327457+00:00",
+    "exported_at": "2026-05-03T12:40:21.334027"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "beginner",
+    "subtopic": "Structuring Code for Readability",
+    "game_data": {
+      "normal": {
+        "question_text": "Count words in a sentence",
+        "function_name": "count_words",
+        "sample_input": "(\"Hello world\",)",
+        "sample_output": "2",
+        "hidden_tests": [
+          {
+            "input": "(\"Python is fun\",)",
+            "expected_output": "3"
+          },
+          {
+            "input": "(\"\",)",
+            "expected_output": "0"
+          }
+        ],
+        "clean_solution": "def count_words(sentence):\n    return len(sentence.split())",
+        "explanation": "This function counts words by splitting the sentence. A common mistake is using the wrong variable name. Remember to use the parameter name consistently throughout the function."
+      },
+      "buggy": {
+        "buggy_question_text": "Function returns wrong word count for a sentence",
+        "code_shown_to_student": "def count_words(sentence):\n    return len(text.split())",
+        "code_with_bug_fixed": "def count_words(sentence):\n    return len(sentence.split())",
+        "buggy_explanation": "The bug was using 'text' instead of 'sentence' inside the function. This causes a NameError. Always use the parameter name you defined in the function signature."
+      },
+      "generation_timestamp": "2026-05-03T12:48:12.692199"
+    },
+    "created_at": "2026-05-03T04:48:12.634427+00:00",
+    "exported_at": "2026-05-03T12:48:12.692199"
+  }
+]

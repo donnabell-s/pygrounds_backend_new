@@ -48,10 +48,15 @@ class TOCEntryAdmin(admin.ModelAdmin):
     
 @admin.register(DocumentChunk)
 class DocumentChunkAdmin(admin.ModelAdmin, DeleteAllMixin):
-    list_display = ['chunk_type', 'text', 'token_count']
-    search_fields = ['text']
+    list_display = ['chunk_type', 'text', 'token_count', 'document', 'get_difficulty']
+    search_fields = ['id', 'text', 'document__title']
     readonly_fields = ['document_id']
     actions = ['delete_all_records']
+
+    def get_difficulty(self, obj):
+        return obj.document.difficulty
+    get_difficulty.short_description = 'Difficulty'
+    get_difficulty.admin_order_field = 'document__difficulty'
 
     fieldsets = (
         ('Content', {

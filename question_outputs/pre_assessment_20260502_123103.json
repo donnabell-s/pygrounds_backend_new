@@ -1,0 +1,3220 @@
+[
+  {
+    "id": 31,
+    "question_text": "You want to display 'Hello, World!' on the screen. Which function should you use?",
+    "answer_options": [
+      "print()",
+      "input()",
+      "type()",
+      "len()"
+    ],
+    "correct_answer": "print()",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      1,
+      3
+    ],
+    "subtopic_ids": [
+      7,
+      17
+    ],
+    "order": 1,
+    "created_at": null
+  },
+  {
+    "id": 32,
+    "question_text": "You have a variable named `age` that stores a person's age as a string. To perform arithmetic, you need to convert it to an integer. What function should you use?",
+    "answer_options": [
+      "str()",
+      "int()",
+      "float()",
+      "bool()"
+    ],
+    "correct_answer": "int()",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      2,
+      3
+    ],
+    "subtopic_ids": [
+      13,
+      19
+    ],
+    "order": 2,
+    "created_at": null
+  },
+  {
+    "id": 33,
+    "question_text": "You are writing a script and want to add a note that the code ignores. Which symbol starts a single-line comment?",
+    "answer_options": [
+      "//",
+      "#",
+      "/*",
+      "--"
+    ],
+    "correct_answer": "#",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      5
+    ],
+    "subtopic_ids": [
+      30,
+      33
+    ],
+    "order": 3,
+    "created_at": null
+  },
+  {
+    "id": 34,
+    "question_text": "You have a number stored in `x = 10` and `y = 3`. Which operator gives you the remainder of 10 divided by 3?",
+    "answer_options": [
+      "/",
+      "//",
+      "%",
+      "**"
+    ],
+    "correct_answer": "%",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      4,
+      2
+    ],
+    "subtopic_ids": [
+      23,
+      9
+    ],
+    "order": 4,
+    "created_at": null
+  },
+  {
+    "id": 35,
+    "question_text": "You want to check if a variable `temperature` is greater than 30 and less than 50. Which logical operator should you use?",
+    "answer_options": [
+      "and",
+      "or",
+      "not",
+      "is"
+    ],
+    "correct_answer": "and",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      4,
+      6
+    ],
+    "subtopic_ids": [
+      25,
+      40
+    ],
+    "order": 5,
+    "created_at": null
+  },
+  {
+    "id": 36,
+    "question_text": "You need to get a user's name and store it in a variable. Which function reads keyboard input?",
+    "answer_options": [
+      "print()",
+      "input()",
+      "read()",
+      "scan()"
+    ],
+    "correct_answer": "input()",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      3,
+      2
+    ],
+    "subtopic_ids": [
+      16,
+      9
+    ],
+    "order": 6,
+    "created_at": null
+  },
+  {
+    "id": 37,
+    "question_text": "You want to convert the string '123' to an integer. Which code is correct?",
+    "answer_options": [
+      "int('123')",
+      "str(123)",
+      "float('123')",
+      "bool('123')"
+    ],
+    "correct_answer": "int('123')",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      2,
+      3
+    ],
+    "subtopic_ids": [
+      13,
+      19
+    ],
+    "order": 7,
+    "created_at": null
+  },
+  {
+    "id": 38,
+    "question_text": "You have a variable `score = 75` and want to print 'Pass' if score is >= 50, otherwise 'Fail'. Which code does this?",
+    "answer_options": [
+      "if score >= 50: print('Pass') else: print('Fail')",
+      "if score >= 50: print('Pass') else print('Fail')",
+      "if score >= 50: print('Pass') else: print('Fail')",
+      "if score >= 50 print('Pass') else: print('Fail')"
+    ],
+    "correct_answer": "if score >= 50: print('Pass') else: print('Fail')",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      6,
+      4
+    ],
+    "subtopic_ids": [
+      38,
+      24
+    ],
+    "order": 8,
+    "created_at": null
+  },
+  {
+    "id": 39,
+    "question_text": "You are building a login system. If the user enters the correct password, print 'Access granted'; otherwise print 'Access denied'. Which structure is best?",
+    "answer_options": [
+      "if-else",
+      "for loop",
+      "try-except",
+      "while loop"
+    ],
+    "correct_answer": "if-else",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      6
+    ],
+    "subtopic_ids": [
+      37,
+      42
+    ],
+    "order": 9,
+    "created_at": null
+  },
+  {
+    "id": 40,
+    "question_text": "You have a list of numbers and want to check if a specific number exists in the list. Which operator is best?",
+    "answer_options": [
+      "in",
+      "is",
+      "==",
+      "and"
+    ],
+    "correct_answer": "in",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      4,
+      11
+    ],
+    "subtopic_ids": [
+      28,
+      72
+    ],
+    "order": 10,
+    "created_at": null
+  },
+  {
+    "id": 41,
+    "question_text": "You have a dictionary `ages` with names as keys and ages as values. You want to print all names where age is > 18. What should you do?",
+    "answer_options": [
+      "Loop through the dictionary and use an if statement to check each value",
+      "Use print() on the dictionary directly",
+      "Sort the dictionary by age first",
+      "Convert the dictionary to a list"
+    ],
+    "correct_answer": "Loop through the dictionary and use an if statement to check each value",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      14,
+      6
+    ],
+    "subtopic_ids": [
+      95,
+      37
+    ],
+    "order": 11,
+    "created_at": null
+  },
+  {
+    "id": 42,
+    "question_text": "You want to assign the value 10 to variable `x` only if `y` is greater than 5; otherwise assign 0. Which one-liner is correct?",
+    "answer_options": [
+      "x = 10 if y > 5 else 0",
+      "if y > 5: x = 10 else: x = 0",
+      "x = if y > 5 then 10 else 0",
+      "x = (y > 5) ? 10 : 0"
+    ],
+    "correct_answer": "x = 10 if y > 5 else 0",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      6,
+      4
+    ],
+    "subtopic_ids": [
+      41,
+      26
+    ],
+    "order": 12,
+    "created_at": null
+  },
+  {
+    "id": 43,
+    "question_text": "You try to convert a non-numeric string like 'abc' to an integer. Which error occurs?",
+    "answer_options": [
+      "ValueError",
+      "TypeError",
+      "IndexError",
+      "KeyError"
+    ],
+    "correct_answer": "ValueError",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      7,
+      2
+    ],
+    "subtopic_ids": [
+      44,
+      13
+    ],
+    "order": 13,
+    "created_at": null
+  },
+  {
+    "id": 44,
+    "question_text": "You want to run a block of code regardless of whether an exception occurred or not. Which clause should you use?",
+    "answer_options": [
+      "finally",
+      "else",
+      "except",
+      "try"
+    ],
+    "correct_answer": "finally",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      7
+    ],
+    "subtopic_ids": [
+      47,
+      45
+    ],
+    "order": 14,
+    "created_at": null
+  },
+  {
+    "id": 45,
+    "question_text": "You want to print numbers 0 through 4. Which loop correctly uses range()?",
+    "answer_options": [
+      "for i in range(5): print(i)",
+      "for i in range(1,5): print(i)",
+      "for i in range(0,5,2): print(i)",
+      "for i in range(5,0,-1): print(i)"
+    ],
+    "correct_answer": "for i in range(5): print(i)",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      8
+    ],
+    "subtopic_ids": [
+      51,
+      52
+    ],
+    "order": 15,
+    "created_at": null
+  },
+  {
+    "id": 46,
+    "question_text": "You have a list `numbers = [1, 2, 3]` and want to create a new list with each number doubled. Which list comprehension is correct?",
+    "answer_options": [
+      "[x*2 for x in numbers]",
+      "for x in numbers: x*2",
+      "numbers * 2",
+      "map(x*2, numbers)"
+    ],
+    "correct_answer": "[x*2 for x in numbers]",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      11,
+      8
+    ],
+    "subtopic_ids": [
+      74,
+      51
+    ],
+    "order": 16,
+    "created_at": null
+  },
+  {
+    "id": 47,
+    "question_text": "You want to loop through a string 'Python' and print each character. Which loop accomplishes this?",
+    "answer_options": [
+      "for char in 'Python': print(char)",
+      "for i in range(0, len('Python')): print('Python'[i])",
+      "while char in 'Python': print(char)",
+      "for i in 'Python' length: print(i)"
+    ],
+    "correct_answer": "for char in 'Python': print(char)",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      8,
+      10
+    ],
+    "subtopic_ids": [
+      52,
+      65
+    ],
+    "order": 17,
+    "created_at": null
+  },
+  {
+    "id": 48,
+    "question_text": "You have two lists `names` and `scores` and want to loop through both simultaneously. Which function pairs them?",
+    "answer_options": [
+      "zip()",
+      "enumerate()",
+      "range()",
+      "map()"
+    ],
+    "correct_answer": "zip()",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      8,
+      11
+    ],
+    "subtopic_ids": [
+      55,
+      77
+    ],
+    "order": 18,
+    "created_at": null
+  },
+  {
+    "id": 49,
+    "question_text": "You want to create a dictionary that counts the frequency of each character in a string `s = 'hello'`. Which loop correctly builds it?",
+    "answer_options": [
+      "freq = {}; for char in s: freq[char] = freq.get(char, 0) + 1",
+      "freq = {}; for char in s: freq[char] = 1",
+      "freq = {}; for i in range(len(s)): freq[s[i]] = i",
+      "freq = {}; for char in s: freq.add(char)"
+    ],
+    "correct_answer": "freq = {}; for char in s: freq[char] = freq.get(char, 0) + 1",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      14,
+      8
+    ],
+    "subtopic_ids": [
+      98,
+      52
+    ],
+    "order": 19,
+    "created_at": null
+  },
+  {
+    "id": 50,
+    "question_text": "You have a list of numbers and want to find all duplicates. Which data structure is most efficient for checking membership?",
+    "answer_options": [
+      "set",
+      "list",
+      "tuple",
+      "dictionary"
+    ],
+    "correct_answer": "set",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      12
+    ],
+    "subtopic_ids": [
+      84,
+      82
+    ],
+    "order": 20,
+    "created_at": null
+  },
+  {
+    "id": 51,
+    "question_text": "You want to print a 3x3 grid of numbers using nested loops. Which code correctly prints rows and columns?",
+    "answer_options": [
+      "for i in range(3): for j in range(3): print(i, j)",
+      "for i in range(3): print(i) for j in range(3): print(j)",
+      "for i in range(3): for j in range(3): print(i)",
+      "for i in range(3): for j in range(3): print(j)"
+    ],
+    "correct_answer": "for i in range(3): for j in range(3): print(i, j)",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      9
+    ],
+    "subtopic_ids": [
+      58,
+      61
+    ],
+    "order": 21,
+    "created_at": null
+  },
+  {
+    "id": 52,
+    "question_text": "You want to define a function that takes a list of numbers and returns the sum. Which definition is correct?",
+    "answer_options": [
+      "def sum_list(numbers): total = 0; for n in numbers: total += n; return total",
+      "def sum_list(numbers): return numbers.sum()",
+      "def sum_list(numbers): sum = 0; for n in numbers: sum = n; return sum",
+      "def sum_list(numbers): for n in numbers: total += n; return total"
+    ],
+    "correct_answer": "def sum_list(numbers): total = 0; for n in numbers: total += n; return total",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      13,
+      11
+    ],
+    "subtopic_ids": [
+      86,
+      77
+    ],
+    "order": 22,
+    "created_at": null
+  },
+  {
+    "id": 53,
+    "question_text": "You have a function that divides two numbers and want to handle division by zero gracefully. Which approach is best?",
+    "answer_options": [
+      "Use try-except to catch ZeroDivisionError",
+      "Check if divisor is zero with if-else",
+      "Use assert statement",
+      "Let the program crash"
+    ],
+    "correct_answer": "Use try-except to catch ZeroDivisionError",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      7,
+      13
+    ],
+    "subtopic_ids": [
+      45,
+      87
+    ],
+    "order": 23,
+    "created_at": null
+  },
+  {
+    "id": 54,
+    "question_text": "You want to create a function that returns the square of a number using a one-line expression. Which construct is appropriate?",
+    "answer_options": [
+      "lambda x: x**2",
+      "def square(x): return x**2",
+      "square = x**2",
+      "lambda: x**2"
+    ],
+    "correct_answer": "lambda x: x**2",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      13,
+      4
+    ],
+    "subtopic_ids": [
+      91,
+      23
+    ],
+    "order": 24,
+    "created_at": null
+  },
+  {
+    "id": 55,
+    "question_text": "You have a dictionary of product prices and want to increase each price by 10%. Which dictionary comprehension is correct?",
+    "answer_options": [
+      "{key: value*1.1 for key, value in prices.items()}",
+      "{key: value+10 for key, value in prices.items()}",
+      "{key: value+0.1 for key, value in prices.items()}",
+      "{value*1.1 for key, value in prices.items()}"
+    ],
+    "correct_answer": "{key: value*1.1 for key, value in prices.items()}",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      14
+    ],
+    "subtopic_ids": [
+      99,
+      95
+    ],
+    "order": 25,
+    "created_at": null
+  },
+  {
+    "id": 56,
+    "question_text": "You want to create a tuple with one element. Which syntax is correct?",
+    "answer_options": [
+      "(5,)",
+      "(5)",
+      "tuple(5)",
+      "[5]"
+    ],
+    "correct_answer": "(5,)",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      11
+    ],
+    "subtopic_ids": [
+      75,
+      76
+    ],
+    "order": 26,
+    "created_at": null
+  },
+  {
+    "id": 57,
+    "question_text": "You have a set `A = {1, 2, 3}` and `B = {2, 3, 4}`. Which operation gives the elements present in both sets?",
+    "answer_options": [
+      "A.intersection(B)",
+      "A.union(B)",
+      "A.difference(B)",
+      "A.symmetric_difference(B)"
+    ],
+    "correct_answer": "A.intersection(B)",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      12
+    ],
+    "subtopic_ids": [
+      80,
+      79
+    ],
+    "order": 27,
+    "created_at": null
+  },
+  {
+    "id": 58,
+    "question_text": "You are building a graph for shortest path and need to represent connections efficiently. Which data structure is commonly used for Dijkstra’s algorithm?",
+    "answer_options": [
+      "Adjacency List",
+      "Adjacency Matrix",
+      "Set of edges",
+      "Dictionary of lists"
+    ],
+    "correct_answer": "Adjacency List",
+    "estimated_difficulty": "advanced",
+    "topic_ids": [
+      15
+    ],
+    "subtopic_ids": [
+      100,
+      101
+    ],
+    "order": 28,
+    "created_at": null
+  },
+  {
+    "id": 59,
+    "question_text": "You want to create a function that accepts any number of keyword arguments and prints them. Which parameter syntax allows this?",
+    "answer_options": [
+      "def func(**kwargs): print(kwargs)",
+      "def func(*args): print(args)",
+      "def func(kwargs): print(kwargs)",
+      "def func(**args): print(args)"
+    ],
+    "correct_answer": "def func(**kwargs): print(kwargs)",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      13
+    ],
+    "subtopic_ids": [
+      89,
+      87
+    ],
+    "order": 29,
+    "created_at": null
+  },
+  {
+    "id": 60,
+    "question_text": "You want to find the shortest path in a weighted graph where all edge weights are positive. Which algorithm is most appropriate?",
+    "answer_options": [
+      "Dijkstra’s Algorithm",
+      "Breadth-First Search",
+      "Depth-First Search",
+      "Bellman-Ford Algorithm"
+    ],
+    "correct_answer": "Dijkstra’s Algorithm",
+    "estimated_difficulty": "master",
+    "topic_ids": [
+      15
+    ],
+    "subtopic_ids": [
+      101,
+      100
+    ],
+    "order": 30,
+    "created_at": null
+  },
+  {
+    "id": 61,
+    "question_text": "You are writing your first Python script and want to display a greeting message. Which function should you use?",
+    "answer_options": [
+      "print()",
+      "input()",
+      "type()",
+      "len()"
+    ],
+    "correct_answer": "print()",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      1,
+      3
+    ],
+    "subtopic_ids": [
+      7,
+      17
+    ],
+    "order": 1,
+    "created_at": null
+  },
+  {
+    "id": 62,
+    "question_text": "You have a variable `temperature` and want to check if it is above 30 degrees. Which code correctly uses a conditional statement?",
+    "answer_options": [
+      "if temperature > 30:",
+      "if temperature => 30:",
+      "if temperature >= 30:",
+      "if temperature = 30:"
+    ],
+    "correct_answer": "if temperature > 30:",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      6,
+      4
+    ],
+    "subtopic_ids": [
+      37,
+      24
+    ],
+    "order": 2,
+    "created_at": null
+  },
+  {
+    "id": 63,
+    "question_text": "You are building a program that asks the user for their age and stores it. Which code correctly converts the input to an integer?",
+    "answer_options": [
+      "age = int(input(\"Enter age: \"))",
+      "age = input(\"Enter age: \")",
+      "age = str(input(\"Enter age: \"))",
+      "age = float(input(\"Enter age: \"))"
+    ],
+    "correct_answer": "age = int(input(\"Enter age: \"))",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      3,
+      2
+    ],
+    "subtopic_ids": [
+      16,
+      13
+    ],
+    "order": 3,
+    "created_at": null
+  },
+  {
+    "id": 64,
+    "question_text": "You have a list of numbers and want to print each number. Which loop structure should you use?",
+    "answer_options": [
+      "for loop with range()",
+      "while loop with a counter",
+      "for loop iterating directly over the list",
+      "if-else statement"
+    ],
+    "correct_answer": "for loop iterating directly over the list",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      8
+    ],
+    "subtopic_ids": [
+      52,
+      51
+    ],
+    "order": 4,
+    "created_at": null
+  },
+  {
+    "id": 65,
+    "question_text": "You have a dictionary storing product prices. You want to add 10% tax to each price and store the result. Which approach is most efficient?",
+    "answer_options": [
+      "Loop through the dictionary items and update each value",
+      "Convert the dictionary to a list and modify",
+      "Create a new dictionary with a dictionary comprehension",
+      "Use a while loop to access keys"
+    ],
+    "correct_answer": "Create a new dictionary with a dictionary comprehension",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      14,
+      8
+    ],
+    "subtopic_ids": [
+      99,
+      51
+    ],
+    "order": 5,
+    "created_at": null
+  },
+  {
+    "id": 66,
+    "question_text": "You want to write a function that divides two numbers but returns an error message if the denominator is zero. Which approach combines error handling and functions?",
+    "answer_options": [
+      "Use a try-except block inside the function to catch ZeroDivisionError",
+      "Use an if statement to check if denominator is zero",
+      "Let the program crash and handle later",
+      "Use a while loop to prompt for valid input"
+    ],
+    "correct_answer": "Use a try-except block inside the function to catch ZeroDivisionError",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      7,
+      13
+    ],
+    "subtopic_ids": [
+      45,
+      86
+    ],
+    "order": 6,
+    "created_at": null
+  },
+  {
+    "id": 67,
+    "question_text": "You have a string 'hello world' and you want to replace 'world' with 'Python'. Which string method should you use?",
+    "answer_options": [
+      ".replace()",
+      ".find()",
+      ".split()",
+      ".join()"
+    ],
+    "correct_answer": ".replace()",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      10
+    ],
+    "subtopic_ids": [
+      68
+    ],
+    "order": 7,
+    "created_at": null
+  },
+  {
+    "id": 68,
+    "question_text": "You have a list of names and want to remove duplicates efficiently. Which data structure should you use?",
+    "answer_options": [
+      "Set",
+      "List",
+      "Tuple",
+      "Dictionary"
+    ],
+    "correct_answer": "Set",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      12
+    ],
+    "subtopic_ids": [
+      79,
+      82
+    ],
+    "order": 8,
+    "created_at": null
+  },
+  {
+    "id": 69,
+    "question_text": "You are debugging a program that crashes when the user enters a non-numeric value. Which exception should you catch?",
+    "answer_options": [
+      "ValueError",
+      "TypeError",
+      "KeyError",
+      "IndexError"
+    ],
+    "correct_answer": "ValueError",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      7
+    ],
+    "subtopic_ids": [
+      46,
+      44
+    ],
+    "order": 9,
+    "created_at": null
+  },
+  {
+    "id": 70,
+    "question_text": "You want to create a list of squares for numbers 0 to 9 using a single line of code. Which approach should you use?",
+    "answer_options": [
+      "List comprehension",
+      "for loop with append()",
+      "map() function",
+      "while loop"
+    ],
+    "correct_answer": "List comprehension",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      11,
+      8
+    ],
+    "subtopic_ids": [
+      74,
+      51
+    ],
+    "order": 10,
+    "created_at": null
+  },
+  {
+    "id": 71,
+    "question_text": "You have a nested list representing a matrix and want to traverse each element. Which loop structure is appropriate?",
+    "answer_options": [
+      "Nested for loops",
+      "Single for loop with indexing",
+      "while loop inside a for loop",
+      "List comprehension"
+    ],
+    "correct_answer": "Nested for loops",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      9
+    ],
+    "subtopic_ids": [
+      61
+    ],
+    "order": 11,
+    "created_at": null
+  },
+  {
+    "id": 72,
+    "question_text": "You have a dictionary with student names as keys and scores as values. You want to print names of students who scored above 80. What should you do?",
+    "answer_options": [
+      "Iterate through the dictionary and use a conditional to check each score",
+      "Use a list comprehension to filter",
+      "Sort the dictionary and print last few",
+      "Convert dictionary to two lists and loop"
+    ],
+    "correct_answer": "Iterate through the dictionary and use a conditional to check each score",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      14,
+      6
+    ],
+    "subtopic_ids": [
+      95,
+      38
+    ],
+    "order": 12,
+    "created_at": null
+  },
+  {
+    "id": 73,
+    "question_text": "You want to define a function that returns the length of a string without using len(). Which approach is correct?",
+    "answer_options": [
+      "Use a for loop to count characters",
+      "Use a while loop with index",
+      "Convert string to list and count",
+      "Use recursion"
+    ],
+    "correct_answer": "Use a for loop to count characters",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      13,
+      8
+    ],
+    "subtopic_ids": [
+      87,
+      52
+    ],
+    "order": 13,
+    "created_at": null
+  },
+  {
+    "id": 74,
+    "question_text": "You are writing a program that repeats until the user types 'quit'. Which loop is most suitable?",
+    "answer_options": [
+      "while loop with a condition",
+      "for loop with range()",
+      "for loop over a list",
+      "nested for loop"
+    ],
+    "correct_answer": "while loop with a condition",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      8,
+      3
+    ],
+    "subtopic_ids": [
+      53,
+      16
+    ],
+    "order": 14,
+    "created_at": null
+  },
+  {
+    "id": 75,
+    "question_text": "You have a tuple of coordinates (x, y) and want to assign x and y to separate variables. Which technique should you use?",
+    "answer_options": [
+      "Tuple unpacking",
+      "Indexing",
+      "Looping",
+      "Slicing"
+    ],
+    "correct_answer": "Tuple unpacking",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      11
+    ],
+    "subtopic_ids": [
+      76,
+      75
+    ],
+    "order": 15,
+    "created_at": null
+  },
+  {
+    "id": 76,
+    "question_text": "You want to check if a number is both positive and even. Which logical operator should you use?",
+    "answer_options": [
+      "and",
+      "or",
+      "not",
+      "xor"
+    ],
+    "correct_answer": "and",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      4,
+      6
+    ],
+    "subtopic_ids": [
+      25,
+      40
+    ],
+    "order": 16,
+    "created_at": null
+  },
+  {
+    "id": 77,
+    "question_text": "You have a list of numbers and you want to skip the number 5 using a loop. Which statement should you use?",
+    "answer_options": [
+      "continue",
+      "break",
+      "pass",
+      "return"
+    ],
+    "correct_answer": "continue",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      8
+    ],
+    "subtopic_ids": [
+      54,
+      52
+    ],
+    "order": 17,
+    "created_at": null
+  },
+  {
+    "id": 78,
+    "question_text": "You are building a calculator that performs division. You want to ensure the user enters a valid number. Which combination of error handling and input is best?",
+    "answer_options": [
+      "Use try-except to catch ValueError and prompt again",
+      "Use if statement to check if input is numeric",
+      "Use while loop with break",
+      "Use assert statement"
+    ],
+    "correct_answer": "Use try-except to catch ValueError and prompt again",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      7,
+      3
+    ],
+    "subtopic_ids": [
+      45,
+      19
+    ],
+    "order": 18,
+    "created_at": null
+  },
+  {
+    "id": 79,
+    "question_text": "You have a set of numbers and want to find numbers that are in both set A and set B. Which set operation should you use?",
+    "answer_options": [
+      "intersection",
+      "union",
+      "difference",
+      "symmetric_difference"
+    ],
+    "correct_answer": "intersection",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      12,
+      4
+    ],
+    "subtopic_ids": [
+      80,
+      28
+    ],
+    "order": 19,
+    "created_at": null
+  },
+  {
+    "id": 80,
+    "question_text": "You want to write a function that counts how many times each word appears in a string. Which combination of data structures is most efficient?",
+    "answer_options": [
+      "Dictionary with words as keys and counts as values",
+      "List of tuples",
+      "Set with words",
+      "Two lists for words and counts"
+    ],
+    "correct_answer": "Dictionary with words as keys and counts as values",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      14,
+      10
+    ],
+    "subtopic_ids": [
+      98,
+      69
+    ],
+    "order": 20,
+    "created_at": null
+  },
+  {
+    "id": 81,
+    "question_text": "You are writing a program that prints a pattern like a triangle using asterisks. Which loop structure is most appropriate?",
+    "answer_options": [
+      "Nested for loops",
+      "Single for loop with string multiplication",
+      "while loop",
+      "List comprehension"
+    ],
+    "correct_answer": "Nested for loops",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      9,
+      8
+    ],
+    "subtopic_ids": [
+      60,
+      51
+    ],
+    "order": 21,
+    "created_at": null
+  },
+  {
+    "id": 82,
+    "question_text": "You have a variable `x` and want to add 5 to it. Which assignment operator should you use?",
+    "answer_options": [
+      "x += 5",
+      "x =+ 5",
+      "x = x + 5",
+      "Both A and C are valid"
+    ],
+    "correct_answer": "Both A and C are valid",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      4,
+      2
+    ],
+    "subtopic_ids": [
+      26,
+      9
+    ],
+    "order": 22,
+    "created_at": null
+  },
+  {
+    "id": 83,
+    "question_text": "You want to ensure a variable `PI` remains constant throughout your program. Which concept is relevant?",
+    "answer_options": [
+      "Constants and Immutability Concepts",
+      "Variable Scope and global/nonlocal",
+      "Type Checking with type() and isinstance()",
+      "Naming Conventions (PEP8 Guidelines)"
+    ],
+    "correct_answer": "Constants and Immutability Concepts",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      2,
+      5
+    ],
+    "subtopic_ids": [
+      15,
+      33
+    ],
+    "order": 23,
+    "created_at": null
+  },
+  {
+    "id": 84,
+    "question_text": "You are writing a function that takes a list of numbers and returns a new list with only even numbers. Which combination of function and list operations is best?",
+    "answer_options": [
+      "Use a list comprehension with a condition inside the function",
+      "Use a for loop and append inside the function",
+      "Use filter() with a lambda",
+      "All of the above are valid"
+    ],
+    "correct_answer": "All of the above are valid",
+    "estimated_difficulty": "advanced",
+    "topic_ids": [
+      13,
+      11
+    ],
+    "subtopic_ids": [
+      91,
+      74
+    ],
+    "order": 24,
+    "created_at": null
+  },
+  {
+    "id": 85,
+    "question_text": "You have a string with special characters like newline and tab. You want to print them as literal characters. Which string technique should you use?",
+    "answer_options": [
+      "Raw strings",
+      "Escape sequences",
+      "String formatting",
+      "Triple quotes"
+    ],
+    "correct_answer": "Raw strings",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      10,
+      3
+    ],
+    "subtopic_ids": [
+      71,
+      20
+    ],
+    "order": 25,
+    "created_at": null
+  },
+  {
+    "id": 86,
+    "question_text": "You are building a function that returns the sum of all numbers in a list. However, the list might contain non-numeric values. Which approach ensures robustness?",
+    "answer_options": [
+      "Use try-except inside a loop to catch TypeError",
+      "Use an if statement to check type of each element",
+      "Use isinstance() to filter",
+      "Use a list comprehension with a condition"
+    ],
+    "correct_answer": "Use try-except inside a loop to catch TypeError",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      7,
+      11
+    ],
+    "subtopic_ids": [
+      46,
+      77
+    ],
+    "order": 26,
+    "created_at": null
+  },
+  {
+    "id": 87,
+    "question_text": "You have two lists of equal length and want to loop through both simultaneously. Which function should you use?",
+    "answer_options": [
+      "zip()",
+      "enumerate()",
+      "range()",
+      "map()"
+    ],
+    "correct_answer": "zip()",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      8
+    ],
+    "subtopic_ids": [
+      55,
+      52
+    ],
+    "order": 27,
+    "created_at": null
+  },
+  {
+    "id": 88,
+    "question_text": "You want to write a function that takes any number of arguments and returns their average. Which parameter syntax should you use?",
+    "answer_options": [
+      "*args",
+      "**kwargs",
+      "default arguments",
+      "keyword arguments"
+    ],
+    "correct_answer": "*args",
+    "estimated_difficulty": "advanced",
+    "topic_ids": [
+      13
+    ],
+    "subtopic_ids": [
+      89,
+      87
+    ],
+    "order": 28,
+    "created_at": null
+  },
+  {
+    "id": 89,
+    "question_text": "You have a nested dictionary representing a company's employees. You want to print all employee names from departments with more than 10 employees. Which combination of loops and conditionals is most efficient?",
+    "answer_options": [
+      "Nested loops with a conditional on department size",
+      "Single loop with dictionary comprehension",
+      "Use filter() with a lambda",
+      "Use recursion"
+    ],
+    "correct_answer": "Nested loops with a conditional on department size",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      14,
+      6
+    ],
+    "subtopic_ids": [
+      97,
+      39
+    ],
+    "order": 29,
+    "created_at": null
+  },
+  {
+    "id": 90,
+    "question_text": "You want to write a function that validates if a given string is a valid email (contains '@' and '.'). Which combination of string methods and conditionals is best?",
+    "answer_options": [
+      "Use 'in' operator to check for '@' and '.'",
+      "Use a regular expression",
+      "Use .find() method",
+      "All of the above are valid"
+    ],
+    "correct_answer": "All of the above are valid",
+    "estimated_difficulty": "advanced",
+    "topic_ids": [
+      10,
+      4
+    ],
+    "subtopic_ids": [
+      70,
+      28
+    ],
+    "order": 30,
+    "created_at": null
+  },
+  {
+    "id": 91,
+    "question_text": "You want to print your first Python program that says 'Hello, World!'. What is the correct code?",
+    "answer_options": [
+      "print('Hello, World!')",
+      "echo('Hello, World!')",
+      "printf('Hello, World!')",
+      "write('Hello, World!')"
+    ],
+    "correct_answer": "print('Hello, World!')",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      1
+    ],
+    "subtopic_ids": [
+      7,
+      3
+    ],
+    "order": 1,
+    "created_at": null
+  },
+  {
+    "id": 92,
+    "question_text": "You have a variable `name = 'Alice'` and you want to output 'Hello, Alice!'. Which f-string is correct?",
+    "answer_options": [
+      "f'Hello, {name}!'",
+      "'Hello, name!'",
+      "f'Hello, name!'",
+      "'Hello, {name}'"
+    ],
+    "correct_answer": "f'Hello, {name}!'",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      2,
+      3
+    ],
+    "subtopic_ids": [
+      11,
+      18
+    ],
+    "order": 2,
+    "created_at": null
+  },
+  {
+    "id": 93,
+    "question_text": "You are writing code to check if a user's age is at least 18. Which comparison operator should you use?",
+    "answer_options": [
+      ">=",
+      ">",
+      "==",
+      "<="
+    ],
+    "correct_answer": ">=",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      4,
+      6
+    ],
+    "subtopic_ids": [
+      24,
+      42
+    ],
+    "order": 3,
+    "created_at": null
+  },
+  {
+    "id": 94,
+    "question_text": "You want to document what a function does in your code. Which is the best practice?",
+    "answer_options": [
+      "Write a docstring inside the function",
+      "Add a comment above the function",
+      "Name the function descriptively",
+      "All of the above"
+    ],
+    "correct_answer": "All of the above",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      5
+    ],
+    "subtopic_ids": [
+      31,
+      36
+    ],
+    "order": 4,
+    "created_at": null
+  },
+  {
+    "id": 95,
+    "question_text": "You have `x = 10` and `y = '5'`. You want to add them. What should you do first?",
+    "answer_options": [
+      "Convert y to an integer using int()",
+      "Convert x to a string using str()",
+      "Use the + operator directly",
+      "Use the add() function"
+    ],
+    "correct_answer": "Convert y to an integer using int()",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      2,
+      4
+    ],
+    "subtopic_ids": [
+      13,
+      23
+    ],
+    "order": 5,
+    "created_at": null
+  },
+  {
+    "id": 96,
+    "question_text": "You are writing a program that asks for a user's name. Which function should you use?",
+    "answer_options": [
+      "input()",
+      "print()",
+      "read()",
+      "scan()"
+    ],
+    "correct_answer": "input()",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      3
+    ],
+    "subtopic_ids": [
+      16,
+      17
+    ],
+    "order": 6,
+    "created_at": null
+  },
+  {
+    "id": 97,
+    "question_text": "You have a variable `count = 0` and want to add 5 to it. Which assignment operator is correct?",
+    "answer_options": [
+      "count += 5",
+      "count =+ 5",
+      "count + 5",
+      "count = count + 5"
+    ],
+    "correct_answer": "count += 5",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      4,
+      2
+    ],
+    "subtopic_ids": [
+      26,
+      9
+    ],
+    "order": 7,
+    "created_at": null
+  },
+  {
+    "id": 98,
+    "question_text": "You want to print 'Access granted' if a variable `is_admin` is True, otherwise 'Access denied'. Which code is correct?",
+    "answer_options": [
+      "print('Access granted') if is_admin else print('Access denied')",
+      "if is_admin: print('Access granted') else: print('Access denied')",
+      "Both A and B are valid",
+      "None of the above"
+    ],
+    "correct_answer": "Both A and B are valid",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      6
+    ],
+    "subtopic_ids": [
+      41,
+      38
+    ],
+    "order": 8,
+    "created_at": null
+  },
+  {
+    "id": 99,
+    "question_text": "You have a list of numbers `[1, 2, 3, 4, 5]` and want to print only the even ones. What should you do?",
+    "answer_options": [
+      "Loop through the list and use an if statement to check each number",
+      "Use print() on the list directly",
+      "Sort the list first",
+      "Convert the list to a set"
+    ],
+    "correct_answer": "Loop through the list and use an if statement to check each number",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      8,
+      6
+    ],
+    "subtopic_ids": [
+      52,
+      40
+    ],
+    "order": 9,
+    "created_at": null
+  },
+  {
+    "id": 100,
+    "question_text": "You are building a login system. You read a password as a string and want to check if it matches a stored hash. What should you do?",
+    "answer_options": [
+      "Use an if statement to compare the input to the hash",
+      "Use a loop to compare characters",
+      "Use print() to display the hash",
+      "Convert the input to an integer"
+    ],
+    "correct_answer": "Use an if statement to compare the input to the hash",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      6,
+      3
+    ],
+    "subtopic_ids": [
+      42,
+      19
+    ],
+    "order": 10,
+    "created_at": null
+  },
+  {
+    "id": 101,
+    "question_text": "You have a dictionary `scores = {'Alice': 85, 'Bob': 72}` and want to check if 'Alice' has a score above 80. What should you do?",
+    "answer_options": [
+      "Use an if statement with scores['Alice'] > 80",
+      "Loop through the dictionary keys",
+      "Use print(scores['Alice'])",
+      "Convert the dictionary to a list"
+    ],
+    "correct_answer": "Use an if statement with scores['Alice'] > 80",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      6
+    ],
+    "subtopic_ids": [
+      37
+    ],
+    "order": 11,
+    "created_at": null
+  },
+  {
+    "id": 102,
+    "question_text": "You have a list of usernames and want to check if 'admin' is in the list. Which operator should you use?",
+    "answer_options": [
+      "in",
+      "not in",
+      "is",
+      "=="
+    ],
+    "correct_answer": "in",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      4,
+      11
+    ],
+    "subtopic_ids": [
+      28,
+      73
+    ],
+    "order": 12,
+    "created_at": null
+  },
+  {
+    "id": 103,
+    "question_text": "You are writing a function that divides two numbers. You want to handle division by zero. What should you use?",
+    "answer_options": [
+      "A try-except block",
+      "An if statement",
+      "A loop",
+      "The assert statement"
+    ],
+    "correct_answer": "A try-except block",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      7
+    ],
+    "subtopic_ids": [
+      45,
+      50
+    ],
+    "order": 13,
+    "created_at": null
+  },
+  {
+    "id": 104,
+    "question_text": "You have a dictionary of items and their prices. You want to add a 10% discount to all items priced over $100. What code structure should you use?",
+    "answer_options": [
+      "Loop through the dictionary and use an if statement to check each price",
+      "Use a conditional expression on the dictionary",
+      "Use a list comprehension",
+      "Use the map() function"
+    ],
+    "correct_answer": "Loop through the dictionary and use an if statement to check each price",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      14
+    ],
+    "subtopic_ids": [
+      95,
+      98
+    ],
+    "order": 14,
+    "created_at": null
+  },
+  {
+    "id": 105,
+    "question_text": "You have a string 'Hello World' and want to print each character on a new line. Which loop is appropriate?",
+    "answer_options": [
+      "for char in 'Hello World': print(char)",
+      "while loop with index",
+      "for i in range(len('Hello World')): print('Hello World'[i])",
+      "Both A and C"
+    ],
+    "correct_answer": "Both A and C",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      8,
+      10
+    ],
+    "subtopic_ids": [
+      52,
+      65
+    ],
+    "order": 15,
+    "created_at": null
+  },
+  {
+    "id": 106,
+    "question_text": "You want to create a multiplication table for numbers 1 to 5. Which structure should you use?",
+    "answer_options": [
+      "Nested for loops",
+      "A single for loop",
+      "A while loop",
+      "A list comprehension"
+    ],
+    "correct_answer": "Nested for loops",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      9
+    ],
+    "subtopic_ids": [
+      58,
+      60
+    ],
+    "order": 16,
+    "created_at": null
+  },
+  {
+    "id": 107,
+    "question_text": "You have a list of numbers and want to create a new list containing only numbers greater than 10. Which is the most Pythonic way?",
+    "answer_options": [
+      "Use a list comprehension with a condition",
+      "Use a for loop and an if statement",
+      "Use the filter() function",
+      "All of the above are valid"
+    ],
+    "correct_answer": "Use a list comprehension with a condition",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      11
+    ],
+    "subtopic_ids": [
+      74,
+      72
+    ],
+    "order": 17,
+    "created_at": null
+  },
+  {
+    "id": 108,
+    "question_text": "You have two lists `names = ['Alice', 'Bob']` and `scores = [85, 72]` and want to print each name with its score. Which function is useful?",
+    "answer_options": [
+      "zip()",
+      "enumerate()",
+      "range()",
+      "map()"
+    ],
+    "correct_answer": "zip()",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      8,
+      11
+    ],
+    "subtopic_ids": [
+      55,
+      77
+    ],
+    "order": 18,
+    "created_at": null
+  },
+  {
+    "id": 109,
+    "question_text": "You are building a function that takes a list of numbers and returns a new list with each number doubled. Which is correct?",
+    "answer_options": [
+      "def double_list(nums): return [x*2 for x in nums]",
+      "def double_list(nums): return nums*2",
+      "def double_list(nums): for x in nums: x*2",
+      "def double_list(nums): return map(lambda x: x*2, nums)"
+    ],
+    "correct_answer": "def double_list(nums): return [x*2 for x in nums]",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      13,
+      11
+    ],
+    "subtopic_ids": [
+      91,
+      74
+    ],
+    "order": 19,
+    "created_at": null
+  },
+  {
+    "id": 110,
+    "question_text": "You have a set of numbers and want to find all numbers that appear in another set. Which method should you use?",
+    "answer_options": [
+      "intersection()",
+      "union()",
+      "difference()",
+      "symmetric_difference()"
+    ],
+    "correct_answer": "intersection()",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      12
+    ],
+    "subtopic_ids": [
+      80,
+      79
+    ],
+    "order": 20,
+    "created_at": null
+  },
+  {
+    "id": 111,
+    "question_text": "You have a string with extra spaces: '  Hello World  '. You want to remove leading and trailing spaces. Which method should you use?",
+    "answer_options": [
+      "strip()",
+      "split()",
+      "replace()",
+      "trim()"
+    ],
+    "correct_answer": "strip()",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      10
+    ],
+    "subtopic_ids": [
+      70,
+      69
+    ],
+    "order": 21,
+    "created_at": null
+  },
+  {
+    "id": 112,
+    "question_text": "You have a list of tuples: `data = [(1, 'a'), (2, 'b')]`. You want to unpack each tuple into variables. Which loop is correct?",
+    "answer_options": [
+      "for num, letter in data:",
+      "for tuple in data: num, letter = tuple",
+      "for i in range(len(data)): num, letter = data[i]",
+      "All of the above"
+    ],
+    "correct_answer": "All of the above",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      11
+    ],
+    "subtopic_ids": [
+      76,
+      77
+    ],
+    "order": 22,
+    "created_at": null
+  },
+  {
+    "id": 113,
+    "question_text": "You are building a function that reads a file and returns its contents. If the file does not exist, you want to return an error message. What should you use?",
+    "answer_options": [
+      "A try-except block to catch FileNotFoundError",
+      "An if statement to check if the file exists",
+      "A while loop to attempt reading",
+      "The assert statement"
+    ],
+    "correct_answer": "A try-except block to catch FileNotFoundError",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      7
+    ],
+    "subtopic_ids": [
+      46,
+      50
+    ],
+    "order": 23,
+    "created_at": null
+  },
+  {
+    "id": 114,
+    "question_text": "You have a dictionary `inventory = {'apples': 10, 'bananas': 5}` and want to add 3 more apples. What is the correct code?",
+    "answer_options": [
+      "inventory['apples'] += 3",
+      "inventory.add('apples', 3)",
+      "inventory.update({'apples': 3})",
+      "inventory['apples'] = 13"
+    ],
+    "correct_answer": "inventory['apples'] += 3",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      14
+    ],
+    "subtopic_ids": [
+      94,
+      96
+    ],
+    "order": 24,
+    "created_at": null
+  },
+  {
+    "id": 115,
+    "question_text": "You want to create a function that takes a variable number of arguments and returns their sum. Which parameter syntax should you use?",
+    "answer_options": [
+      "*args",
+      "**kwargs",
+      "args",
+      "kwargs"
+    ],
+    "correct_answer": "*args",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      13
+    ],
+    "subtopic_ids": [
+      89,
+      87
+    ],
+    "order": 25,
+    "created_at": null
+  },
+  {
+    "id": 116,
+    "question_text": "You have a set of email addresses and want to add a new email. Which method should you use?",
+    "answer_options": [
+      "add()",
+      "append()",
+      "insert()",
+      "update()"
+    ],
+    "correct_answer": "add()",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      12
+    ],
+    "subtopic_ids": [
+      81,
+      79
+    ],
+    "order": 26,
+    "created_at": null
+  },
+  {
+    "id": 117,
+    "question_text": "You have a list of numbers and want to find the sum of all numbers. Which built-in function should you use?",
+    "answer_options": [
+      "sum()",
+      "total()",
+      "add()",
+      "reduce()"
+    ],
+    "correct_answer": "sum()",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      11
+    ],
+    "subtopic_ids": [
+      73,
+      77
+    ],
+    "order": 27,
+    "created_at": null
+  },
+  {
+    "id": 118,
+    "question_text": "You are writing a program that counts the frequency of words in a sentence. Which data structure is most efficient?",
+    "answer_options": [
+      "A dictionary",
+      "A list",
+      "A set",
+      "A tuple"
+    ],
+    "correct_answer": "A dictionary",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      14
+    ],
+    "subtopic_ids": [
+      98,
+      93
+    ],
+    "order": 28,
+    "created_at": null
+  },
+  {
+    "id": 119,
+    "question_text": "You have a function that modifies a global variable. Which keyword should you use inside the function?",
+    "answer_options": [
+      "global",
+      "nonlocal",
+      "local",
+      "static"
+    ],
+    "correct_answer": "global",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      13
+    ],
+    "subtopic_ids": [
+      88,
+      86
+    ],
+    "order": 29,
+    "created_at": null
+  },
+  {
+    "id": 120,
+    "question_text": "You have a dictionary and want to get a value for a key that might not exist, returning a default. Which method should you use?",
+    "answer_options": [
+      "get()",
+      "pop()",
+      "setdefault()",
+      "access with []"
+    ],
+    "correct_answer": "get()",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      14
+    ],
+    "subtopic_ids": [
+      96,
+      93
+    ],
+    "order": 30,
+    "created_at": null
+  },
+  {
+    "id": 121,
+    "question_text": "You want to display a welcome message to a user. Which Python statement would you use?",
+    "answer_options": [
+      "print('Welcome')",
+      "input('Welcome')",
+      "echo('Welcome')",
+      "write('Welcome')"
+    ],
+    "correct_answer": "print('Welcome')",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      3,
+      1
+    ],
+    "subtopic_ids": [
+      17,
+      7
+    ],
+    "order": 1,
+    "created_at": null
+  },
+  {
+    "id": 122,
+    "question_text": "You have a variable 'x = 10' and you want to check if it is of type int. Which function should you use?",
+    "answer_options": [
+      "type(x)",
+      "isinstance(x, int)",
+      "check_type(x)",
+      "int(x)"
+    ],
+    "correct_answer": "isinstance(x, int)",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      2
+    ],
+    "subtopic_ids": [
+      14,
+      9
+    ],
+    "order": 2,
+    "created_at": null
+  },
+  {
+    "id": 123,
+    "question_text": "You need to read a number from the user and add 10 to it. What is the correct way to handle the input?",
+    "answer_options": [
+      "num = int(input('Enter number: '))",
+      "num = input('Enter number: ') + 10",
+      "num = input('Enter number: ')",
+      "num = int(input()) + 10"
+    ],
+    "correct_answer": "num = int(input('Enter number: '))",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      3
+    ],
+    "subtopic_ids": [
+      19,
+      16
+    ],
+    "order": 3,
+    "created_at": null
+  },
+  {
+    "id": 124,
+    "question_text": "You are writing code that calculates the total cost of items. You want to add a comment explaining the formula. Which of these is a valid single-line comment?",
+    "answer_options": [
+      "# total = price * quantity",
+      "// total = price * quantity",
+      "/* total = price * quantity */",
+      "<!-- total = price * quantity -->"
+    ],
+    "correct_answer": "# total = price * quantity",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      5
+    ],
+    "subtopic_ids": [
+      30,
+      35
+    ],
+    "order": 4,
+    "created_at": null
+  },
+  {
+    "id": 125,
+    "question_text": "You want to assign the value 10 to a variable named 'count'. Which statement is correct?",
+    "answer_options": [
+      "count = 10",
+      "count == 10",
+      "10 = count",
+      "int count = 10"
+    ],
+    "correct_answer": "count = 10",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      2,
+      4
+    ],
+    "subtopic_ids": [
+      9,
+      26
+    ],
+    "order": 5,
+    "created_at": null
+  },
+  {
+    "id": 126,
+    "question_text": "You have a string 'name = 'Alice'' and want to include it in a sentence. Which f-string is correct?",
+    "answer_options": [
+      "f'Hello, {name}'",
+      "f'Hello, name'",
+      "'Hello, {name}'",
+      "f'Hello, {name}'"
+    ],
+    "correct_answer": "f'Hello, {name}'",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      2,
+      3
+    ],
+    "subtopic_ids": [
+      11,
+      18
+    ],
+    "order": 6,
+    "created_at": null
+  },
+  {
+    "id": 127,
+    "question_text": "You want to check if a variable 'score' is greater than 50 and less than 100. Which expression is correct?",
+    "answer_options": [
+      "score > 50 and score < 100",
+      "score > 50 & score < 100",
+      "50 < score < 100",
+      "score > 50 and score < 100"
+    ],
+    "correct_answer": "score > 50 and score < 100",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      4
+    ],
+    "subtopic_ids": [
+      24,
+      25
+    ],
+    "order": 7,
+    "created_at": null
+  },
+  {
+    "id": 128,
+    "question_text": "You are building a program that asks for a password and grants access if it is 'secret'. Which code accomplishes this?",
+    "answer_options": [
+      "if input() == 'secret': print('Access granted')",
+      "if input() = 'secret': print('Access granted')",
+      "if input() == secret: print('Access granted')",
+      "if input() is 'secret': print('Access granted')"
+    ],
+    "correct_answer": "if input() == 'secret': print('Access granted')",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      6
+    ],
+    "subtopic_ids": [
+      42,
+      37
+    ],
+    "order": 8,
+    "created_at": null
+  },
+  {
+    "id": 129,
+    "question_text": "You have a list of numbers and want to check if each number is positive, negative, or zero using if-elif-else. Which structure is correct?",
+    "answer_options": [
+      "if num > 0: ... elif num < 0: ... else: ...",
+      "if num > 0: ... else if num < 0: ... else: ...",
+      "if num > 0: ... elif num < 0: ... else: ...",
+      "if num > 0: ... elif num < 0: ... else: ..."
+    ],
+    "correct_answer": "if num > 0: ... elif num < 0: ... else: ...",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      6,
+      8
+    ],
+    "subtopic_ids": [
+      38,
+      52
+    ],
+    "order": 9,
+    "created_at": null
+  },
+  {
+    "id": 130,
+    "question_text": "You want to assign 'adult' if age >= 18 else 'minor'. Which ternary operator is correct?",
+    "answer_options": [
+      "'adult' if age >= 18 else 'minor'",
+      "if age >= 18: 'adult' else: 'minor'",
+      "'adult' else 'minor' if age >= 18",
+      "age >= 18 ? 'adult' : 'minor'"
+    ],
+    "correct_answer": "'adult' if age >= 18 else 'minor'",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      6
+    ],
+    "subtopic_ids": [
+      41,
+      40
+    ],
+    "order": 10,
+    "created_at": null
+  },
+  {
+    "id": 131,
+    "question_text": "You are writing code that divides two numbers. You want to handle the case where the denominator might be zero. What should you use?",
+    "answer_options": [
+      "try-except block",
+      "if-else statement",
+      "for loop",
+      "while loop"
+    ],
+    "correct_answer": "try-except block",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      7
+    ],
+    "subtopic_ids": [
+      45,
+      44
+    ],
+    "order": 11,
+    "created_at": null
+  },
+  {
+    "id": 132,
+    "question_text": "You have a dictionary of item prices and want to apply a discount only to items priced above 100. What code structure should you use?",
+    "answer_options": [
+      "Loop through the dictionary and use an if statement to check each price",
+      "Use a try-except block",
+      "Use a while loop with a condition",
+      "Use a for loop with break"
+    ],
+    "correct_answer": "Loop through the dictionary and use an if statement to check each price",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      14,
+      6
+    ],
+    "subtopic_ids": [
+      95,
+      39
+    ],
+    "order": 12,
+    "created_at": null
+  },
+  {
+    "id": 133,
+    "question_text": "You are debugging a program that crashes when the user enters a non-numeric value for age. Which error handling structure should you add?",
+    "answer_options": [
+      "try-except around the input conversion",
+      "if-elif to check the input",
+      "for loop to repeat the input",
+      "while loop with break"
+    ],
+    "correct_answer": "try-except around the input conversion",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      7,
+      3
+    ],
+    "subtopic_ids": [
+      46,
+      19
+    ],
+    "order": 13,
+    "created_at": null
+  },
+  {
+    "id": 134,
+    "question_text": "You want to print numbers 0 to 4. Which for loop using range() is correct?",
+    "answer_options": [
+      "for i in range(5): print(i)",
+      "for i in range(1,5): print(i)",
+      "for i in range(0,5,1): print(i)",
+      "for i in range(5): print(i)"
+    ],
+    "correct_answer": "for i in range(5): print(i)",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      8,
+      1
+    ],
+    "subtopic_ids": [
+      51,
+      7
+    ],
+    "order": 14,
+    "created_at": null
+  },
+  {
+    "id": 135,
+    "question_text": "You have a list of names ['Alice', 'Bob', 'Charlie'] and want to print each name with its index. Which loop using enumerate() is correct?",
+    "answer_options": [
+      "for index, name in enumerate(names): print(index, name)",
+      "for name in names: print(name)",
+      "for i in range(len(names)): print(i, names[i])",
+      "for index, name in enumerate(names): print(index, name)"
+    ],
+    "correct_answer": "for index, name in enumerate(names): print(index, name)",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      8
+    ],
+    "subtopic_ids": [
+      55,
+      52
+    ],
+    "order": 15,
+    "created_at": null
+  },
+  {
+    "id": 136,
+    "question_text": "You are writing a loop that should run until the user types 'quit'. Which loop structure is most appropriate?",
+    "answer_options": [
+      "while loop with a condition",
+      "for loop with range()",
+      "for loop over a list",
+      "do-while loop"
+    ],
+    "correct_answer": "while loop with a condition",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      8,
+      3
+    ],
+    "subtopic_ids": [
+      53,
+      16
+    ],
+    "order": 16,
+    "created_at": null
+  },
+  {
+    "id": 137,
+    "question_text": "You want to skip printing the number 3 in a loop from 1 to 5. Which statement should you use inside the loop?",
+    "answer_options": [
+      "continue",
+      "break",
+      "pass",
+      "skip"
+    ],
+    "correct_answer": "continue",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      8
+    ],
+    "subtopic_ids": [
+      54,
+      51
+    ],
+    "order": 17,
+    "created_at": null
+  },
+  {
+    "id": 138,
+    "question_text": "You have two lists of student names and their scores. You want to print each pair. Which loop using zip() is correct?",
+    "answer_options": [
+      "for name, score in zip(names, scores): print(name, score)",
+      "for name in names: for score in scores: print(name, score)",
+      "for name, score in zip(names, scores): print(name, score)",
+      "for i in range(len(names)): print(names[i], scores[i])"
+    ],
+    "correct_answer": "for name, score in zip(names, scores): print(name, score)",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      8,
+      11
+    ],
+    "subtopic_ids": [
+      55,
+      77
+    ],
+    "order": 18,
+    "created_at": null
+  },
+  {
+    "id": 139,
+    "question_text": "You want to create a multiplication table for numbers 1 to 3. Which nested loop structure prints the products?",
+    "answer_options": [
+      "for i in range(1,4): for j in range(1,4): print(i*j)",
+      "for i in range(1,3): for j in range(1,3): print(i*j)",
+      "for i in range(1,4): for j in range(1,4): print(i*j)",
+      "for i in range(1,4): for j in range(1,4): print(i*j)"
+    ],
+    "correct_answer": "for i in range(1,4): for j in range(1,4): print(i*j)",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      9
+    ],
+    "subtopic_ids": [
+      58,
+      61
+    ],
+    "order": 19,
+    "created_at": null
+  },
+  {
+    "id": 140,
+    "question_text": "You have a string 'text = 'Hello World'' and want to count the number of 'l' characters. Which loop and conditional combination is correct?",
+    "answer_options": [
+      "for char in text: if char == 'l': count += 1",
+      "for char in text: if char == 'l': count += 1",
+      "for i in range(len(text)): if text[i] == 'l': count += 1",
+      "for char in text: if char == 'l': count += 1"
+    ],
+    "correct_answer": "for char in text: if char == 'l': count += 1",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      8,
+      10
+    ],
+    "subtopic_ids": [
+      52,
+      65
+    ],
+    "order": 20,
+    "created_at": null
+  },
+  {
+    "id": 141,
+    "question_text": "You are building a function that divides two numbers and handles division by zero. Which function definition includes error handling?",
+    "answer_options": [
+      "def divide(a, b): try: return a/b except ZeroDivisionError: return None",
+      "def divide(a, b): if b==0: return None else: return a/b",
+      "def divide(a, b): return a/b",
+      "def divide(a, b): try: return a/b except: return None"
+    ],
+    "correct_answer": "def divide(a, b): try: return a/b except ZeroDivisionError: return None",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      13,
+      7
+    ],
+    "subtopic_ids": [
+      86,
+      45
+    ],
+    "order": 21,
+    "created_at": null
+  },
+  {
+    "id": 142,
+    "question_text": "You have a list of numbers and want to create a new list with each number doubled. Which list comprehension is correct?",
+    "answer_options": [
+      "[x*2 for x in numbers]",
+      "for x in numbers: x*2",
+      "list(x*2 for x in numbers)",
+      "[x*2 for x in numbers]"
+    ],
+    "correct_answer": "[x*2 for x in numbers]",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      11
+    ],
+    "subtopic_ids": [
+      74,
+      77
+    ],
+    "order": 22,
+    "created_at": null
+  },
+  {
+    "id": 143,
+    "question_text": "You want to create a function that accepts any number of arguments and returns their sum. Which parameter syntax should you use?",
+    "answer_options": [
+      "def sum_all(*args): return sum(args)",
+      "def sum_all(args): return sum(args)",
+      "def sum_all(*args): return sum(args)",
+      "def sum_all(**kwargs): return sum(kwargs)"
+    ],
+    "correct_answer": "def sum_all(*args): return sum(args)",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      13
+    ],
+    "subtopic_ids": [
+      87,
+      89
+    ],
+    "order": 23,
+    "created_at": null
+  },
+  {
+    "id": 144,
+    "question_text": "You have a dictionary of product names and prices. You want to find all products with price above 50. Which loop and condition combination is correct?",
+    "answer_options": [
+      "for product, price in products.items(): if price > 50: print(product)",
+      "for product in products: if products[product] > 50: print(product)",
+      "for product, price in products.items(): if price > 50: print(product)",
+      "for product in products: if product > 50: print(product)"
+    ],
+    "correct_answer": "for product, price in products.items(): if price > 50: print(product)",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      14
+    ],
+    "subtopic_ids": [
+      95,
+      93
+    ],
+    "order": 24,
+    "created_at": null
+  },
+  {
+    "id": 145,
+    "question_text": "You want to remove duplicate values from a list while preserving order. Which approach using sets is correct?",
+    "answer_options": [
+      "list(set(your_list))",
+      "set(your_list)",
+      "list(set(your_list))",
+      "for item in your_list: if item not in new_list: new_list.append(item)"
+    ],
+    "correct_answer": "list(set(your_list))",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      12
+    ],
+    "subtopic_ids": [
+      79,
+      82
+    ],
+    "order": 25,
+    "created_at": null
+  },
+  {
+    "id": 146,
+    "question_text": "You are building a function that takes a list of numbers and returns a list of only even numbers using filter and lambda. Which code is correct?",
+    "answer_options": [
+      "list(filter(lambda x: x%2==0, numbers))",
+      "filter(lambda x: x%2==0, numbers)",
+      "list(filter(lambda x: x%2==0, numbers))",
+      "list(filter(lambda x: x%2==0, numbers))"
+    ],
+    "correct_answer": "list(filter(lambda x: x%2==0, numbers))",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      13
+    ],
+    "subtopic_ids": [
+      91,
+      92
+    ],
+    "order": 26,
+    "created_at": null
+  },
+  {
+    "id": 147,
+    "question_text": "You have a dictionary of word counts and want to find the word with the highest count. Which code accomplishes this?",
+    "answer_options": [
+      "max(word_counts, key=word_counts.get)",
+      "max(word_counts)",
+      "sorted(word_counts)[0]",
+      "max(word_counts.values())"
+    ],
+    "correct_answer": "max(word_counts, key=word_counts.get)",
+    "estimated_difficulty": "advanced",
+    "topic_ids": [
+      14
+    ],
+    "subtopic_ids": [
+      96,
+      95
+    ],
+    "order": 27,
+    "created_at": null
+  },
+  {
+    "id": 148,
+    "question_text": "You want to create a set of unique characters from a string. Which single line of code accomplishes this?",
+    "answer_options": [
+      "set('hello')",
+      "set('hello')",
+      "list(set('hello'))",
+      "{'h','e','l','o'}"
+    ],
+    "correct_answer": "set('hello')",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      12
+    ],
+    "subtopic_ids": [
+      79,
+      85
+    ],
+    "order": 28,
+    "created_at": null
+  },
+  {
+    "id": 149,
+    "question_text": "You have a list of tuples containing student names and grades. You want to sort the list by grade. Which code sorts correctly?",
+    "answer_options": [
+      "sorted(students, key=lambda x: x[1])",
+      "students.sort()",
+      "sorted(students, key=lambda x: x[0])",
+      "sorted(students, key=lambda x: x[1])"
+    ],
+    "correct_answer": "sorted(students, key=lambda x: x[1])",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      11
+    ],
+    "subtopic_ids": [
+      73,
+      76
+    ],
+    "order": 29,
+    "created_at": null
+  },
+  {
+    "id": 150,
+    "question_text": "You are building a function that counts the frequency of each word in a sentence. Which dictionary method is most efficient for updating counts?",
+    "answer_options": [
+      "dict.get(word, 0) + 1",
+      "dict[word] = dict[word] + 1",
+      "dict.update(word, 1)",
+      "dict.setdefault(word, 0) + 1"
+    ],
+    "correct_answer": "dict.get(word, 0) + 1",
+    "estimated_difficulty": "advanced",
+    "topic_ids": [
+      14
+    ],
+    "subtopic_ids": [
+      98,
+      96
+    ],
+    "order": 30,
+    "created_at": null
+  },
+  {
+    "id": 151,
+    "question_text": "You have just installed Python and want to run your first script. What is the correct way to execute 'hello.py' in the terminal?",
+    "answer_options": [
+      "python hello.py",
+      "run hello.py",
+      "execute hello.py",
+      "python3 script hello.py"
+    ],
+    "correct_answer": "python hello.py",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      1
+    ],
+    "subtopic_ids": [
+      3,
+      4
+    ],
+    "order": 1,
+    "created_at": null
+  },
+  {
+    "id": 152,
+    "question_text": "You need to store a user's age and then print a greeting. Which code correctly reads an integer and prints a message?",
+    "answer_options": [
+      "age = input('Enter age: ')\nprint('You are', age)",
+      "age = int(input('Enter age: '))\nprint('You are', age)",
+      "age = input('Enter age: ')\nprint('You are ' + age)",
+      "age = int(input())\nprint('You are', str(age))"
+    ],
+    "correct_answer": "age = int(input('Enter age: '))\nprint('You are', age)",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      3,
+      2
+    ],
+    "subtopic_ids": [
+      16,
+      13
+    ],
+    "order": 2,
+    "created_at": null
+  },
+  {
+    "id": 153,
+    "question_text": "You want to divide two numbers and get the remainder. Which operator should you use?",
+    "answer_options": [
+      "/",
+      "//",
+      "%",
+      "**"
+    ],
+    "correct_answer": "%",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      4,
+      3
+    ],
+    "subtopic_ids": [
+      23,
+      17
+    ],
+    "order": 3,
+    "created_at": null
+  },
+  {
+    "id": 154,
+    "question_text": "You are writing code and want to explain a complex line. What is the best way to add a comment?",
+    "answer_options": [
+      "Use a multi-line string",
+      "Use # at the beginning of the line",
+      "Write the explanation in a separate file",
+      "Use a docstring above the function"
+    ],
+    "correct_answer": "Use # at the beginning of the line",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      5
+    ],
+    "subtopic_ids": [
+      30,
+      32
+    ],
+    "order": 4,
+    "created_at": null
+  },
+  {
+    "id": 155,
+    "question_text": "You have a variable 'x = True' and 'y = False'. What is the result of 'x and y'?",
+    "answer_options": [
+      "True",
+      "False",
+      "None",
+      "Error"
+    ],
+    "correct_answer": "False",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      2,
+      4
+    ],
+    "subtopic_ids": [
+      12,
+      25
+    ],
+    "order": 5,
+    "created_at": null
+  },
+  {
+    "id": 156,
+    "question_text": "You want to check if a number is even and positive. Which if statement correctly combines these conditions?",
+    "answer_options": [
+      "if number % 2 == 0 and number > 0:",
+      "if number % 2 == 0 or number > 0:",
+      "if number % 2 == 0 & number > 0:",
+      "if number % 2 == 0 and positive:"
+    ],
+    "correct_answer": "if number % 2 == 0 and number > 0:",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      6,
+      4
+    ],
+    "subtopic_ids": [
+      40,
+      24
+    ],
+    "order": 6,
+    "created_at": null
+  },
+  {
+    "id": 157,
+    "question_text": "You are building a calculator that divides two numbers. What should you use to handle division by zero?",
+    "answer_options": [
+      "A try-except block",
+      "An if-else statement",
+      "A for loop",
+      "A print statement"
+    ],
+    "correct_answer": "A try-except block",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      7
+    ],
+    "subtopic_ids": [
+      45,
+      44
+    ],
+    "order": 7,
+    "created_at": null
+  },
+  {
+    "id": 158,
+    "question_text": "You have a list of numbers and want to print each one. Which loop code is correct?",
+    "answer_options": [
+      "for i in range(len(numbers)): print(numbers[i])",
+      "for number in numbers: print(number)",
+      "while numbers: print(numbers.pop())",
+      "for i in numbers: print(i)"
+    ],
+    "correct_answer": "for number in numbers: print(number)",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      8
+    ],
+    "subtopic_ids": [
+      52,
+      51
+    ],
+    "order": 8,
+    "created_at": null
+  },
+  {
+    "id": 159,
+    "question_text": "You want to create a 2D list representing a 3x3 grid and print each element using nested loops. What is the loop syntax?",
+    "answer_options": [
+      "for row in grid: for col in row: print(col)",
+      "for i in range(3): for j in range(3): print(grid[i][j])",
+      "Both A and B are correct",
+      "for i,j in grid: print(i,j)"
+    ],
+    "correct_answer": "Both A and B are correct",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      9
+    ],
+    "subtopic_ids": [
+      58,
+      61
+    ],
+    "order": 9,
+    "created_at": null
+  },
+  {
+    "id": 160,
+    "question_text": "You have a string 'Hello World' and want to extract 'World'. Which slicing code works?",
+    "answer_options": [
+      "'Hello World'[6:]",
+      "'Hello World'[5:]",
+      "'Hello World'[6:11]",
+      "'Hello World'[6:10]"
+    ],
+    "correct_answer": "'Hello World'[6:]",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      10
+    ],
+    "subtopic_ids": [
+      65,
+      66
+    ],
+    "order": 10,
+    "created_at": null
+  },
+  {
+    "id": 161,
+    "question_text": "You have a list of names and want to add 'Smith' to the end. Which method should you use?",
+    "answer_options": [
+      "names.append('Smith')",
+      "names.add('Smith')",
+      "names.insert('Smith')",
+      "names.push('Smith')"
+    ],
+    "correct_answer": "names.append('Smith')",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      11
+    ],
+    "subtopic_ids": [
+      73,
+      72
+    ],
+    "order": 11,
+    "created_at": null
+  },
+  {
+    "id": 162,
+    "question_text": "You have a set of numbers and want to find common elements with another set. Which operator is correct?",
+    "answer_options": [
+      "set1 & set2",
+      "set1 | set2",
+      "set1 - set2",
+      "set1 ^ set2"
+    ],
+    "correct_answer": "set1 & set2",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      12
+    ],
+    "subtopic_ids": [
+      80,
+      79
+    ],
+    "order": 12,
+    "created_at": null
+  },
+  {
+    "id": 163,
+    "question_text": "You are building a function to divide two numbers but want to handle cases where the denominator is zero. What should you do?",
+    "answer_options": [
+      "Use try-except inside the function and return None",
+      "Use an if statement to check and return a string",
+      "Ignore the error",
+      "Use a loop to try again"
+    ],
+    "correct_answer": "Use try-except inside the function and return None",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      7,
+      13
+    ],
+    "subtopic_ids": [
+      45,
+      86
+    ],
+    "order": 13,
+    "created_at": null
+  },
+  {
+    "id": 164,
+    "question_text": "You have a dictionary of product prices and want to apply a 10% discount to all items. Which code correctly updates the prices?",
+    "answer_options": [
+      "for key in prices: prices[key] *= 0.9",
+      "for key in prices: prices[key] = prices[key] * 0.9",
+      "for key, value in prices: prices[key] = value * 0.9",
+      "for key in prices: prices[key] = prices.get(key) * 0.9"
+    ],
+    "correct_answer": "for key in prices: prices[key] = prices[key] * 0.9",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      14
+    ],
+    "subtopic_ids": [
+      95,
+      94
+    ],
+    "order": 14,
+    "created_at": null
+  },
+  {
+    "id": 165,
+    "question_text": "You want to check if a string entered by a user is all uppercase. Which condition should you use?",
+    "answer_options": [
+      "if user_input.isupper():",
+      "if user_input == user_input.upper():",
+      "if user_input.upper():",
+      "Both A and B are correct"
+    ],
+    "correct_answer": "Both A and B are correct",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      10
+    ],
+    "subtopic_ids": [
+      70,
+      67
+    ],
+    "order": 15,
+    "created_at": null
+  },
+  {
+    "id": 166,
+    "question_text": "You have a list of tuples representing (name, age) and want to sort by age. Which key function should you use in sorted()?",
+    "answer_options": [
+      "lambda x: x[1]",
+      "lambda x: x[0]",
+      "lambda x: age",
+      "lambda x: x[1] and x[0]"
+    ],
+    "correct_answer": "lambda x: x[1]",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      13,
+      11
+    ],
+    "subtopic_ids": [
+      91,
+      73
+    ],
+    "order": 16,
+    "created_at": null
+  },
+  {
+    "id": 167,
+    "question_text": "You are building a program that reads user input until 'quit' is entered. Which loop structure is best?",
+    "answer_options": [
+      "while True with a break condition",
+      "for loop over a range",
+      "while loop with condition",
+      "nested loop"
+    ],
+    "correct_answer": "while True with a break condition",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      8,
+      3
+    ],
+    "subtopic_ids": [
+      56,
+      16
+    ],
+    "order": 17,
+    "created_at": null
+  },
+  {
+    "id": 168,
+    "question_text": "You have a nested dictionary representing students and their grades. You want to find all students with grade 'A'. Which code is correct?",
+    "answer_options": [
+      "for student, info in students.items(): if info['grade'] == 'A': print(student)",
+      "for student in students: if students[student]['grade'] == 'A': print(student)",
+      "for student in students: if student['grade'] == 'A': print(student)",
+      "for student, info in students: if info['grade'] == 'A': print(student)"
+    ],
+    "correct_answer": "for student, info in students.items(): if info['grade'] == 'A': print(student)",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      14
+    ],
+    "subtopic_ids": [
+      97,
+      95
+    ],
+    "order": 18,
+    "created_at": null
+  },
+  {
+    "id": 169,
+    "question_text": "You are debugging a program that crashes when the user enters a non-numeric value. Which tool would you use to step through the code?",
+    "answer_options": [
+      "print() statements",
+      "assert statements",
+      "A debugger (e.g., pdb)",
+      "try-except block"
+    ],
+    "correct_answer": "A debugger (e.g., pdb)",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      7
+    ],
+    "subtopic_ids": [
+      50,
+      44
+    ],
+    "order": 19,
+    "created_at": null
+  },
+  {
+    "id": 170,
+    "question_text": "You want to create a list of squares for numbers 0 to 9 using a single line. Which code is correct?",
+    "answer_options": [
+      "[x**2 for x in range(10)]",
+      "list(x**2 for x in range(10))",
+      "for x in range(10): squares.append(x**2)",
+      "Both A and B are correct"
+    ],
+    "correct_answer": "Both A and B are correct",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      11,
+      8
+    ],
+    "subtopic_ids": [
+      74,
+      51
+    ],
+    "order": 20,
+    "created_at": null
+  },
+  {
+    "id": 171,
+    "question_text": "You have a set of email addresses and want to check if a new email is already in the set. Which operator is most efficient?",
+    "answer_options": [
+      "in",
+      "not in",
+      "is",
+      "=="
+    ],
+    "correct_answer": "in",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      4,
+      12
+    ],
+    "subtopic_ids": [
+      28,
+      84
+    ],
+    "order": 21,
+    "created_at": null
+  },
+  {
+    "id": 172,
+    "question_text": "You are writing a function that takes a list of numbers and returns the sum. Which code correctly defines it with a docstring?",
+    "answer_options": [
+      "def sum_list(nums):\n    '''Return sum of numbers'''\n    return sum(nums)",
+      "def sum_list(nums):\n    # Return sum\n    return sum(nums)",
+      "def sum_list(nums):\n    '''Return sum of numbers'''\n    print(sum(nums))",
+      "def sum_list(nums):\n    return sum(nums)  # sum"
+    ],
+    "correct_answer": "def sum_list(nums):\n    '''Return sum of numbers'''\n    return sum(nums)",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      13
+    ],
+    "subtopic_ids": [
+      90,
+      86
+    ],
+    "order": 22,
+    "created_at": null
+  },
+  {
+    "id": 173,
+    "question_text": "You want to iterate over two lists simultaneously and print pairs. Which function is best?",
+    "answer_options": [
+      "zip()",
+      "enumerate()",
+      "range()",
+      "iter()"
+    ],
+    "correct_answer": "zip()",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      8
+    ],
+    "subtopic_ids": [
+      55,
+      52
+    ],
+    "order": 23,
+    "created_at": null
+  },
+  {
+    "id": 174,
+    "question_text": "You have a string with extra spaces and want to remove them. Which method should you use?",
+    "answer_options": [
+      "strip()",
+      "split()",
+      "replace()",
+      "trim()"
+    ],
+    "correct_answer": "strip()",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      10
+    ],
+    "subtopic_ids": [
+      70,
+      69
+    ],
+    "order": 24,
+    "created_at": null
+  },
+  {
+    "id": 175,
+    "question_text": "You are building a program that asks the user for their name and then prints a welcome message. Which code uses f-strings correctly?",
+    "answer_options": [
+      "print(f'Welcome, {name}!')",
+      "print('Welcome, {name}!')",
+      "print('Welcome, %s!' % name)",
+      "print('Welcome, ' + name + '!')"
+    ],
+    "correct_answer": "print(f'Welcome, {name}!')",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      3
+    ],
+    "subtopic_ids": [
+      18,
+      16
+    ],
+    "order": 25,
+    "created_at": null
+  },
+  {
+    "id": 176,
+    "question_text": "You have a variable 'count' and want to increase it by 5. Which assignment operator is correct?",
+    "answer_options": [
+      "count += 5",
+      "count =+ 5",
+      "count + 5",
+      "count = count + 5"
+    ],
+    "correct_answer": "count += 5",
+    "estimated_difficulty": "beginner",
+    "topic_ids": [
+      4,
+      2
+    ],
+    "subtopic_ids": [
+      26,
+      9
+    ],
+    "order": 26,
+    "created_at": null
+  },
+  {
+    "id": 177,
+    "question_text": "You want to check if a number is between 10 and 20 inclusive. Which condition is correct?",
+    "answer_options": [
+      "if 10 <= number <= 20:",
+      "if number >= 10 and number <= 20:",
+      "if number in range(10, 21):",
+      "All of the above"
+    ],
+    "correct_answer": "All of the above",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      4,
+      6
+    ],
+    "subtopic_ids": [
+      24,
+      37
+    ],
+    "order": 27,
+    "created_at": null
+  },
+  {
+    "id": 178,
+    "question_text": "You are writing a function that raises a custom exception when invalid input is provided. Which keyword do you use?",
+    "answer_options": [
+      "raise",
+      "throw",
+      "except",
+      "assert"
+    ],
+    "correct_answer": "raise",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      7,
+      13
+    ],
+    "subtopic_ids": [
+      48,
+      86
+    ],
+    "order": 28,
+    "created_at": null
+  },
+  {
+    "id": 179,
+    "question_text": "You have a list of integers and want to create a new list containing only even numbers using list comprehension. Which code is correct?",
+    "answer_options": [
+      "[x for x in numbers if x % 2 == 0]",
+      "[x for x in numbers if x % 2]",
+      "[x for x in numbers if x % 2 != 0]",
+      "[x for x in numbers if x % 2 == 0 else x]"
+    ],
+    "correct_answer": "[x for x in numbers if x % 2 == 0]",
+    "estimated_difficulty": "intermediate",
+    "topic_ids": [
+      11
+    ],
+    "subtopic_ids": [
+      74
+    ],
+    "order": 29,
+    "created_at": null
+  },
+  {
+    "id": 180,
+    "question_text": "You want to count the frequency of words in a sentence using a dictionary. Which code correctly increments the count?",
+    "answer_options": [
+      "word_count[word] = word_count.get(word, 0) + 1",
+      "word_count[word] += 1",
+      "word_count[word] = word_count[word] + 1",
+      "All of the above assuming the key exists"
+    ],
+    "correct_answer": "All of the above assuming the key exists",
+    "estimated_difficulty": "advanced",
+    "topic_ids": [
+      14
+    ],
+    "subtopic_ids": [
+      98,
+      96
+    ],
+    "order": 30,
+    "created_at": null
+  }
+]

@@ -1,0 +1,54 @@
+[
+  {
+    "question_text": "A special keyword used to combine two boolean expressions into one compound logical expression.",
+    "correct_answer": "logical operator",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "Boolean Logic in Conditions",
+    "game_data": {
+      "explanation": "Logical operators like and, or, and not let you combine multiple boolean conditions to make more complex decisions in code.",
+      "generation_timestamp": "2026-05-04T09:04:08.985832"
+    },
+    "created_at": "2026-05-04T01:04:08.954373+00:00",
+    "exported_at": "2026-05-04T09:04:08.985832"
+  },
+  {
+    "question_text": "Conditional expression written in a single line of code without indentation",
+    "correct_answer": "ternary",
+    "game_type": "non_coding",
+    "difficulty": "intermediate",
+    "subtopic": "Ternary Operators (One-liner conditionals)",
+    "game_data": {
+      "explanation": "A ternary operator lets you write a simple if-else statement in one line, often used for concise conditional assignments.",
+      "generation_timestamp": "2026-05-04T09:04:10.570617"
+    },
+    "created_at": "2026-05-04T01:04:10.564064+00:00",
+    "exported_at": "2026-05-04T09:04:10.570617"
+  },
+  {
+    "question_text": "Combine two conditions; both must be true for the overall expression to be true.",
+    "correct_answer": "and",
+    "game_type": "non_coding",
+    "difficulty": "intermediate",
+    "subtopic": "Boolean Logic in Conditions",
+    "game_data": {
+      "explanation": "The 'and' logical operator returns True only when both operands are true. It's a fundamental tool for building compound boolean expressions in Python conditions.",
+      "generation_timestamp": "2026-05-04T09:04:10.740435"
+    },
+    "created_at": "2026-05-04T01:04:10.718960+00:00",
+    "exported_at": "2026-05-04T09:04:10.740435"
+  },
+  {
+    "question_text": "Shorthand conditional that uses and and or to assign a value based on a boolean test",
+    "correct_answer": "ternary",
+    "game_type": "non_coding",
+    "difficulty": "intermediate",
+    "subtopic": "Boolean Logic in Conditions",
+    "game_data": {
+      "explanation": "A ternary operator lets you write a simple if-else condition in one line. It often uses Boolean logic (and/or/not) to decide which value to return, making your code concise.",
+      "generation_timestamp": "2026-05-04T09:04:10.924775"
+    },
+    "created_at": "2026-05-04T01:04:10.917697+00:00",
+    "exported_at": "2026-05-04T09:04:10.924775"
+  }
+]

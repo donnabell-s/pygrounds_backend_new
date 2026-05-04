@@ -38,8 +38,10 @@ def check_question_similarity(question_text1: str, question_text2: str, threshol
     if text1 == text2:
         return True
     len1, len2 = len(text1), len(text2)
+    #length if one is not very similar in length skip
     if min(len1, len2) / max(len1, len2) < 0.7:
         return False
+    #jaccard for checking overlapping to avoid exact question text but retains different variations
     words1, words2 = set(text1.split()), set(text2.split())
     union = len(words1 | words2)
     if union == 0:

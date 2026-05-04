@@ -86,59 +86,6 @@ class GranularChunkProcessor:
             "Python Basics: A Practical Introduction to Python 3"
         ]
     
-    def _get_toc_titles_for_page(self, document: UploadedDocument, page_number: int) -> tuple[str, str]:
-        try:
-            toc_entries = TOCEntry.objects.filter(document=document).order_by('start_page')
-            
-            current_entry = None
-            for entry in toc_entries:
-                if entry.start_page <= page_number <= (entry.end_page or entry.start_page):
-                    current_entry = entry
-                    break
-            
-            if not current_entry:
-                for entry in toc_entries.reverse():
-                    if entry.start_page <= page_number:
-                        current_entry = entry
-                        break
-            
-            if not current_entry:
-                return "", ""
-            
-            if current_entry.level == 0:
-                topic_title = self._clean_toc_title(current_entry.title)
-                subtopic_title = ""
-            else:
-                topic_title = ""
-                subtopic_title = self._clean_toc_title(current_entry.title)
-                
-                parent_entries = toc_entries.filter(
-                    level=0, 
-                    start_page__lte=current_entry.start_page
-                ).order_by('-start_page')
-                
-                if parent_entries.exists():
-                    topic_title = self._clean_toc_title(parent_entries.first().title)
-            
-            return topic_title, subtopic_title
-            
-        except Exception as e:
-            print(f"   WARN: Error getting TOC titles for page {page_number}: {e}")
-            return "", ""
-    
-    def _clean_toc_title(self, title: str) -> str:
-        if not title:
-            return ""
-        
-        title = re.sub(r'^\d+\.?\d*\s*', '', title)
-        
-        title = re.sub(r'\s*\.+\s*\d*\s*$', '', title)
-        title = re.sub(r'\s*\.+\s*$', '', title)
-        
-        title = re.sub(r'\s+', ' ', title).strip()
-        
-        return title
-
     def _analyze_token_distribution(self, document: UploadedDocument) -> Dict[str, Any]:
         chunks = DocumentChunk.objects.filter(document=document)
         
@@ -180,29 +127,40 @@ class GranularChunkProcessor:
             "chunk_types_token_distribution": chunk_types,
         }
 
+    # Front-matter titles to skip when picking the first content page.
+    # Match is case-insensitive and ignores numeric prefixes like "1." / "1.1".
+    FRONT_MATTER_TITLES = {
+        'contents', 'table of contents', 'toc',
+        'foreword', 'preface', 'dedication', 'copyright',
+        'about the author', 'about the authors', 'about real python',
+        'acknowledgements', 'acknowledgments', 'colophon', 'title page',
+    }
+
     def _get_toc_content_boundaries(self, document: UploadedDocument) -> tuple[int, int]:
         toc_entries = TOCEntry.objects.filter(document=document).order_by('start_page')
-        
+
         if not toc_entries.exists():
             raise ValueError("No TOC entries found for document")
-        
+
         first_toc_page = toc_entries.first().start_page - 1
         last_toc_page = toc_entries.last().end_page - 1 if toc_entries.last().end_page else toc_entries.last().start_page - 1
-        
-        educational_entries = toc_entries.filter(
-            title__iregex=r'^\d+\.?\d*\s+'
-        )
-        
-        if educational_entries.exists():
-            first_educational_page = educational_entries.first().start_page - 1
-            print(f"Found educational content starting at page {first_educational_page + 1}: '{educational_entries.first().title}'")
-            first_content_page = first_educational_page
-        else:
+
+        # First TOC entry whose title is NOT a known front-matter section.
+        # Strip numeric prefixes ("1.", "1.1 ") before comparing.
+        first_content_page = None
+        for entry in toc_entries:
+            normalized = re.sub(r'^\d+(\.\d+)*\.?\s*', '', entry.title or '').strip().lower()
+            if normalized and normalized not in self.FRONT_MATTER_TITLES:
+                first_content_page = entry.start_page - 1
+                print(f"Found educational content starting at page {first_content_page + 1}: '{entry.title}'")
+                break
+
+        if first_content_page is None:
             first_content_page = first_toc_page
-            print(f"No numbered sections found, using first TOC entry at page {first_content_page + 1}")
-        
+            print(f"No non-front-matter entries found, falling back to first TOC entry at page {first_content_page + 1}")
+
         last_content_page = last_toc_page
-        
+
         print(f"TOC-based content boundaries: pages {first_content_page + 1}-{last_content_page + 1}")
         return first_content_page, last_content_page
 

@@ -1,0 +1,28 @@
+[
+  {
+    "question_text": "A clause that runs after try and except, no matter what.",
+    "correct_answer": "finally",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "else and finally Clauses in Error Handling",
+    "game_data": {
+      "explanation": "The finally clause always executes after the try block, regardless of whether an exception occurred or not, making it useful for cleanup actions.",
+      "generation_timestamp": "2026-05-03T12:36:25.299622"
+    },
+    "created_at": "2026-05-03T04:36:25.247171+00:00",
+    "exported_at": "2026-05-03T12:36:25.299622"
+  },
+  {
+    "question_text": "Bitwise operator that performs a logical OR on each pair of bits",
+    "correct_answer": "bitwise or",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "Bitwise Operators and Binary Representation (Advanced)",
+    "game_data": {
+      "explanation": "The bitwise OR operator compares each bit of two numbers and returns a 1 if either bit is 1. It is represented by the | symbol in Python.",
+      "generation_timestamp": "2026-05-03T12:36:25.303595"
+    },
+    "created_at": "2026-05-03T04:36:25.295021+00:00",
+    "exported_at": "2026-05-03T12:36:25.304595"
+  }
+]

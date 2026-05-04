@@ -76,9 +76,10 @@ def process_all_subtopics(document_id: Optional[int] = None,
                     code_similarities.sort(key=lambda x: x['similarity'], reverse=True)
                     code_similarities = code_similarities[:top_k_results]  # top-k code chunks
             
-            # store results separately in their respective fields
+            # Always overwrite SemanticSubtopic — empty results must clear stale rankings,
+            # otherwise an edited subtopic that no longer matches any chunk keeps its old vectors' rankings.
+            store_semantic_results_separate(subtopic, concept_similarities, code_similarities)
             if concept_similarities or code_similarities:
-                store_semantic_results_separate(subtopic, concept_similarities, code_similarities)
                 processed_count += 1
                 total_similarities_computed += len(concept_similarities) + len(code_similarities)
                 
@@ -96,7 +97,7 @@ def process_all_subtopics(document_id: Optional[int] = None,
                     intent_flag,
                 )
             else:
-                logger.info("Subtopic '%s': No chunks above threshold or no embeddings", subtopic.name)
+                logger.info("Subtopic '%s': No chunks above threshold — rankings cleared", subtopic.name)
                 
         except Exception as e:
             logger.error(f"Error processing subtopic {subtopic.id}: {str(e)}")
@@ -150,8 +151,10 @@ def process_single_subtopic(subtopic_id: int,
             code_similarities.sort(key=lambda x: x['similarity'], reverse=True)
             code_similarities = code_similarities[:top_k_results]
 
+    # Always overwrite, even with empty lists — prevents stale rankings after a name/intent edit.
+    store_semantic_results_separate(subtopic, concept_similarities, code_similarities)
+
     if concept_similarities or code_similarities:
-        store_semantic_results_separate(subtopic, concept_similarities, code_similarities)
         return {
             'status': 'success',
             'subtopic_name': subtopic.name,
@@ -159,11 +162,14 @@ def process_single_subtopic(subtopic_id: int,
             'concept_chunks': len(concept_similarities),
             'code_chunks': len(code_similarities),
         }
-    else:
-        return {
-            'status': 'warning',
-            'message': f'No chunks above similarity threshold for {subtopic.name}'
-        }
+    return {
+        'status': 'success',
+        'subtopic_name': subtopic.name,
+        'similar_chunks': 0,
+        'concept_chunks': 0,
+        'code_chunks': 0,
+        'message': f'No chunks above similarity threshold for {subtopic.name} — rankings cleared',
+    }
 
 
 # === EMBEDDING FUNCTIONS ===
@@ -219,32 +225,43 @@ def get_subtopic_embedding(subtopic: Subtopic, model_type: str = None, use_inten
 
 
 def generate_intent_based_embedding(subtopic: Subtopic, model_type: str = None) -> Optional[Dict[str, Any]]:
-    # Generate embedding on-the-fly using subtopic's intent fields
+    # Generate embedding on-the-fly using subtopic's intent fields.
+    # Must match the recipe used by EmbeddingGenerator.generate_subtopic_dual_embeddings
+    # so stored vs. on-the-fly vectors stay comparable.
     from content_ingestion.helpers.embedding.generator import get_embedding_generator
-    
+
     try:
         generator = get_embedding_generator()
-        
-        # Choose intent text based on model type
+
+        topic_name = subtopic.topic.name if getattr(subtopic, 'topic', None) else ''
+        prefix = f"{topic_name} - {subtopic.name}" if topic_name else subtopic.name
+
+        # Pick the intent matching the requested model; fall back to whichever exists.
         intent_text = None
+        chunk_type = None
         if model_type == 'sentence' and subtopic.concept_intent:
             intent_text = subtopic.concept_intent
-            chunk_type = 'Concept'  # Use concept model (MiniLM)
+            chunk_type = 'Concept'
         elif model_type == 'code_bert' and subtopic.code_intent:
-            intent_text = subtopic.code_intent  
-            chunk_type = 'Code'  # Use code model (CodeBERT)
+            intent_text = subtopic.code_intent
+            chunk_type = 'Code'
         elif subtopic.concept_intent:
             intent_text = subtopic.concept_intent
             chunk_type = 'Concept'
         elif subtopic.code_intent:
             intent_text = subtopic.code_intent
             chunk_type = 'Code'
-            
+
         if not intent_text:
             return None
-            
-        # Generate embedding using intent text
-        result = generator.generate_embedding(intent_text, chunk_type)
+
+        # Match the stored-embedding format: name anchors the vector, intent enriches it.
+        if chunk_type == 'Code':
+            embed_text = f"Python task: {prefix}. Use: {intent_text}"
+        else:
+            embed_text = f"{prefix}: {intent_text}"
+
+        result = generator.generate_embedding(embed_text, chunk_type)
         
         if result and result.get('vector'):
             # Convert enum to string if needed
@@ -458,12 +475,16 @@ def store_semantic_results_separate(subtopic: Subtopic, concept_similarities: Li
 
 # === CONVENIENCE FUNCTIONS ===
 
-def compute_semantic_similarities_for_document(document_id: int, 
+def compute_semantic_similarities_for_document(document_id: int,
                                              similarity_threshold: float = 0.1,
                                              top_k_results: int = 10) -> Dict[str, Any]:
-    # Compute semantic similarities for a specific document
+    # Triggered after a document finishes processing. We re-rank against the FULL
+    # corpus, not just this document's chunks — otherwise the per-subtopic ranking
+    # gets overwritten with chunks from only the most-recently-reprocessed doc,
+    # erasing every other PDF's contributions.
+    logger.info(f"Re-ranking semantic similarities globally (triggered by document {document_id})")
     return process_all_subtopics(
-        document_id=document_id,
+        document_id=None,
         similarity_threshold=similarity_threshold,
         top_k_results=top_k_results
     )

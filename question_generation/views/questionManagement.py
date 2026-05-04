@@ -463,11 +463,15 @@ def _apply_regenerated_question(request, question, q, game_type, llm_prompt, acc
 def get_question_by_id(request, question_id):
     """
     Query params:
-        full_context - include full RAG context if 'true' (default: false)
+        full_context     - include full RAG context if 'true' (default: false)
+        include_flagged  - allow lookup of flagged questions if 'true' (default: false).
+                           Question bank callers omit this; flagged-page/admin tools opt in.
     """
     try:
-        question              = get_object_or_404(GeneratedQuestion, id=question_id)
-        include_full_game_data = request.query_params.get('full_context', 'false').lower() == 'true'
+        include_flagged        = request.query_params.get('include_flagged', 'false').lower() == 'true'
+        qs                      = GeneratedQuestion.objects.all() if include_flagged else GeneratedQuestion.objects.filter(flagged=False)
+        question                = get_object_or_404(qs, id=question_id)
+        include_full_game_data  = request.query_params.get('full_context', 'false').lower() == 'true'
         return Response({'status': 'success', 'question': format_question_response(question, include_full_game_data)})
 
     except Exception as e:
@@ -503,7 +507,8 @@ def get_all_questions(request):
             return Response({'status': 'error', 'message': 'order must be "asc" or "desc"'}, status=status.HTTP_400_BAD_REQUEST)
 
         order_field = f"-{order_by}" if order == 'desc' else order_by
-        qs          = GeneratedQuestion.objects.all()
+        # Question bank shows only unflagged. Flagged questions live on the flagged page.
+        qs          = GeneratedQuestion.objects.filter(flagged=False)
 
         if search:
             from django.db.models import Q
@@ -559,17 +564,18 @@ def get_questions_by_filters(request):
         offset = int(request.query_params.get('offset', 0))
         search = request.query_params.get('search', '').strip()
 
+        # Question bank shows only unflagged. Flagged questions live on the flagged page.
         if search and search.isdigit():
             # Exact ID lookup bypasses game_type/difficulty filters so the user
             # can locate any question by ID regardless of the current tab.
             from django.db.models import Q
-            qs = GeneratedQuestion.objects.filter(
+            qs = GeneratedQuestion.objects.filter(flagged=False).filter(
                 Q(id=int(search)) | (Q(game_type=game_type) & Q(question_text__icontains=search))
             )
             if difficulty:
                 qs = qs.filter(Q(id=int(search)) | Q(estimated_difficulty=difficulty))
         else:
-            qs = GeneratedQuestion.objects.filter(game_type=game_type)
+            qs = GeneratedQuestion.objects.filter(flagged=False, game_type=game_type)
             if difficulty:
                 qs = qs.filter(estimated_difficulty=difficulty)
             if search:
@@ -605,7 +611,8 @@ def get_questions_batch(request):
         limit       - max results (default: 10)
     """
     try:
-        qs = GeneratedQuestion.objects.all()
+        # Question bank shows only unflagged. Flagged questions live on the flagged page.
+        qs = GeneratedQuestion.objects.filter(flagged=False)
 
         ids = request.query_params.get('ids')
         if ids:
@@ -657,7 +664,8 @@ def get_questions_batch_filtered(request):
         if difficulty and difficulty not in VALID_DIFFICULTIES:
             return Response({'status': 'error', 'message': f'difficulty must be one of: {", ".join(VALID_DIFFICULTIES)}'}, status=status.HTTP_400_BAD_REQUEST)
 
-        qs              = GeneratedQuestion.objects.all()
+        # Question bank shows only unflagged. Flagged questions live on the flagged page.
+        qs              = GeneratedQuestion.objects.filter(flagged=False)
         filters_applied = {}
 
         if game_type:
@@ -702,7 +710,8 @@ def get_subtopic_questions(request, subtopic_id):
     """
     try:
         subtopic = get_object_or_404(Subtopic, id=subtopic_id)
-        qs       = GeneratedQuestion.objects.filter(subtopic=subtopic)
+        # Question bank shows only unflagged. Flagged questions live on the flagged page.
+        qs       = GeneratedQuestion.objects.filter(subtopic=subtopic, flagged=False)
 
         difficulty = request.query_params.get('difficulty')
         if difficulty:
@@ -765,7 +774,8 @@ def get_topic_questions_summary(request, topic_id):
         total     = 0
 
         for subtopic in subtopics:
-            qs    = GeneratedQuestion.objects.filter(subtopic=subtopic)
+            # Counts reflect usable (unflagged) questions only.
+            qs    = GeneratedQuestion.objects.filter(subtopic=subtopic, flagged=False)
             count = qs.count()
             total += count
 
@@ -780,7 +790,7 @@ def get_topic_questions_summary(request, topic_id):
                 'latest_generated': qs.order_by('-created_at').first().created_at.isoformat() if count else None,
             })
 
-        all_qs        = GeneratedQuestion.objects.filter(subtopic__topic=topic)
+        all_qs        = GeneratedQuestion.objects.filter(subtopic__topic=topic, flagged=False)
         with_questions = sum(1 for s in summaries if s['has_questions'])
 
         return Response({

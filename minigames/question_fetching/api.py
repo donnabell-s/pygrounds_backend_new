@@ -39,10 +39,11 @@ def fetch_questions_for_game(
     
     mastery_by_sub: Dict[int, float] = mastery_map(user, all_subs_for_map)
     
-    #filter questions by zone and game type
+    #filter questions by zone and game type — never serve flagged questions in gameplay
     base_qs: QuerySet = GeneratedQuestion.objects.filter(
         game_type=gtype,
-        subtopic_id__in=zone_sub_ids
+        subtopic_id__in=zone_sub_ids,
+        flagged=False,
     )
 
     if exclude_ids:

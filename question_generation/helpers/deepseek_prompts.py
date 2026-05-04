@@ -47,6 +47,10 @@ Each question serves TWO games: Hangman (write from scratch) and Debugging (fix 
 
 RAG_CONTEXT:
 {context['rag_context']}
+
+CRITICAL INSTRUCTION:
+You MUST use the provided RAG_CONTEXT (LEARNING CONTENT) as the primary inspiration for the questions you generate. Refer to the concepts, examples, and exercises in it.
+
 {integration_block}
 RULES:
 - Simple real-world tasks, no external libs, under 20 lines per code block.
