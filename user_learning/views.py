@@ -6,8 +6,8 @@ from django.contrib.auth import get_user_model
 from rest_framework.permissions import IsAuthenticated
 from django.db.models import Max
 
-from .models import UserZoneProgress
-from .serializers import UserZoneProgressSerializer, LeaderboardEntrySerializer
+from .models import UserZoneProgress, UserTopicProficiency, UserTopicProficiencyHistory
+from .serializers import UserZoneProgressSerializer, LeaderboardEntrySerializer, TopicProficiencyHistorySerializer
 from content_ingestion.models import GameZone
 
 User = get_user_model()
@@ -170,3 +170,38 @@ class AllLearnersZoneProgressView(APIView):
         payload.sort(key=lambda x: (-x["overall_completion"], x["username"] or ""))
 
         return Response(LeaderboardEntrySerializer(payload, many=True).data)
+
+
+class TopicProficiencyHistoryView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        # Optional ?user_id= to view another user's history
+        user_id = request.query_params.get("user_id")
+        if user_id:
+            target_user = User.objects.filter(pk=user_id).first()
+            if not target_user:
+                return Response([], status=200)
+        else:
+            target_user = request.user
+
+        # Bootstrap: if no history exists yet, seed from current proficiency records
+        if not UserTopicProficiencyHistory.objects.filter(user=target_user).exists():
+            current = UserTopicProficiency.objects.filter(user=target_user).select_related('topic')
+            if current.exists():
+                UserTopicProficiencyHistory.objects.bulk_create([
+                    UserTopicProficiencyHistory(
+                        user=target_user,
+                        topic=p.topic,
+                        proficiency_percent=p.proficiency_percent,
+                    )
+                    for p in current
+                ])
+
+        history = (
+            UserTopicProficiencyHistory.objects
+            .filter(user=target_user)
+            .select_related('topic')
+            .order_by('recorded_at')
+        )
+        return Response(TopicProficiencyHistorySerializer(history, many=True).data)

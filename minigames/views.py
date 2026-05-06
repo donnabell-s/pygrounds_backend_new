@@ -79,6 +79,7 @@ class StartGameSession(APIView):
             for q in questions
         ])
 
+
         return Response(GameSessionSerializer(session).data, status=201)
 
 
@@ -221,7 +222,7 @@ class SubmitAnswers(APIView):
             print(f"Attempting to recalibrate topic proficiency for crossword...")
             print(f"User: {request.user}")
             print(f"Results data: {results}")
-            recalibrate_topic_proficiency(request.user, results)
+            recalibrate_topic_proficiency(request.user, results, session_id=session.session_id)
             print("Recalibration completed successfully!")
         except Exception as e:
             import traceback
@@ -296,6 +297,7 @@ class StartCrosswordGame(APIView):
         GameQuestion.objects.bulk_create([
             GameQuestion(session=session, question=q) for q in placed_questions
         ])
+
 
         word_to_gqid = {}
         for gq in session.session_questions.select_related("question").all():
@@ -382,6 +384,7 @@ class StartWordSearchGame(APIView):
             GameQuestion(session=session, question=q) for q in placed_questions
         ])
 
+
         WordSearchData.objects.create(
             session=session,
             matrix=["".join(row) for row in matrix],
@@ -456,6 +459,7 @@ class StartHangmanGame(APIView):
 
         question = questions[0]
         GameQuestion.objects.create(session=session, question=question)
+
 
         return Response({
             "session_id":    session.session_id,
@@ -564,7 +568,7 @@ class SubmitHangmanCode(APIView):
                 print(f"Attempting to recalibrate topic proficiency for hangman...")
                 print(f"User: {request.user}")
                 print(f"Results data: {results}")
-                recalibrate_topic_proficiency(request.user, results)
+                recalibrate_topic_proficiency(request.user, results, session_id=session.session_id)
                 print("Recalibration completed successfully!")
             except Exception as e:
                 import traceback
@@ -608,6 +612,7 @@ class StartDebugGame(APIView):
 
         question = questions[0]
         GameQuestion.objects.create(session=session, question=question)
+
 
         return Response({
             "session_id":    session.session_id,
@@ -717,7 +722,7 @@ class SubmitDebugGame(APIView):
                 print(f"Attempting to recalibrate topic proficiency for debugging...")
                 print(f"User: {request.user}")
                 print(f"Results data: {results}")
-                recalibrate_topic_proficiency(request.user, results)
+                recalibrate_topic_proficiency(request.user, results, session_id=session.session_id)
                 print("Recalibration completed successfully!")
             except Exception as e:
                 import traceback
