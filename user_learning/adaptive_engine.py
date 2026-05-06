@@ -2,7 +2,7 @@ from typing import Dict, List
 from django.db import transaction
 from django.db.models import Avg
 from django.utils import timezone
-from user_learning.models import UserZoneProgress, UserTopicProficiency, UserSubtopicMastery, UserAbility
+from user_learning.models import UserZoneProgress, UserTopicProficiency, UserSubtopicMastery, UserAbility, UserTopicProficiencyHistory
 from content_ingestion.models import Topic, Subtopic, GameZone
 from .adaptive_weights import compute_effective_correctness
 from .bkt_params import BKT_PARAMS, DEFAULT_PARAMS
@@ -67,7 +67,7 @@ def aggregate_by_subtopic(results: List[dict]) -> Dict[int, Dict[str, float]]:
 
 
 @transaction.atomic
-def recalibrate_topic_proficiency(user, results: list) -> dict:
+def recalibrate_topic_proficiency(user, results: list, session_id: str = None) -> dict:
 
     print(f"\n[RECAL] ===== recalibrate_topic_proficiency for user={user} =====")
     print(f"[RECAL] results count: {len(results)}")
@@ -188,7 +188,8 @@ def recalibrate_topic_proficiency(user, results: list) -> dict:
     ability.ability_score = ability_new
     ability.save(update_fields=["ability_score"])
     
-   #update topic
+   #update topic — only append a history milestone when mastery actually moved
+    history_records = []
     for topic in Topic.objects.filter(id__in=touched_topic_ids):
         topic_subtopics = Subtopic.objects.filter(topic=topic)
         avg_mastery = (
@@ -196,12 +197,27 @@ def recalibrate_topic_proficiency(user, results: list) -> dict:
             .filter(user=user, subtopic__in=topic_subtopics)
             .aggregate(avg=Avg("mastery_level"))["avg"] or 0.0
         )
-        UserTopicProficiency.objects.update_or_create(
+        prof_obj, created = UserTopicProficiency.objects.get_or_create(
             user=user,
             topic=topic,
             defaults={"proficiency_percent": avg_mastery},
         )
-    
+        old_value = 0.0 if created else prof_obj.proficiency_percent
+        if not created:
+            prof_obj.proficiency_percent = avg_mastery
+            prof_obj.save(update_fields=["proficiency_percent"])
+
+        if abs(avg_mastery - old_value) > 0.01:
+            history_records.append(UserTopicProficiencyHistory(
+                user=user,
+                topic=topic,
+                proficiency_percent=avg_mastery,
+                session_id=session_id,
+            ))
+
+    if history_records:
+        UserTopicProficiencyHistory.objects.bulk_create(history_records)
+
     #update zone
     for zone in GameZone.objects.all().order_by("order"):
         zone_topics = Topic.objects.filter(zone=zone)
