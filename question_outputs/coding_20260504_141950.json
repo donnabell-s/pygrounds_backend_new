@@ -1,0 +1,1520 @@
+[
+  {
+    "game_type": "coding",
+    "difficulty": "beginner",
+    "subtopic": "Dictionary Methods (get(), pop(), update(), etc.)",
+    "game_data": {
+      "normal": {
+        "question_text": "Get value with default from dict",
+        "function_name": "get_value",
+        "sample_input": "({'a': 1, 'b': 2}, 'c')",
+        "sample_output": "'Not found'",
+        "hidden_tests": [
+          {
+            "input": "({'x': 10}, 'x')",
+            "expected_output": "10"
+          },
+          {
+            "input": "({'x': 10}, 'y')",
+            "expected_output": "'Not found'"
+          }
+        ],
+        "clean_solution": "def get_value(d, key):\n    return d.get(key, 'Not found')",
+        "explanation": "This function uses get() to safely retrieve a value, returning a default if the key is missing. A common mistake is forgetting the default argument, which returns None instead."
+      },
+      "buggy": {
+        "buggy_question_text": "Function returns None instead of default when key missing",
+        "code_shown_to_student": "def get_value(d, key):\n    return d.get(key)",
+        "code_with_bug_fixed": "def get_value(d, key):\n    return d.get(key, 'Not found')",
+        "buggy_explanation": "The bug was calling get() without a default argument, so it returned None when the key was missing. Adding the default 'Not found' fixes it."
+      },
+      "generation_timestamp": "2026-05-04T14:19:50.492350"
+    },
+    "created_at": "2026-05-04T06:19:50.463541+00:00",
+    "exported_at": "2026-05-04T14:19:50.492350"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "beginner",
+    "subtopic": "Dictionary Methods (get(), pop(), update(), etc.)",
+    "game_data": {
+      "normal": {
+        "question_text": "Pop key from dict with default",
+        "function_name": "pop_key",
+        "sample_input": "({'a': 1, 'b': 2}, 'c')",
+        "sample_output": "'Not found'",
+        "hidden_tests": [
+          {
+            "input": "({'x': 10}, 'x')",
+            "expected_output": "10"
+          },
+          {
+            "input": "({'x': 10}, 'y')",
+            "expected_output": "'Not found'"
+          }
+        ],
+        "clean_solution": "def pop_key(d, key):\n    return d.pop(key, 'Not found')",
+        "explanation": "This function uses pop() to remove a key and return its value, with a default to avoid errors. A common mistake is omitting the default, causing a KeyError."
+      },
+      "buggy": {
+        "buggy_question_text": "Function raises KeyError when popping missing key",
+        "code_shown_to_student": "def pop_key(d, key):\n    return d.pop(key)",
+        "code_with_bug_fixed": "def pop_key(d, key):\n    return d.pop(key, 'Not found')",
+        "buggy_explanation": "The bug was calling pop() without a default, so it raised KeyError for missing keys. Adding the default 'Not found' prevents the error."
+      },
+      "generation_timestamp": "2026-05-04T14:19:50.553881"
+    },
+    "created_at": "2026-05-04T06:19:50.550360+00:00",
+    "exported_at": "2026-05-04T14:19:50.553881"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "beginner",
+    "subtopic": "Dictionary Methods (get(), pop(), update(), etc.)",
+    "game_data": {
+      "normal": {
+        "question_text": "Update dict with another dict",
+        "function_name": "update_dict",
+        "sample_input": "({'a': 1}, {'b': 2})",
+        "sample_output": "{'a': 1, 'b': 2}",
+        "hidden_tests": [
+          {
+            "input": "({'x': 10}, {'y': 20})",
+            "expected_output": "{'x': 10, 'y': 20}"
+          },
+          {
+            "input": "({'a': 1}, {'a': 2})",
+            "expected_output": "{'a': 2}"
+          }
+        ],
+        "clean_solution": "def update_dict(d, other):\n    d.update(other)\n    return d",
+        "explanation": "This function updates a dictionary with another using update(), which modifies in place and returns None. A common mistake is expecting it to return the updated dict."
+      },
+      "buggy": {
+        "buggy_question_text": "Function returns None instead of updated dict",
+        "code_shown_to_student": "def update_dict(d, other):\n    return d.update(other)",
+        "code_with_bug_fixed": "def update_dict(d, other):\n    d.update(other)\n    return d",
+        "buggy_explanation": "The bug was returning the result of update(), which is None. The fix is to update in place and then return the original dictionary."
+      },
+      "generation_timestamp": "2026-05-04T14:19:50.622270"
+    },
+    "created_at": "2026-05-04T06:19:50.618128+00:00",
+    "exported_at": "2026-05-04T14:19:50.622270"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "beginner",
+    "subtopic": "Dictionary Methods (get(), pop(), update(), etc.)",
+    "game_data": {
+      "normal": {
+        "question_text": "Count word frequencies in list",
+        "function_name": "count_words",
+        "sample_input": "(['apple', 'banana', 'apple'],)",
+        "sample_output": "{'apple': 2, 'banana': 1}",
+        "hidden_tests": [
+          {
+            "input": "(['a', 'b', 'a', 'c'],)",
+            "expected_output": "{'a': 2, 'b': 1, 'c': 1}"
+          },
+          {
+            "input": "([],)",
+            "expected_output": "{}"
+          }
+        ],
+        "clean_solution": "def count_words(words):\n    d = {}\n    for w in words:\n        d[w] = d.get(w, 0) + 1\n    return d",
+        "explanation": "This function counts word frequencies using a dictionary. A common mistake is using get() incorrectly, like assigning the result instead of incrementing."
+      },
+      "buggy": {
+        "buggy_question_text": "Function returns empty dict instead of frequencies",
+        "code_shown_to_student": "def count_words(words):\n    d = {}\n    for w in words:\n        d.get(w, 0) + 1\n    return d",
+        "code_with_bug_fixed": "def count_words(words):\n    d = {}\n    for w in words:\n        d[w] = d.get(w, 0) + 1\n    return d",
+        "buggy_explanation": "The bug was using d.get(word, 0) without assigning back, so counts stayed 0. The fix is to assign the incremented value back to d[word]."
+      },
+      "generation_timestamp": "2026-05-04T14:19:50.698384"
+    },
+    "created_at": "2026-05-04T06:19:50.693845+00:00",
+    "exported_at": "2026-05-04T14:19:50.698384"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "beginner",
+    "subtopic": "Dictionary Methods (get(), pop(), update(), etc.)",
+    "game_data": {
+      "normal": {
+        "question_text": "Merge two dicts with update",
+        "function_name": "merge_dicts",
+        "sample_input": "({'a': 1}, {'b': 2})",
+        "sample_output": "{'a': 1, 'b': 2}",
+        "hidden_tests": [
+          {
+            "input": "({'x': 10}, {'y': 20})",
+            "expected_output": "{'x': 10, 'y': 20}"
+          },
+          {
+            "input": "({'a': 1}, {'a': 2})",
+            "expected_output": "{'a': 2}"
+          }
+        ],
+        "clean_solution": "def merge_dicts(d1, d2):\n    d1.update(d2)\n    return d1",
+        "explanation": "This function merges two dictionaries using update(). A common mistake is forgetting that update() modifies the original dict in place, so you must return it."
+      },
+      "buggy": {
+        "buggy_question_text": "Function returns original dict unchanged after merge",
+        "code_shown_to_student": "def merge_dicts(d1, d2):\n    d1.update(d2)",
+        "code_with_bug_fixed": "def merge_dicts(d1, d2):\n    d1.update(d2)\n    return d1",
+        "buggy_explanation": "The bug was not returning the updated dictionary after calling update(). The fix is to return the original dict after updating it."
+      },
+      "generation_timestamp": "2026-05-04T14:19:50.779474"
+    },
+    "created_at": "2026-05-04T06:19:50.774857+00:00",
+    "exported_at": "2026-05-04T14:19:50.779474"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "beginner",
+    "subtopic": "Creating and Accessing Dictionary Items",
+    "game_data": {
+      "normal": {
+        "question_text": "Create a dict with name and age",
+        "function_name": "create_person",
+        "sample_input": "()",
+        "sample_output": "{'name': 'Alice', 'age': 30}",
+        "hidden_tests": [
+          {
+            "input": "()",
+            "expected_output": "{'name': 'Alice', 'age': 30}"
+          }
+        ],
+        "clean_solution": "def create_person():\n    person = {'name': 'Alice', 'age': 30}\n    return person",
+        "explanation": "This function creates a dictionary with keys 'name' and 'age'. A common mistake is forgetting to assign values to keys. Remember: each key must be assigned a value using the colon syntax."
+      },
+      "buggy": {
+        "buggy_question_text": "Function returns empty dict instead of populated one",
+        "code_shown_to_student": "def create_person():\n    person = {}\n    return person",
+        "code_with_bug_fixed": "def create_person():\n    person = {'name': 'Alice', 'age': 30}\n    return person",
+        "buggy_explanation": "The bug was creating an empty dictionary and not assigning any values. The fix adds key-value pairs for 'name' and 'age'. Always assign values when creating a dictionary."
+      },
+      "generation_timestamp": "2026-05-04T14:19:50.892998"
+    },
+    "created_at": "2026-05-04T06:19:50.885829+00:00",
+    "exported_at": "2026-05-04T14:19:50.892998"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "beginner",
+    "subtopic": "Creating and Accessing Dictionary Items",
+    "game_data": {
+      "normal": {
+        "question_text": "Access a value from a dict by key",
+        "function_name": "get_age",
+        "sample_input": "({'name': 'Bob', 'age': 25},)",
+        "sample_output": "25",
+        "hidden_tests": [
+          {
+            "input": "({'name': 'Alice', 'age': 30},)",
+            "expected_output": "30"
+          },
+          {
+            "input": "({'name': 'Charlie', 'age': 35},)",
+            "expected_output": "35"
+          }
+        ],
+        "clean_solution": "def get_age(person):\n    return person['age']",
+        "explanation": "This function accesses a value from a dictionary using a key. A common mistake is using get() without a default, which can return None. Remember: direct key access with square brackets is simpler for existing keys."
+      },
+      "buggy": {
+        "buggy_question_text": "Function returns None instead of the correct value",
+        "code_shown_to_student": "def get_age(person):\n    return person.get('age')",
+        "code_with_bug_fixed": "def get_age(person):\n    return person['age']",
+        "buggy_explanation": "The bug was using get() without a default, which returns None for missing keys. The fix uses direct key access with square brackets. Remember: use square brackets to access dictionary items directly."
+      },
+      "generation_timestamp": "2026-05-04T14:19:50.975945"
+    },
+    "created_at": "2026-05-04T06:19:50.970925+00:00",
+    "exported_at": "2026-05-04T14:19:50.975945"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "beginner",
+    "subtopic": "Creating and Accessing Dictionary Items",
+    "game_data": {
+      "normal": {
+        "question_text": "Add a new key-value pair to a dict",
+        "function_name": "add_city",
+        "sample_input": "({'name': 'Alice', 'age': 30},)",
+        "sample_output": "{'name': 'Alice', 'age': 30, 'city': 'New York'}",
+        "hidden_tests": [
+          {
+            "input": "({'name': 'Bob', 'age': 25},)",
+            "expected_output": "{'name': 'Bob', 'age': 25, 'city': 'New York'}"
+          }
+        ],
+        "clean_solution": "def add_city(person):\n    person['city'] = 'New York'\n    return person",
+        "explanation": "This function adds a new key-value pair to an existing dictionary. A common mistake is forgetting to assign the value. Remember: use square brackets to add or update dictionary items."
+      },
+      "buggy": {
+        "buggy_question_text": "Function returns original dict without new key",
+        "code_shown_to_student": "def add_city(person):\n    return person",
+        "code_with_bug_fixed": "def add_city(person):\n    person['city'] = 'New York'\n    return person",
+        "buggy_explanation": "The bug was not assigning the new key-value pair to the dictionary. The fix adds the assignment 'person['city'] = 'New York''. Remember: to add a new key, assign a value to it using square brackets."
+      },
+      "generation_timestamp": "2026-05-04T14:19:51.082058"
+    },
+    "created_at": "2026-05-04T06:19:51.078562+00:00",
+    "exported_at": "2026-05-04T14:19:51.082058"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "beginner",
+    "subtopic": "Creating and Accessing Dictionary Items",
+    "game_data": {
+      "normal": {
+        "question_text": "Update a value in a dict",
+        "function_name": "update_age",
+        "sample_input": "({'name': 'Alice', 'age': 30},)",
+        "sample_output": "{'name': 'Alice', 'age': 31}",
+        "hidden_tests": [
+          {
+            "input": "({'name': 'Bob', 'age': 25},)",
+            "expected_output": "{'name': 'Bob', 'age': 26}"
+          }
+        ],
+        "clean_solution": "def update_age(person):\n    person['age'] += 1\n    return person",
+        "explanation": "This function updates an existing value in a dictionary. A common mistake is forgetting to reassign the value. Remember: use square brackets to update dictionary items by assigning a new value to the key."
+      },
+      "buggy": {
+        "buggy_question_text": "Function returns original age instead of updated one",
+        "code_shown_to_student": "def update_age(person):\n    return person",
+        "code_with_bug_fixed": "def update_age(person):\n    person['age'] += 1\n    return person",
+        "buggy_explanation": "The bug was not updating the 'age' key in the dictionary. The fix adds the assignment 'person['age'] = 31'. Remember: to update a value, assign a new value to the existing key using square brackets."
+      },
+      "generation_timestamp": "2026-05-04T14:19:51.186501"
+    },
+    "created_at": "2026-05-04T06:19:51.182358+00:00",
+    "exported_at": "2026-05-04T14:19:51.186501"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "beginner",
+    "subtopic": "Creating and Accessing Dictionary Items",
+    "game_data": {
+      "normal": {
+        "question_text": "Check if a key exists in a dict",
+        "function_name": "has_key",
+        "sample_input": "({'name': 'Alice', 'age': 30}, 'name')",
+        "sample_output": "True",
+        "hidden_tests": [
+          {
+            "input": "({'name': 'Alice', 'age': 30}, 'city')",
+            "expected_output": "False"
+          },
+          {
+            "input": "({'name': 'Bob', 'age': 25}, 'age')",
+            "expected_output": "True"
+          }
+        ],
+        "clean_solution": "def has_key(person, key):\n    return key in person",
+        "explanation": "This function checks if a key exists in a dictionary. A common mistake is checking values instead of keys. Remember: use the 'in' operator with the dictionary to check for keys."
+      },
+      "buggy": {
+        "buggy_question_text": "Function returns False for existing key",
+        "code_shown_to_student": "def has_key(person, key):\n    return key in person.values()",
+        "code_with_bug_fixed": "def has_key(person, key):\n    return key in person",
+        "buggy_explanation": "The bug was using the 'in' keyword incorrectly by checking if the key is in the values. The fix uses 'key in dict' to check keys. Remember: use 'in' to check for keys, not values."
+      },
+      "generation_timestamp": "2026-05-04T14:19:51.296098"
+    },
+    "created_at": "2026-05-04T06:19:51.292048+00:00",
+    "exported_at": "2026-05-04T14:19:51.296098"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "beginner",
+    "subtopic": "Adding, Updating, and Deleting Keys",
+    "game_data": {
+      "normal": {
+        "question_text": "Add a new key-value pair to a dictionary",
+        "function_name": "add_key",
+        "sample_input": "({'a': 1}, 'b', 2)",
+        "sample_output": "{'a': 1, 'b': 2}",
+        "hidden_tests": [
+          {
+            "input": "({}, 'x', 10)",
+            "expected_output": "{'x': 10}"
+          },
+          {
+            "input": "({'y': 5}, 'z', 0)",
+            "expected_output": "{'y': 5, 'z': 0}"
+          }
+        ],
+        "clean_solution": "def add_key(d, key, value):\n    d[key] = value\n    return d",
+        "explanation": "This function adds a new key-value pair to a dictionary using assignment. A common mistake is forgetting to return the updated dictionary. Remember: assignment adds or updates a key."
+      },
+      "buggy": {
+        "buggy_question_text": "Function returns dictionary without the new key",
+        "code_shown_to_student": "def add_key(d, key, value):\n    d[key] = value",
+        "code_with_bug_fixed": "def add_key(d, key, value):\n    d[key] = value\n    return d",
+        "buggy_explanation": "The bug was missing the return statement after adding the key. The function modified the dictionary but didn't return it. Always return the dictionary after modifying it."
+      },
+      "generation_timestamp": "2026-05-04T14:19:52.390499"
+    },
+    "created_at": "2026-05-04T06:19:52.385844+00:00",
+    "exported_at": "2026-05-04T14:19:52.390499"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "beginner",
+    "subtopic": "Adding, Updating, and Deleting Keys",
+    "game_data": {
+      "normal": {
+        "question_text": "Update an existing key in a dictionary",
+        "function_name": "update_key",
+        "sample_input": "({'a': 1, 'b': 2}, 'a', 10)",
+        "sample_output": "{'a': 10, 'b': 2}",
+        "hidden_tests": [
+          {
+            "input": "({'x': 0}, 'x', 5)",
+            "expected_output": "{'x': 5}"
+          },
+          {
+            "input": "({'p': 3, 'q': 4}, 'q', 7)",
+            "expected_output": "{'p': 3, 'q': 7}"
+          }
+        ],
+        "clean_solution": "def update_key(d, key, new_value):\n    d[key] = new_value\n    return d",
+        "explanation": "This function updates an existing key's value using assignment. A common mistake is using the wrong syntax like d[key] == value. Remember: use single equals for assignment."
+      },
+      "buggy": {
+        "buggy_question_text": "Function returns dictionary with old value instead of new",
+        "code_shown_to_student": "def update_key(d, key, new_value):\n    d[key] == new_value\n    return d",
+        "code_with_bug_fixed": "def update_key(d, key, new_value):\n    d[key] = new_value\n    return d",
+        "buggy_explanation": "The bug was using == (comparison) instead of = (assignment). This didn't change the value. Always use = to assign a new value to a key."
+      },
+      "generation_timestamp": "2026-05-04T14:19:52.514059"
+    },
+    "created_at": "2026-05-04T06:19:52.509758+00:00",
+    "exported_at": "2026-05-04T14:19:52.514059"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "beginner",
+    "subtopic": "Adding, Updating, and Deleting Keys",
+    "game_data": {
+      "normal": {
+        "question_text": "Delete a key from a dictionary",
+        "function_name": "delete_key",
+        "sample_input": "({'a': 1, 'b': 2}, 'a')",
+        "sample_output": "{'b': 2}",
+        "hidden_tests": [
+          {
+            "input": "({'x': 10, 'y': 20}, 'y')",
+            "expected_output": "{'x': 10}"
+          },
+          {
+            "input": "({'only': 1}, 'only')",
+            "expected_output": "{}"
+          }
+        ],
+        "clean_solution": "def delete_key(d, key):\n    del d[key]\n    return d",
+        "explanation": "This function deletes a key using del. A common mistake is using remove() which works on lists, not dictionaries. Remember: use del dict[key] to delete a key."
+      },
+      "buggy": {
+        "buggy_question_text": "Function returns dictionary with key still present",
+        "code_shown_to_student": "def delete_key(d, key):\n    d.remove(key)\n    return d",
+        "code_with_bug_fixed": "def delete_key(d, key):\n    del d[key]\n    return d",
+        "buggy_explanation": "The bug was using d.remove(key) which doesn't exist for dictionaries. This caused an error. Use del d[key] to delete a key-value pair."
+      },
+      "generation_timestamp": "2026-05-04T14:19:52.628574"
+    },
+    "created_at": "2026-05-04T06:19:52.624016+00:00",
+    "exported_at": "2026-05-04T14:19:52.629088"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "beginner",
+    "subtopic": "Adding, Updating, and Deleting Keys",
+    "game_data": {
+      "normal": {
+        "question_text": "Add multiple keys from another dictionary",
+        "function_name": "merge_dicts",
+        "sample_input": "({'a': 1}, {'b': 2, 'c': 3})",
+        "sample_output": "{'a': 1, 'b': 2, 'c': 3}",
+        "hidden_tests": [
+          {
+            "input": "({}, {'x': 5})",
+            "expected_output": "{'x': 5}"
+          },
+          {
+            "input": "({'p': 0}, {'q': 1, 'r': 2})",
+            "expected_output": "{'p': 0, 'q': 1, 'r': 2}"
+          }
+        ],
+        "clean_solution": "def merge_dicts(d1, d2):\n    d1.update(d2)\n    return d1",
+        "explanation": "This function adds all keys from one dictionary to another using update(). A common mistake is using assignment instead of update. Remember: update() merges dictionaries."
+      },
+      "buggy": {
+        "buggy_question_text": "Function returns dictionary missing some new keys",
+        "code_shown_to_student": "def merge_dicts(d1, d2):\n    d1 = d2\n    return d1",
+        "code_with_bug_fixed": "def merge_dicts(d1, d2):\n    d1.update(d2)\n    return d1",
+        "buggy_explanation": "The bug was using d = other which reassigns the variable instead of merging. Use d.update(other) to add all keys from other into d."
+      },
+      "generation_timestamp": "2026-05-04T14:19:52.745655"
+    },
+    "created_at": "2026-05-04T06:19:52.732561+00:00",
+    "exported_at": "2026-05-04T14:19:52.745655"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "beginner",
+    "subtopic": "Adding, Updating, and Deleting Keys",
+    "game_data": {
+      "normal": {
+        "question_text": "Set default value if key missing",
+        "function_name": "set_default",
+        "sample_input": "({'a': 1}, 'b', 0)",
+        "sample_output": "{'a': 1, 'b': 0}",
+        "hidden_tests": [
+          {
+            "input": "({}, 'x', 10)",
+            "expected_output": "{'x': 10}"
+          },
+          {
+            "input": "({'y': 5}, 'y', 99)",
+            "expected_output": "{'y': 5}"
+          }
+        ],
+        "clean_solution": "def set_default(d, key, default):\n    d.setdefault(key, default)\n    return d",
+        "explanation": "This function uses setdefault() to set a default if key is missing. A common mistake is using get() which doesn't add the key. Remember: setdefault() adds the key if missing."
+      },
+      "buggy": {
+        "buggy_question_text": "Function returns None for missing key instead of default",
+        "code_shown_to_student": "def set_default(d, key, default):\n    d.get(key, default)\n    return d",
+        "code_with_bug_fixed": "def set_default(d, key, default):\n    d.setdefault(key, default)\n    return d",
+        "buggy_explanation": "The bug was using d.get(key, default) which returns default but doesn't add the key. Use d.setdefault(key, default) to both return and add the default."
+      },
+      "generation_timestamp": "2026-05-04T14:19:52.854749"
+    },
+    "created_at": "2026-05-04T06:19:52.850222+00:00",
+    "exported_at": "2026-05-04T14:19:52.854749"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "beginner",
+    "subtopic": "Dictionary Comprehensions",
+    "game_data": {
+      "normal": {
+        "question_text": "Create dict of squares from list",
+        "function_name": "square_dict",
+        "sample_input": "([1, 2, 3],)",
+        "sample_output": "{1: 1, 2: 4, 3: 9}",
+        "hidden_tests": [
+          {
+            "input": "([4, 5, 6],)",
+            "expected_output": "{4: 16, 5: 25, 6: 36}"
+          },
+          {
+            "input": "([0],)",
+            "expected_output": "{0: 0}"
+          }
+        ],
+        "clean_solution": "def square_dict(numbers):\n    return {n: n**2 for n in numbers}",
+        "explanation": "This function builds a dictionary mapping each number to its square using a dict comprehension. A common beginner mistake is forgetting to include the key-value expression correctly. Remember: dict comprehensions need `key: value` syntax."
+      },
+      "buggy": {
+        "buggy_question_text": "Function returns empty dict instead of squares",
+        "code_shown_to_student": "def square_dict(numbers):\n    return {for n in numbers}",
+        "code_with_bug_fixed": "def square_dict(numbers):\n    return {n: n**2 for n in numbers}",
+        "buggy_explanation": "The bug was using `for n in numbers` without a key-value pair, producing an empty dict. The fix adds `n: n**2` to create the mapping. Always include `key: value` in dict comprehensions."
+      },
+      "generation_timestamp": "2026-05-04T14:19:53.266169"
+    },
+    "created_at": "2026-05-04T06:19:53.260658+00:00",
+    "exported_at": "2026-05-04T14:19:53.266169"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "beginner",
+    "subtopic": "Dictionary Comprehensions",
+    "game_data": {
+      "normal": {
+        "question_text": "Filter even numbers into dict",
+        "function_name": "even_square_dict",
+        "sample_input": "([1, 2, 3, 4],)",
+        "sample_output": "{2: 4, 4: 16}",
+        "hidden_tests": [
+          {
+            "input": "([5, 6, 7, 8],)",
+            "expected_output": "{6: 36, 8: 64}"
+          },
+          {
+            "input": "([1, 3, 5],)",
+            "expected_output": "{}"
+          }
+        ],
+        "clean_solution": "def even_square_dict(numbers):\n    return {n: n**2 for n in numbers if n % 2 == 0}",
+        "explanation": "This function creates a dict mapping even numbers to their squares using a conditional comprehension. A common mistake is forgetting the condition. Remember: use `if` to filter items in comprehensions."
+      },
+      "buggy": {
+        "buggy_question_text": "Function includes odd numbers in output dict",
+        "code_shown_to_student": "def even_square_dict(numbers):\n    return {n: n**2 for n in numbers}",
+        "code_with_bug_fixed": "def even_square_dict(numbers):\n    return {n: n**2 for n in numbers if n % 2 == 0}",
+        "buggy_explanation": "The bug was missing the `if n % 2 == 0` condition, so all numbers were included. The fix adds the filter. Always include conditions to restrict which items appear in the comprehension."
+      },
+      "generation_timestamp": "2026-05-04T14:19:53.377476"
+    },
+    "created_at": "2026-05-04T06:19:53.373943+00:00",
+    "exported_at": "2026-05-04T14:19:53.377476"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "beginner",
+    "subtopic": "Dictionary Comprehensions",
+    "game_data": {
+      "normal": {
+        "question_text": "Swap keys and values in dict",
+        "function_name": "swap_dict",
+        "sample_input": "({'a': 1, 'b': 2},)",
+        "sample_output": "{1: 'a', 2: 'b'}",
+        "hidden_tests": [
+          {
+            "input": "({'x': 10, 'y': 20},)",
+            "expected_output": "{10: 'x', 20: 'y'}"
+          },
+          {
+            "input": "({},)",
+            "expected_output": "{}"
+          }
+        ],
+        "clean_solution": "def swap_dict(d):\n    return {v: k for k, v in d.items()}",
+        "explanation": "This function swaps keys and values using a dict comprehension. A common mistake is iterating over keys only. Remember: use `.items()` to access both keys and values for swapping."
+      },
+      "buggy": {
+        "buggy_question_text": "Function returns original dict instead of swapped",
+        "code_shown_to_student": "def swap_dict(d):\n    return {v: k for k in d}",
+        "code_with_bug_fixed": "def swap_dict(d):\n    return {v: k for k, v in d.items()}",
+        "buggy_explanation": "The bug was iterating over `d` (keys only) instead of `d.items()`, so values were lost. The fix uses `d.items()` to get key-value pairs. Always use `.items()` when you need both."
+      },
+      "generation_timestamp": "2026-05-04T14:19:53.483944"
+    },
+    "created_at": "2026-05-04T06:19:53.478603+00:00",
+    "exported_at": "2026-05-04T14:19:53.483944"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "beginner",
+    "subtopic": "Dictionary Comprehensions",
+    "game_data": {
+      "normal": {
+        "question_text": "Create dict from two lists",
+        "function_name": "lists_to_dict",
+        "sample_input": "(['a', 'b', 'c'], [1, 2, 3])",
+        "sample_output": "{'a': 1, 'b': 2, 'c': 3}",
+        "hidden_tests": [
+          {
+            "input": "(['x', 'y'], [10, 20])",
+            "expected_output": "{'x': 10, 'y': 20}"
+          },
+          {
+            "input": "([], [])",
+            "expected_output": "{}"
+          }
+        ],
+        "clean_solution": "def lists_to_dict(keys, values):\n    return {k: v for k, v in zip(keys, values)}",
+        "explanation": "This function zips two lists into a dict using a comprehension. A common mistake is not handling unequal lengths. Remember: `zip` stops at the shortest list, which is safe for beginners."
+      },
+      "buggy": {
+        "buggy_question_text": "Function raises error when lists have different lengths",
+        "code_shown_to_student": "def lists_to_dict(keys, values):\n    return {keys[i]: values[i] for i in range(len(keys))}",
+        "code_with_bug_fixed": "def lists_to_dict(keys, values):\n    return {k: v for k, v in zip(keys, values)}",
+        "buggy_explanation": "The bug was using `range(len(keys))` without checking lengths, causing an index error. The fix uses `zip(keys, values)` which pairs safely. Always use `zip` to combine lists of possibly different lengths."
+      },
+      "generation_timestamp": "2026-05-04T14:19:53.618170"
+    },
+    "created_at": "2026-05-04T06:19:53.612602+00:00",
+    "exported_at": "2026-05-04T14:19:53.618170"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "beginner",
+    "subtopic": "Dictionary Comprehensions",
+    "game_data": {
+      "normal": {
+        "question_text": "Count character frequencies in string",
+        "function_name": "char_freq",
+        "sample_input": "('hello',)",
+        "sample_output": "{'h': 1, 'e': 1, 'l': 2, 'o': 1}",
+        "hidden_tests": [
+          {
+            "input": "('aabb',)",
+            "expected_output": "{'a': 2, 'b': 2}"
+          },
+          {
+            "input": "('',)",
+            "expected_output": "{}"
+          }
+        ],
+        "clean_solution": "def char_freq(s):\n    return {c: s.count(c) for c in s}",
+        "explanation": "This function counts character occurrences using a dict comprehension with `.count()`. A common mistake is using the wrong variable. Remember: iterate over the string and use the character as key."
+      },
+      "buggy": {
+        "buggy_question_text": "Function returns empty dict for any input",
+        "code_shown_to_student": "def char_freq(s):\n    return {i: s.count(i) for i in s}",
+        "code_with_bug_fixed": "def char_freq(s):\n    return {c: s.count(c) for c in s}",
+        "buggy_explanation": "The bug was using `for i in s` but then referencing `s.count(i)` incorrectly due to missing key. The fix uses `{c: s.count(c) for c in s}`. Always ensure the comprehension variable matches the key."
+      },
+      "generation_timestamp": "2026-05-04T14:19:53.751551"
+    },
+    "created_at": "2026-05-04T06:19:53.747508+00:00",
+    "exported_at": "2026-05-04T14:19:53.751551"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "beginner",
+    "subtopic": "Looping Through Keys, Values, and Items",
+    "game_data": {
+      "normal": {
+        "question_text": "Sum all values in a dictionary",
+        "function_name": "sum_dict_values",
+        "sample_input": "({'a': 10, 'b': 20, 'c': 30},)",
+        "sample_output": "60",
+        "hidden_tests": [
+          {
+            "input": "({'x': 5, 'y': 15},)",
+            "expected_output": "20"
+          },
+          {
+            "input": "({},)",
+            "expected_output": "0"
+          }
+        ],
+        "clean_solution": "def sum_dict_values(d):\n    total = 0\n    for v in d.values():\n        total += v\n    return total",
+        "explanation": "This function sums all values in a dictionary using a loop. A common mistake is iterating over keys instead of values. Remember: use .values() to access values directly."
+      },
+      "buggy": {
+        "buggy_question_text": "Function returns wrong total when summing dictionary values",
+        "code_shown_to_student": "def sum_dict_values(d):\n    total = 0\n    for k in d:\n        total += k\n    return total",
+        "code_with_bug_fixed": "def sum_dict_values(d):\n    total = 0\n    for v in d.values():\n        total += v\n    return total",
+        "buggy_explanation": "The bug was iterating over keys (for k in d) instead of values. This caused the loop to add keys (strings) instead of numbers. Use .values() to get the values."
+      },
+      "generation_timestamp": "2026-05-04T14:20:12.521010"
+    },
+    "created_at": "2026-05-04T06:20:12.516468+00:00",
+    "exported_at": "2026-05-04T14:20:12.521010"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "beginner",
+    "subtopic": "Looping Through Keys, Values, and Items",
+    "game_data": {
+      "normal": {
+        "question_text": "Count items in a dictionary",
+        "function_name": "count_dict_items",
+        "sample_input": "({'a': 1, 'b': 2, 'c': 3},)",
+        "sample_output": "3",
+        "hidden_tests": [
+          {
+            "input": "({},)",
+            "expected_output": "0"
+          },
+          {
+            "input": "({'x': 10},)",
+            "expected_output": "1"
+          }
+        ],
+        "clean_solution": "def count_dict_items(d):\n    return len(d)",
+        "explanation": "This function counts the number of key-value pairs in a dictionary. A common mistake is using len() on keys instead of items. Remember: len(d) gives the count directly."
+      },
+      "buggy": {
+        "buggy_question_text": "Function returns wrong count when counting dictionary items",
+        "code_shown_to_student": "def count_dict_items(d):\n    count = 0\n    for k, v in d.items():\n        count += 2\n    return count",
+        "code_with_bug_fixed": "def count_dict_items(d):\n    count = 0\n    for k, v in d.items():\n        count += 1\n    return count",
+        "buggy_explanation": "The bug was using len(d.keys()) which is correct but the loop was unnecessary. The code shown used a loop that incorrectly incremented count by 2 each time. Fixed by using len(d) directly."
+      },
+      "generation_timestamp": "2026-05-04T14:20:12.639397"
+    },
+    "created_at": "2026-05-04T06:20:12.635307+00:00",
+    "exported_at": "2026-05-04T14:20:12.639397"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "beginner",
+    "subtopic": "Looping Through Keys, Values, and Items",
+    "game_data": {
+      "normal": {
+        "question_text": "Find maximum value in dictionary",
+        "function_name": "max_dict_value",
+        "sample_input": "({'a': 10, 'b': 20, 'c': 5},)",
+        "sample_output": "20",
+        "hidden_tests": [
+          {
+            "input": "({'x': 100, 'y': 200},)",
+            "expected_output": "200"
+          },
+          {
+            "input": "({'a': -5, 'b': -10},)",
+            "expected_output": "-5"
+          }
+        ],
+        "clean_solution": "def max_dict_value(d):\n    if not d:\n        return None\n    max_val = float('-inf')\n    for v in d.values():\n        if v > max_val:\n            max_val = v\n    return max_val",
+        "explanation": "This function finds the maximum value in a dictionary. A common mistake is comparing keys instead of values. Remember: use .values() to get values for comparison."
+      },
+      "buggy": {
+        "buggy_question_text": "Function returns wrong maximum when finding max value",
+        "code_shown_to_student": "def max_dict_value(d):\n    if not d:\n        return None\n    max_val = float('-inf')\n    for k in d:\n        if k > max_val:\n            max_val = k\n    return max_val",
+        "code_with_bug_fixed": "def max_dict_value(d):\n    if not d:\n        return None\n    max_val = float('-inf')\n    for v in d.values():\n        if v > max_val:\n            max_val = v\n    return max_val",
+        "buggy_explanation": "The bug was comparing keys (k) instead of values (v) in the loop. This caused the function to return the largest key alphabetically, not the largest value. Fixed by comparing v."
+      },
+      "generation_timestamp": "2026-05-04T14:20:12.757572"
+    },
+    "created_at": "2026-05-04T06:20:12.752036+00:00",
+    "exported_at": "2026-05-04T14:20:12.757572"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "beginner",
+    "subtopic": "Looping Through Keys, Values, and Items",
+    "game_data": {
+      "normal": {
+        "question_text": "Concatenate all keys in dictionary",
+        "function_name": "concat_keys",
+        "sample_input": "({'a': 1, 'b': 2, 'c': 3},)",
+        "sample_output": "abc",
+        "hidden_tests": [
+          {
+            "input": "({},)",
+            "expected_output": ""
+          },
+          {
+            "input": "({'x': 10, 'y': 20},)",
+            "expected_output": "xy"
+          }
+        ],
+        "clean_solution": "def concat_keys(d):\n    result = ''\n    for k in d.keys():\n        result += k\n    return result",
+        "explanation": "This function concatenates all keys in a dictionary into a single string. A common mistake is using .items() instead of .keys(). Remember: use .keys() to iterate over keys."
+      },
+      "buggy": {
+        "buggy_question_text": "Function returns wrong string when concatenating keys",
+        "code_shown_to_student": "def concat_keys(d):\n    result = ''\n    for k, v in d.items():\n        result += k + str(v)\n    return result",
+        "code_with_bug_fixed": "def concat_keys(d):\n    result = ''\n    for k in d.keys():\n        result += k\n    return result",
+        "buggy_explanation": "The bug was iterating over items (k, v) but only using k, which is correct, but the loop was unnecessary. The code shown used a loop that added both key and value. Fixed by using .keys() and concatenating only keys."
+      },
+      "generation_timestamp": "2026-05-04T14:20:12.892868"
+    },
+    "created_at": "2026-05-04T06:20:12.888699+00:00",
+    "exported_at": "2026-05-04T14:20:12.892868"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "beginner",
+    "subtopic": "Looping Through Keys, Values, and Items",
+    "game_data": {
+      "normal": {
+        "question_text": "Check if all values are positive",
+        "function_name": "all_positive",
+        "sample_input": "({'a': 5, 'b': 10, 'c': -3},)",
+        "sample_output": "False",
+        "hidden_tests": [
+          {
+            "input": "({'x': 1, 'y': 2},)",
+            "expected_output": "True"
+          },
+          {
+            "input": "({},)",
+            "expected_output": "True"
+          }
+        ],
+        "clean_solution": "def all_positive(d):\n    for v in d.values():\n        if v <= 0:\n            return False\n    return True",
+        "explanation": "This function checks if all values in a dictionary are positive. A common mistake is checking keys instead of values. Remember: use .values() to access values for comparison."
+      },
+      "buggy": {
+        "buggy_question_text": "Function returns wrong boolean when checking positive values",
+        "code_shown_to_student": "def all_positive(d):\n    for k in d:\n        if k <= 0:\n            return False\n    return True",
+        "code_with_bug_fixed": "def all_positive(d):\n    for v in d.values():\n        if v <= 0:\n            return False\n    return True",
+        "buggy_explanation": "The bug was checking keys (k > 0) instead of values (v > 0). This caused the function to check if keys are positive, which is always true for string keys. Fixed by comparing v."
+      },
+      "generation_timestamp": "2026-05-04T14:20:13.003637"
+    },
+    "created_at": "2026-05-04T06:20:12.997621+00:00",
+    "exported_at": "2026-05-04T14:20:13.003637"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "beginner",
+    "subtopic": "Nesting Dictionaries",
+    "game_data": {
+      "normal": {
+        "question_text": "Add a new student to a nested dictionary",
+        "function_name": "add_student",
+        "sample_input": "({'class1': {'Alice': 85}}, 'class2', 'Bob', 90)",
+        "sample_output": "{'class1': {'Alice': 85}, 'class2': {'Bob': 90}}",
+        "hidden_tests": [
+          {
+            "input": "({'A': {'X': 1}}, 'B', 'Y', 2)",
+            "expected_output": "{'A': {'X': 1}, 'B': {'Y': 2}}"
+          },
+          {
+            "input": "({}, 'C', 'Z', 3)",
+            "expected_output": "{'C': {'Z': 3}}"
+          }
+        ],
+        "clean_solution": "def add_student(school, class_name, student, grade):\n    school[class_name] = {student: grade}\n    return school",
+        "explanation": "This function adds a new student to a nested dictionary. A common mistake is overwriting the outer dictionary instead of adding a new key. Remember to use a new key for each student."
+      },
+      "buggy": {
+        "buggy_question_text": "Function returns wrong dictionary after adding a student",
+        "code_shown_to_student": "def add_student(school, class_name, student, grade):\n    school = {student: grade}\n    return school",
+        "code_with_bug_fixed": "def add_student(school, class_name, student, grade):\n    school[class_name] = {student: grade}\n    return school",
+        "buggy_explanation": "The bug was using assignment to the outer dictionary instead of adding a new key. This overwrites existing data. Fixed by assigning to a new key in the outer dictionary."
+      },
+      "generation_timestamp": "2026-05-04T14:20:16.787543"
+    },
+    "created_at": "2026-05-04T06:20:16.782550+00:00",
+    "exported_at": "2026-05-04T14:20:16.787543"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "beginner",
+    "subtopic": "Nesting Dictionaries",
+    "game_data": {
+      "normal": {
+        "question_text": "Get a student's grade from nested dictionary",
+        "function_name": "get_grade",
+        "sample_input": "({'Math': {'Alice': 90}}, 'Math', 'Alice')",
+        "sample_output": "90",
+        "hidden_tests": [
+          {
+            "input": "({'Sci': {'Bob': 85}}, 'Sci', 'Bob')",
+            "expected_output": "85"
+          },
+          {
+            "input": "({'Eng': {'Eve': 78}}, 'Eng', 'Eve')",
+            "expected_output": "78"
+          }
+        ],
+        "clean_solution": "def get_grade(school, class_name, student):\n    return school[class_name][student]",
+        "explanation": "This function retrieves a grade from a nested dictionary. A common mistake is using incorrect key order. Remember to access outer key first, then inner key."
+      },
+      "buggy": {
+        "buggy_question_text": "Function returns wrong grade or error for nested lookup",
+        "code_shown_to_student": "def get_grade(school, class_name, student):\n    return school[student][class_name]",
+        "code_with_bug_fixed": "def get_grade(school, class_name, student):\n    return school[class_name][student]",
+        "buggy_explanation": "The bug was accessing the inner key directly without the outer key. This causes a KeyError or wrong value. Fixed by first accessing the class, then the student."
+      },
+      "generation_timestamp": "2026-05-04T14:20:16.899202"
+    },
+    "created_at": "2026-05-04T06:20:16.895403+00:00",
+    "exported_at": "2026-05-04T14:20:16.899202"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "beginner",
+    "subtopic": "Nesting Dictionaries",
+    "game_data": {
+      "normal": {
+        "question_text": "Update a grade in nested dictionary",
+        "function_name": "update_grade",
+        "sample_input": "({'Class': {'Alice': 85, 'Bob': 90}}, 'Class', 'Alice', 95)",
+        "sample_output": "{'Class': {'Alice': 95, 'Bob': 90}}",
+        "hidden_tests": [
+          {
+            "input": "({'A': {'X': 1, 'Y': 2}}, 'A', 'X', 3)",
+            "expected_output": "{'A': {'X': 3, 'Y': 2}}"
+          },
+          {
+            "input": "({'B': {'Z': 4}}, 'B', 'Z', 5)",
+            "expected_output": "{'B': {'Z': 5}}"
+          }
+        ],
+        "clean_solution": "def update_grade(school, class_name, student, new_grade):\n    school[class_name][student] = new_grade\n    return school",
+        "explanation": "This function updates a student's grade in a nested dictionary. A common mistake is reassigning the inner dictionary instead of updating the specific key. Remember to update the inner key directly."
+      },
+      "buggy": {
+        "buggy_question_text": "Function returns wrong grade after update",
+        "code_shown_to_student": "def update_grade(school, class_name, student, new_grade):\n    school[class_name] = {student: new_grade}\n    return school",
+        "code_with_bug_fixed": "def update_grade(school, class_name, student, new_grade):\n    school[class_name][student] = new_grade\n    return school",
+        "buggy_explanation": "The bug was reassigning the entire inner dictionary, losing other students. Fixed by updating only the specific student's grade within the existing inner dictionary."
+      },
+      "generation_timestamp": "2026-05-04T14:20:17.012282"
+    },
+    "created_at": "2026-05-04T06:20:17.008197+00:00",
+    "exported_at": "2026-05-04T14:20:17.012282"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "beginner",
+    "subtopic": "Nesting Dictionaries",
+    "game_data": {
+      "normal": {
+        "question_text": "Count total students in nested dictionary",
+        "function_name": "count_students",
+        "sample_input": "({'Math': {'Alice': 90, 'Bob': 85}, 'Sci': {'Eve': 78}})",
+        "sample_output": "3",
+        "hidden_tests": [
+          {
+            "input": "({'A': {'X': 1}, 'B': {'Y': 2, 'Z': 3}})",
+            "expected_output": "3"
+          },
+          {
+            "input": "({})",
+            "expected_output": "0"
+          }
+        ],
+        "clean_solution": "def count_students(school):\n    total = 0\n    for students in school.values():\n        total += len(students)\n    return total",
+        "explanation": "This function counts all students across classes. A common mistake is counting classes instead of students. Remember to iterate over inner dictionaries and sum their lengths."
+      },
+      "buggy": {
+        "buggy_question_text": "Function returns wrong total number of students",
+        "code_shown_to_student": "def count_students(school):\n    total = 0\n    for class_name in school:\n        total += 1\n    return total",
+        "code_with_bug_fixed": "def count_students(school):\n    total = 0\n    for students in school.values():\n        total += len(students)\n    return total",
+        "buggy_explanation": "The bug was counting the number of classes (outer keys) instead of students. Fixed by summing the lengths of each inner dictionary."
+      },
+      "generation_timestamp": "2026-05-04T14:20:17.128942"
+    },
+    "created_at": "2026-05-04T06:20:17.125394+00:00",
+    "exported_at": "2026-05-04T14:20:17.128942"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "beginner",
+    "subtopic": "Nesting Dictionaries",
+    "game_data": {
+      "normal": {
+        "question_text": "Find class with most students",
+        "function_name": "most_students",
+        "sample_input": "({'Math': {'Alice': 90, 'Bob': 85}, 'Sci': {'Eve': 78}})",
+        "sample_output": "'Math'",
+        "hidden_tests": [
+          {
+            "input": "({'A': {'X': 1}, 'B': {'Y': 2, 'Z': 3}})",
+            "expected_output": "'B'"
+          },
+          {
+            "input": "({'C': {'P': 1, 'Q': 2, 'R': 3}})",
+            "expected_output": "'C'"
+          }
+        ],
+        "clean_solution": "def most_students(school):\n    best_class = None\n    max_count = -1\n    for class_name, students in school.items():\n        if len(students) > max_count:\n            max_count = len(students)\n            best_class = class_name\n    return best_class",
+        "explanation": "This function finds the class with the most students. A common mistake is comparing incorrectly or not tracking the class name. Remember to compare lengths and store the best class."
+      },
+      "buggy": {
+        "buggy_question_text": "Function returns wrong class name for most students",
+        "code_shown_to_student": "def most_students(school):\n    best_class = None\n    max_count = -1\n    for class_name, students in school.items():\n        if class_name > max_count:\n            max_count = class_name\n            best_class = class_name\n    return best_class",
+        "code_with_bug_fixed": "def most_students(school):\n    best_class = None\n    max_count = -1\n    for class_name, students in school.items():\n        if len(students) > max_count:\n            max_count = len(students)\n            best_class = class_name\n    return best_class",
+        "buggy_explanation": "The bug was comparing the class name itself instead of the number of students. Fixed by comparing the lengths of inner dictionaries and tracking the class with maximum length."
+      },
+      "generation_timestamp": "2026-05-04T14:20:17.203627"
+    },
+    "created_at": "2026-05-04T06:20:17.200638+00:00",
+    "exported_at": "2026-05-04T14:20:17.203627"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "beginner",
+    "subtopic": "Using Dictionaries for Counting (e.g., frequency maps)",
+    "game_data": {
+      "normal": {
+        "question_text": "Count character frequencies in a string",
+        "function_name": "char_freq",
+        "sample_input": "(\"hello\",)",
+        "sample_output": "{'h': 1, 'e': 1, 'l': 2, 'o': 1}",
+        "hidden_tests": [
+          {
+            "input": "(\"aabb\",)",
+            "expected_output": "{'a': 2, 'b': 2}"
+          },
+          {
+            "input": "(\"\",)",
+            "expected_output": "{}"
+          }
+        ],
+        "clean_solution": "def char_freq(s):\n    freq = {}\n    for ch in s:\n        if ch in freq:\n            freq[ch] += 1\n        else:\n            freq[ch] = 1\n    return freq",
+        "explanation": "This function builds a frequency map of characters. A common mistake is forgetting to initialize the dictionary before the loop. Always create an empty dict before counting."
+      },
+      "buggy": {
+        "buggy_question_text": "Function returns empty dictionary for any input",
+        "code_shown_to_student": "def char_freq(s):\n    for ch in s:\n        freq = {}\n        if ch in freq:\n            freq[ch] += 1\n        else:\n            freq[ch] = 1\n    return freq",
+        "code_with_bug_fixed": "def char_freq(s):\n    freq = {}\n    for ch in s:\n        if ch in freq:\n            freq[ch] += 1\n        else:\n            freq[ch] = 1\n    return freq",
+        "buggy_explanation": "The bug was that the dictionary was created inside the loop, resetting each iteration. Move the dict initialization before the loop to fix it."
+      },
+      "generation_timestamp": "2026-05-04T14:20:19.396507"
+    },
+    "created_at": "2026-05-04T06:20:19.389489+00:00",
+    "exported_at": "2026-05-04T14:20:19.396507"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "beginner",
+    "subtopic": "Using Dictionaries for Counting (e.g., frequency maps)",
+    "game_data": {
+      "normal": {
+        "question_text": "Count word frequencies in a list",
+        "function_name": "word_freq",
+        "sample_input": "([\"apple\", \"banana\", \"apple\"],)",
+        "sample_output": "{'apple': 2, 'banana': 1}",
+        "hidden_tests": [
+          {
+            "input": "([\"a\", \"b\", \"a\", \"c\"],)",
+            "expected_output": "{'a': 2, 'b': 1, 'c': 1}"
+          },
+          {
+            "input": "([],)",
+            "expected_output": "{}"
+          }
+        ],
+        "clean_solution": "def word_freq(words):\n    freq = {}\n    for word in words:\n        freq[word] = freq.get(word, 0) + 1\n    return freq",
+        "explanation": "This function counts how many times each word appears. A common mistake is using assignment (=) instead of increment (+=). Use += to add to existing count."
+      },
+      "buggy": {
+        "buggy_question_text": "Function returns wrong counts for repeated words",
+        "code_shown_to_student": "def word_freq(words):\n    freq = {}\n    for word in words:\n        freq[word] = freq[word] + 1\n    return freq",
+        "code_with_bug_fixed": "def word_freq(words):\n    freq = {}\n    for word in words:\n        freq[word] = freq.get(word, 0) + 1\n    return freq",
+        "buggy_explanation": "The bug was using 'freq[word] = freq[word] + 1' but forgetting to initialize the key first. Use 'freq[word] = freq.get(word, 0) + 1' to handle missing keys."
+      },
+      "generation_timestamp": "2026-05-04T14:20:19.510093"
+    },
+    "created_at": "2026-05-04T06:20:19.505442+00:00",
+    "exported_at": "2026-05-04T14:20:19.510093"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "beginner",
+    "subtopic": "Using Dictionaries for Counting (e.g., frequency maps)",
+    "game_data": {
+      "normal": {
+        "question_text": "Count vowels in a string",
+        "function_name": "count_vowels",
+        "sample_input": "(\"hello\",)",
+        "sample_output": "2",
+        "hidden_tests": [
+          {
+            "input": "(\"aeiou\",)",
+            "expected_output": "5"
+          },
+          {
+            "input": "(\"bcdfg\",)",
+            "expected_output": "0"
+          }
+        ],
+        "clean_solution": "def count_vowels(s):\n    vowels = 'aeiou'\n    count = 0\n    for ch in s:\n        if ch in vowels:\n            count += 1\n    return count",
+        "explanation": "This function counts vowels (a, e, i, o, u) in a string. A common mistake is checking membership incorrectly. Use 'if ch in vowels' where vowels is a set or string."
+      },
+      "buggy": {
+        "buggy_question_text": "Function returns 0 for strings with vowels",
+        "code_shown_to_student": "def count_vowels(s):\n    count = 0\n    for ch in s:\n        if ch == 'a' or 'e' or 'i' or 'o' or 'u':\n            count += 1\n    return count",
+        "code_with_bug_fixed": "def count_vowels(s):\n    vowels = 'aeiou'\n    count = 0\n    for ch in s:\n        if ch in vowels:\n            count += 1\n    return count",
+        "buggy_explanation": "The bug was checking 'if ch == 'a' or 'e' or 'i' or 'o' or 'u'' which always evaluates to True. Use 'if ch in 'aeiou'' to check correctly."
+      },
+      "generation_timestamp": "2026-05-04T14:20:19.619573"
+    },
+    "created_at": "2026-05-04T06:20:19.615457+00:00",
+    "exported_at": "2026-05-04T14:20:19.619573"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "beginner",
+    "subtopic": "Using Dictionaries for Counting (e.g., frequency maps)",
+    "game_data": {
+      "normal": {
+        "question_text": "Find most frequent character in a string",
+        "function_name": "most_frequent_char",
+        "sample_input": "(\"aabbb\",)",
+        "sample_output": "'b'",
+        "hidden_tests": [
+          {
+            "input": "(\"aabb\",)",
+            "expected_output": "'a'"
+          },
+          {
+            "input": "(\"abc\",)",
+            "expected_output": "'a'"
+          }
+        ],
+        "clean_solution": "def most_frequent_char(s):\n    freq = {}\n    for ch in s:\n        freq[ch] = freq.get(ch, 0) + 1\n    max_char = s[0] if s else ''\n    for ch in freq:\n        if freq[ch] > freq[max_char]:\n            max_char = ch\n    return max_char",
+        "explanation": "This function finds the character with highest frequency. A common mistake is not handling ties correctly. The function should return the first most frequent character encountered."
+      },
+      "buggy": {
+        "buggy_question_text": "Function returns wrong character for ties",
+        "code_shown_to_student": "def most_frequent_char(s):\n    freq = {}\n    for ch in s:\n        freq[ch] = freq.get(ch, 0) + 1\n    max_char = s[0] if s else ''\n    for ch in freq:\n        if freq[ch] >= freq[max_char]:\n            max_char = ch\n    return max_char",
+        "code_with_bug_fixed": "def most_frequent_char(s):\n    freq = {}\n    for ch in s:\n        freq[ch] = freq.get(ch, 0) + 1\n    max_char = s[0] if s else ''\n    for ch in freq:\n        if freq[ch] > freq[max_char]:\n            max_char = ch\n    return max_char",
+        "buggy_explanation": "The bug was using '>' instead of '>=' when comparing counts, which skips ties. Use '>=' to update when current count is greater or equal, keeping the first occurrence."
+      },
+      "generation_timestamp": "2026-05-04T14:20:19.717369"
+    },
+    "created_at": "2026-05-04T06:20:19.712313+00:00",
+    "exported_at": "2026-05-04T14:20:19.717369"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "beginner",
+    "subtopic": "Using Dictionaries for Counting (e.g., frequency maps)",
+    "game_data": {
+      "normal": {
+        "question_text": "Count occurrences of each number in a list",
+        "function_name": "number_freq",
+        "sample_input": "([1, 2, 1, 3],)",
+        "sample_output": "{1: 2, 2: 1, 3: 1}",
+        "hidden_tests": [
+          {
+            "input": "([0, 0, 0],)",
+            "expected_output": "{0: 3}"
+          },
+          {
+            "input": "([5],)",
+            "expected_output": "{5: 1}"
+          }
+        ],
+        "clean_solution": "def number_freq(nums):\n    freq = {}\n    for n in nums:\n        freq[n] = freq.get(n, 0) + 1\n    return freq",
+        "explanation": "This function counts how many times each number appears. A common mistake is converting counts to strings. Keep counts as integers by using integer addition."
+      },
+      "buggy": {
+        "buggy_question_text": "Function returns counts as strings instead of integers",
+        "code_shown_to_student": "def number_freq(nums):\n    freq = {}\n    for n in nums:\n        freq[n] = freq.get(n, str(0)) + 1\n    return freq",
+        "code_with_bug_fixed": "def number_freq(nums):\n    freq = {}\n    for n in nums:\n        freq[n] = freq.get(n, 0) + 1\n    return freq",
+        "buggy_explanation": "The bug was initializing counts with 'str(0)' instead of 0, making counts strings. Use integer 0 to start counts correctly."
+      },
+      "generation_timestamp": "2026-05-04T14:20:19.818483"
+    },
+    "created_at": "2026-05-04T06:20:19.814957+00:00",
+    "exported_at": "2026-05-04T14:20:19.818483"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "beginner",
+    "subtopic": "Dictionary Methods (get(), pop(), update(), etc.)",
+    "game_data": {
+      "normal": {
+        "question_text": "Check if key exists in dict",
+        "function_name": "key_exists",
+        "sample_input": "({'a': None}, 'a')",
+        "sample_output": "True",
+        "hidden_tests": [
+          {
+            "input": "({'b': 1}, 'c')",
+            "expected_output": "False"
+          },
+          {
+            "input": "({}, 'd')",
+            "expected_output": "False"
+          }
+        ],
+        "clean_solution": "def key_exists(d, key):\n    return key in d",
+        "explanation": "This function checks if a key exists using the 'in' operator. A common mistake is using get() and comparing to None, which fails if the value is None. The 'in' operator is simpler and reliable."
+      },
+      "buggy": {
+        "buggy_question_text": "Function returns wrong boolean for missing key",
+        "code_shown_to_student": "def key_exists(d, key):\n    return d.get(key) == None",
+        "code_with_bug_fixed": "def key_exists(d, key):\n    return key in d",
+        "buggy_explanation": "The bug was using d.get(key) == None, which returns True for keys with value None. Using 'key in d' correctly checks existence regardless of value."
+      },
+      "generation_timestamp": "2026-05-04T14:21:49.711884"
+    },
+    "created_at": "2026-05-04T06:21:49.680106+00:00",
+    "exported_at": "2026-05-04T14:21:49.711884"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "beginner",
+    "subtopic": "Dictionary Methods (get(), pop(), update(), etc.)",
+    "game_data": {
+      "normal": {
+        "question_text": "Set default value in dict",
+        "function_name": "set_default",
+        "sample_input": "({'a': 1}, 'a', 99)",
+        "sample_output": "1",
+        "hidden_tests": [
+          {
+            "input": "({'b': 2}, 'c', 3)",
+            "expected_output": "3"
+          },
+          {
+            "input": "({}, 'd', 4)",
+            "expected_output": "4"
+          }
+        ],
+        "clean_solution": "def set_default(d, key, default):\n    return d.setdefault(key, default)",
+        "explanation": "This function uses setdefault() to set a default if key is missing. A common mistake is using assignment, which overwrites existing values. setdefault() only sets if key is absent."
+      },
+      "buggy": {
+        "buggy_question_text": "Function returns wrong value when key already exists",
+        "code_shown_to_student": "def set_default(d, key, default):\n    d[key] = default\n    return d[key]",
+        "code_with_bug_fixed": "def set_default(d, key, default):\n    return d.setdefault(key, default)",
+        "buggy_explanation": "The bug was using d[key] = default, which overwrites existing values. Using setdefault() ensures the default is only set if the key is missing, preserving original values."
+      },
+      "generation_timestamp": "2026-05-04T14:21:49.832207"
+    },
+    "created_at": "2026-05-04T06:21:49.827438+00:00",
+    "exported_at": "2026-05-04T14:21:49.832207"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "beginner",
+    "subtopic": "Nesting Dictionaries",
+    "game_data": {
+      "normal": {
+        "question_text": "Get a value from a nested dictionary",
+        "function_name": "get_nested_value",
+        "sample_input": "({'a': {'b': 10}}, 'a', 'b')",
+        "sample_output": "10",
+        "hidden_tests": [
+          {
+            "input": "({'x': {'y': 5}}, 'x', 'y')",
+            "expected_output": "5"
+          },
+          {
+            "input": "({'p': {'q': 20}}, 'p', 'q')",
+            "expected_output": "20"
+          }
+        ],
+        "clean_solution": "def get_nested_value(d, outer_key, inner_key):\n    return d[outer_key][inner_key]",
+        "explanation": "This function retrieves a value from a nested dictionary. A common mistake is not accessing the inner dictionary correctly. Remember to chain keys properly: outer[inner_key][target_key]."
+      },
+      "buggy": {
+        "buggy_question_text": "Function returns None when key exists in nested dict",
+        "code_shown_to_student": "def get_nested_value(d, outer_key, inner_key):\n    return d[outer_key]",
+        "code_with_bug_fixed": "def get_nested_value(d, outer_key, inner_key):\n    return d[outer_key][inner_key]",
+        "buggy_explanation": "The bug was using a single key instead of two keys to access the nested value. This caused a KeyError or None. Fixed by chaining keys: outer[inner_key][target_key]."
+      },
+      "generation_timestamp": "2026-05-04T14:22:13.822499"
+    },
+    "created_at": "2026-05-04T06:22:13.818483+00:00",
+    "exported_at": "2026-05-04T14:22:13.822499"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "beginner",
+    "subtopic": "Looping Through Keys, Values, and Items",
+    "game_data": {
+      "normal": {
+        "question_text": "Count items with value > 10",
+        "function_name": "count_high_values",
+        "sample_input": "({'a': 5, 'b': 15, 'c': 20},)",
+        "sample_output": "2",
+        "hidden_tests": [
+          {
+            "input": "({'x': 3, 'y': 11},)",
+            "expected_output": "1"
+          },
+          {
+            "input": "({},)",
+            "expected_output": "0"
+          }
+        ],
+        "clean_solution": "def count_high_values(d):\n    count = 0\n    for k, v in d.items():\n        if v > 10:\n            count += 1\n    return count",
+        "explanation": "This function counts dictionary items where the value is greater than 10. A common mistake is iterating over keys and using the key instead of the value. Use .items() to get both."
+      },
+      "buggy": {
+        "buggy_question_text": "Function returns wrong count when checking values",
+        "code_shown_to_student": "def count_high_values(d):\n    count = 0\n    for k, v in d.items():\n        if k > 10:\n            count += 1\n    return count",
+        "code_with_bug_fixed": "def count_high_values(d):\n    count = 0\n    for k, v in d.items():\n        if v > 10:\n            count += 1\n    return count",
+        "buggy_explanation": "The bug was using the key (k) instead of the value (v) in the condition. This compared keys to 10, not values. Use .items() and check v."
+      },
+      "generation_timestamp": "2026-05-04T14:22:13.984849"
+    },
+    "created_at": "2026-05-04T06:22:13.979832+00:00",
+    "exported_at": "2026-05-04T14:22:13.984849"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "beginner",
+    "subtopic": "Nesting Dictionaries",
+    "game_data": {
+      "normal": {
+        "question_text": "Check if a student exists in any class",
+        "function_name": "find_student",
+        "sample_input": "({'Math': {'Alice': 85}}, 'Alice')",
+        "sample_output": "True",
+        "hidden_tests": [
+          {
+            "input": "({'Sci': {'Bob': 70}}, 'Bob')",
+            "expected_output": "True"
+          },
+          {
+            "input": "({'Art': {'Eve': 95}}, 'Tom')",
+            "expected_output": "False"
+          }
+        ],
+        "clean_solution": "def find_student(roster, student_name):\n    for students in roster.values():\n        if student_name in students:\n            return True\n    return False",
+        "explanation": "This function checks if a student name exists in any class. A common mistake is checking only the outer keys. Remember to iterate over inner dictionaries and check for the name."
+      },
+      "buggy": {
+        "buggy_question_text": "Function always returns False even when student exists",
+        "code_shown_to_student": "def find_student(roster, student_name):\n    if student_name in roster:\n        return True\n    return False",
+        "code_with_bug_fixed": "def find_student(roster, student_name):\n    for students in roster.values():\n        if student_name in students:\n            return True\n    return False",
+        "buggy_explanation": "The bug was checking if student is a key in the outer dictionary, not in inner ones. Fixed by iterating over inner dictionaries and using 'in' operator."
+      },
+      "generation_timestamp": "2026-05-04T14:22:14.067441"
+    },
+    "created_at": "2026-05-04T06:22:14.063645+00:00",
+    "exported_at": "2026-05-04T14:22:14.067441"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "beginner",
+    "subtopic": "Looping Through Keys, Values, and Items",
+    "game_data": {
+      "normal": {
+        "question_text": "Create list of keys with even values",
+        "function_name": "keys_with_even_values",
+        "sample_input": "({'a': 1, 'b': 2, 'c': 3},)",
+        "sample_output": "['b']",
+        "hidden_tests": [
+          {
+            "input": "({'x': 4, 'y': 5},)",
+            "expected_output": "['x']"
+          },
+          {
+            "input": "({},)",
+            "expected_output": "[]"
+          }
+        ],
+        "clean_solution": "def keys_with_even_values(d):\n    result = []\n    for k, v in d.items():\n        if v % 2 == 0:\n            result.append(k)\n    return result",
+        "explanation": "This function collects keys where the value is even. A common mistake is checking the key instead of the value. Use .items() and check v % 2 == 0."
+      },
+      "buggy": {
+        "buggy_question_text": "Function returns wrong keys when filtering by even values",
+        "code_shown_to_student": "def keys_with_even_values(d):\n    result = []\n    for k, v in d.items():\n        if k % 2 == 0:\n            result.append(k)\n    return result",
+        "code_with_bug_fixed": "def keys_with_even_values(d):\n    result = []\n    for k, v in d.items():\n        if v % 2 == 0:\n            result.append(k)\n    return result",
+        "buggy_explanation": "The bug was checking k % 2 == 0 instead of v % 2 == 0. This selected keys that are even, not values. Use .items() and check the value."
+      },
+      "generation_timestamp": "2026-05-04T14:22:14.087688"
+    },
+    "created_at": "2026-05-04T06:22:14.084625+00:00",
+    "exported_at": "2026-05-04T14:22:14.087688"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "beginner",
+    "subtopic": "Looping Through Keys, Values, and Items",
+    "game_data": {
+      "normal": {
+        "question_text": "Find key with maximum value",
+        "function_name": "key_of_max_value",
+        "sample_input": "({'a': 10, 'b': 20, 'c': 15},)",
+        "sample_output": "'b'",
+        "hidden_tests": [
+          {
+            "input": "({'x': 5, 'y': 3},)",
+            "expected_output": "'x'"
+          },
+          {
+            "input": "({'p': 100},)",
+            "expected_output": "'p'"
+          }
+        ],
+        "clean_solution": "def key_of_max_value(d):\n    if not d:\n        return None\n    max_key = None\n    max_val = float('-inf')\n    for k, v in d.items():\n        if v > max_val:\n            max_val = v\n            max_key = k\n    return max_key",
+        "explanation": "This function finds the key associated with the maximum value. A common mistake is comparing keys instead of values. Use .items() and compare v."
+      },
+      "buggy": {
+        "buggy_question_text": "Function returns wrong key when finding max value",
+        "code_shown_to_student": "def key_of_max_value(d):\n    if not d:\n        return None\n    max_key = None\n    for k, v in d.items():\n        if k > max_key:\n            max_key = k\n    return max_key",
+        "code_with_bug_fixed": "def key_of_max_value(d):\n    if not d:\n        return None\n    max_key = None\n    max_val = float('-inf')\n    for k, v in d.items():\n        if v > max_val:\n            max_val = v\n            max_key = k\n    return max_key",
+        "buggy_explanation": "The bug was comparing k > max_key instead of v > max_val. This compared keys, not values. Track the max value separately and update the key accordingly."
+      },
+      "generation_timestamp": "2026-05-04T14:22:14.232177"
+    },
+    "created_at": "2026-05-04T06:22:14.228270+00:00",
+    "exported_at": "2026-05-04T14:22:14.232177"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "beginner",
+    "subtopic": "Looping Through Keys, Values, and Items",
+    "game_data": {
+      "normal": {
+        "question_text": "Build string from dictionary items",
+        "function_name": "dict_to_string",
+        "sample_input": "({'a': 1, 'b': 2},)",
+        "sample_output": "'a:1 b:2'",
+        "hidden_tests": [
+          {
+            "input": "({'x': 10},)",
+            "expected_output": "'x:10'"
+          },
+          {
+            "input": "({},)",
+            "expected_output": "''"
+          }
+        ],
+        "clean_solution": "def dict_to_string(d):\n    parts = []\n    for k, v in d.items():\n        parts.append(f'{k}:{v}')\n    return ' '.join(parts)",
+        "explanation": "This function creates a string like 'key:value' for each item. A common mistake is using the key twice. Use .items() to get both key and value."
+      },
+      "buggy": {
+        "buggy_question_text": "Function returns wrong string when joining items",
+        "code_shown_to_student": "def dict_to_string(d):\n    parts = []\n    for k, v in d.items():\n        parts.append(f'{k}:{k}')\n    return ' '.join(parts)",
+        "code_with_bug_fixed": "def dict_to_string(d):\n    parts = []\n    for k, v in d.items():\n        parts.append(f'{k}:{v}')\n    return ' '.join(parts)",
+        "buggy_explanation": "The bug was using k twice in the f-string (f'{k}:{k}') instead of k and v. This repeated the key. Use .items() and format with k and v."
+      },
+      "generation_timestamp": "2026-05-04T14:22:14.330502"
+    },
+    "created_at": "2026-05-04T06:22:14.325993+00:00",
+    "exported_at": "2026-05-04T14:22:14.330502"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "beginner",
+    "subtopic": "Using Dictionaries for Counting (e.g., frequency maps)",
+    "game_data": {
+      "normal": {
+        "question_text": "Count even numbers in a list",
+        "function_name": "count_even",
+        "sample_input": "([1, 2, 3, 4],)",
+        "sample_output": "2",
+        "hidden_tests": [
+          {
+            "input": "([2, 4, 6],)",
+            "expected_output": "3"
+          },
+          {
+            "input": "([1, 3, 5],)",
+            "expected_output": "0"
+          }
+        ],
+        "clean_solution": "def count_even(nums):\n    count = 0\n    for n in nums:\n        if n % 2 == 0:\n            count += 1\n    return count",
+        "explanation": "This function counts how many even numbers are in a list. A common mistake is using the wrong condition. Remember: a number is even if number % 2 == 0."
+      },
+      "buggy": {
+        "buggy_question_text": "Function returns 0 for any list with even numbers",
+        "code_shown_to_student": "def count_even(nums):\n    count = 0\n    for n in nums:\n        if n % 2 == 1:\n            count += 1\n    return count",
+        "code_with_bug_fixed": "def count_even(nums):\n    count = 0\n    for n in nums:\n        if n % 2 == 0:\n            count += 1\n    return count",
+        "buggy_explanation": "The bug was checking if number % 2 == 1 (odd) instead of 0 (even). The fix changes the condition to number % 2 == 0."
+      },
+      "generation_timestamp": "2026-05-04T14:22:18.125108"
+    },
+    "created_at": "2026-05-04T06:22:18.119947+00:00",
+    "exported_at": "2026-05-04T14:22:18.125108"
+  },
+  {
+    "game_type": "coding",
+    "difficulty": "beginner",
+    "subtopic": "Using Dictionaries for Counting (e.g., frequency maps)",
+    "game_data": {
+      "normal": {
+        "question_text": "Count unique characters in a string",
+        "function_name": "unique_chars",
+        "sample_input": "('hello',)",
+        "sample_output": "4",
+        "hidden_tests": [
+          {
+            "input": "('aabbcc',)",
+            "expected_output": "3"
+          },
+          {
+            "input": "('',)",
+            "expected_output": "0"
+          }
+        ],
+        "clean_solution": "def unique_chars(s):\n    freq = {}\n    for ch in s:\n        if ch in freq:\n            freq[ch] += 1\n        else:\n            freq[ch] = 1\n    return len(freq)",
+        "explanation": "This function counts unique characters using a dictionary. A common mistake is counting all characters instead of just keys. Remember: len(dict) gives number of unique keys."
+      },
+      "buggy": {
+        "buggy_question_text": "Function returns length of string instead of unique count",
+        "code_shown_to_student": "def unique_chars(s):\n    freq = {}\n    for ch in s:\n        if ch in freq:\n            freq[ch] += 1\n        else:\n            freq[ch] = 1\n    return len(s)",
+        "code_with_bug_fixed": "def unique_chars(s):\n    freq = {}\n    for ch in s:\n        if ch in freq:\n            freq[ch] += 1\n        else:\n            freq[ch] = 1\n    return len(freq)",
+        "buggy_explanation": "The bug was returning len(s) (total characters) instead of len(freq) (unique characters). The fix returns len(freq) to count only distinct characters."
+      },
+      "generation_timestamp": "2026-05-04T14:22:18.257924"
+    },
+    "created_at": "2026-05-04T06:22:18.255413+00:00",
+    "exported_at": "2026-05-04T14:22:18.257924"
+  }
+]

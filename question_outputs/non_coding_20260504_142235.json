@@ -1,0 +1,418 @@
+[
+  {
+    "question_text": "Dictionary method to safely retrieve a value, returning a default if the key is missing",
+    "correct_answer": "get",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "Dictionary Methods (get(), pop(), update(), etc.)",
+    "game_data": {
+      "explanation": "The get() method returns the value for a given key if it exists, otherwise it returns a default value (often None) without raising an error.",
+      "generation_timestamp": "2026-05-04T14:22:35.532417"
+    },
+    "created_at": "2026-05-04T06:22:35.527160+00:00",
+    "exported_at": "2026-05-04T14:22:35.532417"
+  },
+  {
+    "question_text": "Dictionary method that removes a key-value pair and returns the value",
+    "correct_answer": "pop",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "Dictionary Methods (get(), pop(), update(), etc.)",
+    "game_data": {
+      "explanation": "pop() removes the specified key from the dictionary and returns its value. It can take a default argument to avoid KeyError if the key doesn't exist.",
+      "generation_timestamp": "2026-05-04T14:22:35.626182"
+    },
+    "created_at": "2026-05-04T06:22:35.620650+00:00",
+    "exported_at": "2026-05-04T14:22:35.626182"
+  },
+  {
+    "question_text": "Dictionary method to add or modify multiple key-value pairs at once",
+    "correct_answer": "update",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "Dictionary Methods (get(), pop(), update(), etc.)",
+    "game_data": {
+      "explanation": "update() merges another dictionary or iterable of key-value pairs into the current dictionary, overwriting existing keys and adding new ones.",
+      "generation_timestamp": "2026-05-04T14:22:35.697957"
+    },
+    "created_at": "2026-05-04T06:22:35.695457+00:00",
+    "exported_at": "2026-05-04T14:22:35.697957"
+  },
+  {
+    "question_text": "Dictionary method that returns a view of all keys in the dictionary",
+    "correct_answer": "keys",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "Dictionary Methods (get(), pop(), update(), etc.)",
+    "game_data": {
+      "explanation": "keys() returns a dynamic view object showing all the keys in the dictionary, which updates automatically if the dictionary changes.",
+      "generation_timestamp": "2026-05-04T14:22:35.757294"
+    },
+    "created_at": "2026-05-04T06:22:35.753776+00:00",
+    "exported_at": "2026-05-04T14:22:35.757294"
+  },
+  {
+    "question_text": "A technique to create dictionaries using a concise expression with keys and values.",
+    "correct_answer": "dictionary comprehension",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "Dictionary Comprehensions",
+    "game_data": {
+      "explanation": "Dictionary comprehensions provide a compact way to build dictionaries by iterating over items and defining key-value pairs in a single line.",
+      "generation_timestamp": "2026-05-04T14:22:35.781970"
+    },
+    "created_at": "2026-05-04T06:22:35.777754+00:00",
+    "exported_at": "2026-05-04T14:22:35.781970"
+  },
+  {
+    "question_text": "The part of a dictionary comprehension that decides which items to include.",
+    "correct_answer": "filter",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "Dictionary Comprehensions",
+    "game_data": {
+      "explanation": "A filter in a dictionary comprehension is a condition that selects only certain key-value pairs based on a test.",
+      "generation_timestamp": "2026-05-04T14:22:35.841892"
+    },
+    "created_at": "2026-05-04T06:22:35.837372+00:00",
+    "exported_at": "2026-05-04T14:22:35.841892"
+  },
+  {
+    "question_text": "In a dictionary comprehension, the expression that produces each key-value pair.",
+    "correct_answer": "transformation",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "Dictionary Comprehensions",
+    "game_data": {
+      "explanation": "A transformation in a dictionary comprehension modifies each item from the source to create the new key and value.",
+      "generation_timestamp": "2026-05-04T14:22:35.915747"
+    },
+    "created_at": "2026-05-04T06:22:35.912753+00:00",
+    "exported_at": "2026-05-04T14:22:35.915747"
+  },
+  {
+    "question_text": "Unique name identifying a value in a dictionary pair",
+    "correct_answer": "key",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "Adding, Updating, and Deleting Keys",
+    "game_data": {
+      "explanation": "In a dictionary, each item has a key (unique identifier) and a value. Keys are immutable and used to access or modify values.",
+      "generation_timestamp": "2026-05-04T14:22:35.929584"
+    },
+    "created_at": "2026-05-04T06:22:35.926546+00:00",
+    "exported_at": "2026-05-04T14:22:35.929584"
+  },
+  {
+    "question_text": "The data structure you iterate over in a dictionary comprehension to create new key-value pairs.",
+    "correct_answer": "iterable",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "Dictionary Comprehensions",
+    "game_data": {
+      "explanation": "An iterable is any object that can be looped over, such as a list, tuple, or range, used as the source in a dictionary comprehension.",
+      "generation_timestamp": "2026-05-04T14:22:35.994970"
+    },
+    "created_at": "2026-05-04T06:22:35.990105+00:00",
+    "exported_at": "2026-05-04T14:22:35.994970"
+  },
+  {
+    "question_text": "Data assigned to a key within a dictionary",
+    "correct_answer": "value",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "Adding, Updating, and Deleting Keys",
+    "game_data": {
+      "explanation": "Each key in a dictionary has an associated value, which can be any Python object. You retrieve or change the value using its key.",
+      "generation_timestamp": "2026-05-04T14:22:36.025692"
+    },
+    "created_at": "2026-05-04T06:22:36.020373+00:00",
+    "exported_at": "2026-05-04T14:22:36.025692"
+  },
+  {
+    "question_text": "The curly braces used to enclose a dictionary comprehension.",
+    "correct_answer": "curly braces",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "Dictionary Comprehensions",
+    "game_data": {
+      "explanation": "Curly braces {} are used to define a dictionary comprehension, distinguishing it from a list comprehension which uses square brackets.",
+      "generation_timestamp": "2026-05-04T14:22:36.069702"
+    },
+    "created_at": "2026-05-04T06:22:36.065171+00:00",
+    "exported_at": "2026-05-04T14:22:36.069702"
+  },
+  {
+    "question_text": "Python structure storing key value pairs inside curly braces",
+    "correct_answer": "dictionary",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "Adding, Updating, and Deleting Keys",
+    "game_data": {
+      "explanation": "A dictionary is a mutable collection of key-value pairs, defined with {}. It maps unique keys to values for efficient data access.",
+      "generation_timestamp": "2026-05-04T14:22:36.100651"
+    },
+    "created_at": "2026-05-04T06:22:36.093544+00:00",
+    "exported_at": "2026-05-04T14:22:36.100651"
+  },
+  {
+    "question_text": "A pair of data in a dictionary consisting of a unique identifier and its associated object",
+    "correct_answer": "key value pair",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "Creating and Accessing Dictionary Items",
+    "game_data": {
+      "explanation": "A key-value pair is the fundamental unit of a dictionary, where the key is unique and the value is the data associated with that key.",
+      "generation_timestamp": "2026-05-04T14:22:36.102651"
+    },
+    "created_at": "2026-05-04T06:22:36.097557+00:00",
+    "exported_at": "2026-05-04T14:22:36.102651"
+  },
+  {
+    "question_text": "Action of assigning a new value to an existing dictionary key",
+    "correct_answer": "update",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "Adding, Updating, and Deleting Keys",
+    "game_data": {
+      "explanation": "To update a dictionary, you assign a new value to an existing key using the assignment operator, like dict[key] = new_value.",
+      "generation_timestamp": "2026-05-04T14:22:36.170991"
+    },
+    "created_at": "2026-05-04T06:22:36.165459+00:00",
+    "exported_at": "2026-05-04T14:22:36.170991"
+  },
+  {
+    "question_text": "The unique identifier used to access a value in a dictionary",
+    "correct_answer": "key",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "Creating and Accessing Dictionary Items",
+    "game_data": {
+      "explanation": "A key is an immutable object (like a string or number) that is used to look up its corresponding value in a dictionary.",
+      "generation_timestamp": "2026-05-04T14:22:36.204691"
+    },
+    "created_at": "2026-05-04T06:22:36.198677+00:00",
+    "exported_at": "2026-05-04T14:22:36.204691"
+  },
+  {
+    "question_text": "Key value pair that is added to a dictionary for the first time",
+    "correct_answer": "insertion",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "Adding, Updating, and Deleting Keys",
+    "game_data": {
+      "explanation": "Adding a new key-value pair to a dictionary is called insertion. Use dict[new_key] = value to insert a pair that doesn't exist yet.",
+      "generation_timestamp": "2026-05-04T14:22:36.235643"
+    },
+    "created_at": "2026-05-04T06:22:36.231635+00:00",
+    "exported_at": "2026-05-04T14:22:36.235643"
+  },
+  {
+    "question_text": "The data associated with a key in a dictionary",
+    "correct_answer": "value",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "Creating and Accessing Dictionary Items",
+    "game_data": {
+      "explanation": "A value is the data stored under a specific key in a dictionary. It can be any Python object, including numbers, strings, or lists.",
+      "generation_timestamp": "2026-05-04T14:22:36.273616"
+    },
+    "created_at": "2026-05-04T06:22:36.270617+00:00",
+    "exported_at": "2026-05-04T14:22:36.273616"
+  },
+  {
+    "question_text": "The characters used to enclose a dictionary literal in Python",
+    "correct_answer": "curly braces",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "Creating and Accessing Dictionary Items",
+    "game_data": {
+      "explanation": "Curly braces {} are used to define a dictionary literal, with keys and values separated by colons and pairs separated by commas.",
+      "generation_timestamp": "2026-05-04T14:22:36.394867"
+    },
+    "created_at": "2026-05-04T06:22:36.390738+00:00",
+    "exported_at": "2026-05-04T14:22:36.394867"
+  },
+  {
+    "question_text": "A built-in function that creates a dictionary from a sequence of key-value pairs",
+    "correct_answer": "dict",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "Creating and Accessing Dictionary Items",
+    "game_data": {
+      "explanation": "The dict() function can create a dictionary by passing in an iterable of tuples, where each tuple contains a key and a value.",
+      "generation_timestamp": "2026-05-04T14:22:36.490884"
+    },
+    "created_at": "2026-05-04T06:22:36.485784+00:00",
+    "exported_at": "2026-05-04T14:22:36.490884"
+  },
+  {
+    "question_text": "A method that returns a view object of all keys in a dictionary",
+    "correct_answer": "keys",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "Looping Through Keys, Values, and Items",
+    "game_data": {
+      "explanation": "The .keys() method is used to loop through all the keys in a dictionary. It returns a view object that shows the keys.",
+      "generation_timestamp": "2026-05-04T14:22:40.834769"
+    },
+    "created_at": "2026-05-04T06:22:40.831753+00:00",
+    "exported_at": "2026-05-04T14:22:40.834769"
+  },
+  {
+    "question_text": "A structure that pairs each unique key with a value in a dictionary",
+    "correct_answer": "key-value",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "Looping Through Keys, Values, and Items",
+    "game_data": {
+      "explanation": "A key-value pair is the fundamental unit in a dictionary. Each key is unique and maps to one value, forming a relationship.",
+      "generation_timestamp": "2026-05-04T14:22:41.069662"
+    },
+    "created_at": "2026-05-04T06:22:41.066531+00:00",
+    "exported_at": "2026-05-04T14:22:41.069662"
+  },
+  {
+    "question_text": "The process of going through each element in a dictionary one by one",
+    "correct_answer": "iteration",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "Looping Through Keys, Values, and Items",
+    "game_data": {
+      "explanation": "Iteration means to loop over the keys, values, or items of a dictionary. It lets you access each part of the dictionary in a for loop.",
+      "generation_timestamp": "2026-05-04T14:22:41.157385"
+    },
+    "created_at": "2026-05-04T06:22:41.153877+00:00",
+    "exported_at": "2026-05-04T14:22:41.157385"
+  },
+  {
+    "question_text": "A dictionary stored as a value inside another dictionary",
+    "correct_answer": "nested dictionary",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "Nesting Dictionaries",
+    "game_data": {
+      "explanation": "A nested dictionary is a dictionary that appears as a value inside another dictionary, allowing you to model hierarchical data like records with sub-records.",
+      "generation_timestamp": "2026-05-04T14:22:41.312379"
+    },
+    "created_at": "2026-05-04T06:22:41.308836+00:00",
+    "exported_at": "2026-05-04T14:22:41.312379"
+  },
+  {
+    "question_text": "The unique first part of a key-value pair in a dictionary",
+    "correct_answer": "key",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "Nesting Dictionaries",
+    "game_data": {
+      "explanation": "Each entry in a dictionary has a key, which is a unique identifier that maps to its corresponding value.",
+      "generation_timestamp": "2026-05-04T14:22:41.436660"
+    },
+    "created_at": "2026-05-04T06:22:41.429635+00:00",
+    "exported_at": "2026-05-04T14:22:41.436660"
+  },
+  {
+    "question_text": "A dictionary used to tally how many times each distinct item appears in a sequence.",
+    "correct_answer": "frequency map",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "Using Dictionaries for Counting (e.g., frequency maps)",
+    "game_data": {
+      "explanation": "A frequency map uses a dictionary to count occurrences of items, where keys are items and values are counts.",
+      "generation_timestamp": "2026-05-04T14:22:41.508326"
+    },
+    "created_at": "2026-05-04T06:22:41.480476+00:00",
+    "exported_at": "2026-05-04T14:22:41.508326"
+  },
+  {
+    "question_text": "The second part of a key-value pair that holds the data",
+    "correct_answer": "value",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "Nesting Dictionaries",
+    "game_data": {
+      "explanation": "In a dictionary, each key is paired with a value, which can be any data type, including another dictionary.",
+      "generation_timestamp": "2026-05-04T14:22:41.539356"
+    },
+    "created_at": "2026-05-04T06:22:41.532276+00:00",
+    "exported_at": "2026-05-04T14:22:41.539356"
+  },
+  {
+    "question_text": "A collection that stores key-value pairs and is often used for counting tasks.",
+    "correct_answer": "dictionary",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "Using Dictionaries for Counting (e.g., frequency maps)",
+    "game_data": {
+      "explanation": "A dictionary is a built-in data structure that maps keys to values, perfect for creating frequency maps.",
+      "generation_timestamp": "2026-05-04T14:22:41.611764"
+    },
+    "created_at": "2026-05-04T06:22:41.608753+00:00",
+    "exported_at": "2026-05-04T14:22:41.611764"
+  },
+  {
+    "question_text": "A data structure that stores key-value pairs in Python",
+    "correct_answer": "dictionary",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "Nesting Dictionaries",
+    "game_data": {
+      "explanation": "A dictionary is a Python data structure that maps keys to values, allowing fast lookups and flexible data organization.",
+      "generation_timestamp": "2026-05-04T14:22:41.665599"
+    },
+    "created_at": "2026-05-04T06:22:41.660573+00:00",
+    "exported_at": "2026-05-04T14:22:41.665599"
+  },
+  {
+    "question_text": "A method that returns the value for a key if it exists, or a default value if not.",
+    "correct_answer": "get",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "Using Dictionaries for Counting (e.g., frequency maps)",
+    "game_data": {
+      "explanation": "The get method safely accesses dictionary keys, allowing you to provide a default, which is handy for counting.",
+      "generation_timestamp": "2026-05-04T14:22:41.731186"
+    },
+    "created_at": "2026-05-04T06:22:41.726628+00:00",
+    "exported_at": "2026-05-04T14:22:41.731186"
+  },
+  {
+    "question_text": "The punctuation used to separate a key from its value in a dictionary",
+    "correct_answer": "colon",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "Nesting Dictionaries",
+    "game_data": {
+      "explanation": "In a dictionary literal, a colon separates each key from its value, like in {\"key\": \"value\"}.",
+      "generation_timestamp": "2026-05-04T14:22:41.798313"
+    },
+    "created_at": "2026-05-04T06:22:41.793645+00:00",
+    "exported_at": "2026-05-04T14:22:41.798313"
+  },
+  {
+    "question_text": "The default value typically used when starting a count for a new item in a frequency map.",
+    "correct_answer": "zero",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "Using Dictionaries for Counting (e.g., frequency maps)",
+    "game_data": {
+      "explanation": "Starting a count at zero ensures you can increment it when the item appears, building the frequency map correctly.",
+      "generation_timestamp": "2026-05-04T14:22:41.853843"
+    },
+    "created_at": "2026-05-04T06:22:41.850835+00:00",
+    "exported_at": "2026-05-04T14:22:41.853843"
+  },
+  {
+    "question_text": "A loop structure ideal for iterating over items to update counts in a frequency map.",
+    "correct_answer": "for loop",
+    "game_type": "non_coding",
+    "difficulty": "beginner",
+    "subtopic": "Using Dictionaries for Counting (e.g., frequency maps)",
+    "game_data": {
+      "explanation": "A for loop goes through each element in a sequence, allowing you to update the dictionary count for each item.",
+      "generation_timestamp": "2026-05-04T14:22:41.966221"
+    },
+    "created_at": "2026-05-04T06:22:41.962184+00:00",
+    "exported_at": "2026-05-04T14:22:41.966221"
+  }
+]

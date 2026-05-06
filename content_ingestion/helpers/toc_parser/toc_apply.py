@@ -49,11 +49,11 @@ def generate_toc_entries_for_document(document):
         # 4) remove old toc entries for this document
         TOCEntry.objects.filter(document=document).delete()
 
-        # 5) bulk-create new toc entries
+        # 5) bulk-create new toc entries (truncate titles to 250 chars for DB)
         toc_entries = [
             TOCEntry(
                 document=document,
-                title=entry['title'],
+                title=entry['title'][:250],
                 start_page=entry['start_page'],
                 end_page=entry['end_page'],
                 level=entry.get('level', 0),

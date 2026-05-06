@@ -210,14 +210,14 @@ def _extract_toc_from_links(doc: fitz.Document) -> List[List[Any]]:
 def _is_likely_toc_page(text: str) -> bool:
     # heuristic: does this page look like a table of contents?
     text_lower = text.lower()
-    toc_keywords = ['contents', 'table of contents', 'chapter', 'section']
+    toc_keywords = ['contents', 'table of contents', 'toc', 'chapter', 'section']
     
-    # must have toc keywords and number patterns
     has_toc_keyword = any(keyword in text_lower for keyword in toc_keywords)
-    has_page_numbers = len(re.findall(r'\b\d{1,3}\b', text)) > 5
-    has_dots = '.' in text and text.count('.') > 10
+    has_page_numbers = len(re.findall(r'\b\d{1,3}\b', text)) > 3
+    has_dots = '.' in text and text.count('.') > 5
+    has_chapter_nums = len(re.findall(r'^\s*\d+\.?\d*\s+[A-Za-z]', text, re.MULTILINE)) > 1
     
-    return has_toc_keyword and (has_page_numbers or has_dots)
+    return (has_toc_keyword and (has_page_numbers or has_dots)) or (has_chapter_nums and has_page_numbers)
 
 def _extract_text_at_position(page: fitz.Page, rect_dict: dict) -> str:
     # extract nearby text around a link rectangle
@@ -328,24 +328,27 @@ def fallback_toc_text(doc: fitz.Document, page_limit: int = 15) -> List[str]:
             
         is_toc_page = False
 
-        if "contents" in text.lower():
+        text_lower = text.lower()
+        toc_keywords = ['contents', 'table of contents', 'toc', 'chapters', 'sections']
+
+        if any(kw in text_lower for kw in toc_keywords):
             is_toc_page = True
             found_toc_start = True
         elif found_toc_start:
             if (
-                len(re.findall(r'\b\d{1,3}\b', text)) > 8 or
-                len(re.findall(r'\.{2,}', text)) > 3 or
-                len(re.findall(r'^\s*\d+\.?\d*\s+[A-Za-z]', text, re.MULTILINE)) > 2
+                len(re.findall(r'\b\d{1,3}\b', text)) > 5 or
+                len(re.findall(r'\.{2,}', text)) > 2 or
+                len(re.findall(r'^\s*\d+\.?\d*\s+[A-Za-z]', text, re.MULTILINE)) > 1
             ):
                 is_toc_page = True
             else:
                 break
         else:
-            if (
-                len(re.findall(r'\b\d{1,3}\b', text)) > 15 and
-                len(re.findall(r'\.{2,}', text)) > 8 and
-                len(re.findall(r'^\s*\d+\.?\d*\s+[A-Za-z]', text, re.MULTILINE)) > 5
-            ):
+            # For PDFs without explicit "Contents" heading, be more lenient
+            has_numbers = len(re.findall(r'\b\d{1,3}\b', text)) > 8
+            has_dots    = len(re.findall(r'\.{2,}', text)) > 3
+            has_chapters = len(re.findall(r'^\s*\d+\.?\d*\s+[A-Za-z]', text, re.MULTILINE)) > 2
+            if has_numbers or has_dots or has_chapters:
                 is_toc_page = True
                 found_toc_start = True
 
@@ -366,7 +369,8 @@ def parse_toc_text(toc_text_block: str) -> List[Dict[str, Any]]:
     lines = toc_text_block.split('\n')
     meta_titles = {
         'foreword', 'preface', 'introduction', 'why this book', 'about',
-        'acknowledgments', 'contents', 'table of contents', 'toc', 'index'
+        'acknowledgments', 'contents', 'table of contents', 'toc', 'index',
+        'chapters', 'sections', 'overview',
     }
     i = 0
     while i < len(lines):
@@ -385,15 +389,25 @@ def parse_toc_text(toc_text_block: str) -> List[Dict[str, Any]]:
             title = line
             j = i + 1
             page_found = False
-            while j < min(len(lines), i + 11):
-                next_line = lines[j].strip()
-                if next_line.isdigit() and int(next_line) > 0:
-                    page = int(next_line)
-                    page_found = True
-                    break
-                elif next_line and not next_line.isdigit():
-                    title += ' ' + next_line
-                j += 1
+
+            # Try same-line page number first (e.g. "Chapter 1 ........ 12")
+            # Common in AI-generated PDFs where TOC entries are a single line
+            same_line_match = re.search(r'(.+?)\s*\.{2,}\s*(\d{1,4})\s*$', title)
+            if same_line_match:
+                title = same_line_match.group(1).strip()
+                page = int(same_line_match.group(2))
+                page_found = True
+            else:
+                # Fallback: look for standalone page numbers on subsequent lines
+                while j < min(len(lines), i + 11):
+                    next_line = lines[j].strip()
+                    if next_line.isdigit() and int(next_line) > 0:
+                        page = int(next_line)
+                        page_found = True
+                        break
+                    elif next_line and not next_line.isdigit():
+                        title += ' ' + next_line
+                    j += 1
 
             if page_found:
                 # clean up title
@@ -408,7 +422,7 @@ def parse_toc_text(toc_text_block: str) -> List[Dict[str, Any]]:
                     continue
                 level = _detect_level_advanced(line, title)
                 entries.append({
-                    "title": title,
+                    "title": title[:250],  # Truncate for DB charfield(255)
                     "start_page": page - 1,
                     "level": level,
                     "order": len(entries)
