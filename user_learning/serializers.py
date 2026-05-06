@@ -1,6 +1,6 @@
 # user_learning/serializers.py
 from rest_framework import serializers
-from .models import UserZoneProgress, UserTopicProficiency, UserSubtopicMastery
+from .models import UserZoneProgress, UserTopicProficiency, UserSubtopicMastery, UserTopicProficiencyHistory
 from content_ingestion.models import GameZone, Topic, Subtopic
 
 
@@ -84,6 +84,15 @@ class UserSubtopicMasterySerializer(serializers.ModelSerializer):
     class Meta:
         model = UserSubtopicMastery
         fields = ['subtopic', 'mastery_level']
+
+class TopicProficiencyHistorySerializer(serializers.ModelSerializer):
+    topic_id = serializers.IntegerField(source='topic.id')
+    topic_name = serializers.CharField(source='topic.name')
+
+    class Meta:
+        model = UserTopicProficiencyHistory
+        fields = ['topic_id', 'topic_name', 'proficiency_percent', 'recorded_at', 'session_id']
+
 
 class LeaderboardEntrySerializer(serializers.Serializer):
     user_id = serializers.IntegerField()

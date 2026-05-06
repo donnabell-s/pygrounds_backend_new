@@ -54,6 +54,24 @@ class UserSubtopicLearningRate(models.Model):
         unique_together = ('user', 'subtopic')
 
 
+class UserTopicProficiencyHistory(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='topic_proficiency_history')
+    topic = models.ForeignKey(Topic, on_delete=models.CASCADE)
+    proficiency_percent = models.FloatField()
+    recorded_at = models.DateTimeField(auto_now_add=True)
+    session_id = models.CharField(max_length=64, null=True, blank=True, db_index=True)
+    is_pre_session = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ['recorded_at']
+        indexes = [
+            models.Index(fields=['user', 'topic', 'recorded_at']),
+        ]
+
+    def __str__(self):
+        return f"{self.user.username} → {self.topic.name}: {self.proficiency_percent:.2f}% @ {self.recorded_at}"
+
+
 class UserAbility(models.Model):
     user = models.OneToOneField(
         User,

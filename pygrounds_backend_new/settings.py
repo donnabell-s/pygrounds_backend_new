@@ -88,7 +88,7 @@ INSTALLED_APPS = [
     'users',
     'content_ingestion',
     'question_generation',
-    'user_learning',
+    'user_learning.apps.UserLearningConfig',
     'minigames',
     'reading',
     'achievements',
