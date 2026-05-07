@@ -62,7 +62,7 @@ def _run_document_pipeline_background(document_id, reprocess=False):
             from content_ingestion.helpers.workers.document_worker import process_document_task
             
             # steps depend on each other, so run them in order
-            for step_data in processing_steps:
+            for step_index, step_data in enumerate(processing_steps):
                 step_name = step_data[2]
             
                 document.refresh_from_db()
@@ -79,7 +79,11 @@ def _run_document_pipeline_background(document_id, reprocess=False):
                     'semantic': 'Computing semantic similarities between content chunks...'
                 }
                 
+                # calculate progress percentage (5 steps max)
+                progress = min(100, (step_index + 1) * 20)
+                
                 document.processing_message = status_messages.get(step_name, f'Processing {step_name}...')
+                document.processing_progress = progress
                 document.save()
                 
                 # run the step in its own process
@@ -108,7 +112,11 @@ def _run_document_pipeline_background(document_id, reprocess=False):
         
         if failed_steps:
             document.processing_status = 'FAILED'
-            document.processing_message = f'Processing failed at steps: {", ".join(failed_steps)}'
+            # Give a clear rejection reason when TOC is the (only) failure
+            if failed_steps == ['toc']:
+                document.processing_message = 'PDF rejected: No Table of Contents found in this document.'
+            else:
+                document.processing_message = f'Processing failed at steps: {", ".join(failed_steps)}'
         else:
             # double-check that the critical stuff actually produced output
             toc_result = pipeline_results['pipeline_steps'].get('toc', {})
@@ -127,7 +135,7 @@ def _run_document_pipeline_background(document_id, reprocess=False):
                 document.processing_message = 'Document processing completed successfully'
             elif not toc_success:
                 document.processing_status = 'FAILED'
-                document.processing_message = 'Failed to generate table of contents or no TOC entries found'
+                document.processing_message = 'PDF rejected: No Table of Contents found in this document.'
             elif not chunking_success:
                 document.processing_status = 'FAILED'
                 document.processing_message = 'Failed to create document chunks or no chunks generated'
@@ -290,7 +298,7 @@ def chunk_document_pages(request, document_id):
             }, status=status.HTTP_400_BAD_REQUEST)
         
         processor = GranularChunkProcessor()
-        chunk_result = processor.process_entire_document(document_id)
+        chunk_result = processor.process_entire_document(document)
         
         chunks = DocumentChunk.objects.filter(document=document)
         chunks_data = []

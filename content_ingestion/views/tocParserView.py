@@ -18,18 +18,29 @@ LOGS_DIR.mkdir(exist_ok=True)
 @api_view(['POST'])
 def generate_document_toc(request, document_id):
     try:
-        skip_nlp = request.query_params.get('skip_nlp', 'false').lower() == 'true'
         document = get_object_or_404(UploadedDocument, id=document_id)
         
-        toc_result = generate_toc_entries_for_document(document, skip_nlp=skip_nlp)
+        toc_entries = generate_toc_entries_for_document(document)
         
-        log_toc_generation(document_id, toc_result, {"skip_nlp": skip_nlp})
+        entries_data = [
+            {
+                'id': e.id,
+                'title': e.title,
+                'level': e.level,
+                'start_page': e.start_page,
+                'end_page': e.end_page,
+                'order': e.order,
+            }
+            for e in toc_entries
+        ]
+        
+        log_toc_generation(document_id, entries_data, {})
         
         return Response({
             'status': 'success',
             'document_id': document_id,
-            'entries_created': len(toc_result.get('entries', [])),
-            'toc_entries': toc_result.get('entries', [])
+            'entries_created': len(entries_data),
+            'toc_entries': entries_data
         })
     except Exception as e:
         logger.error(f"TOC generation error for document {document_id}: {str(e)}")
