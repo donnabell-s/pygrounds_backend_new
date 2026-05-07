@@ -62,7 +62,7 @@ def process_document_task(task_data):
                 else:
                     return ('toc', {
                         'status': 'error',
-                        'message': 'TOC generation completed but no entries were found',
+                        'message': 'PDF rejected: No Table of Contents found in this document.',
                         'entries_count': 0,
                         'error': 'No TOC entries generated'
                     })

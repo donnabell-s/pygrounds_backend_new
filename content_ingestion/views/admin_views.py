@@ -540,9 +540,6 @@ def get_document_status(request, document_id):
             'title': document.title,
             'processing_status': document.processing_status,
             'processing_message': document.processing_message,
-            'processing_progress': document.processing_progress,
-            'processing_updated_at': document.processing_updated_at,
-            'created_at': document.created_at,
         })
     except Exception as e:
         logger.error(f"Error getting document status: {str(e)}")
