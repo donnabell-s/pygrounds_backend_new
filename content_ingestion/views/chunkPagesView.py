@@ -112,7 +112,11 @@ def _run_document_pipeline_background(document_id, reprocess=False):
         
         if failed_steps:
             document.processing_status = 'FAILED'
-            document.processing_message = f'Processing failed at steps: {", ".join(failed_steps)}'
+            # Give a clear rejection reason when TOC is the (only) failure
+            if failed_steps == ['toc']:
+                document.processing_message = 'PDF rejected: No Table of Contents found in this document.'
+            else:
+                document.processing_message = f'Processing failed at steps: {", ".join(failed_steps)}'
         else:
             # double-check that the critical stuff actually produced output
             toc_result = pipeline_results['pipeline_steps'].get('toc', {})

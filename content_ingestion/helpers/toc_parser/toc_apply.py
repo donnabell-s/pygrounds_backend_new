@@ -43,6 +43,17 @@ def generate_toc_entries_for_document(document):
             document.save()
             return []
 
+        # Reject PDFs with too few TOC entries — likely false positives
+        # from fallback heuristics on non-TOC content (e.g. code, numbers).
+        MIN_TOC_ENTRIES = 3
+        if len(toc_data) < MIN_TOC_ENTRIES:
+            print(f"[TOC] Only {len(toc_data)} TOC entries found (minimum {MIN_TOC_ENTRIES}). "
+                  f"Rejecting document as no valid TOC detected.")
+            document.total_pages = total_pages
+            document.status = 'COMPLETED'
+            document.save()
+            return []
+
         # 3) assign end pages for chunking
         toc_data = assign_end_pages(toc_data, total_pages)
 

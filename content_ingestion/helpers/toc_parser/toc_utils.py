@@ -344,11 +344,15 @@ def fallback_toc_text(doc: fitz.Document, page_limit: int = 15) -> List[str]:
             else:
                 break
         else:
-            # For PDFs without explicit "Contents" heading, be more lenient
+            # For PDFs without explicit "Contents" heading, require strong
+            # combined evidence to avoid false positives on non-TOC pages
+            # (e.g. programming books with code, numbers, or dotted notation).
             has_numbers = len(re.findall(r'\b\d{1,3}\b', text)) > 8
             has_dots    = len(re.findall(r'\.{2,}', text)) > 3
             has_chapters = len(re.findall(r'^\s*\d+\.?\d*\s+[A-Za-z]', text, re.MULTILINE)) > 2
-            if has_numbers or has_dots or has_chapters:
+            # Require at least TWO signals in combination
+            signals = sum([has_numbers, has_dots, has_chapters])
+            if signals >= 2:
                 is_toc_page = True
                 found_toc_start = True
 
