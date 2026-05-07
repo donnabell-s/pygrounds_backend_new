@@ -11,7 +11,7 @@ This document covers backend seeding tasks you may need during development: achi
 
 | OS | Install command |
 |---|---|
-| **Windows (winget)** | `winget install -e --id "poppler" --source winget` |
+| **Windows (winget)** | `winget install oschwartz10612.Poppler` |
 | **Windows (scoop)** | `scoop install poppler` |
 | **Windows (choco)** | `choco install poppler` |
 | **macOS (Homebrew)** | `brew install poppler` |
