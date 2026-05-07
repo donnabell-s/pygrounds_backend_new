@@ -6,6 +6,19 @@ This document covers backend seeding tasks you may need during development: achi
 - Run these commands from the backend project root (the folder that contains `manage.py`).
 - Ensure your Python environment is active and dependencies from `requirements.txt` are installed.
 
+### System Dependencies
+**Poppler** is required by `pdf2image` / `unstructured` for PDF processing.
+
+| OS | Install command |
+|---|---|
+| **Windows (winget)** | `winget install -e --id "poppler" --source winget` |
+| **Windows (scoop)** | `scoop install poppler` |
+| **Windows (choco)** | `choco install poppler` |
+| **macOS (Homebrew)** | `brew install poppler` |
+| **Linux (apt)** | `sudo apt install poppler-utils` |
+
+After installing, restart your terminal so the `PATH` picks up the binaries.
+
 ## Seed Achievements
 The achievements seeder is an idempotent Django management command. It will create any missing default achievements by code and can optionally update existing ones.
 
