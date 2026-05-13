@@ -176,9 +176,11 @@ class TopicProficiencyHistoryView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        # Optional ?user_id= to view another user's history
+        # Optional ?user_id= to view another user's history (admin-only)
         user_id = request.query_params.get("user_id")
         if user_id:
+            if str(request.user.id) != str(user_id) and getattr(request.user, "role", None) != "admin":
+                return Response({"detail": "Not allowed."}, status=403)
             target_user = User.objects.filter(pk=user_id).first()
             if not target_user:
                 return Response([], status=200)
